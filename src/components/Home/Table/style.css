@@ -1,0 +1,54 @@
+.table-footer {
+  margin-top: 14px;
+}
+
+.table-footer p {
+  color: #666;
+}
+
+.table-footer .ant-pagination-simple-pager input {
+  padding: 0 !important;
+}
+
+.custom-actions {
+  width: 100%;
+  display: flex;
+  justify-content: end;
+}
+
+.whatsap-content,
+.whatsap-finish {
+  text-align: center;
+  height: 236px;
+  width: 180px;
+}
+
+.whatsap-content b ,
+.whatsap-finish b {
+  display: block;
+  padding-top: 16px;
+  line-height: 0;
+}
+
+.whatsap-content input{
+    text-align: center;
+}
+
+.whatsap-content p,
+.whatsap-finish p {
+  padding-top: 8px;
+  color: #666;
+  padding-bottom: 8px;
+}
+
+
+.whatsap-finish {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.whatsap-finish {
+    padding: 16px;
+}

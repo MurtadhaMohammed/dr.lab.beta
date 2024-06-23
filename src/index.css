@@ -1,0 +1,107 @@
+@font-face {
+  font-family: "Frutiger";
+  src: url("./fonts/Frutiger LT Arabic 55 Roman.ttf");
+  font-weight: normal;
+}
+
+@font-face {
+  font-family: "Frutiger";
+  src: url("./fonts/Frutiger LT Arabic 65 Bold.ttf");
+  font-weight: bold;
+}
+@font-face {
+  font-family: "Circular";
+  src: url("./fonts/CircularStd-Book.ttf");
+  font-weight: normal;
+}
+
+* {
+  font-family: "Frutiger";
+  margin: 0;
+  padding: 0;
+}
+
+p {
+  margin: 0 !important;
+}
+
+.app-flex-space {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+.app-flex-space {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #eee;
+}
+
+/* Antd Customize +++++++++++++++++++++++++ */
+
+.ant-input-search button {
+  border-left: none;
+}
+
+.ant-divider {
+  margin: 16px 0;
+}
+
+ th,
+ td {
+  background-color: transparent !important;
+}
+
+ th,
+ th,
+ td,
+ th,
+ td {
+  padding: 12px 8px !important;
+}
+
+ th {
+  font-weight: normal !important;
+  color: #666 !important;
+  background-color: transparent;
+}

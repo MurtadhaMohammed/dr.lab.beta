@@ -1,0 +1,175 @@
+import { Table, Tag, Typography, message } from "antd";
+import "./style.css";
+import dayjs from "dayjs";
+import { useReportsStore } from "../../../appStore";
+import { send } from "../../../control/renderer";
+
+export const getTotalVisits = (filterDate = null, cb) => {
+  send({
+    doc: "visits",
+    query: "count",
+    search: {
+      $and: [
+        { "patient.name": new RegExp("", "gi") },
+        {
+          ...(filterDate && {
+            createdAt: {
+              $gt: dayjs(dayjs(filterDate[0]).format("YYYY-MM-DD")).valueOf(),
+              $lt: dayjs(dayjs(filterDate[1]).format("YYYY-MM-DD")).valueOf(),
+            },
+          }),
+        },
+      ],
+    },
+  }).then(({ err, count: total }) => {
+    if (err) message.error("Error !");
+    else {
+      setTimeout(() => {
+        send({
+          doc: "visits",
+          query: "count",
+          search: {
+            $and: [
+              {
+                "patient.name": new RegExp("", "gi"),
+                "patient.gender": "male",
+              },
+              {
+                ...(filterDate && {
+                  createdAt: {
+                    $gt: dayjs(
+                      dayjs(filterDate[0]).format("YYYY-MM-DD")
+                    ).valueOf(),
+                    $lt: dayjs(
+                      dayjs(filterDate[1]).format("YYYY-MM-DD")
+                    ).valueOf(),
+                  },
+                }),
+              },
+            ],
+          },
+        }).then(({ err, count: male }) => {
+          if (err) message.error("Error !");
+          else {
+            let female = total - male;
+            male = Math.round((male / total) * 100);
+            female = Math.round((female / total) * 100);
+            cb({ total, male, female });
+          }
+        });
+      }, 100);
+    }
+  });
+};
+
+export const getSubTotalAmount = (filterDate = null, cb) => {
+  send({
+    doc: "visits",
+    query: "find",
+    search: {
+      $and: [
+        { "patient.name": new RegExp("", "gi") },
+        {
+          ...(filterDate && {
+            createdAt: {
+              $gt: dayjs(dayjs(filterDate[0]).format("YYYY-MM-DD")).valueOf(),
+              $lt: dayjs(dayjs(filterDate[1]).format("YYYY-MM-DD")).valueOf(),
+            },
+          }),
+        },
+      ],
+    },
+  }).then(({ err, rows }) => {
+    if (err) message.error("Error !");
+    else cb(rows);
+  });
+};
+
+export const PureTable = () => {
+  const { data, loading } = useReportsStore();
+
+  const columns = [
+    {
+      title: "Report Title",
+      dataIndex: "title",
+      key: "title",
+      render: (val) => <b>{val}</b>,
+    },
+    {
+      title: "Total",
+      dataIndex: "total",
+      key: "total",
+    },
+    {
+      title: "Male",
+      dataIndex: "male",
+      key: "male",
+      render: (val) => (
+        <Typography.Text style={{ fontSize: 18 }}>{val}</Typography.Text>
+      ),
+    },
+    {
+      title: "Female",
+      dataIndex: "female",
+      key: "female",
+      render: (val) => (
+        <Typography.Text style={{ fontSize: 18 }}>{val}</Typography.Text>
+      ),
+    },
+  ];
+
+  let records = [
+    {
+      id: 1,
+      title: "Total visits",
+      total: <Tag color="geekblue">{data?.visits?.total || 0}</Tag>,
+      male: `${data?.visits?.male || 0}%`,
+      female: `${data?.visits?.female || 0}%`,
+    },
+
+    {
+      id: 2,
+      title: "Sub Total Amounts",
+      total: (
+        <b style={{ fontSize: 14 }}>
+          {Number(data?.subTotalAmount?.total || 0).toLocaleString("en")} IQD
+        </b>
+      ),
+      male: `${data?.subTotalAmount?.male || 0}%`,
+      female: `${data?.subTotalAmount?.female || 0}%`,
+    },
+    {
+      id: 3,
+      title: "Total Discount",
+      total: (
+        <b style={{ fontSize: 14 }}>
+          {Number(data?.totalDiscount?.total || 0).toLocaleString("en")} IQD
+        </b>
+      ),
+      male: `${data?.totalDiscount?.male || 0}%`,
+      female: `${data?.totalDiscount?.female || 0}%`,
+    },
+    {
+      id: 4,
+      title: <span style={{ fontSize: 18 }}>Total Amounts</span>,
+      total: (
+        <b style={{ fontSize: 18 }}>
+          {Number(data?.totalAmount?.total || 0).toLocaleString("en")} IQD
+        </b>
+      ),
+      male: `${data?.totalAmount?.male || 0}%`,
+      female: `${data?.totalAmount?.female || 0}%`,
+    },
+  ];
+
+  return (
+    <Table
+      style={{ marginTop: "-16px" }}
+      columns={columns}
+      dataSource={data ? records : []}
+      pagination={false}
+      size="small"
+      loading={loading}
+    />
+  );
+};
