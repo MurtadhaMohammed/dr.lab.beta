@@ -20,7 +20,7 @@ let labDB = new LabDB();
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   switch (arg.query) {
-    case "get-patients": {
+    case "getPatients": {
       try {
         const resp = await labDB.getPatients({
           limit: arg?.limit || 10,
@@ -33,7 +33,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
-    case "add-patient": {
+    case "addPatient": {
       try {
         const resp = await labDB.addPatient(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
@@ -43,7 +43,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
-    case "delete-patient": {
+    case "deletePatient": {
       try {
         const resp = await labDB.deletePatient(arg.id);
         event.reply("asynchronous-reply", { success: true, changes: resp.changes });

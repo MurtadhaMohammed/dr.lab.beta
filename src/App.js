@@ -29,8 +29,9 @@ function App() {
 
 
   useEffect(() => {
+
     send({
-      query: "get-patients",
+      query: "getPatients",
       skip: 0,
       limit: 10
     }).then(resp => {
@@ -45,7 +46,7 @@ function App() {
 
 
     send({
-      query: "add-patient",
+      query: "addPatient",
       data: {
         name: "John Doe",
         gender: "male",
@@ -68,13 +69,15 @@ function App() {
       id: 1
     }).then(resp => {
       if (resp.success) {
-        console.log("Number of deleted rows:", resp.changes);
+        console.log("Number of deleted rows:", resp.data);
       } else {
         console.error("Error deleting patient:", resp.error);
       }
     }).catch(err => {
       console.error("Error in IPC communication:", err);
     });
+
+
   }, []);
 
 

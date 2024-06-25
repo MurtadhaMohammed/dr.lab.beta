@@ -99,7 +99,7 @@ class LabDB {
   DELETE FROM patients WHERE id=1`);
 
     const info = stmt.run(id);
-    return { changes: info.changes };
+    return { data: info.data };
   }
 }
 
