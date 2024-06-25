@@ -101,6 +101,22 @@ class LabDB {
     const info = stmt.run(id);
     return { data: info.data };
   }
+  async updatePatient(id, updates) {
+    const { name, gender, email, phone, birth } = updates;
+    const stmt = await this.db.prepare(`
+    UPDATE patients
+    SET 
+    name = COALESCE(?,name),
+    gender = COALESCE(?, gender),
+        email = COALESCE(?, email),
+        phone = COALESCE(?, phone),
+        birth = COALESCE(?, birth),
+        updatedAt = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `);
+    const info = stmt.run(name, gender, email, phone, birth ? new Date(birth).toISOString() : null, id)
+    return { data: info.changes > 0 };
+  }
 }
 
 module.exports = { LabDB };

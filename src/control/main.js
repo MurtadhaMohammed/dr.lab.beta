@@ -46,20 +46,31 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "deletePatient": {
       try {
         const resp = await labDB.deletePatient(arg.id);
-        event.reply("asynchronous-reply", { success: true, changes: resp.changes });
+        event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
         event.reply("asynchronous-reply", { success: false, error: error.message });
       }
       break;
     }
-    // case "update": // { doc: "patients", data : {}, query: "insert" }
-    //   db[arg.doc].update(arg.condition, arg.data, {}, (err) => {
-    //     if (err) return;
-    //     db[arg.doc].find(arg.condition, function (err, docs) {
-    //       event.reply("asynchronous-reply", { err, row: docs[0] });
-    //     });
-    //   });
-    //   break;
+
+    case "updatePatient":{
+      try {
+        const resp =await labDB.updatePatient(arg.id, arg.data);
+        event.reply("asynchronous-reply",  { success: true, data: resp.data })
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
+    
+    case "update": // { doc: "patients", data : {}, query: "insert" }
+      db[arg.doc].update(arg.condition, arg.data, {}, (err) => {
+        if (err) return;
+        db[arg.doc].find(arg.condition, function (err, docs) {
+          event.reply("asynchronous-reply", { err, row: docs[0] });
+        });
+      });
+      break;
 
     case "find": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
       db[arg.doc]

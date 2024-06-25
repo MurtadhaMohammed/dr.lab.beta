@@ -30,52 +30,75 @@ function App() {
 
   useEffect(() => {
 
-    send({
-      query: "getPatients",
-      skip: 0,
-      limit: 10
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Patients data:", resp.data);
-      } else {
-        console.error("Error fetching patients:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
+    // send({
+    //   query: "getPatients",
+    //   skip: 0,
+    //   limit: 10
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Patients data:", resp.data);
+    //   } else {
+    //     console.error("Error fetching patients:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
 
 
+    // send({
+    //   query: "addPatient",
+    //   data: {
+    //     name: "John Doe",
+    //     gender: "male",
+    //     email: "john.doe@example.com",
+    //     phone: "0712345678",
+    //     birth: "Tue, 20 Jun 2000 19:13:10 GMT",
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Patient added with ID:", resp.id);
+    //   } else {
+    //     console.error("Error adding patient:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+
+    // send({
+    //   query: "deletePatient",
+    //   id: 1
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Number of deleted rows:", resp.data);
+    //   } else {
+    //     console.error("Error deleting patient:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
     send({
-      query: "addPatient",
+      query: "updatePatient",
+      id: 2, // Replace with the actual patient ID
       data: {
-        name: "John Doe",
-        gender: "male",
-        email: "john.doe@example.com",
-        phone: "0712345678",
-        birth: "Tue, 20 Jun 2000 19:13:10 GMT",
+        name: "testUpdate", // Fields to be updated
+        gender: "female",
+        email: "tt.doe@example.com",
+        phone: "4442345679",
+        birth: "Wed, 21 Jun 2000 19:13:10 GMT",
       }
+     
     }).then(resp => {
       if (resp.success) {
-        console.log("Patient added with ID:", resp.id);
+        console.log("Patient updated:", resp.data);
       } else {
-        console.error("Error adding patient:", resp.error);
+        console.error("Error updating patient:", resp.error);
       }
     }).catch(err => {
       console.error("Error in IPC communication:", err);
     });
 
-    send({
-      query: "deletePatient",
-      id: 1
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Number of deleted rows:", resp.data);
-      } else {
-        console.error("Error deleting patient:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
 
 
   }, []);
