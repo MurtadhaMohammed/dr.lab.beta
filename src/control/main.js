@@ -1,12 +1,11 @@
 const { ipcMain } = require("electron");
 var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
-const sql = require("better-sqlite3")("foobar.db");
-sql.pragma("journal_mode = WAL");
 
 var Datastore = require("nedb");
 const { LabDB } = require("./db");
 var db = {};
+
 db.patients = new Datastore({ filename: "database/patients.db" });
 db.tests = new Datastore({ filename: "database/tests.db" });
 db.packages = new Datastore({ filename: "database/packages.db" });
@@ -22,33 +21,46 @@ let labDB = new LabDB();
 ipcMain.on("asynchronous-message", async (event, arg) => {
   switch (arg.query) {
     case "get-patients": {
-      // arg should be { skip, limit, query: "get-patients" }
-      const resp = await labDB.getPatients({
-        limit: arg?.limit || 10,
-        skip: arg?.skip || 0,
-      });
-
-      event.reply("asynchronous-reply", resp);
+      try {
+        const resp = await labDB.getPatients({
+          limit: arg?.limit || 10,
+          skip: arg?.skip || 0,
+        });
+        event.reply("asynchronous-reply", { success: true, data: resp.data });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
       break;
     }
-    case "insert": // { doc: "patients", data : {}, query: "insert" }
-      db[arg.doc].insert(arg.data, (err, rows) => {
-        event.reply("asynchronous-reply", { err, rows });
-      });
+
+    case "add-patient": {
+      try {
+        const resp = await labDB.addPatient(arg.data);
+        event.reply("asynchronous-reply", { success: true, id: resp.id });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
       break;
-    case "update": // { doc: "patients", data : {}, query: "insert" }
-      db[arg.doc].update(arg.condition, arg.data, {}, (err) => {
-        if (err) return;
-        db[arg.doc].find(arg.condition, function (err, docs) {
-          event.reply("asynchronous-reply", { err, row: docs[0] });
-        });
-      });
+    }
+
+    case "delete-patient": {
+      try {
+        const resp = await labDB.deletePatient(arg.id);
+        event.reply("asynchronous-reply", { success: true, changes: resp.changes });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
       break;
-    case "remove": // { doc: "patients", data : {}, query: "insert" }
-      db[arg.doc].remove(arg.condition, {}, (err, numRemoved) => {
-        event.reply("asynchronous-reply", { err, numRemoved });
-      });
-      break;
+    }
+    // case "update": // { doc: "patients", data : {}, query: "insert" }
+    //   db[arg.doc].update(arg.condition, arg.data, {}, (err) => {
+    //     if (err) return;
+    //     db[arg.doc].find(arg.condition, function (err, docs) {
+    //       event.reply("asynchronous-reply", { err, row: docs[0] });
+    //     });
+    //   });
+    //   break;
+
     case "find": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
       db[arg.doc]
         .find(arg?.search)

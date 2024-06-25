@@ -495,7 +495,6 @@ export const PureTable = ({ isReport = false }) => {
 
   useEffect(() => {
     let queryKey = new RegExp(querySearch, "gi");
-    send({query: "get-patients"}).then(resp=> console.log(resp)) // this is an example for a new db
     send({
       doc: "visits",
       query: "find",

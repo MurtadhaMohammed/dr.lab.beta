@@ -23,7 +23,7 @@
     "zustand": "^4.3.8"
   },
   "scripts": {
-    "start": "concurrently \"BROWSER=none parcel ./index.html  \" \"wait-on http://localhost:1234 && electron .\"",
+    "start": "concurrently \"parcel ./index.html  \" \"wait-on http://localhost:1234 && electron .\"",
     "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "react-build": "rm -r dist && parcel  splash.html index.html  --public-url ./",
     "rebuild": "electron-rebuild -f -w better-sqlite3"

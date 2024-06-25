@@ -17,6 +17,8 @@ const LoginScreen = () => {
     });
   }, []);
 
+  console.log(UUID);
+
   const login = async () => {
     setLoading(true);
     try {
