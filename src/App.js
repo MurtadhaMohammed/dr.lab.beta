@@ -32,6 +32,7 @@ function App() {
 
     // send({
     //   query: "getPatients",
+    //   q: "testUpdate",
     //   skip: 0,
     //   limit: 10
     // }).then(resp => {
@@ -78,29 +79,111 @@ function App() {
     //   console.error("Error in IPC communication:", err);
     // });
 
-    send({
-      query: "updatePatient",
-      id: 2, // Replace with the actual patient ID
-      data: {
-        name: "testUpdate", // Fields to be updated
-        gender: "female",
-        email: "tt.doe@example.com",
-        phone: "4442345679",
-        birth: "Wed, 21 Jun 2000 19:13:10 GMT",
-      }
-     
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Patient updated:", resp.data);
-      } else {
-        console.error("Error updating patient:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
+    // send({
+    //   query: "updatePatient",
+    //   id: 2, // Replace with the actual patient ID
+    //   data: {
+    //     name: "testUpdate", // Fields to be updated
+    //     gender: "female",
+    //     email: "tt.doe@example.com",
+    //     phone: "4442345679",
+    //     birth: "Wed, 21 Jun 2000 19:13:10 GMT",
+    //   }
+
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Patient updated:", resp.data);
+    //   } else {
+    //     console.error("Error updating patient:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+    // send({
+    //   query: "searchPatient",
+    //   name:"testUpdate"
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Search results:", resp.data);
+    //   } else {
+    //     console.error("Error searching patient:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+    // send({
+    //   query: "addTest",
+    //   data: {
+    //     id: 1,
+    //     name: "addTest",
+    //     price: 22,
+    //     normal: null,
+    //     isSelecte: true,
+    //     options: ["positive", "negative"],
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Test added with ID:", resp.id);
+    //   } else {
+    //     console.error("Error adding test:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+    // send({
+    //   query: "deleteTest",
+    //   id: 2
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Success deleting test");
+    //   } else {
+    //     console.error("Error deleting Test:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+    // send({
+    //   query: "editTest",
+    //   id: 3,
+    //   data: {
+    //     name: "Updated Test Name",
+    //     price: 30,
+    //     normal: "Updated Normal Range",
+    //     result: "Updated Result",
+    //     options: null,
+    //     isSelected: true
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Test updated successfully");
+    //   } else {
+    //     console.error("Error updating test:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+    // send({
+    //   query: "getTests",
+    //   q: "addTest",
+    //   skip: 0,
+    //   limit: 10
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Tests get successfully:", resp.data);
+    //   } else {
+    //     console.error("Error get tests:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
 
 
-
+    
   }, []);
 
 

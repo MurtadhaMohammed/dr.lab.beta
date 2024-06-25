@@ -19,7 +19,7 @@ class LabDB {
       });
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
-      // this.initializeDatabase();
+      this.initializeDatabase();
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -53,18 +53,17 @@ class LabDB {
         name VARCHAR(50),
         price INTEGER, 
         normal TEXT,
-        result VARCHAR(100),
         options TEXT,
         isSelected BOOLEAN,
-        createdAt TIMESTAMP,
-        updatedAt TIMESTAMP
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
       CREATE TABLE IF NOT EXISTS packages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title VARCHAR(100),
         customePrice INTEGER,
-        createdAt TIMESTAMP,
-        updatedAt TIMESTAMP
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
       CREATE TABLE IF NOT EXISTS test_to_packages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,12 +75,13 @@ class LabDB {
     `);
   }
 
-  async getPatients({ skip, limit }) {
+  async getPatients({ q = "", skip = 0, limit = 10 }) {
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
-      LIMIT ? OFFSET ?
+     WHERE name LIKE ?
+      LIMIT ? OFFSET ? 
     `);
-    const patients = stmt.all(limit, skip);
+    const patients = stmt.all(`%${q}%`, limit, skip);
     return { data: patients };
   }
 
@@ -96,7 +96,7 @@ class LabDB {
 
   async deletePatient(id) {
     const stmt = await this.db.prepare(`
-  DELETE FROM patients WHERE id=1`);
+  DELETE FROM patients WHERE id =? `);
 
     const info = stmt.run(id);
     return { data: info.data };
@@ -117,6 +117,85 @@ class LabDB {
     const info = stmt.run(name, gender, email, phone, birth ? new Date(birth).toISOString() : null, id)
     return { data: info.changes > 0 };
   }
+
+  async searchPatient(name) {
+    const stmt = await this.db.prepare(`
+    SELECT * FROM patients
+    WHERE name LIKE ?
+    `);
+    const patient = stmt.all(`%${name}%`)
+    return { data: patient }
+  }
+
+  async addTest(test) {
+    const stmt = await this.db.prepare(`
+      INSERT INTO tests (name, price, normal, result, options, isSelected)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    const info = stmt.run(test.name, test.price, test.normal, test.result, JSON.stringify(test.options), test.isSelected);
+    return { id: info.lastInsertRowid };
+  }
+
+  async deleteTest(id) {
+    const stmt = await this.db.prepare(`
+      DELETE FROM tests WHERE id = ?
+    `);
+    const info = stmt.run(id);
+    return { success: info.changes > 0 };
+  }
+
+  async editTest(id, updates) {
+    const { name, price, normal, result, options, isSelected } = updates;
+
+    const stmt = await this.db.prepare(`
+      UPDATE tests
+      SET 
+        name = COALESCE(?, name),
+        price = COALESCE(?, price),
+        normal = COALESCE(?, normal),
+        options = COALESCE(?, options), 
+        isSelected = COALESCE(?, isSelected),
+        updatedAt = CURRENT_TIMESTAMP
+        WHERE id = ?
+    `);
+
+
+    const info = stmt.run(
+      name,
+      price,
+      normal,
+      options ? JSON.stringify(options) : "",
+      isSelected !== undefined ? (isSelected ? 1 : 0) : null,
+      id
+    );
+    return { success: info.changes > 0 };
+  }
+
+  async getTests({ q = "", skip = 0, limit = 10 }) {
+    const stmt = await this.db.prepare(`
+      SELECT * FROM tests
+      WHERE name LIKE ?
+      LIMIT ? OFFSET ? 
+    `);
+    const tests = stmt.all(`%${q}%`, limit, skip);
+    return { data: tests };
+  }
+
+  // async addPackage(packageData) {
+  //   const { title, customePrice, testIDs } = packageData;
+  //   const transaction = this.db.transaction(() => {
+  //     const insertPackageStmt = this.db.prepare(`
+  //       INSERT INTO packages (title, customePrice)
+  //       VALUES (?, ?)
+  //     `);
+  //     const packageInfo = insertPackageStmt.run(title, customePrice);
+  //     const packageID = packageInfo.lastInsertRowid;
+      
+
+
+  //   })
+  // }
+
 }
 
 module.exports = { LabDB };
