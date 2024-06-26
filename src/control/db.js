@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS tests(
 
     `);
   }
-
+//tabarak
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
