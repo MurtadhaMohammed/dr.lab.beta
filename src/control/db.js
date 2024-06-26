@@ -2,6 +2,7 @@ const path = require("path");
 const os = require("os");
 const { app } = require("electron");
 const Database = require("better-sqlite3");
+const { log } = require("console");
 
 class LabDB {
   constructor() {
@@ -48,16 +49,17 @@ class LabDB {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (patientID) REFERENCES patients(id)
       );
-      CREATE TABLE IF NOT EXISTS tests(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name VARCHAR(50),
-        price INTEGER, 
-        normal TEXT,
-        options TEXT,
-        isSelected BOOLEAN,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
+CREATE TABLE IF NOT EXISTS tests(
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name VARCHAR(50),
+  price INTEGER, 
+  normal TEXT,
+  options TEXT,
+  isSelected BOOLEAN,
+  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
       CREATE TABLE IF NOT EXISTS packages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title VARCHAR(100),
@@ -65,13 +67,15 @@ class LabDB {
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
-      CREATE TABLE IF NOT EXISTS test_to_packages(
+
+       CREATE TABLE IF NOT EXISTS test_to_packages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         packageID INTEGER,
         testID INTEGER,
-        FOREIGN KEY (packageID) REFERENCES packages(id),
-        FOREIGN KEY (testID) REFERENCES tests(id)
+        FOREIGN KEY (packageID) REFERENCES packages(id) ON DELETE CASCADE,
+        FOREIGN KEY (testID) REFERENCES tests(id) ON DELETE CASCADE
       );
+
     `);
   }
 
@@ -129,10 +133,10 @@ class LabDB {
 
   async addTest(test) {
     const stmt = await this.db.prepare(`
-      INSERT INTO tests (name, price, normal, result, options, isSelected)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO tests (name, price, normal, options, isSelected)
+      VALUES (?, ?, ?, ?, ?)
     `);
-    const info = stmt.run(test.name, test.price, test.normal, test.result, JSON.stringify(test.options), test.isSelected);
+    const info = stmt.run(test.name, test.price, test.normal, JSON.stringify(test.options), test.isSelected);
     return { id: info.lastInsertRowid };
   }
 
@@ -181,22 +185,113 @@ class LabDB {
     return { data: tests };
   }
 
-  // async addPackage(packageData) {
-  //   const { title, customePrice, testIDs } = packageData;
-  //   const transaction = this.db.transaction(() => {
-  //     const insertPackageStmt = this.db.prepare(`
-  //       INSERT INTO packages (title, customePrice)
-  //       VALUES (?, ?)
-  //     `);
-  //     const packageInfo = insertPackageStmt.run(title, customePrice);
-  //     const packageID = packageInfo.lastInsertRowid;
-      
+  async addPackage(arg) {
+    if (!Array.isArray(arg.data.testIDs)) {
+      throw new TypeError('testIDs is not iterable');
+    }
+    const { title, customePrice, testIDs } = arg.data;
 
+    const packageStmt = this.db.prepare(`
+      INSERT INTO packages (title, customePrice)
+      VALUES (?, ?)
+    `);
+    const packageInfo = packageStmt.run(title, customePrice);
+    const packageID = packageInfo.lastInsertRowid;
 
-  //   })
-  // }
+    const testToPackageStmt = this.db.prepare(`
+      INSERT INTO test_to_packages (packageID, testID)
+      VALUES (?, ?)
+    `);
+    const testToPackageTransaction = this.db.transaction((testIDs) => {
+      for (const testID of testIDs) {
+        testToPackageStmt.run(packageID, testID);
+      }
+    });
+    testToPackageTransaction(testIDs);
+
+    return { data: packageID };
+  }
+
+  async deletePackage(packageID) {
+    const deletePackageStmt = await this.db.prepare(`
+      DELETE FROM packages
+      WHERE id = ?
+    `);
+    const info = deletePackageStmt.run(packageID);
+    if (info.changes > 0) {
+      const deleteTestToPackage = await this.db.prepare(`
+         DELETE FROM test_to_packages WHERE packageID = ?
+        `)
+
+      deleteTestToPackage.run(packageID);
+
+      return { success: true, message: `Package with ID ${packageID} deleted successfully.` };
+    } else {
+      throw new Error(`Package with ID ${packageID} not found.`);
+    }
+  }
+
+  async editPackage(arg) {
+    const { id, title, customePrice, testIDs } = arg;
+
+    if (!Array.isArray(testIDs)) {
+      throw new TypeError('testIDs is not iterable');
+    }
+
+    const transaction = this.db.transaction(() => {
+      // Update the package details
+      const packageStmt = this.db.prepare(`
+        UPDATE packages
+        SET title = ?, customePrice = ?, updatedAt = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `);
+      packageStmt.run(title, customePrice, id);
+
+      // Delete existing test associations for the package
+      const deleteTestToPackage = this.db.prepare(`
+        DELETE FROM test_to_packages WHERE packageID = ?
+      `);
+      deleteTestToPackage.run(id);
+
+      // Insert new test associations
+      const testToPackage = this.db.prepare(`
+        INSERT INTO test_to_packages (packageID, testID)
+        VALUES (?, ?)
+      `);
+      for (const testID of testIDs) {
+        testToPackage.run(id, testID);
+      }
+    });
+
+    try {
+      transaction();
+      return { success: true, message: `Package with ID ${id} updated successfully.` };
+    } catch (error) {
+      throw new Error(`Failed to update package with ID ${id}: ${error.message}`);
+    }
+  }
+
+  async getPackages({ q = "", skip = 0, limit = 10 }) {
+    const stmt = await this.db.prepare(`
+      SELECT * FROM packages
+      WHERE title LIKE ?
+      LIMIT ? OFFSET ?
+      `);
+    const packages = stmt.all(`%${q}%`, limit, skip);
+    const packagesWithTests = packages.map(pkg => {
+      const testStmt = this.db.prepare(`
+          SELECT t.*
+          FROM tests t
+          INNER JOIN test_to_packages tp ON t.id = tp.testID
+          WHERE tp.packageID = ?
+          `);
+      const tests = testStmt.all(pkg.id);
+      return { ...pkg, tests }
+    })
+    return { data: packagesWithTests };
+  }
+
 
 }
-
 module.exports = { LabDB };
 

@@ -116,6 +116,45 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    case "addPackage": {
+      try {
+        const resp = await labDB.addPackage(arg);
+        event.reply("asynchronous-reply", { success: true, data: resp.data });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
+
+    case "deletePackage": {
+      try {
+        const resp = await labDB.deletePackage(arg.data);
+        event.reply("asynchronous-reply", { success: resp.success });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
+
+    case "editPackage": {
+      try {
+        const resp = await labDB.editPackage(arg.data);  // Pass arg.data to editPackage
+        event.reply("asynchronous-reply", { success: resp.success });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
+
+    case "getPackages": {
+      try {
+        const resp = await labDB.getPackages(arg.data);
+        event.reply("asynchronous-reply", { success: true, data: resp.data });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
 
 
 

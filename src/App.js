@@ -12,6 +12,7 @@ import { useAppStore } from "./appStore";
 import { useEffect } from "react";
 import dayjs from "dayjs";
 import { send } from "./control/renderer";
+import { title } from "process";
 
 function App() {
   const { isLogin, setIsLogin } = useAppStore();
@@ -135,7 +136,7 @@ function App() {
 
     // send({
     //   query: "deleteTest",
-    //   id: 2
+    //   id: 1
     // }).then(resp => {
     //   if (resp.success) {
     //     console.log("Success deleting test");
@@ -182,8 +183,75 @@ function App() {
     //   console.error("Error in IPC communication:", err);
     // });
 
+    // send({
+    //   query: "addPackage",
+    //   data: {
+    //     title: "ADDPackage",
+    //     customePrice: 200,
+    //     testIDs: [1, 2, 3]
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Package added with ID:", resp.data);
+    //   } else {
+    //     console.error("Error adding package:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
 
-    
+
+    // send({
+    //   query: "deletePackage",
+    //   id: 1
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Success deletePackage");
+    //   } else {
+    //     console.error("Error deletePackage:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+
+    // send({
+    //   query: "editPackage",
+    //   data: {
+    //     id: 3,
+    //     title: "UpdatedPackage",
+    //     customePrice: 444,
+    //     testIDs: [2, 3]
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Package updated successfully");
+    //   } else {
+    //     console.error("Error updating package:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+
+    send({
+      query: "getPackages",
+      data: {
+        q: "ADDPackage",
+        skip: 0,       
+        limit: 10         
+      }
+    }).then(resp => {
+      if (resp.success) {
+        console.log("Packages retrieved successfully:", resp.data);
+      } else {
+        console.error("Error retrieving packages:", resp.error);
+      }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
+    });
+
+
   }, []);
 
 
