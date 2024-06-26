@@ -234,22 +234,43 @@ function App() {
     // });
 
 
-    send({
-      query: "getPackages",
-      data: {
-        q: "ADDPackage",
-        skip: 0,       
-        limit: 10         
-      }
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Packages retrieved successfully:", resp.data);
-      } else {
-        console.error("Error retrieving packages:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
+    // send({
+    //   query: "getPackages",
+    //   data: {
+    //     q: "ADDPackage",
+    //     skip: 0,       
+    //     limit: 10         
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Packages retrieved successfully:", resp.data);
+    //   } else {
+    //     console.error("Error retrieving packages:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+
+    // send({
+    //   query: "addVisit",
+    //   data: {
+    //     patientID: 1,
+    //     status: "PENDING",
+    //     testType: "Blood Test",
+    //     tests: ["Test A", "Test B"],
+    //     discount: 10
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Visit added with ID:", resp.data);
+    //   } else {
+    //     console.error("Error adding visit:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
 
 
   }, []);

@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS tests(
 
     `);
   }
-//tabarak
+
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
@@ -149,7 +149,7 @@ CREATE TABLE IF NOT EXISTS tests(
   }
 
   async editTest(id, updates) {
-    const { name, price, normal, result, options, isSelected } = updates;
+    const { name, price, normal, options, isSelected } = updates;
 
     const stmt = await this.db.prepare(`
       UPDATE tests
@@ -290,6 +290,17 @@ CREATE TABLE IF NOT EXISTS tests(
     })
     return { data: packagesWithTests };
   }
+
+  async addVisit(data) {
+    const { patientID, status, testType, tests, discount } = data;
+    const testsStr = JSON.stringify(tests); // Convert array to string
+    const stmt = this.db.prepare(`
+        INSERT INTO visits (patientID, status, testType, tests, discount)
+        VALUES (?, ?, ?, ?, ?)
+    `);
+    const info = stmt.run(patientID, status, testType, testsStr, discount);
+    return { id: info.lastInsertRowid };
+}
 
 
 }

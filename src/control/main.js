@@ -157,6 +157,16 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     }
 
 
+    case "addVisit": {
+      try {
+        const resp = await labDB.addVisit(arg.data);
+        event.reply("asynchronous-reply", { success: true, id: resp.id });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
+
 
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {
