@@ -167,6 +167,41 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    case "deleteVisit": {
+      try {
+        const resp = await labDB.deleteVisit(arg.id);
+        event.reply("asynchronous-reply", { success: resp.success });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
+
+
+    case "getVisits": {
+      const { q, skip, limit } = arg.data;
+      try {
+        const resp = await labDB.getVisits({ q, skip, limit });
+        event.reply("asynchronous-reply", { success: true, data: resp.data });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
+
+    case "updateVisit": {
+      try {
+        const resp = await labDB.updateVisit(arg.id, arg.data);
+        event.reply("asynchronous-reply", { success: resp.success });
+      } catch (error) {
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
+      break;
+    }
+
+
+
+
 
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {

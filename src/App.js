@@ -257,7 +257,7 @@ function App() {
     //   data: {
     //     patientID: 1,
     //     status: "PENDING",
-    //     testType: "Blood Test",
+    //     testType:  ["custom test", "package test"],
     //     tests: ["Test A", "Test B"],
     //     discount: 10
     //   }
@@ -272,8 +272,59 @@ function App() {
     // });
 
 
+    //  send({
+    //       query: "deleteVisit",
+    //       id: 2
+    //     }).then(resp => {
+    //       if (resp.success) {
+    //         console.log("Success deleteVisit");
+    //       } else {
+    //         console.error("Error deleteVisit:", resp.error);
+    //       }
+    //     }).catch(err => {
+    //       console.error("Error in IPC communication:", err);
+    //     });
+
+    // send({
+    //   query: "getVisits",
+    //   data: {
+    //     q: "John Doe",   
+    //     skip: 0,  
+    //     limit: 10 
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Visits retrieved successfully:", resp.data);
+    //   } else {
+    //     console.error("Error retrieving visits:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
+
+    send({
+      query: "updateVisit",
+      id: 3,
+      data: {
+        patientID: 1,
+        status: "COMPLETED",
+        testType: "Package",
+        tests: "UPdate",
+        discount: 10
+      }
+    }).then(resp => {
+      if (resp.success) {
+        console.log("Visit updated successfully");
+      } else {
+        console.error("Error updating visit:", resp.error);
+      }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
+    });
+
 
   }, []);
+
 
 
 

@@ -291,18 +291,65 @@ CREATE TABLE IF NOT EXISTS tests(
     return { data: packagesWithTests };
   }
 
-  async addVisit(data) {
-    const { patientID, status, testType, tests, discount } = data;
-    const testsStr = JSON.stringify(tests); // Convert array to string
-    const stmt = this.db.prepare(`
+
+  addVisit(data) {
+    try {
+      const { patientID, status, testType, tests, discount } = data;
+      const testsStr = JSON.stringify(tests);
+      const stmt = this.db.prepare(`
         INSERT INTO visits (patientID, status, testType, tests, discount)
         VALUES (?, ?, ?, ?, ?)
+      `);
+      const info = stmt.run(patientID, status, testType, testsStr, discount);
+      return { id: info.lastInsertRowid };
+    } catch (error) {
+      this.handleDatabaseError(error, 'addVisit');
+    }
+  }
+
+  async deleteVisit(id) {
+    const stmt = await this.db.prepare(`
+      DELETE FROM visits WHERE id = ?
     `);
-    const info = stmt.run(patientID, status, testType, testsStr, discount);
-    return { id: info.lastInsertRowid };
+
+    const info = stmt.run(id);
+    return { success: info.changes > 0 };
+  }
+
+  async getVisits({ q = "", skip = 0, limit = 10 }) {
+    const stmt = await this.db.prepare(`
+      SELECT v.*, p.name as patientName
+      FROM visits v
+      JOIN patients p ON v.patientID = p.id
+      WHERE p.name LIKE ?
+      LIMIT ? OFFSET ?
+    `);
+    const visits = stmt.all(`%${q}%`, limit, skip);
+    return { data: visits };
+  }
+
+  async updateVisit(id, update) {
+    const { patientID, status, testType, tests, discount } = update;
+
+    const stmt = await this.db.prepare(`
+    UPDATE visits
+    SET 
+    patientID = COALESCE(?, patientID),
+      status = COALESCE(?, status),
+      testType = COALESCE(?, testType),
+      tests = COALESCE(?, tests),
+      discount = COALESCE(?, discount),
+      updatedAt = CURRENT_TIMESTAMP
+    WHERE id = ?
+    `);
+    const info = stmt.run(patientID, status, testType, tests, discount, id);
+    return { success: info.changes > 0 }
+  }
+
 }
 
 
-}
+
+
 module.exports = { LabDB };
 
