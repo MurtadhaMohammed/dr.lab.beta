@@ -103,8 +103,8 @@ export const PureTable = () => {
     });
   };
 
-  const handleEdit = ({ _id, name, normal, price, options,isSelecte,  createdAt }) => {
-    setId(_id);
+  const handleEdit = ({ id, name, normal, price, options, isSelecte, createdAt }) => {
+    setId(id);
     setName(name);
     setPrice(price);
     setNormal(normal);
@@ -118,27 +118,47 @@ export const PureTable = () => {
     let queryKey = new RegExp(querySearch, "gi");
 
     send({
-      doc: "tests",
-      query: "find",
-      search: { name: queryKey },
-      limit,
-      skip: (page - 1) * limit,
-    }).then(({ err, rows }) => {
-      if (err) message.error("Error !");
-      else {
-        setData(rows);
-        setTimeout(() => {
-          send({
-            doc: "tests",
-            query: "count",
-            search: { name: queryKey },
-          }).then(({ err, count }) => {
-            if (err) message.error("Error !");
-            else setTotal(count);
-          });
-        }, 100);
+      query: "getTests",
+      q: "",
+      skip: 0,
+      limit: 10
+    }).then(resp => {
+      if (resp.success) {
+        setData(resp.data);
+        console.log("Tests get successfully:", resp.data);
+      } else {
+        console.error("Error get tests:", resp.error);
       }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
+
+
+    // send({
+    //   doc: "tests",
+    //   query: "find",
+    //   search: { name: queryKey },
+    //   limit,
+    //   skip: (page - 1) * limit,
+    // }).then(({ err, rows }) => {
+    //   if (err) message.error("Error !");
+    //   else {
+    //     setData(rows);
+    //     setTimeout(() => {
+    //       send({
+    //         doc: "tests",
+    //         query: "count",
+    //         search: { name: queryKey },
+    //       }).then(({ err, count }) => {
+    //         if (err) message.error("Error !");
+    //         else setTotal(count);
+    //       });
+    //     }, 100);
+    //   }
+    // });
+
+
+
   }, [page, isReload, querySearch]);
 
   // useEffect(() => {

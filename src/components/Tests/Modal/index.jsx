@@ -96,36 +96,74 @@ export const PureModal = () => {
       options: isSelecte ? options : [],
       updatedAt: Date.now(),
     };
-    if (id) {
+    // if (id) {
+    //   send({
+    //     doc: "tests",
+    //     query: "update",
+    //     condition: { _id: id },
+    //     data: { ...data, createdAt },
+    //   }).then(({ err }) => {
+    //     if (err) message.error("Error !");
+    //     else {
+    //       message.success("Save Succefful.");
+    //       setReset();
+    //       setIsModal(false);
+    //       setIsReload(!isReload);
+    //     }
+    //   });
+    // } else {
+    //   send({
+    //     doc: "tests",
+    //     query: "insert",
+    //     data: { ...data, createdAt: Date.now() },
+    //   }).then(({ err }) => {
+    //     if (err) message.error("Error !");
+    //     else {
+    //       message.success("Save Succefful.");
+    //       setReset();
+    //       setIsModal(false);
+    //       setIsReload(!isReload);
+    //     }
+    //   });
+    // }
+
+    if (!id) {
       send({
-        doc: "tests",
-        query: "update",
-        condition: { _id: id },
-        data: { ...data, createdAt },
-      }).then(({ err }) => {
-        if (err) message.error("Error !");
-        else {
-          message.success("Save Succefful.");
+        query: "addTest",
+        data: { ...data },
+      }).then(resp => {
+        if (resp.success) {
+          console.log("Test added with ID:", resp.id);
           setReset();
           setIsModal(false);
           setIsReload(!isReload);
+        } else {
+          console.error("Error adding test:", resp.error);
         }
+      }).catch(err => {
+        console.error("Error in IPC communication:", err);
       });
+
     } else {
       send({
-        doc: "tests",
-        query: "insert",
-        data: { ...data, createdAt: Date.now() },
-      }).then(({ err }) => {
-        if (err) message.error("Error !");
-        else {
-          message.success("Save Succefful.");
+        query: "editTest",
+        data: { ...data },
+        id,
+      }).then(resp => {
+        if (resp.success) {
+          console.log("Test updated successfully");
           setReset();
           setIsModal(false);
           setIsReload(!isReload);
+        } else {
+          console.error("Error updating test:", resp.error);
         }
+      }).catch(err => {
+        console.error("Error in IPC communication:", err);
       });
-    }
+    };
+
+
   };
 
   return (

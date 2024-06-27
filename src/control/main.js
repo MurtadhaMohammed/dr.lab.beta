@@ -48,28 +48,20 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "deletePatient": {
       try {
         const resp = await labDB.deletePatient(arg.id);
-        event.reply("asynchronous-reply", { success: true, data: resp.data });
+        event.reply("asynchronous-reply", { success: true, data: resp });
       } catch (error) {
         event.reply("asynchronous-reply", { success: false, error: error.message });
       }
       break;
     }
 
+    
     case "updatePatient": {
       try {
         const resp = await labDB.updatePatient(arg.id, arg.data);
-        event.reply("asynchronous-reply", { success: true, data: resp.data })
+        event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
-      }
-      break;
-    }
-
-    case "searchPatient": {
-      try {
-        const resp = await labDB.searchPatient(arg.name);
-        event.reply("asynchronous-reply", { success: true, data: resp.data })
-      } catch (error) {
+        console.error("Error updating patient:", error); // Add this line
         event.reply("asynchronous-reply", { success: false, error: error.message });
       }
       break;

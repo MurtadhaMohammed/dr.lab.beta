@@ -82,7 +82,7 @@ function App() {
 
     // send({
     //   query: "updatePatient",
-    //   id: 2, // Replace with the actual patient ID
+    //   id: 1, // Replace with the actual patient ID
     //   data: {
     //     name: "testUpdate", // Fields to be updated
     //     gender: "female",
@@ -90,7 +90,6 @@ function App() {
     //     phone: "4442345679",
     //     birth: "Wed, 21 Jun 2000 19:13:10 GMT",
     //   }
-
     // }).then(resp => {
     //   if (resp.success) {
     //     console.log("Patient updated:", resp.data);
@@ -101,24 +100,12 @@ function App() {
     //   console.error("Error in IPC communication:", err);
     // });
 
-    // send({
-    //   query: "searchPatient",
-    //   name:"testUpdate"
-    // }).then(resp => {
-    //   if (resp.success) {
-    //     console.log("Search results:", resp.data);
-    //   } else {
-    //     console.error("Error searching patient:", resp.error);
-    //   }
-    // }).catch(err => {
-    //   console.error("Error in IPC communication:", err);
-    // });
 
     // send({
     //   query: "addTest",
     //   data: {
     //     id: 1,
-    //     name: "addTest",
+    //     name: "testByTabarak",
     //     price: 22,
     //     normal: null,
     //     isSelecte: true,
@@ -302,25 +289,25 @@ function App() {
     //   console.error("Error in IPC communication:", err);
     // });
 
-    send({
-      query: "updateVisit",
-      id: 3,
-      data: {
-        patientID: 1,
-        status: "COMPLETED",
-        testType: "Package",
-        tests: "UPdate",
-        discount: 10
-      }
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Visit updated successfully");
-      } else {
-        console.error("Error updating visit:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
+    // send({
+    //   query: "updateVisit",
+    //   id: 3,
+    //   data: {
+    //     patientID: 1,
+    //     status: "COMPLETED",
+    //     testType: "Package",
+    //     tests: "UPdate",
+    //     discount: 10
+    //   }
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Visit updated successfully");
+    //   } else {
+    //     console.error("Error updating visit:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
 
 
   }, []);

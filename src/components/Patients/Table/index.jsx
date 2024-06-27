@@ -111,7 +111,7 @@ export const PureTable = () => {
           <Button
             onClick={() => {
               setIsHistory(true);
-              setId(record?._id);
+              setId(record?.id);
             }}
             style={{ fontSize: 12 }}
             size="small"
@@ -127,7 +127,7 @@ export const PureTable = () => {
           <Popconfirm
             title="Delete the record"
             description="Are you sure to delete this record?"
-            onConfirm={() => handleRemove(record._id)}
+            onConfirm={() => handleRemove(record.id)}
             okText="Yes"
             cancelText="No"
             placement="leftBottom"
@@ -139,66 +139,108 @@ export const PureTable = () => {
     },
   ];
 
-  const handleRemove = (_id) => {
+  const handleRemove = (id) => {
+
+    // send({
+    //   doc: "patients",
+    //   query: "remove",
+    //   condition: { _id },
+    // }).then(({ err }) => {
+    //   if (err) message.error("Error !");
+    //   else {
+    //     message.success("Remove Succefful.");
+    //     setIsReload(!isReload);
+    //   }
+    // });
+
     send({
-      doc: "patients",
-      query: "remove",
-      condition: { _id },
-    }).then(({ err }) => {
-      if (err) message.error("Error !");
-      else {
-        message.success("Remove Succefful.");
+      query: "deletePatient",
+      id
+    }).then(resp => {
+      if (resp.success) {
+        console.log("Number of deleted rows:", resp.data.rowsDeleted);
+        message.success(`Removed Patient successfully.`);
         setIsReload(!isReload);
+      } else {
+        console.error("Error deleting patient:", resp.error);
+        message.error("Error removing patient.");
       }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
+      message.error("Error in IPC communication.");
     });
+
+    console.log("ttttttttttttt", id);
+
   };
 
+
+
+
   const handleEdit = ({
-    _id,
+    id,
     name,
     birth,
     phone,
     email,
     gender,
-    uID,
     createdAt,
   }) => {
-    setId(_id);
+    setId(id);
     setBirth(dayjs(birth));
     setName(name);
     setEmail(email);
     setPhone(phone);
     setGender(gender);
     setIsModal(true);
-    setUID(uID);
     setCreatedAt(createdAt);
   };
 
   useEffect(() => {
     let queryKey = new RegExp(querySearch, "gi");
 
+    // send({
+    //   doc: "patients",
+    //   query: "find",
+    //   search: { name: queryKey },
+    //   limit,
+    //   skip: (page - 1) * limit,
+    // }).then(({ err, rows }) => {
+    //   if (err) message.error("Error !");
+    //   else {
+    //     setData(rows);
+    //     console.log(rows);
+    //     setTimeout(() => {
+    //       send({
+    //         doc: "patients",
+    //         query: "count",
+    //         search: { name: queryKey },
+    //       }).then(({ err, count }) => {
+    //         if (err) message.error("Error !");
+    //         else setTotal(count);
+    //       });
+    //     }, 100);
+    //   }
+    // });
+
+
     send({
-      doc: "patients",
-      query: "find",
-      search: { name: queryKey },
-      limit,
-      skip: (page - 1) * limit,
-    }).then(({ err, rows }) => {
-      if (err) message.error("Error !");
-      else {
-        setData(rows);
-        setTimeout(() => {
-          send({
-            doc: "patients",
-            query: "count",
-            search: { name: queryKey },
-          }).then(({ err, count }) => {
-            if (err) message.error("Error !");
-            else setTotal(count);
-          });
-        }, 100);
+      query: "getPatients",
+      q: querySearch,
+      skip: 0,
+      limit: 10
+    }).then(resp => {
+      if (resp.success) {
+        setData(resp.data);
+        console.log("Patients data:", resp.data);
+      } else {
+        console.error("Error fetching patients:", resp.error);
       }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
+
+
   }, [page, isReload, querySearch]);
 
   return (

@@ -41,7 +41,6 @@ export const PureModal = () => {
 
   const handleSubmit = () => {
     let data = {
-      uID,
       name,
       gender,
       email,
@@ -50,34 +49,72 @@ export const PureModal = () => {
       updatedAt: Date.now(),
     };
 
+    // if (id) {
+    //   send({
+    //     doc: "patients",
+    //     query: "update",
+    //     condition: { _id: id },
+    //     data: { ...data, createdAt },
+    //   }).then(({ err }) => {
+    //     if (err) message.error("Error !");
+    //     message.success("Save Succefful.");
+    //     setReset();
+    //     setIsModal(false);
+    //     setIsReload(!isReload);
+    //   });
+    // } else {
+    //   send({
+    //     doc: "patients",
+    //     query: "insert",
+    //     data: { ...data, createdAt: Date.now() },
+    //   }).then(({ err }) => {
+    //     if (err) message.error("Error !");
+    //     else {
+    //       message.success("Save Succefful.");
+    //       setReset();
+    //       setIsModal(false);
+    //       setIsReload(!isReload);
+    //     }
+    //   });
+    // }
+
 
     if (id) {
+      console.log("Updating patient with ID:", id); 
       send({
-        doc: "patients",
-        query: "update",
-        condition: { _id: id },
-        data: { ...data, createdAt },
-      }).then(({ err }) => {
-        if (err) message.error("Error !");
-        message.success("Save Succefful.");
-        setReset();
-        setIsModal(false);
-        setIsReload(!isReload);
-      });
-    } else {
-      send({
-        doc: "patients",
-        query: "insert",
-        data: { ...data, createdAt: Date.now() },
-      }).then(({ err }) => {
-        if (err) message.error("Error !");
-        else {
-          message.success("Save Succefful.");
+        query: "updatePatient",
+        id,
+        data: { ...data }
+      }).then(resp => {
+        if (resp.success) {
+          console.log("Patient updated:", resp.data);
           setReset();
           setIsModal(false);
           setIsReload(!isReload);
+        } else {
+          console.error("Error updating patient:", resp.error);
         }
+      }).catch(err => {
+        console.error("Error in IPC communication:", err);
       });
+
+    } else {
+      send({
+        query: "addPatient",
+        data: { ...data, createdAt: Date.now() },
+      }).then(resp => {
+        if (resp.success) {
+          console.log("Patient added with ID:", resp.id);
+          setReset();
+          setIsModal(false);
+          setIsReload(!isReload);
+        } else {
+          console.error("Error adding patient:", resp.error);
+        }
+      }).catch(err => {
+        console.error("Error in IPC communication:", err);
+      });
+
     }
   };
 

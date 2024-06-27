@@ -32,7 +32,7 @@ class LabDB {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         gender TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
+        email TEXT,
         phone TEXT NOT NULL,
         birth DATE NOT NULL,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -47,12 +47,12 @@ class LabDB {
         discount INTEGER,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (patientID) REFERENCES patients(id)
+        FOREIGN KEY (patientID) REFERENCES patients(id) ON DELETE CASCADE
       );
-CREATE TABLE IF NOT EXISTS tests(
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name VARCHAR(50),
-  price INTEGER, 
+      CREATE TABLE IF NOT EXISTS tests(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+     name VARCHAR(50),
+     price INTEGER, 
   normal TEXT,
   options TEXT,
   isSelected BOOLEAN,
@@ -100,11 +100,13 @@ CREATE TABLE IF NOT EXISTS tests(
 
   async deletePatient(id) {
     const stmt = await this.db.prepare(`
-  DELETE FROM patients WHERE id =? `);
-
+      DELETE FROM patients WHERE id = ?
+    `);
     const info = stmt.run(id);
-    return { data: info.data };
+    return { success: info.changes > 0, rowsDeleted: info.changes };
   }
+
+
   async updatePatient(id, updates) {
     const { name, gender, email, phone, birth } = updates;
     const stmt = await this.db.prepare(`
@@ -122,14 +124,6 @@ CREATE TABLE IF NOT EXISTS tests(
     return { data: info.changes > 0 };
   }
 
-  async searchPatient(name) {
-    const stmt = await this.db.prepare(`
-    SELECT * FROM patients
-    WHERE name LIKE ?
-    `);
-    const patient = stmt.all(`%${name}%`)
-    return { data: patient }
-  }
 
   async addTest(test) {
     const stmt = await this.db.prepare(`
@@ -296,12 +290,31 @@ CREATE TABLE IF NOT EXISTS tests(
     try {
       const { patientID, status, testType, tests, discount } = data;
       const testsStr = JSON.stringify(tests);
-      const stmt = this.db.prepare(`
-        INSERT INTO visits (patientID, status, testType, tests, discount)
-        VALUES (?, ?, ?, ?, ?)
+
+      // Check if the patientID already exists in the patients table
+      const patientCheckStmt = this.db.prepare(`
+        SELECT id FROM patients WHERE id = ?
       `);
-      const info = stmt.run(patientID, status, testType, testsStr, discount);
-      return { id: info.lastInsertRowid };
+      const patientExists = patientCheckStmt.get(patientID);
+
+      if (patientExists) {
+        // Patient exists, so update the visit
+        const updateStmt = this.db.prepare(`
+          UPDATE visits
+          SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
+          WHERE patientID = ?
+        `);
+        const info = updateStmt.run(status, testType, testsStr, discount, patientID);
+        return { id: info.lastInsertRowid };
+      } else {
+        // Patient does not exist, so insert a new visit
+        const insertStmt = this.db.prepare(`
+          INSERT INTO visits (patientID, status, testType, tests, discount)
+          VALUES (?, ?, ?, ?, ?)
+        `);
+        const info = insertStmt.run(patientID, status, testType, testsStr, discount);
+        return { id: info.lastInsertRowid };
+      }
     } catch (error) {
       this.handleDatabaseError(error, 'addVisit');
     }
@@ -345,7 +358,8 @@ CREATE TABLE IF NOT EXISTS tests(
     const info = stmt.run(patientID, status, testType, tests, discount, id);
     return { success: info.changes > 0 }
   }
-//push commit 
+
+
 }
 
 
