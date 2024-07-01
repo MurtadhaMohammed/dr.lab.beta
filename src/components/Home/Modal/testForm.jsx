@@ -44,50 +44,53 @@ const testLabel = {
 // };
 
 const TestForm = () => {
-  const { testType, isModal, setTests, tests, discount, setDiscount } =
-    useHomeStore();
+  const { testType, isModal, setTests, tests, discount, setDiscount } = useHomeStore();
   const [testsList, setTestList] = useState([]);
   const [packageList, setPackageList] = useState([]);
 
   const getTests = (querySearch = "") => {
-    let queryKey = new RegExp(querySearch, "gi");
     send({
-      doc: "tests",
-      query: "find",
-      search: { name: queryKey },
-      limit: 10,
-      skip: 0,
-    }).then(({ err, rows }) => {
-      if (err) message.error("Error !");
-      else setTestList(rows);
+      query: "getTests",
+      data: { querySearch }
+    }).then(resp => {
+      if (resp.success) {
+        setTestList(resp.data);
+        console.log("Tests get successfully:", resp.data);
+      } else {
+        console.error("Error get tests:", resp.error);
+      }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
   };
 
   const getPackages = (querySearch = "") => {
-    let queryKey = new RegExp(querySearch, "gi");
     send({
-      doc: "packages",
-      query: "find",
-      search: { title: queryKey },
-      limit: 10,
-      skip: 0,
-    }).then(({ err, rows }) => {
-      if (err) message.error("Error !");
-      else setPackageList(rows);
+      query: "getPackages",
+      data: { querySearch }
+    }).then(resp => {
+      if (resp.success) {
+        setPackageList(resp.data);
+        console.log("Packages retrieved successfully:", resp.data);
+      } else {
+        console.error("Error retrieving packages:", resp.error);
+      }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
   };
 
   const handleSelect = (testID) => {
     let selectedObj =
       testType === "CUSTOME"
-        ? testsList.find((el) => el?._id === testID)
-        : packageList.find((el) => el?._id === testID);
+        ? testsList.find((el) => el?.id === testID)
+        : packageList.find((el) => el?.id === testID);
     if (!selectedObj) return;
     setTests([...tests, selectedObj]);
   };
 
   const handleDelete = (testID) => {
-    setTests(tests?.filter((el) => el?._id !== testID));
+    setTests(tests?.filter((el) => el?.id !== testID));
   };
 
   useEffect(() => {
@@ -113,19 +116,19 @@ const TestForm = () => {
         options={
           testType === "CUSTOME"
             ? testsList?.map((el) => {
-                return {
-                  label: el?.name,
-                  value: el?._id,
-                  disabled: !!tests.find((item) => item?._id === el?._id),
-                };
-              })
+              return {
+                label: el?.name,
+                value: el?.id,
+                disabled: !!tests.find((item) => item?.id === el?.id),
+              };
+            })
             : packageList?.map((el) => {
-                return {
-                  label: el?.title,
-                  value: el?._id,
-                  disabled: !!tests.find((item) => item?._id === el?._id),
-                };
-              })
+              return {
+                label: el?.title,
+                value: el?.id,
+                disabled: !!tests.find((item) => item?.id === el?.id),
+              };
+            })
         }
       />
 
@@ -134,7 +137,7 @@ const TestForm = () => {
           <div key={i} className="test-item app-flex-space">
             <Space>
               <Button
-                onClick={() => handleDelete(el?._id)}
+                onClick={() => handleDelete(el?.id)}
                 size="small"
                 type="text"
                 icon={<DeleteOutlined />}
@@ -142,15 +145,14 @@ const TestForm = () => {
               <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
             </Space>
             <Text type="secondary">
-              {Number(getPrice(testType, el)).toLocaleString("en")}
-              IQD
+              {Number(getPrice(testType, el)).toLocaleString("en")} IQD
             </Text>
           </div>
         ))}
       </div>
       <div className="test-form-footer">
         <div className="overlay-top"></div>
-        <div className=" app-flex-space">
+        <div className="app-flex-space">
           <Text type="secondary">Menual discount (Optional) </Text>
           <InputNumber
             value={discount}
@@ -167,16 +169,15 @@ const TestForm = () => {
               style={
                 discount
                   ? {
-                      textDecoration: "line-through",
-                      opacity: 0.3,
-                      fontStyle: "italic",
-                      fontWeight: "normal",
-                    }
+                    textDecoration: "line-through",
+                    opacity: 0.3,
+                    fontStyle: "italic",
+                    fontWeight: "normal",
+                  }
                   : { fontSize: 18, fontWeight: "bold" }
               }
             >
-              {Number(getTotalPrice(testType, tests)).toLocaleString("en")}
-              IQD
+              {Number(getTotalPrice(testType, tests)).toLocaleString("en")} IQD
             </Text>
           </div>
           {discount && (
@@ -184,10 +185,7 @@ const TestForm = () => {
               <Text type="secondary">Final Price </Text>
               <Text style={{ fontSize: 18 }}>
                 <b>
-                  {Number(
-                    getTotalPrice(testType, tests) - discount
-                  ).toLocaleString("en")}{" "}
-                  IQD
+                  {Number(getTotalPrice(testType, tests) - discount).toLocaleString("en")} IQD
                 </b>
               </Text>
             </div>

@@ -47,18 +47,19 @@ class LabDB {
         discount INTEGER,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (patientID) REFERENCES patients(id) ON DELETE CASCADE
+      FOREIGN KEY (patientID) REFERENCES patients(id) ON DELETE CASCADE
       );
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-     name VARCHAR(50),
-     price INTEGER, 
-  normal TEXT,
-  options TEXT,
-  isSelected BOOLEAN,
-  updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-  createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      name VARCHAR(50),
+      price INTEGER, 
+      normal TEXT,
+      options TEXT,
+      isSelecte INTEGER,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
 
       CREATE TABLE IF NOT EXISTS packages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -106,7 +107,6 @@ class LabDB {
     return { success: info.changes > 0, rowsDeleted: info.changes };
   }
 
-
   async updatePatient(id, updates) {
     const { name, gender, email, phone, birth } = updates;
     const stmt = await this.db.prepare(`
@@ -124,13 +124,13 @@ class LabDB {
     return { data: info.changes > 0 };
   }
 
-
   async addTest(test) {
-    const stmt = await this.db.prepare(`
-      INSERT INTO tests (name, price, normal, options, isSelected)
+    const { name, price, normal, options, isSelecte } = test;
+    const stmt = this.db.prepare(`
+      INSERT INTO tests (name, price, normal, options, isSelecte)
       VALUES (?, ?, ?, ?, ?)
     `);
-    const info = stmt.run(test.name, test.price, test.normal, JSON.stringify(test.options), test.isSelected);
+    const info = stmt.run(name, price, normal, JSON.stringify(options), isSelecte ? 1 : 0);
     return { id: info.lastInsertRowid };
   }
 
@@ -143,7 +143,7 @@ class LabDB {
   }
 
   async editTest(id, updates) {
-    const { name, price, normal, options, isSelected } = updates;
+    const { name, price, normal, options, isSelecte } = updates;
 
     const stmt = await this.db.prepare(`
       UPDATE tests
@@ -152,18 +152,16 @@ class LabDB {
         price = COALESCE(?, price),
         normal = COALESCE(?, normal),
         options = COALESCE(?, options), 
-        isSelected = COALESCE(?, isSelected),
+        isSelecte = COALESCE(?, isSelecte),
         updatedAt = CURRENT_TIMESTAMP
         WHERE id = ?
     `);
-
-
     const info = stmt.run(
       name,
       price,
       normal,
       options ? JSON.stringify(options) : "",
-      isSelected !== undefined ? (isSelected ? 1 : 0) : null,
+      isSelecte !== undefined ? (isSelecte ? 1 : 0) : null,
       id
     );
     return { success: info.changes > 0 };
@@ -179,11 +177,32 @@ class LabDB {
     return { data: tests };
   }
 
-  async addPackage(arg) {
-    if (!Array.isArray(arg.data.testIDs)) {
-      throw new TypeError('testIDs is not iterable');
+  async addPackage(data) {
+    const { title, customePrice, tests } = data;
+
+    if (!Array.isArray(tests)) {
+      console.error('tests is not iterable:', tests);
+      throw new TypeError('tests is not iterable');
     }
-    const { title, customePrice, testIDs } = arg.data;
+
+    const testIDs = tests.map(test => test.id);
+
+    const validTestIDs = [];
+    for (const testID of testIDs) {
+      const testExistsStmt = this.db.prepare(`
+        SELECT id FROM tests WHERE id = ?
+      `);
+      const test = testExistsStmt.get(testID);
+      if (test) {
+        validTestIDs.push(testID);
+      } else {
+        console.warn(`Test ID ${testID} does not exist in the tests table.`);
+      }
+    }
+
+    if (validTestIDs.length === 0) {
+      throw new Error('No valid test IDs provided.');
+    }
 
     const packageStmt = this.db.prepare(`
       INSERT INTO packages (title, customePrice)
@@ -192,16 +211,19 @@ class LabDB {
     const packageInfo = packageStmt.run(title, customePrice);
     const packageID = packageInfo.lastInsertRowid;
 
+    console.log(`Package added with ID: ${packageID}`);
+
     const testToPackageStmt = this.db.prepare(`
       INSERT INTO test_to_packages (packageID, testID)
       VALUES (?, ?)
     `);
-    const testToPackageTransaction = this.db.transaction((testIDs) => {
-      for (const testID of testIDs) {
+    const testToPackageTransaction = this.db.transaction(() => {
+      for (const testID of validTestIDs) {
+        console.log(`Associating package ID ${packageID} with test ID ${testID}`);
         testToPackageStmt.run(packageID, testID);
       }
     });
-    testToPackageTransaction(testIDs);
+    testToPackageTransaction();
 
     return { data: packageID };
   }
@@ -225,45 +247,46 @@ class LabDB {
     }
   }
 
-  async editPackage(arg) {
-    const { id, title, customePrice, testIDs } = arg;
-
-    if (!Array.isArray(testIDs)) {
-      throw new TypeError('testIDs is not iterable');
-    }
-
-    const transaction = this.db.transaction(() => {
-      // Update the package details
-      const packageStmt = this.db.prepare(`
-        UPDATE packages
-        SET title = ?, customePrice = ?, updatedAt = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `);
-      packageStmt.run(title, customePrice, id);
-
-      // Delete existing test associations for the package
-      const deleteTestToPackage = this.db.prepare(`
-        DELETE FROM test_to_packages WHERE packageID = ?
-      `);
-      deleteTestToPackage.run(id);
-
-      // Insert new test associations
-      const testToPackage = this.db.prepare(`
-        INSERT INTO test_to_packages (packageID, testID)
-        VALUES (?, ?)
-      `);
-      for (const testID of testIDs) {
-        testToPackage.run(id, testID);
-      }
-    });
-
+  async editPackage(id, data) {
     try {
+      const { title, customePrice } = data;
+      const tests = data.tests.map(test => test.id);
+
+      const transaction = this.db.transaction(() => {
+        const packageStmt = this.db.prepare(`
+          UPDATE packages
+          SET title = COALESCE(?, title), customePrice = COALESCE(?, customePrice), updatedAt = CURRENT_TIMESTAMP
+          WHERE id = ? 
+        `);
+
+        // Ensure tests is an array, if it's empty then it should be null
+        const testToPackage = this.db.prepare(`
+          INSERT INTO test_to_packages (packageID, testID)
+          VALUES (?, ?)
+        `);
+
+        packageStmt.run(title, customePrice, id);
+
+        // Delete existing associations in 'test_to_packages' table for the package
+        const deleteTestToPackage = this.db.prepare('DELETE FROM test_to_packages WHERE packageID = ?');
+        deleteTestToPackage.run(id);
+
+        // Insert new associations into 'test_to_packages' table
+        for (const testID of tests) {
+          testToPackage.run(id, testID);
+        }
+      });
+
       transaction();
+
+      // Return success message
       return { success: true, message: `Package with ID ${id} updated successfully.` };
     } catch (error) {
+      // Catch any errors and throw a detailed error message
       throw new Error(`Failed to update package with ID ${id}: ${error.message}`);
     }
   }
+
 
   async getPackages({ q = "", skip = 0, limit = 10 }) {
     const stmt = await this.db.prepare(`
@@ -286,39 +309,46 @@ class LabDB {
   }
 
 
-  addVisit(data) {
-    try {
-      const { patientID, status, testType, tests, discount } = data;
-      const testsStr = JSON.stringify(tests);
 
-      // Check if the patientID already exists in the patients table
-      const patientCheckStmt = this.db.prepare(`
-        SELECT id FROM patients WHERE id = ?
+  async addVisit(data) {
+    const { patientID, status, testType, tests, discount } = data;
+    const testTypeStr = JSON.stringify(testType);
+    const testsStr = JSON.stringify(tests);
+
+    const patientCheckStmt = this.db.prepare(`
+      SELECT id FROM patients WHERE id = ?
+    `);
+    const patientExists = patientCheckStmt.get(patientID);
+
+    if (!patientExists) {
+      throw new Error(`Patient with ID ${patientID} does not exist.`);
+    }
+
+    const visitCheckStmt = this.db.prepare(`
+      SELECT id FROM visits WHERE patientID = ?
+    `);
+    const existingVisit = visitCheckStmt.get(patientID);
+
+    if (existingVisit) {
+      const updateStmt = this.db.prepare(`
+        UPDATE visits
+        SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
+        WHERE patientID = ?
       `);
-      const patientExists = patientCheckStmt.get(patientID);
+      updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
 
-      if (patientExists) {
-        // Patient exists, so update the visit
-        const updateStmt = this.db.prepare(`
-          UPDATE visits
-          SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
-          WHERE patientID = ?
-        `);
-        const info = updateStmt.run(status, testType, testsStr, discount, patientID);
-        return { id: info.lastInsertRowid };
-      } else {
-        // Patient does not exist, so insert a new visit
-        const insertStmt = this.db.prepare(`
-          INSERT INTO visits (patientID, status, testType, tests, discount)
-          VALUES (?, ?, ?, ?, ?)
-        `);
-        const info = insertStmt.run(patientID, status, testType, testsStr, discount);
-        return { id: info.lastInsertRowid };
-      }
-    } catch (error) {
-      this.handleDatabaseError(error, 'addVisit');
+      return { id: existingVisit.id };
+    } else {
+      const insertStmt = this.db.prepare(`
+        INSERT INTO visits (patientID, status, testType, tests, discount)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+      const info = insertStmt.run(patientID, status, testTypeStr, testsStr, discount);
+      return { id: info.lastInsertRowid };
     }
   }
+
+
 
   async deleteVisit(id) {
     const stmt = await this.db.prepare(`
@@ -341,23 +371,24 @@ class LabDB {
     return { data: visits };
   }
 
+
   async updateVisit(id, update) {
     const { patientID, status, testType, tests, discount } = update;
-
-    const stmt = await this.db.prepare(`
-    UPDATE visits
-    SET 
-    patientID = COALESCE(?, patientID),
-      status = COALESCE(?, status),
-      testType = COALESCE(?, testType),
-      tests = COALESCE(?, tests),
-      discount = COALESCE(?, discount),
-      updatedAt = CURRENT_TIMESTAMP
-    WHERE id = ?
+    const stmt = this.db.prepare(`
+      UPDATE visits
+      SET 
+        patientID = COALESCE(?, patientID),
+        status = COALESCE(?, status),
+        testType = COALESCE(?, testType),
+        tests = COALESCE(?, tests),
+        discount = COALESCE(?, discount),
+        updatedAt = CURRENT_TIMESTAMP
+      WHERE id = ?
     `);
     const info = stmt.run(patientID, status, testType, tests, discount, id);
-    return { success: info.changes > 0 }
+    return { success: info.changes > 0 };
   }
+
 
 
 }

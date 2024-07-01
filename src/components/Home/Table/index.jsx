@@ -287,7 +287,8 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-        let list = record.tests;
+        // console.log(record.tests);
+        let list = record.tests || [];
         let numOfView = 2;
         let restCount =
           list.length > numOfView ? list.length - numOfView : null;
@@ -319,17 +320,17 @@ export const PureTable = ({ isReport = false }) => {
     },
     {
       title: "Price",
-      dataIndex: "_id",
-      key: "_id",
+      dataIndex: "id",
+      key: "id",
       render: (_, record) => (
         <span
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -341,8 +342,8 @@ export const PureTable = ({ isReport = false }) => {
     },
     {
       title: "End Price",
-      dataIndex: "_id",
-      key: "_id",
+      dataIndex: "id",
+      key: "id",
       render: (_, record) => (
         <b style={{ whiteSpace: "nowarp" }}>
           {Number(
@@ -439,7 +440,7 @@ export const PureTable = ({ isReport = false }) => {
             <Popconfirm
               title="Delete the record"
               description="Are you sure to delete this record?"
-              onConfirm={() => handleRemove(record._id)}
+              onConfirm={() => handleRemove(record.id)}
               okText="Yes"
               cancelText="No"
               placement="leftBottom"
@@ -457,29 +458,46 @@ export const PureTable = ({ isReport = false }) => {
     setIsResultsModal(true);
   };
 
-  const handleRemove = (_id) => {
+  const handleRemove = (id) => {
+    // send({
+    //   doc: "visits",
+    //   query: "remove",
+    //   condition: { id },
+    // }).then(({ err }) => {
+    //   if (err) message.error("Error !");
+    //   else {
+    //     message.success("Remove Succefful.");
+    //     setIsReload(!isReload);
+    //   }
+    // });
+
+
     send({
-      doc: "visits",
-      query: "remove",
-      condition: { _id },
-    }).then(({ err }) => {
-      if (err) message.error("Error !");
-      else {
-        message.success("Remove Succefful.");
+      query: "deleteVisit",
+      id,
+    }).then(resp => {
+      if (resp.success) {
+        console.log("Success deleteVisit");
         setIsReload(!isReload);
+      } else {
+        console.error("Error deleteVisit:", resp.error);
       }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
+
+
   };
 
   const handleEdit = ({
-    _id,
+    id,
     patient,
     testType,
     discount,
     tests,
     createdAt,
   }) => {
-    setId(_id);
+    setId(id);
     setTests(tests);
     setBirth(dayjs(patient?.birth));
     setName(patient?.name);
@@ -495,76 +513,91 @@ export const PureTable = ({ isReport = false }) => {
 
   useEffect(() => {
     let queryKey = new RegExp(querySearch, "gi");
+    // send({
+    //   doc: "visits",
+    //   query: "find",
+    //   search: {
+    //     $and: [
+    //       { "patient.name": queryKey },
+    //       isReport
+    //         ? {
+    //             ...(filterDate && {
+    //               createdAt: {
+    //                 $gt: dayjs(
+    //                   dayjs(filterDate[0]).format("YYYY-MM-DD")
+    //                 ).valueOf(),
+    //                 $lt: dayjs(
+    //                   dayjs(filterDate[1]).format("YYYY-MM-DD")
+    //                 ).valueOf(),
+    //               },
+    //             }),
+    //           }
+    //         : {
+    //             ...(isToday && {
+    //               createdAt: {
+    //                 $gt: dayjs(dayjs().format("YYYY-MM-DD")).valueOf(),
+    //               },
+    //             }),
+    //           },
+    //     ],
+    //   },
+    //   limit,
+    //   skip: (page - 1) * limit,
+    // }).then(({ err, rows }) => {
+    //   if (err) message.error("Error !");
+    //   else {
+    //     setData(rows);
+    //     setTimeout(() => {
+    //       send({
+    //         doc: "visits",
+    //         query: "count",
+    //         search: {
+    //           $and: [
+    //             { "patient.name": queryKey },
+    //             isReport
+    //               ? {
+    //                   ...(filterDate && {
+    //                     createdAt: {
+    //                       $gt: dayjs(
+    //                         dayjs(filterDate[0]).format("YYYY-MM-DD")
+    //                       ).valueOf(),
+    //                       $lt: dayjs(
+    //                         dayjs(filterDate[1]).format("YYYY-MM-DD")
+    //                       ).valueOf(),
+    //                     },
+    //                   }),
+    //                 }
+    //               : {
+    //                   ...(isToday && {
+    //                     createdAt: {
+    //                       $gt: dayjs(dayjs().format("YYYY-MM-DD")).valueOf(),
+    //                     },
+    //                   }),
+    //                 },
+    //           ],
+    //         },
+    //       }).then(({ err, count }) => {
+    //         if (err) message.error("Error !");
+    //         else setTotal(count);
+    //       });
+    //     }, 100);
+    //   }
+    // });
+
+
     send({
-      doc: "visits",
-      query: "find",
-      search: {
-        $and: [
-          { "patient.name": queryKey },
-          isReport
-            ? {
-                ...(filterDate && {
-                  createdAt: {
-                    $gt: dayjs(
-                      dayjs(filterDate[0]).format("YYYY-MM-DD")
-                    ).valueOf(),
-                    $lt: dayjs(
-                      dayjs(filterDate[1]).format("YYYY-MM-DD")
-                    ).valueOf(),
-                  },
-                }),
-              }
-            : {
-                ...(isToday && {
-                  createdAt: {
-                    $gt: dayjs(dayjs().format("YYYY-MM-DD")).valueOf(),
-                  },
-                }),
-              },
-        ],
-      },
-      limit,
-      skip: (page - 1) * limit,
-    }).then(({ err, rows }) => {
-      if (err) message.error("Error !");
-      else {
-        setData(rows);
-        setTimeout(() => {
-          send({
-            doc: "visits",
-            query: "count",
-            search: {
-              $and: [
-                { "patient.name": queryKey },
-                isReport
-                  ? {
-                      ...(filterDate && {
-                        createdAt: {
-                          $gt: dayjs(
-                            dayjs(filterDate[0]).format("YYYY-MM-DD")
-                          ).valueOf(),
-                          $lt: dayjs(
-                            dayjs(filterDate[1]).format("YYYY-MM-DD")
-                          ).valueOf(),
-                        },
-                      }),
-                    }
-                  : {
-                      ...(isToday && {
-                        createdAt: {
-                          $gt: dayjs(dayjs().format("YYYY-MM-DD")).valueOf(),
-                        },
-                      }),
-                    },
-              ],
-            },
-          }).then(({ err, count }) => {
-            if (err) message.error("Error !");
-            else setTotal(count);
-          });
-        }, 100);
+      query: "getVisits",
+      data,
+    }).then(resp => {
+      if (resp.success) {
+        setData(resp.data);
+        console.log("Visits retrieved successfully:", resp.data);
+      } else {
+        console.error("Error retrieving visits:", resp.error);
       }
     });
+
+
   }, [page, isReload, querySearch, isToday]);
 
   return (

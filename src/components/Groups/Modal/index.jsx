@@ -35,80 +35,134 @@ export const PureModal = () => {
     createdAt,
     setReset,
   } = useGroupStore();
-  const [testsList, setTestList] = useState([]);
+  const [testsList, setTestsList] = useState([]);
 
   const getTests = (querySearch) => {
     let queryKey = new RegExp(querySearch, "gi");
+
     send({
-      doc: "tests",
-      query: "find",
-      search: { name: queryKey },
-      limit: 10,
-      skip: 0,
-    }).then(({ err, rows }) => {
-      if (err) message.error("Error !");
-      else setTestList(rows);
+      query: "getTests",
+      data: {}
+    }).then(resp => {
+      if (resp.success) {
+        setTestsList(resp.data);
+        console.log("Tests fetched successfully:", resp.data);
+      } else {
+        console.error("Error fetching tests:", resp.error);
+      }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
+
+    //   send({
+    //     doc: "tests",
+    //     query: "find",
+    //     search: { name: queryKey },
+    //     limit: 10,
+    //     skip: 0,
+    //   }).then(({ err, rows }) => {
+    //     if (err) message.error("Error !");
+    //     else setTestList(rows);
+    //   });
+    // };
+
+
+
   };
 
   useEffect(() => {
-    isModal && getTests("");
+    if (isModal) {
+      getTests("");
+    }
   }, [isModal]);
 
   const handleSelect = (testID) => {
-    let selectedObj = testsList.find((el) => el?._id === testID);
+    let selectedObj = testsList.find((el) => el?.id === testID);
     if (!selectedObj) return;
     setTests([...tests, selectedObj]);
   };
 
   const handleDelete = (testID) => {
-    setTests(tests?.filter((el) => el?._id !== testID));
+    setTests(tests?.filter((el) => el?.id !== testID));
   };
+
+
 
   const handleSubmit = () => {
     let data = {
       title,
       customePrice,
-      tests: tests.map((el) => {
-        return {
-          _id: el._id,
-          name: el?.name,
-          normal: el?.normal,
-          price: el?.price,
-          isSelecte: el?.isSelecte,
-          options: el?.options,
-        };
-      }),
-      updatedAt: Date.now(),
+      tests: tests.map(el => ({ id: el.id })), // Ensure tests is an array of objects with id property
+      createdAt: Date.now(), // Ensure createdAt is correctly passed
     };
     if (id) {
       send({
-        doc: "packages",
-        query: "update",
-        condition: { _id: id },
-        data: { ...data, createdAt },
-      }).then(({ err }) => {
-        if (err) message.error("Error !");
-        else {
-          message.success("Save Succefful.");
+        query: "editPackage",
+        data: { ...data },
+        id
+      }).then(resp => {
+        if (resp.success) {
+          console.log("Package updated successfully");
           setReset();
           setIsModal(false);
           setIsReload(!isReload);
+        } else {
+          console.error("Error updating package:", resp.error);
+          message.error("Failed to update package.");
         }
+      }).catch(err => {
+        console.error("Error in IPC communication:", err);
+        message.error("Failed to communicate with server.");
       });
+
+
+      // send({
+      //   doc: "packages",
+      //   query: "update",
+      //   condition: { id: id },
+      //   data: { ...data, createdAt },
+      // }).then(({ err }) => {
+      //   if (err) message.error("Error !");
+      //   else {
+      //     message.success("Save Succefful.");
+      //     setReset();
+      //     setIsModal(false);
+      //     setIsReload(!isReload);
+      //   }
+      // });
+
     } else {
+      // send({
+      //   doc: "packages",
+      //   query: "insert",
+      //   data: { ...data, createdAt: Date.now() },
+      // }).then(({ err }) => {
+      //   if (err) message.error("Error !");
+      //   else {
+      //     message.success("Save Succefful.");
+      //     setReset();
+      //     setIsModal(false);
+      //     setIsReload(!isReload);
+      //   }
+      // });
+
+      // For adding a new package
       send({
-        doc: "packages",
-        query: "insert",
-        data: { ...data, createdAt: Date.now() },
-      }).then(({ err }) => {
-        if (err) message.error("Error !");
-        else {
-          message.success("Save Succefful.");
+        query: "addPackage",
+        data: { ...data },
+      }).then(resp => {
+        if (resp.success) {
+          console.log("Package added with ID:", resp.data);
           setReset();
           setIsModal(false);
           setIsReload(!isReload);
+        } else {
+          console.error("Error adding package:", resp.error);
+          message.error("Failed to add package.");
         }
+      }).catch(err => {
+        console.error("Error in IPC communication:", err);
+        message.error("Failed to communicate with server.");
       });
     }
   };
@@ -157,8 +211,8 @@ export const PureModal = () => {
             options={testsList?.map((el) => {
               return {
                 label: el?.name,
-                value: el?._id,
-                disabled: !!tests.find((item) => item?._id === el?._id),
+                value: el?.id,
+                disabled: !!tests.find((item) => item?.id === el?.id),
               };
             })}
           />
@@ -168,7 +222,7 @@ export const PureModal = () => {
               <div key={i} className="test-item app-flex-space">
                 <Space>
                   <Button
-                    onClick={() => handleDelete(el?._id)}
+                    onClick={() => handleDelete(el?.id)}
                     size="small"
                     type="text"
                     icon={<DeleteOutlined />}
@@ -222,11 +276,11 @@ export const PureModal = () => {
                   style={
                     customePrice
                       ? {
-                          textDecoration: "line-through",
-                          opacity: 0.3,
-                          fontStyle: "italic",
-                          fontWeight: "normal",
-                        }
+                        textDecoration: "line-through",
+                        opacity: 0.3,
+                        fontStyle: "italic",
+                        fontWeight: "normal",
+                      }
                       : { fontSize: 18, fontWeight: "bold" }
                   }
                 >

@@ -87,6 +87,7 @@ export const PureModal = () => {
     borderStyle: "dashed",
   };
 
+
   const handleSubmit = () => {
     let data = {
       name,
@@ -96,6 +97,7 @@ export const PureModal = () => {
       options: isSelecte ? options : [],
       updatedAt: Date.now(),
     };
+
     // if (id) {
     //   send({
     //     doc: "tests",

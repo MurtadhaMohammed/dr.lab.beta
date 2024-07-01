@@ -38,18 +38,22 @@ const PatientForm = () => {
   const [selected, setSelected] = useState(null);
 
   const getPtients = (querySearch = "") => {
-    let queryKey = new RegExp(querySearch, "gi");
     send({
-      doc: "patients",
-      query: "find",
-      search: { name: queryKey },
-      limit: 10,
+      query: "getPatients",
+      q: querySearch,
       skip: 0,
-    }).then(({ err, rows }) => {
-      if (err) message.error("Error !");
-      else setPatientsList(rows);
+      limit: 10
+    }).then(resp => {
+      if (resp.success) {
+        setPatientsList(resp.data);
+        console.log("Patients data:", resp.data);
+      } else {
+        console.error("Error fetching patients:", resp.error);
+      }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
-  };
+  }
 
   useEffect(() => {
     isModal && getPtients();
@@ -57,7 +61,7 @@ const PatientForm = () => {
 
   useEffect(() => {
     if (!selected) return;
-    let patientObj = patientsList.find((el) => el?._id === selected);
+    let patientObj = patientsList.find((el) => el?.id === selected);
     setBirth(dayjs(patientObj?.birth));
     setName(patientObj?.name);
     setEmail(patientObj?.email);
@@ -83,7 +87,7 @@ const PatientForm = () => {
         options={patientsList?.map((el) => {
           return {
             label: el?.name,
-            value: el?._id,
+            value: el?.id,
           };
         })}
       />
@@ -103,7 +107,7 @@ const PatientForm = () => {
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>Birth Date</Text>
             <DatePicker
-             picker="year"
+              picker="year"
               value={birth}
               onChange={(val) => setBirth(val)}
               style={{ width: "100%" }}

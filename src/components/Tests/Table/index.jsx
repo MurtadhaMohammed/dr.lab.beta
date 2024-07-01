@@ -77,7 +77,7 @@ export const PureTable = () => {
           <Popconfirm
             title="Delete the record"
             description="Are you sure to delete this record?"
-            onConfirm={() => handleRemove(record._id)}
+            onConfirm={() => handleRemove(record.id)}
             okText="Yes"
             cancelText="No"
             placement="leftBottom"
@@ -89,18 +89,36 @@ export const PureTable = () => {
     },
   ];
 
-  const handleRemove = (_id) => {
+
+
+  const handleRemove = (id) => {
+    // send({
+    //   doc: "tests",
+    //   query: "remove",
+    //   condition: { id },
+    // }).then(({ err }) => {
+    //   if (err) message.error("Error !");
+    //   else {
+    //     message.success("Remove Succefful.");
+    //     setIsReload(!isReload);
+    //   }
+    // });
+
     send({
-      doc: "tests",
-      query: "remove",
-      condition: { _id },
-    }).then(({ err }) => {
-      if (err) message.error("Error !");
-      else {
-        message.success("Remove Succefful.");
+      query: "deleteTest",
+      id,
+    }).then(resp => {
+      if (resp.success) {
+        console.log("Success deleting test");
         setIsReload(!isReload);
+      } else {
+        console.error("Error deleting Test:", resp.error);
       }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
+
+
   };
 
   const handleEdit = ({ id, name, normal, price, options, isSelecte, createdAt }) => {
@@ -115,16 +133,15 @@ export const PureTable = () => {
   };
 
   useEffect(() => {
-    let queryKey = new RegExp(querySearch, "gi");
+    let queryKey = querySearch ? querySearch : "";
 
     send({
       query: "getTests",
-      q: "",
-      skip: 0,
-      limit: 10
+      data: { q: queryKey, skip: (page - 1) * limit, limit }
     }).then(resp => {
       if (resp.success) {
         setData(resp.data);
+        setTotal(resp.total); 
         console.log("Tests get successfully:", resp.data);
       } else {
         console.error("Error get tests:", resp.error);

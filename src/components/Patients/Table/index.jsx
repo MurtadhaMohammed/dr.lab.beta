@@ -197,8 +197,7 @@ export const PureTable = () => {
   };
 
   useEffect(() => {
-    let queryKey = new RegExp(querySearch, "gi");
-
+  
     // send({
     //   doc: "patients",
     //   query: "find",

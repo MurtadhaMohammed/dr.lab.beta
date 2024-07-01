@@ -143,7 +143,7 @@ function App() {
     //     normal: "Updated Normal Range",
     //     result: "Updated Result",
     //     options: null,
-    //     isSelected: true
+    //     isSelect: true
     //   }
     // }).then(resp => {
     //   if (resp.success) {
@@ -238,19 +238,17 @@ function App() {
     //   console.error("Error in IPC communication:", err);
     // });
 
-
     // send({
     //   query: "addVisit",
     //   data: {
-    //     patientID: 1,
+    //     patientID: 3,
     //     status: "PENDING",
-    //     testType:  ["custom test", "package test"],
-    //     tests: ["Test A", "Test B"],
+    //     testType: ["CUSTOME test", "PACKAGE test"],
     //     discount: 10
     //   }
     // }).then(resp => {
     //   if (resp.success) {
-    //     console.log("Visit added with ID:", resp.data);
+    //     console.log("Visit added with ID:", resp.id);
     //   } else {
     //     console.error("Error adding visit:", resp.error);
     //   }
@@ -261,7 +259,7 @@ function App() {
 
     //  send({
     //       query: "deleteVisit",
-    //       id: 2
+    //       id: 1
     //     }).then(resp => {
     //       if (resp.success) {
     //         console.log("Success deleteVisit");

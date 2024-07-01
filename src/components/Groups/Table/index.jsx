@@ -59,8 +59,8 @@ export const PureTable = () => {
     },
     {
       title: "Total Price",
-      dataIndex: "_id",
-      key: "_id",
+      dataIndex: "id",
+      key: "id",
       render: (_, record) => {
         let totalPrice = record?.tests
           ?.map((el) => el?.price)
@@ -117,7 +117,7 @@ export const PureTable = () => {
           <Popconfirm
             title="Delete the record"
             description="Are you sure to delete this record?"
-            onConfirm={() => handleRemove(record._id)}
+            onConfirm={() => handleRemove(record.id)}
             okText="Yes"
             cancelText="No"
             placement="leftBottom"
@@ -129,22 +129,40 @@ export const PureTable = () => {
     },
   ];
 
-  const handleRemove = (_id) => {
+
+
+
+  const handleRemove = (id) => {
+    // send({
+    //   doc: "packages",
+    //   query: "remove",
+    //   condition: { id },
+    // }).then(({ err }) => {
+    //   if (err) message.error("Error !");
+    //   else {
+    //     message.success("Remove Succefful.");
+    //     setIsReload(!isReload);
+    //   }
+    // });
+
     send({
-      doc: "packages",
-      query: "remove",
-      condition: { _id },
-    }).then(({ err }) => {
-      if (err) message.error("Error !");
-      else {
-        message.success("Remove Succefful.");
+      query: "deletePackage",
+     id
+    }).then(resp => {
+      if (resp.success) {
+        console.log("Success deletePackage");
         setIsReload(!isReload);
+      } else {
+        console.error("Error deletePackage:", resp.error);
       }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
+
   };
 
-  const handleEdit = ({ _id, title, tests, customePrice, createdAt }) => {
-    setId(_id);
+  const handleEdit = ({ id, title, tests, customePrice, createdAt }) => {
+    setId(id);
     setTitle(title);
     setCustomePrice(customePrice);
     setTests(tests);
@@ -152,31 +170,47 @@ export const PureTable = () => {
     setCreatedAt(createdAt);
   };
 
+
   useEffect(() => {
-    let queryKey = new RegExp(querySearch, "gi");
+    let queryKey = querySearch ? querySearch : "";
+    // send({
+    //   doc: "packages",
+    //   query: "find",
+    //   search: { title: queryKey },
+    //   limit,
+    //   skip: (page - 1) * limit,
+    // }).then(({ err, rows }) => {
+    //   if (err) message.error("Error !");
+    //   else {
+    //     setData(rows);
+    //     setTimeout(() => {
+    //       send({
+    //         doc: "packages",
+    //         query: "count",
+    //         search: { title: queryKey },
+    //       }).then(({ err, count }) => {
+    //         if (err) message.error("Error !");
+    //         else setTotal(count);
+    //       });
+    //     }, 100);
+    //   }
+    // });
+
 
     send({
-      doc: "packages",
-      query: "find",
-      search: { title: queryKey },
-      limit,
-      skip: (page - 1) * limit,
-    }).then(({ err, rows }) => {
-      if (err) message.error("Error !");
-      else {
-        setData(rows);
-        setTimeout(() => {
-          send({
-            doc: "packages",
-            query: "count",
-            search: { title: queryKey },
-          }).then(({ err, count }) => {
-            if (err) message.error("Error !");
-            else setTotal(count);
-          });
-        }, 100);
+      query: "getPackages",
+      data: { q: queryKey, skip: (page - 1) * limit, limit }
+    }).then(resp => {
+      if (resp.success) {
+        setData(resp.data);
+        console.log("Packages retrieved successfully:", resp.data);
+      } else {
+        console.error("Error retrieving packages:", resp.error);
       }
+    }).catch(err => {
+      console.error("Error in IPC communication:", err);
     });
+
   }, [page, isReload, querySearch]);
 
   return (

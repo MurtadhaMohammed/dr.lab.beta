@@ -59,7 +59,7 @@ export const ResultsModal = () => {
       newRecord = {
         ...record,
         tests: record?.tests.map((el) => {
-          if (el._id === row?._id) return { ...el, result: val };
+          if (el.id === row?.id) return { ...el, result: val };
           return el;
         }),
       };
@@ -70,7 +70,7 @@ export const ResultsModal = () => {
           return {
             ...group,
             tests: group?.tests?.map((el) => {
-              if (el._id === row?._id) return { ...el, result: val };
+              if (el.id === row?.id) return { ...el, result: val };
               return el;
             }),
           };
@@ -103,7 +103,7 @@ export const ResultsModal = () => {
     send({
       doc: "visits",
       query: "update",
-      condition: { _id: record?._id },
+      condition: { id: record?.id },
       data: { ...data },
     }).then(({ err }) => {
       if (err) message.error("Error !");

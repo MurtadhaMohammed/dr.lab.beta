@@ -55,7 +55,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
-    
+
     case "updatePatient": {
       try {
         const resp = await labDB.updatePatient(arg.id, arg.data);
@@ -69,14 +69,15 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "addTest": {
       try {
+        console.log('Received data for adding test:', arg.data);
         const resp = await labDB.addTest(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
+        console.error('Error adding test:', error);
         event.reply("asynchronous-reply", { success: false, error: error.message });
       }
       break;
     }
-
 
     case "deleteTest": {
       try {
@@ -100,7 +101,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "getTests": {
       try {
-        const resp = await labDB.getTests(arg);
+        const resp = await labDB.getTests(arg.data);
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
         event.reply("asynchronous-reply", { success: false, error: error.message });
@@ -110,17 +111,19 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "addPackage": {
       try {
-        const resp = await labDB.addPackage(arg);
+        const resp = await labDB.addPackage(arg.data); 
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
+        console.error('Error adding package:', error);
         event.reply("asynchronous-reply", { success: false, error: error.message });
       }
       break;
     }
 
+
     case "deletePackage": {
       try {
-        const resp = await labDB.deletePackage(arg.data);
+        const resp = await labDB.deletePackage(arg.id);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
         event.reply("asynchronous-reply", { success: false, error: error.message });
@@ -130,13 +133,16 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "editPackage": {
       try {
-        const resp = await labDB.editPackage(arg.data);  // Pass arg.data to editPackage
+        console.log('Received data for editing package:', arg.data);
+        const resp = await labDB.editPackage(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
+        console.error('Error updating package:', error);
         event.reply("asynchronous-reply", { success: false, error: error.message });
       }
       break;
     }
+    
 
     case "getPackages": {
       try {
@@ -158,7 +164,6 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
-
     case "deleteVisit": {
       try {
         const resp = await labDB.deleteVisit(arg.id);
