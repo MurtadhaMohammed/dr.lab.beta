@@ -37,7 +37,7 @@ const LoginScreen = () => {
 
       if (data.success) {
         localStorage.setItem("lab-exp", data.user.exp);
-        localStorage.setItem("lab-id", data.user._id);
+        localStorage.setItem("lab-id", data.user.id);
         let createdAt = localStorage.getItem("lab-created");
         if (!createdAt)
           localStorage.setItem("lab-created", dayjs().toISOString());

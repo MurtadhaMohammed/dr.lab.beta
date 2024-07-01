@@ -386,7 +386,6 @@ export const PureTable = ({ isReport = false }) => {
       key: "status",
       render: (status) => <Tag color={statusColor[status]}>{status}</Tag>,
     },
-
     {
       ...(!isReport && {
         title: "",

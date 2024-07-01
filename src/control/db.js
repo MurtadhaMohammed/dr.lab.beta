@@ -314,21 +314,21 @@ class LabDB {
     const { patientID, status, testType, tests, discount } = data;
     const testTypeStr = JSON.stringify(testType);
     const testsStr = JSON.stringify(tests);
-
+  
     const patientCheckStmt = this.db.prepare(`
       SELECT id FROM patients WHERE id = ?
     `);
     const patientExists = patientCheckStmt.get(patientID);
-
+  
     if (!patientExists) {
       throw new Error(`Patient with ID ${patientID} does not exist.`);
     }
-
+  
     const visitCheckStmt = this.db.prepare(`
       SELECT id FROM visits WHERE patientID = ?
     `);
     const existingVisit = visitCheckStmt.get(patientID);
-
+  
     if (existingVisit) {
       const updateStmt = this.db.prepare(`
         UPDATE visits
@@ -336,7 +336,7 @@ class LabDB {
         WHERE patientID = ?
       `);
       updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
-
+  
       return { id: existingVisit.id };
     } else {
       const insertStmt = this.db.prepare(`
@@ -347,8 +347,7 @@ class LabDB {
       return { id: info.lastInsertRowid };
     }
   }
-
-
+  
 
   async deleteVisit(id) {
     const stmt = await this.db.prepare(`
@@ -370,7 +369,6 @@ class LabDB {
     const visits = stmt.all(`%${q}%`, limit, skip);
     return { data: visits };
   }
-
 
   async updateVisit(id, update) {
     const { patientID, status, testType, tests, discount } = update;

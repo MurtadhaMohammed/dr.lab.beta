@@ -21,7 +21,7 @@ export const PatientHistory = () => {
       doc: "visits",
       query: "find",
       search: {
-        "patient._id": id,
+        "patient.id": id,
       },
     }).then(({ err, rows }) => {
       if (err) message.error("Error !");
@@ -51,8 +51,8 @@ export const PatientHistory = () => {
     },
     {
       title: "Price",
-      dataIndex: "_id",
-      key: "_id",
+      dataIndex: "id",
+      key: "id",
       render: (_, record) => (
         <span
           style={
@@ -73,8 +73,8 @@ export const PatientHistory = () => {
     },
     {
       title: "End Price",
-      dataIndex: "_id",
-      key: "_id",
+      dataIndex: "id",
+      key: "id",
       render: (_, record) => (
         <b style={{ whiteSpace: "nowarp" }}>
           {Number(
