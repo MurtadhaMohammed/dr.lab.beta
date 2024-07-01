@@ -147,7 +147,7 @@ export const PureModal = () => {
   const handleSubmit = () => {
     let data = {
       patient: {
-        id,
+        id: uID,
         name,
         gender,
         email,
@@ -205,7 +205,7 @@ export const PureModal = () => {
             if (resp.success) {
               send({
                 query: "addVisit",
-                data: { ...data, patient: resp.data, createdAt: Date.now() },
+                data: { ...data, patientID: resp.data.id, createdAt: Date.now() },
               }).then(resp => {
                 if (resp.success) {
                   console.log("addVisit response:", resp);
@@ -233,7 +233,7 @@ export const PureModal = () => {
               console.log("addPatient response:", resp);
               send({
                 query: "addVisit",
-                data: { ...data, patient: { ...data.patient, id: resp.id }, createdAt: Date.now() },
+                data: { ...data, patientID: resp.id, createdAt: Date.now() },
               }).then(resp => {
                 console.log("addVisit response:", resp);
                 if (resp.success) {
