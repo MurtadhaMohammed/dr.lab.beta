@@ -3,7 +3,7 @@ import MainContainer from "./components/Container";
 import PatientsScreen from "./screens/PatientsScreen";
 import TestsScreen from "./screens/TestsScreen";
 import GroupsScreen from "./screens/GroupsScreen";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, message } from "antd";
 import HomeScreen from "./screens/HomeScreen";
 import { Routes, Route } from "react-router-dom";
 import ReportsScreen from "./screens/ReportsScreen";
@@ -23,14 +23,14 @@ function App() {
     if (!exp || !createdAt) setIsLogin(false);
     else {
       let isExp = dayjs().isAfter(dayjs(createdAt).add(exp, "d"));
-      if (isExp) setIsLogin(false);
-      else setIsLogin(true);
+      if (isExp) {
+        message.error("Searil Expired!");
+        setIsLogin(false);
+      } else setIsLogin(true);
     }
   };
 
-
   useEffect(() => {
-
     // send({
     //   query: "getPatients",
     //   q: "testUpdate",
@@ -45,8 +45,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
-
     // send({
     //   query: "addPatient",
     //   data: {
@@ -65,8 +63,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
-
     // send({
     //   query: "deletePatient",
     //   id: 1
@@ -79,7 +75,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "updatePatient",
     //   id: 1, // Replace with the actual patient ID
@@ -99,8 +94,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
-
     // send({
     //   query: "addTest",
     //   data: {
@@ -120,7 +113,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "deleteTest",
     //   id: 1
@@ -133,7 +125,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "editTest",
     //   id: 3,
@@ -154,7 +145,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "getTests",
     //   q: "addTest",
@@ -169,7 +159,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "addPackage",
     //   data: {
@@ -186,8 +175,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
-
     // send({
     //   query: "deletePackage",
     //   id: 1
@@ -200,8 +187,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
-
     // send({
     //   query: "editPackage",
     //   data: {
@@ -219,14 +204,12 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
-
     // send({
     //   query: "getPackages",
     //   data: {
     //     q: "ADDPackage",
-    //     skip: 0,       
-    //     limit: 10         
+    //     skip: 0,
+    //     limit: 10
     //   }
     // }).then(resp => {
     //   if (resp.success) {
@@ -237,7 +220,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "addVisit",
     //   data: {
@@ -255,8 +237,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
-
     //  send({
     //       query: "deleteVisit",
     //       id: 1
@@ -269,13 +249,12 @@ function App() {
     //     }).catch(err => {
     //       console.error("Error in IPC communication:", err);
     //     });
-
     // send({
     //   query: "getVisits",
     //   data: {
-    //     q: "John Doe",   
-    //     skip: 0,  
-    //     limit: 10 
+    //     q: "John Doe",
+    //     skip: 0,
+    //     limit: 10
     //   }
     // }).then(resp => {
     //   if (resp.success) {
@@ -286,7 +265,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "updateVisit",
     //   id: 3,
@@ -306,17 +284,11 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
-
   }, []);
-
-
-
 
   useEffect(() => {
     checkExpire();
   }, [isLogin]);
-
 
   return (
     <ConfigProvider

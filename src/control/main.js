@@ -20,7 +20,6 @@ let labDB = new LabDB();
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   switch (arg.query) {
-
     case "getPatients": {
       try {
         const resp = await labDB.getPatients({
@@ -30,7 +29,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         });
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
@@ -40,7 +42,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.addPatient(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
@@ -50,11 +55,13 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.deletePatient(arg.id);
         event.reply("asynchronous-reply", { success: true, data: resp });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
-
 
     case "updatePatient": {
       try {
@@ -62,19 +69,25 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
         console.error("Error updating patient:", error); // Add this line
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
 
     case "addTest": {
       try {
-        console.log('Received data for adding test:', arg.data);
+        console.log("Received data for adding test:", arg.data);
         const resp = await labDB.addTest(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
-        console.error('Error adding test:', error);
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        console.error("Error adding test:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
@@ -84,7 +97,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.deleteTest(arg.id);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
@@ -94,7 +110,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.editTest(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
@@ -104,63 +123,78 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.getTests(arg.data);
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
 
     case "addPackage": {
       try {
-        const resp = await labDB.addPackage(arg.data); 
+        const resp = await labDB.addPackage(arg.data);
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
-        console.error('Error adding package:', error);
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        console.error("Error adding package:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
-
 
     case "deletePackage": {
       try {
         const resp = await labDB.deletePackage(arg.id);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
 
     case "editPackage": {
       try {
-        console.log('Received data for editing package:', arg.data);
+        console.log("Received data for editing package:", arg.data);
         const resp = await labDB.editPackage(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
-        console.error('Error updating package:', error);
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        console.error("Error updating package:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
-    
 
     case "getPackages": {
       try {
         const resp = await labDB.getPackages(arg.data);
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
-
 
     case "addVisit": {
       try {
         const resp = await labDB.addVisit(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
@@ -169,11 +203,13 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.deleteVisit(arg.id);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
-
 
     case "getVisits": {
       const { q, skip, limit } = arg.data;
@@ -181,7 +217,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.getVisits({ q, skip, limit });
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
@@ -191,21 +230,19 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.updateVisit(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
     }
-
-
-
-
 
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {
         event.reply("asynchronous-reply", { err, rows });
       });
       break;
-
 
     case "update": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].update(arg.condition, arg.data, {}, (err) => {
@@ -249,7 +286,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       });
       break;
     case "getUUID": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
-      let UUID = machineIdSync(true);
+      let UUID = await machineIdSync(true);
       event.reply("asynchronous-reply", { UUID });
       break;
     default:

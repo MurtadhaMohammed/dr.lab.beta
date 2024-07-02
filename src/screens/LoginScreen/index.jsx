@@ -11,13 +11,17 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
 
-  useEffect(() => {
+  const getUUID = () => {
     send({ query: "getUUID" }).then((resp) => {
       setUUID(resp.UUID);
     });
-  }, []);
+  };
 
-  console.log(UUID);
+  useEffect(() => {
+    setTimeout(() => {
+      getUUID();
+    }, 500);
+  }, []);
 
   const login = async () => {
     setLoading(true);
@@ -39,8 +43,9 @@ const LoginScreen = () => {
         localStorage.setItem("lab-exp", data.user.exp);
         localStorage.setItem("lab-id", data.user.id);
         let createdAt = localStorage.getItem("lab-created");
-        if (!createdAt)
+        if (!createdAt) {
           localStorage.setItem("lab-created", dayjs().toISOString());
+        }
         setIsLogin(true);
       } else message.error("Serial not found!");
     } catch (error) {
