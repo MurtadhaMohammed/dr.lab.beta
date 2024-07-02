@@ -133,7 +133,7 @@ const TestForm = () => {
       />
 
       <div className="test-list">
-        {tests.map((el, i) => (
+        {tests?.map((el, i) => (
           <div key={i} className="test-item app-flex-space">
             <Space>
               <Button

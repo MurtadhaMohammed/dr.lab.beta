@@ -270,7 +270,7 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "gender",
       key: "gender",
       render: (_, record) =>
-        record?.patientGender === "male" ? (
+        record?.patient?.gender === "male" ? (
           <ManOutlined style={{ color: "#0000ff", fontSize: 16 }} />
         ) : (
           <WomanOutlined style={{ color: "rgb(235, 47, 150)", fontSize: 16 }} />
@@ -280,22 +280,21 @@ export const PureTable = ({ isReport = false }) => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (_, record) => <b>{record?.patientName}</b>,
+      render: (_, record) => <b>{record?.patient?.name}</b>,
     },
     {
       title: "Tests",
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-
-        let list = JSON.parse(record.tests) || [];
+        let testType = record.testType.replace(/^"|"$/g, ''); // Remove surrounding quotes
+        let list =record.tests;
         let numOfView = 2;
-        let restCount =
-          list.length > numOfView ? list.length - numOfView : null;
+        let restCount = list.length > numOfView ? list.length - numOfView : null;
         return (
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
-              <Tag>{el[record.testType === "CUSTOME" ? "name" : "title"]}</Tag>
+              <Tag key={el.id}>{el[testType === "CUSTOME" ? "name" : "title"]}</Tag>
             ))}
             {restCount && (
               <Popover
@@ -303,9 +302,7 @@ export const PureTable = ({ isReport = false }) => {
                   <div style={{ maxWidth: "300" }}>
                     <Space wrap>
                       {list?.map((el) => (
-                        <Tag>
-                          {el[record.testType === "CUSTOME" ? "name" : "title"]}
-                        </Tag>
+                        <Tag key={el.id}>{el[testType === "CUSTOME" ? "name" : "title"]}</Tag>
                       ))}
                     </Space>
                   </div>
@@ -335,7 +332,7 @@ export const PureTable = ({ isReport = false }) => {
           }
         >
           {Number(
-            getTotalPrice(record?.testType, JSON.parse(record?.tests))
+            getTotalPrice(record?.testType, record?.tests)
           ).toLocaleString("en")}
         </span>
       ),
@@ -347,8 +344,7 @@ export const PureTable = ({ isReport = false }) => {
       render: (_, record) => (
         <b style={{ whiteSpace: "nowarp" }}>
           {Number(
-            getTotalPrice(record?.testType, JSON.parse(record?.tests)) -
-            record?.discount
+            getTotalPrice(record?.testType, record?.tests) - record?.discount
           ).toLocaleString("en")}{" "}
           IQD
         </b>
@@ -485,7 +481,7 @@ export const PureTable = ({ isReport = false }) => {
     createdAt,
   }) => {
     setId(id);
-    setTests(JSON.parse(tests));
+    setTests(tests);
     setBirth(dayjs(patient?.birth));
     setName(patient?.name);
     setEmail(patient?.email);
@@ -494,7 +490,6 @@ export const PureTable = ({ isReport = false }) => {
     setTestType(testType);
     setDiscount(discount);
     setIsModal(true);
-    setUID(patient?.uID);
     setCreatedAt(createdAt);
   };
 

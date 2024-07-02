@@ -141,18 +141,6 @@ export const PureTable = () => {
 
   const handleRemove = (id) => {
 
-    // send({
-    //   doc: "patients",
-    //   query: "remove",
-    //   condition: { _id },
-    // }).then(({ err }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     message.success("Remove Succefful.");
-    //     setIsReload(!isReload);
-    //   }
-    // });
-
     send({
       query: "deletePatient",
       id
@@ -170,7 +158,6 @@ export const PureTable = () => {
       message.error("Error in IPC communication.");
     });
 
-    console.log("ttttttttttttt", id);
 
   };
 

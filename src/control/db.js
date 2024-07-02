@@ -10,9 +10,9 @@ class LabDB {
     const dbPath = !app.isPackaged
       ? "database.sql"
       : path.join(
-        app.getAppPath(),
-        isMac ? "../../../../database.sql" : "../../database.sql"
-      );
+          app.getAppPath(),
+          isMac ? "../../../../database.sql" : "../../database.sql"
+        );
 
     try {
       this.db = new Database(dbPath, {
@@ -96,7 +96,13 @@ class LabDB {
       INSERT INTO patients (name, gender, email, phone, birth)
       VALUES (?, ?, ?, ?, ?)
     `);
-    const info = stmt.run(patient.name, patient.gender, patient.email, patient.phone, new Date(patient.birth).toISOString());
+    const info = stmt.run(
+      patient.name,
+      patient.gender,
+      patient.email,
+      patient.phone,
+      new Date(patient.birth).toISOString()
+    );
     return { id: info.lastInsertRowid };
   }
 
@@ -121,7 +127,14 @@ class LabDB {
         updatedAt = CURRENT_TIMESTAMP
         WHERE id = ?
     `);
-    const info = stmt.run(name, gender, email, phone, birth ? new Date(birth).toISOString() : null, id)
+    const info = stmt.run(
+      name,
+      gender,
+      email,
+      phone,
+      birth ? new Date(birth).toISOString() : null,
+      id
+    );
     return { data: info.changes > 0 };
   }
 
@@ -131,7 +144,13 @@ class LabDB {
       INSERT INTO tests (name, price, normal, options, isSelecte)
       VALUES (?, ?, ?, ?, ?)
     `);
-    const info = stmt.run(name, price, normal, JSON.stringify(options), isSelecte ? 1 : 0);
+    const info = stmt.run(
+      name,
+      price,
+      normal,
+      JSON.stringify(options),
+      isSelecte ? 1 : 0
+    );
     return { id: info.lastInsertRowid };
   }
 
@@ -182,11 +201,11 @@ class LabDB {
     const { title, customePrice, tests } = data;
 
     if (!Array.isArray(tests)) {
-      console.error('tests is not iterable:', tests);
-      throw new TypeError('tests is not iterable');
+      console.error("tests is not iterable:", tests);
+      throw new TypeError("tests is not iterable");
     }
 
-    const testIDs = tests.map(test => test.id);
+    const testIDs = tests.map((test) => test.id);
 
     const validTestIDs = [];
     for (const testID of testIDs) {
@@ -202,7 +221,7 @@ class LabDB {
     }
 
     if (validTestIDs.length === 0) {
-      throw new Error('No valid test IDs provided.');
+      throw new Error("No valid test IDs provided.");
     }
 
     const packageStmt = this.db.prepare(`
@@ -220,7 +239,9 @@ class LabDB {
     `);
     const testToPackageTransaction = this.db.transaction(() => {
       for (const testID of validTestIDs) {
-        console.log(`Associating package ID ${packageID} with test ID ${testID}`);
+        console.log(
+          `Associating package ID ${packageID} with test ID ${testID}`
+        );
         testToPackageStmt.run(packageID, testID);
       }
     });
@@ -238,11 +259,14 @@ class LabDB {
     if (info.changes > 0) {
       const deleteTestToPackage = await this.db.prepare(`
          DELETE FROM test_to_packages WHERE packageID = ?
-        `)
+        `);
 
       deleteTestToPackage.run(packageID);
 
-      return { success: true, message: `Package with ID ${packageID} deleted successfully.` };
+      return {
+        success: true,
+        message: `Package with ID ${packageID} deleted successfully.`,
+      };
     } else {
       throw new Error(`Package with ID ${packageID} not found.`);
     }
@@ -251,7 +275,7 @@ class LabDB {
   async editPackage(id, data) {
     try {
       const { title, customePrice } = data;
-      const tests = data.tests.map(test => test.id);
+      const tests = data.tests.map((test) => test.id);
 
       const transaction = this.db.transaction(() => {
         const packageStmt = this.db.prepare(`
@@ -269,7 +293,9 @@ class LabDB {
         packageStmt.run(title, customePrice, id);
 
         // Delete existing associations in 'test_to_packages' table for the package
-        const deleteTestToPackage = this.db.prepare('DELETE FROM test_to_packages WHERE packageID = ?');
+        const deleteTestToPackage = this.db.prepare(
+          "DELETE FROM test_to_packages WHERE packageID = ?"
+        );
         deleteTestToPackage.run(id);
 
         // Insert new associations into 'test_to_packages' table
@@ -281,13 +307,17 @@ class LabDB {
       transaction();
 
       // Return success message
-      return { success: true, message: `Package with ID ${id} updated successfully.` };
+      return {
+        success: true,
+        message: `Package with ID ${id} updated successfully.`,
+      };
     } catch (error) {
       // Catch any errors and throw a detailed error message
-      throw new Error(`Failed to update package with ID ${id}: ${error.message}`);
+      throw new Error(
+        `Failed to update package with ID ${id}: ${error.message}`
+      );
     }
   }
-
 
   async getPackages({ q = "", skip = 0, limit = 10 }) {
     const stmt = await this.db.prepare(`
@@ -296,7 +326,7 @@ class LabDB {
       LIMIT ? OFFSET ?
       `);
     const packages = stmt.all(`%${q}%`, limit, skip);
-    const packagesWithTests = packages.map(pkg => {
+    const packagesWithTests = packages.map((pkg) => {
       const testStmt = this.db.prepare(`
           SELECT t.*
           FROM tests t
@@ -304,50 +334,55 @@ class LabDB {
           WHERE tp.packageID = ?
           `);
       const tests = testStmt.all(pkg.id);
-      return { ...pkg, tests }
-    })
+      return { ...pkg, tests };
+    });
     return { data: packagesWithTests };
   }
 
-
-
   async addVisit(data) {
     const { patientID, status, testType, tests, discount } = data;
+    const testTypeStr = testType; // No need to stringify
     const testsStr = JSON.stringify(tests);
-
+  
     const patientCheckStmt = this.db.prepare(`
       SELECT id FROM patients WHERE id = ?
     `);
     const patientExists = patientCheckStmt.get(patientID);
-
+  
     if (!patientExists) {
       throw new Error(`Patient with ID ${patientID} does not exist.`);
     }
-
+  
     const visitCheckStmt = this.db.prepare(`
       SELECT id FROM visits WHERE patientID = ?
     `);
     const existingVisit = visitCheckStmt.get(patientID);
-
+  
     if (existingVisit) {
       const updateStmt = this.db.prepare(`
         UPDATE visits
         SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE patientID = ?
       `);
-      updateStmt.run(status, testType, testsStr, discount, patientID);
-
+      updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
+  
       return { id: existingVisit.id };
     } else {
       const insertStmt = this.db.prepare(`
         INSERT INTO visits (patientID, status, testType, tests, discount)
         VALUES (?, ?, ?, ?, ?)
       `);
-      const info = insertStmt.run(patientID, status, testType, testsStr, discount);
+      const info = insertStmt.run(
+        patientID,
+        status,
+        testTypeStr,
+        testsStr,
+        discount
+      );
       return { id: info.lastInsertRowid };
     }
   }
-
+  
   async deleteVisit(id) {
     const stmt = await this.db.prepare(`
       DELETE FROM visits WHERE id = ?
@@ -359,44 +394,61 @@ class LabDB {
 
   async getVisits({ q = "", skip = 0, limit = 10 }) {
     const stmt = await this.db.prepare(`
-      SELECT v.*, p.name as patientName, p.gender as patientGender
+      SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail, p.birth as patientBirth
       FROM visits v
       JOIN patients p ON v.patientID = p.id
       WHERE p.name LIKE ?
       LIMIT ? OFFSET ?
     `);
+
     const visits = stmt.all(`%${q}%`, limit, skip);
-    return { data: visits };
+    const results = visits?.map((el) => ({
+      id: el?.id,
+      tests: JSON.parse(el?.tests) || [],
+      testType: el?.testType,
+      status: el?.status,
+      discount: el?.discount,
+      createdAt: el?.createdAt,
+      updatedAt: el?.updatedAt,
+      patient: {
+        id: el?.patientID,
+        name: el?.patientName,
+        gender: el?.patientGender,
+        phone: el?.patientPhone,
+        email: el?.patientEmail,
+        birth: el?.patientBirth,
+      },
+    }));
+    return { success: true, data: results };
   }
 
   async updateVisit(id, update) {
     const { patientID, status, testType, tests, discount } = update;
-    console.log("Updating visit with ID:", id, "Data:", update); 
-    try {
-      const stmt = this.db.prepare(`
-          UPDATE visits
-          SET 
-              patientID = COALESCE(?, patientID),
-              status = COALESCE(?, status),
-              testType = COALESCE(?, testType),
-              tests = COALESCE(?, tests),
-              discount = COALESCE(?, discount),
-              updatedAt = CURRENT_TIMESTAMP
-          WHERE id = ?
-      `);
-      const info = stmt.run(patientID, status, testType, JSON.stringify(tests), discount, id);
-      return { success: info.changes > 0 };
-    } catch (error) {
-      console.error("Error updating visit:", error.message);
-      throw new Error("Failed to update visit");
-    }
+    const testsStr = JSON.stringify(tests);
+  
+    const stmt = this.db.prepare(`
+      UPDATE visits
+      SET 
+        patientID = COALESCE(?, patientID),
+        status = COALESCE(?, status),
+        testType = COALESCE(?, testType),
+        tests = COALESCE(?, tests),
+        discount = COALESCE(?, discount),
+        updatedAt = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `);
+    const info = stmt.run(
+      patientID,
+      status,
+      testType,
+      testsStr,
+      discount,
+      id
+    );
+    return { success: info.changes > 0 };
   }
-
-
+  
+  
 }
 
-
-
-
 module.exports = { LabDB };
-

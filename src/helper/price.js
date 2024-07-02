@@ -29,9 +29,20 @@ export const getPrice = (type, record) => {
 };
 
 export const getTotalPrice = (type, tests) => {
+  // Parse the tests if it's a JSON string
+  if (typeof tests === 'string') {
+    try {
+      tests = JSON.parse(tests);
+    } catch (error) {
+      console.error('Failed to parse tests:', error);
+      return 0;
+    }
+  }
+
   //total price record for visit
   let totalPrice = tests
     .map((el) => getPrice(type, el))
     ?.reduce((a, b) => a + b, 0);
+
   return totalPrice || 0;
 };

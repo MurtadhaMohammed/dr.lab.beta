@@ -114,18 +114,18 @@ function App() {
     //   console.error("Error in IPC communication:", err);
     // });
 
-    send({
-      query: "deleteTest",
-      id: 6
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Success deleting test");
-      } else {
-        console.error("Error deleting Test:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
+    // send({
+    //   query: "deleteTest",
+    //   id: 6
+    // }).then(resp => {
+    //   if (resp.success) {
+    //     console.log("Success deleting test");
+    //   } else {
+    //     console.error("Error deleting Test:", resp.error);
+    //   }
+    // }).catch(err => {
+    //   console.error("Error in IPC communication:", err);
+    // });
 
     // send({
     //   query: "editTest",
@@ -242,7 +242,7 @@ function App() {
 
     //  send({
     //       query: "deleteVisit",
-    //       id: 13
+    //       id: 20
     //     }).then(resp => {
     //       if (resp.success) {
     //         console.log("Success deleteVisit");
