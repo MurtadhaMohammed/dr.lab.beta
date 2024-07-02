@@ -269,8 +269,8 @@ export const PureTable = ({ isReport = false }) => {
       title: "#",
       dataIndex: "gender",
       key: "gender",
-      render: (_, { patient }) =>
-        patient?.gender === "male" ? (
+      render: (_, record) =>
+        record?.patientGender === "male" ? (
           <ManOutlined style={{ color: "#0000ff", fontSize: 16 }} />
         ) : (
           <WomanOutlined style={{ color: "rgb(235, 47, 150)", fontSize: 16 }} />
@@ -280,7 +280,7 @@ export const PureTable = ({ isReport = false }) => {
       title: "Name",
       dataIndex: "name",
       key: "name",
-      render: (_, record) => <b>{record?.patient?.name}</b>,
+      render: (_, record) => <b>{record?.patientName}</b>,
     },
     {
       title: "Tests",
@@ -288,7 +288,7 @@ export const PureTable = ({ isReport = false }) => {
       key: "tests",
       render: (_, record) => {
         // console.log(record.tests);
-        let list = record.tests || [];
+        let list = JSON.parse(record.tests) || [];
         let numOfView = 2;
         let restCount =
           list.length > numOfView ? list.length - numOfView : null;
@@ -327,15 +327,15 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
           {Number(
-            getTotalPrice(record?.testType, record?.tests)
+            getTotalPrice(record?.testType, JSON.parse(record?.tests))
           ).toLocaleString("en")}
         </span>
       ),
@@ -347,7 +347,8 @@ export const PureTable = ({ isReport = false }) => {
       render: (_, record) => (
         <b style={{ whiteSpace: "nowarp" }}>
           {Number(
-            getTotalPrice(record?.testType, record?.tests) - record?.discount
+            getTotalPrice(record?.testType, JSON.parse(record?.tests)) -
+              record?.discount
           ).toLocaleString("en")}{" "}
           IQD
         </b>
@@ -470,22 +471,21 @@ export const PureTable = ({ isReport = false }) => {
     //   }
     // });
 
-
     send({
       query: "deleteVisit",
       id,
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Success deleteVisit");
-        setIsReload(!isReload);
-      } else {
-        console.error("Error deleteVisit:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
-
+    })
+      .then((resp) => {
+        if (resp.success) {
+          console.log("Success deleteVisit");
+          setIsReload(!isReload);
+        } else {
+          console.error("Error deleteVisit:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
   };
 
   const handleEdit = ({
@@ -583,11 +583,10 @@ export const PureTable = ({ isReport = false }) => {
     //   }
     // });
 
-
     send({
       query: "getVisits",
       data,
-    }).then(resp => {
+    }).then((resp) => {
       if (resp.success) {
         setData(resp.data);
         console.log("Visits retrieved successfully:", resp.data);
@@ -595,8 +594,6 @@ export const PureTable = ({ isReport = false }) => {
         console.error("Error retrieving visits:", resp.error);
       }
     });
-
-
   }, [page, isReload, querySearch, isToday]);
 
   return (

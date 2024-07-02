@@ -83,8 +83,9 @@ class LabDB {
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
-     WHERE name LIKE ?
-      LIMIT ? OFFSET ? 
+      WHERE name LIKE ?
+      ORDER BY patients.id DESC
+      LIMIT ? OFFSET ?
     `);
     const patients = stmt.all(`%${q}%`, limit, skip);
     return { data: patients };
@@ -360,7 +361,7 @@ class LabDB {
 
   async getVisits({ q = "", skip = 0, limit = 10 }) {
     const stmt = await this.db.prepare(`
-      SELECT v.*, p.name as patientName
+      SELECT v.*, p.name as patientName, p.gender as patientGender
       FROM visits v
       JOIN patients p ON v.patientID = p.id
       WHERE p.name LIKE ?
