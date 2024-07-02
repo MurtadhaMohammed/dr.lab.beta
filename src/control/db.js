@@ -341,7 +341,7 @@ class LabDB {
 
   async addVisit(data) {
     const { patientID, status, testType, tests, discount } = data;
-    const testTypeStr = testType; // No need to stringify
+    const testTypeStr = testType;
     const testsStr = JSON.stringify(tests);
   
     const patientCheckStmt = this.db.prepare(`

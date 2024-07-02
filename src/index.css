@@ -9,6 +9,7 @@
   src: url("./fonts/Frutiger LT Arabic 65 Bold.ttf");
   font-weight: bold;
 }
+
 @font-face {
   font-family: "Circular";
   src: url("./fonts/CircularStd-Book.ttf");
@@ -19,6 +20,7 @@
   font-family: "Frutiger";
   margin: 0;
   padding: 0;
+ 
 }
 
 p {
@@ -38,6 +40,8 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #f6f6f6;
+  
 }
 
 code {
@@ -87,20 +91,20 @@ code {
   margin: 16px 0;
 }
 
- th,
- td {
+th,
+td {
   background-color: transparent !important;
 }
 
- th,
- th,
- td,
- th,
- td {
+th,
+th,
+td,
+th,
+td {
   padding: 12px 8px !important;
 }
 
- th {
+th {
   font-weight: normal !important;
   color: #666 !important;
   background-color: transparent;

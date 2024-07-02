@@ -288,7 +288,7 @@ export const PureTable = ({ isReport = false }) => {
       key: "tests",
       render: (_, record) => {
         let testType = record.testType.replace(/^"|"$/g, ''); // Remove surrounding quotes
-        let list =record.tests;
+        let list = record.tests;
         let numOfView = 2;
         let restCount = list.length > numOfView ? list.length - numOfView : null;
         return (
@@ -565,14 +565,17 @@ export const PureTable = ({ isReport = false }) => {
     //     }, 100);
     //   }
     // });
-
     send({
       query: "getVisits",
-      data,
+      data: {
+        q: querySearch,
+        skip: (page - 1) * limit,
+        limit,
+      },
     }).then((resp) => {
       if (resp.success) {
         setData(resp.data);
-        console.log("Visits retrieved successfully:", resp.data);
+        setTotal(resp.total);
       } else {
         console.error("Error retrieving visits:", resp.error);
       }
