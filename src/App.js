@@ -237,18 +237,20 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-    //  send({
-    //       query: "deleteVisit",
-    //       id: 1
-    //     }).then(resp => {
-    //       if (resp.success) {
-    //         console.log("Success deleteVisit");
-    //       } else {
-    //         console.error("Error deleteVisit:", resp.error);
-    //       }
-    //     }).catch(err => {
-    //       console.error("Error in IPC communication:", err);
-    //     });
+
+     send({
+          query: "deleteVisit",
+          id: 13
+        }).then(resp => {
+          if (resp.success) {
+            console.log("Success deleteVisit");
+          } else {
+            console.error("Error deleteVisit:", resp.error);
+          }
+        }).catch(err => {
+          console.error("Error in IPC communication:", err);
+        });
+
     // send({
     //   query: "getVisits",
     //   data: {

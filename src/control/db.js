@@ -313,42 +313,40 @@ class LabDB {
 
   async addVisit(data) {
     const { patientID, status, testType, tests, discount } = data;
-    const testTypeStr = JSON.stringify(testType);
     const testsStr = JSON.stringify(tests);
-  
+
     const patientCheckStmt = this.db.prepare(`
       SELECT id FROM patients WHERE id = ?
     `);
     const patientExists = patientCheckStmt.get(patientID);
-  
+
     if (!patientExists) {
       throw new Error(`Patient with ID ${patientID} does not exist.`);
     }
-  
+
     const visitCheckStmt = this.db.prepare(`
       SELECT id FROM visits WHERE patientID = ?
     `);
     const existingVisit = visitCheckStmt.get(patientID);
-  
+
     if (existingVisit) {
       const updateStmt = this.db.prepare(`
         UPDATE visits
         SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
         WHERE patientID = ?
       `);
-      updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
-  
+      updateStmt.run(status, testType, testsStr, discount, patientID);
+
       return { id: existingVisit.id };
     } else {
       const insertStmt = this.db.prepare(`
         INSERT INTO visits (patientID, status, testType, tests, discount)
         VALUES (?, ?, ?, ?, ?)
       `);
-      const info = insertStmt.run(patientID, status, testTypeStr, testsStr, discount);
+      const info = insertStmt.run(patientID, status, testType, testsStr, discount);
       return { id: info.lastInsertRowid };
     }
   }
-  
 
   async deleteVisit(id) {
     const stmt = await this.db.prepare(`
@@ -373,21 +371,26 @@ class LabDB {
 
   async updateVisit(id, update) {
     const { patientID, status, testType, tests, discount } = update;
-    const stmt = this.db.prepare(`
-      UPDATE visits
-      SET 
-        patientID = COALESCE(?, patientID),
-        status = COALESCE(?, status),
-        testType = COALESCE(?, testType),
-        tests = COALESCE(?, tests),
-        discount = COALESCE(?, discount),
-        updatedAt = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    const info = stmt.run(patientID, status, testType, tests, discount, id);
-    return { success: info.changes > 0 };
+    console.log("Updating visit with ID:", id, "Data:", update); 
+    try {
+      const stmt = this.db.prepare(`
+          UPDATE visits
+          SET 
+              patientID = COALESCE(?, patientID),
+              status = COALESCE(?, status),
+              testType = COALESCE(?, testType),
+              tests = COALESCE(?, tests),
+              discount = COALESCE(?, discount),
+              updatedAt = CURRENT_TIMESTAMP
+          WHERE id = ?
+      `);
+      const info = stmt.run(patientID, status, testType, JSON.stringify(tests), discount, id);
+      return { success: info.changes > 0 };
+    } catch (error) {
+      console.error("Error updating visit:", error.message);
+      throw new Error("Failed to update visit");
+    }
   }
-
 
 
 }

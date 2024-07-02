@@ -54,19 +54,6 @@ export const PureModal = () => {
       console.error("Error in IPC communication:", err);
     });
 
-    //   send({
-    //     doc: "tests",
-    //     query: "find",
-    //     search: { name: queryKey },
-    //     limit: 10,
-    //     skip: 0,
-    //   }).then(({ err, rows }) => {
-    //     if (err) message.error("Error !");
-    //     else setTestList(rows);
-    //   });
-    // };
-
-
 
   };
 
@@ -92,8 +79,8 @@ export const PureModal = () => {
     let data = {
       title,
       customePrice,
-      tests: tests.map(el => ({ id: el.id })), // Ensure tests is an array of objects with id property
-      createdAt: Date.now(), // Ensure createdAt is correctly passed
+      tests: tests.map(el => ({ id: el.id })),
+      createdAt: Date.now(),
     };
     if (id) {
       send({

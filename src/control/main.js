@@ -259,7 +259,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       });
       break;
 
-    case "find": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
+    case "find": 
       db[arg.doc]
         .find(arg?.search)
         .skip(arg?.skip || 0)

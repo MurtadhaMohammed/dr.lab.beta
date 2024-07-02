@@ -287,7 +287,7 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-        // console.log(record.tests);
+
         let list = JSON.parse(record.tests) || [];
         let numOfView = 2;
         let restCount =
@@ -300,7 +300,7 @@ export const PureTable = ({ isReport = false }) => {
             {restCount && (
               <Popover
                 content={
-                  <div style={{ maxWidth: 300 }}>
+                  <div style={{ maxWidth: "300" }}>
                     <Space wrap>
                       {list?.map((el) => (
                         <Tag>
@@ -327,10 +327,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -348,7 +348,7 @@ export const PureTable = ({ isReport = false }) => {
         <b style={{ whiteSpace: "nowarp" }}>
           {Number(
             getTotalPrice(record?.testType, JSON.parse(record?.tests)) -
-              record?.discount
+            record?.discount
           ).toLocaleString("en")}{" "}
           IQD
         </b>
@@ -459,18 +459,6 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   const handleRemove = (id) => {
-    // send({
-    //   doc: "visits",
-    //   query: "remove",
-    //   condition: { id },
-    // }).then(({ err }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     message.success("Remove Succefful.");
-    //     setIsReload(!isReload);
-    //   }
-    // });
-
     send({
       query: "deleteVisit",
       id,
@@ -497,7 +485,7 @@ export const PureTable = ({ isReport = false }) => {
     createdAt,
   }) => {
     setId(id);
-    setTests(tests);
+    setTests(JSON.parse(tests));
     setBirth(dayjs(patient?.birth));
     setName(patient?.name);
     setEmail(patient?.email);

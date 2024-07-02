@@ -144,138 +144,139 @@ export const PureModal = () => {
   //   else cb();
   // }); }
 
-  const handleSubmit = () => {
-    let data = {
+
+const handleSubmit = () => {
+  let data = {
       patient: {
-        id: uID,
-        name,
-        gender,
-        email,
-        phone,
-        birth: birth.toString(),
-        updatedAt: Date.now(),
+          id: uID,
+          name,
+          gender,
+          email,
+          phone,
+          birth: birth.toString(),
+          updatedAt: Date.now(),
       },
       status,
       testType,
-      tests,
+      tests: JSON.stringify(tests), // Ensure tests is sent as a JSON string
       discount,
       updatedAt: Date.now(),
-    };
-
-    if (id) {
-      send({
-        query: "updateVisit",
-        id,
-        data: { ...data }
-      }).then(resp => {
-        if (resp.success) {
-          message.success("Visit updated successfully");
-          console.log("updateVisit response:", resp);
-          send({
-            query: "updatePatient",
-            id,
-            data: { ...data.patient, createdAt }
-          }).then(resp => {
-            if (resp.success) {
-              message.success("Patient updated successfully");
-              console.log("updatePatient response:", resp);
-              setReset();
-              setIsModal(false);
-              setIsReload(!isReload);
-              setStep(0);
-            } else {
-              message.error("Error updating patient");
-            }
-          });
-        } else {
-          message.error("Error updating visit");
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-      });
-    } else {
-      getPatien((pObj) => {
-        if (pObj) {
-          send({
-            query: "updatePatient",
-            id,
-            data: { ...data.patient, createdAt: pObj.createdAt }
-          }).then(resp => {
-            console.log("updatePatient response:", resp);
-            if (resp.success) {
-              send({
-                query: "addVisit",
-                data: { ...data, patientID: resp.data.id, createdAt: Date.now() },
-              }).then(resp => {
-                if (resp.success) {
-                  console.log("addVisit response:", resp);
-                  message.success("Visit added successfully");
-                  setReset();
-                  setIsModal(false);
-                  setIsReload(!isReload);
-                  setStep(0);
-                } else {
-                  message.error("Error adding visit");
-                }
-              }).catch(err => {
-                console.error("Error in IPC communication:", err);
-              });
-            } else {
-              message.error("Error updating patient");
-            }
-          });
-        } else {
-          send({
-            query: "addPatient",
-            data: { ...data.patient, createdAt: Date.now() },
-          }).then(resp => {
-            if (resp.success) {
-              console.log("addPatient response:", resp);
-              send({
-                query: "addVisit",
-                data: { ...data, patientID: resp.id, createdAt: Date.now() },
-              }).then(resp => {
-                console.log("addVisit response:", resp);
-                if (resp.success) {
-                  message.success("Visit added successfully");
-                  setReset();
-                  setIsModal(false);
-                  setIsReload(!isReload);
-                  setStep(0);
-                } else {
-                  message.error("Error adding visit");
-                }
-              }).catch(err => {
-                console.error("Error in IPC communication:", err);
-              });
-            } else {
-              message.error("Error adding patient");
-            }
-          }).catch(err => {
-            console.error("Error in IPC communication:", err);
-          });
-        }
-      });
-    }
   };
 
-  const getPatien = (cb) => {
-    send({
+  if (id) {
+      send({
+          query: "updateVisit",
+          id,
+          data: { ...data }
+      }).then(resp => {
+          if (resp.success) {
+              message.success("Visit updated successfully");
+              console.log("updateVisit response:", resp);
+              send({
+                  query: "updatePatient",
+                  id,
+                  data: { ...data.patient, createdAt }
+              }).then(resp => {
+                  if (resp.success) {
+                      message.success("Patient updated successfully");
+                      console.log("updatePatient response:", resp);
+                      setReset();
+                      setIsModal(false);
+                      setIsReload(!isReload);
+                      setStep(0);
+                  } else {
+                      message.error("Error updating patient");
+                  }
+              });
+          } else {
+              message.error("Error updating visit");
+          }
+      }).catch(err => {
+          console.error("Error in IPC communication:", err);
+      });
+  } else {
+      getPatien((pObj) => {
+          if (pObj) {
+              send({
+                  query: "updatePatient",
+                  id,
+                  data: { ...data.patient, createdAt: pObj.createdAt }
+              }).then(resp => {
+                  console.log("updatePatient response:", resp);
+                  if (resp.success) {
+                      send({
+                          query: "addVisit",
+                          data: { ...data, patientID: resp.data.id, createdAt: Date.now() },
+                      }).then(resp => {
+                          if (resp.success) {
+                              console.log("addVisit response:", resp);
+                              message.success("Visit added successfully");
+                              setReset();
+                              setIsModal(false);
+                              setIsReload(!isReload);
+                              setStep(0);
+                          } else {
+                              message.error("Error adding visit");
+                          }
+                      }).catch(err => {
+                          console.error("Error in IPC communication:", err);
+                      });
+                  } else {
+                      message.error("Error updating patient");
+                  }
+              });
+          } else {
+              send({
+                  query: "addPatient",
+                  data: { ...data.patient, createdAt: Date.now() },
+              }).then(resp => {
+                  if (resp.success) {
+                      console.log("addPatient response:", resp);
+                      send({
+                          query: "addVisit",
+                          data: { ...data, patientID: resp.id, createdAt: Date.now() },
+                      }).then(resp => {
+                          console.log("addVisit response:", resp);
+                          if (resp.success) {
+                              message.success("Visit added successfully");
+                              setReset();
+                              setIsModal(false);
+                              setIsReload(!isReload);
+                              setStep(0);
+                          } else {
+                              message.error("Error adding visit");
+                          }
+                      }).catch(err => {
+                          console.error("Error in IPC communication:", err);
+                      });
+                  } else {
+                      message.error("Error adding patient");
+                  }
+              }).catch(err => {
+                  console.error("Error in IPC communication:", err);
+              });
+          }
+      });
+  }
+};
+
+const getPatien = (cb) => {
+  send({
       query: "getPatients",
       q: "",
-    }).then(resp => {
+  }).then(resp => {
       if (resp.success) {
-        const patient = resp.data.find(p => p.id === id);
-        cb(patient);
+          const patient = resp.data.find(p => p.id === id);
+          cb(patient);
       } else {
-        console.error("Error fetching patients:", resp.error);
-        cb();
+          console.error("Error fetching patients:", resp.error);
+          cb();
       }
-    }).catch(err => {
+  }).catch(err => {
       console.error("Error in IPC communication:", err);
       cb();
-    });
-  };
+  });
+};
 
   const pageStep = [<TestForm />, <PatientForm />];
 
