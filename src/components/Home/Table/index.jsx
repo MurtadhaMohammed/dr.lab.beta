@@ -378,11 +378,10 @@ export const PureTable = ({ isReport = false }) => {
           <span style={{ fontSize: 12 }}>
             {dayjs(createdAt).format("DD/MM/YYYY")}
           </span>{" "}
-          {dayjs(createdAt).format("hh:mm A")}
+          {dayjs(createdAt).add(3, "hours").format("hh:mm A")}
         </span>
       ),
     },
-
     {
       title: "Status",
       dataIndex: "status",
@@ -500,12 +499,20 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   useEffect(() => {
-    const startDate = filterDate
-      ? dayjs(filterDate[0]).startOf("day").toDate()
+    let startDate = filterDate
+      ? dayjs(filterDate[0]).startOf("day").toISOString()
       : "";
-    const endDate = filterDate
-      ? dayjs(filterDate[1]).endOf("day").toDate()
+    let endDate = filterDate
+      ? dayjs(filterDate[1]).endOf("day").toISOString()
       : "";
+
+    if (!isReport && isToday) {
+      startDate = dayjs().startOf("day").toISOString();
+      endDate = dayjs().endOf("day").toISOString();
+    } else if (!isReport && !isToday) {
+      startDate = "";
+      endDate = "";
+    }
 
     send({
       query: "getVisits",
