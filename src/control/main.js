@@ -212,9 +212,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     }
 
     case "getVisits": {
-      const { q, skip, limit } = arg.data;
+      const { q, skip, limit, startDate, endDate } = arg.data;
       try {
-        const resp = await labDB.getVisits({ q, skip, limit });
+        const resp = await labDB.getVisits({ q, skip, limit, startDate, endDate });
         event.reply("asynchronous-reply", { success: true, data: resp.data });
       } catch (error) {
         event.reply("asynchronous-reply", {
@@ -224,7 +224,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
-
+    
     case "updateVisit": {
       try {
         const resp = await labDB.updateVisit(arg.id, arg.data);

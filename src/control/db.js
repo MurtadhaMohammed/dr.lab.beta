@@ -10,9 +10,9 @@ class LabDB {
     const dbPath = !app.isPackaged
       ? "database.sql"
       : path.join(
-          app.getAppPath(),
-          isMac ? "../../../../database.sql" : "../../database.sql"
-        );
+        app.getAppPath(),
+        isMac ? "../../../../database.sql" : "../../database.sql"
+      );
 
     try {
       this.db = new Database(dbPath, {
@@ -343,21 +343,21 @@ class LabDB {
     const { patientID, status, testType, tests, discount } = data;
     const testTypeStr = testType;
     const testsStr = JSON.stringify(tests);
-  
+
     const patientCheckStmt = this.db.prepare(`
       SELECT id FROM patients WHERE id = ?
     `);
     const patientExists = patientCheckStmt.get(patientID);
-  
+
     if (!patientExists) {
       throw new Error(`Patient with ID ${patientID} does not exist.`);
     }
-  
+
     const visitCheckStmt = this.db.prepare(`
       SELECT id FROM visits WHERE patientID = ?
     `);
     const existingVisit = visitCheckStmt.get(patientID);
-  
+
     if (existingVisit) {
       const updateStmt = this.db.prepare(`
         UPDATE visits
@@ -365,7 +365,7 @@ class LabDB {
         WHERE patientID = ?
       `);
       updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
-  
+
       return { id: existingVisit.id };
     } else {
       const insertStmt = this.db.prepare(`
@@ -382,7 +382,7 @@ class LabDB {
       return { id: info.lastInsertRowid };
     }
   }
-  
+
   async deleteVisit(id) {
     const stmt = await this.db.prepare(`
       DELETE FROM visits WHERE id = ?
@@ -392,15 +392,21 @@ class LabDB {
     return { success: info.changes > 0 };
   }
 
-  async getVisits({ q = "", skip = 0, limit = 10 }) {
+  async getVisits({ q = "", skip = 0, limit = 10, startDate, endDate }) {
+    const whereClauses = [
+      `p.name LIKE ?`,
+      startDate ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split('T')[0]}'` : "",
+      endDate ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split('T')[0]}'` : "",
+    ].filter(Boolean).join(" AND ");
+  
     const stmt = await this.db.prepare(`
       SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail, p.birth as patientBirth
       FROM visits v
       JOIN patients p ON v.patientID = p.id
-      WHERE p.name LIKE ?
+      WHERE ${whereClauses}
       LIMIT ? OFFSET ?
     `);
-
+  
     const visits = stmt.all(`%${q}%`, limit, skip);
     const results = visits?.map((el) => ({
       id: el?.id,
@@ -421,11 +427,13 @@ class LabDB {
     }));
     return { success: true, data: results };
   }
+  
+
 
   async updateVisit(id, update) {
     const { patientID, status, testType, tests, discount } = update;
     const testsStr = JSON.stringify(tests);
-  
+
     const stmt = this.db.prepare(`
       UPDATE visits
       SET 
@@ -447,8 +455,8 @@ class LabDB {
     );
     return { success: info.changes > 0 };
   }
-  
-  
+
+
 }
 
 module.exports = { LabDB };

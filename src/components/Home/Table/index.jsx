@@ -62,7 +62,9 @@ export const PureTable = ({ isReport = false }) => {
     setRecord,
     isToday,
   } = useHomeStore();
-  const { filterDate } = useReportsStore();
+  // const { filterDate } = useReportsStore();
+  const { filterDate = [] } = useReportsStore();
+
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -493,84 +495,23 @@ export const PureTable = ({ isReport = false }) => {
     setCreatedAt(createdAt);
   };
 
+
   useEffect(() => {
-    let queryKey = new RegExp(querySearch, "gi");
-    // send({
-    //   doc: "visits",
-    //   query: "find",
-    //   search: {
-    //     $and: [
-    //       { "patient.name": queryKey },
-    //       isReport
-    //         ? {
-    //             ...(filterDate && {
-    //               createdAt: {
-    //                 $gt: dayjs(
-    //                   dayjs(filterDate[0]).format("YYYY-MM-DD")
-    //                 ).valueOf(),
-    //                 $lt: dayjs(
-    //                   dayjs(filterDate[1]).format("YYYY-MM-DD")
-    //                 ).valueOf(),
-    //               },
-    //             }),
-    //           }
-    //         : {
-    //             ...(isToday && {
-    //               createdAt: {
-    //                 $gt: dayjs(dayjs().format("YYYY-MM-DD")).valueOf(),
-    //               },
-    //             }),
-    //           },
-    //     ],
-    //   },
-    //   limit,
-    //   skip: (page - 1) * limit,
-    // }).then(({ err, rows }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     setData(rows);
-    //     setTimeout(() => {
-    //       send({
-    //         doc: "visits",
-    //         query: "count",
-    //         search: {
-    //           $and: [
-    //             { "patient.name": queryKey },
-    //             isReport
-    //               ? {
-    //                   ...(filterDate && {
-    //                     createdAt: {
-    //                       $gt: dayjs(
-    //                         dayjs(filterDate[0]).format("YYYY-MM-DD")
-    //                       ).valueOf(),
-    //                       $lt: dayjs(
-    //                         dayjs(filterDate[1]).format("YYYY-MM-DD")
-    //                       ).valueOf(),
-    //                     },
-    //                   }),
-    //                 }
-    //               : {
-    //                   ...(isToday && {
-    //                     createdAt: {
-    //                       $gt: dayjs(dayjs().format("YYYY-MM-DD")).valueOf(),
-    //                     },
-    //                   }),
-    //                 },
-    //           ],
-    //         },
-    //       }).then(({ err, count }) => {
-    //         if (err) message.error("Error !");
-    //         else setTotal(count);
-    //       });
-    //     }, 100);
-    //   }
-    // });
+    console.log("filterDate:", filterDate);
+
+    const defaultStartDate = dayjs().startOf("day").toDate();
+    const defaultEndDate = dayjs().endOf("day").toDate();
+
+    const [startDate = defaultStartDate, endDate = defaultEndDate] = filterDate.length === 2 ? filterDate : [defaultStartDate, defaultEndDate];
+
     send({
       query: "getVisits",
       data: {
         q: querySearch,
         skip: (page - 1) * limit,
         limit,
+        startDate,
+        endDate,
       },
     }).then((resp) => {
       if (resp.success) {
@@ -580,7 +521,8 @@ export const PureTable = ({ isReport = false }) => {
         console.error("Error retrieving visits:", resp.error);
       }
     });
-  }, [page, isReload, querySearch, isToday]);
+  }, [page, isReload, querySearch, isToday, filterDate]);
+
 
   return (
     <>

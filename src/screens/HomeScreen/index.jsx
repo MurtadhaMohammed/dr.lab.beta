@@ -12,14 +12,6 @@ const items = [
     key: "today",
     label: "Today",
   },
-  // {
-  //   key: "2",
-  //   label: "Last Week",
-  // },
-  // {
-  //   key: "3",
-  //   label: "Last Month",
-  // },
   {
     key: "all",
     label: "All",

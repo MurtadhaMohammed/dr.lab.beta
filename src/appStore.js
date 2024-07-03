@@ -160,12 +160,12 @@ export const useGroupStore = create((set) => ({
 }));
 
 export const useReportsStore = create((set) => ({
-  filterDate: null,
+  filterDate: [],
   data: null,
   loading: false,
-  records:[],
+  records: [],
   setRecords: (records) => set({ records }),
   setLoading: (loading) => set({ loading }),
-  setFilterDate: (filterDate) => set({ filterDate }),
+  setFilterDate: (date) => set({ filterDate: date }),
   setData: (data) => set({ data }),
 }));
