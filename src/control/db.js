@@ -10,9 +10,9 @@ class LabDB {
     const dbPath = !app.isPackaged
       ? "database.sql"
       : path.join(
-        app.getAppPath(),
-        isMac ? "../../../../database.sql" : "../../database.sql"
-      );
+          app.getAppPath(),
+          isMac ? "../../../../database.sql" : "../../database.sql"
+        );
 
     try {
       this.db = new Database(dbPath, {
@@ -81,14 +81,27 @@ class LabDB {
   }
 
   async getPatients({ q = "", skip = 0, limit = 10 }) {
+    // Prepare the query to count the total number of patients
+    const countStmt = await this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM patients
+      WHERE name LIKE ?
+    `);
+
+    const countResult = countStmt.get(`%${q}%`);
+    const total = countResult?.total || 0;
+
+    // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
       WHERE name LIKE ?
       ORDER BY patients.id DESC
       LIMIT ? OFFSET ?
     `);
+
     const patients = stmt.all(`%${q}%`, limit, skip);
-    return { data: patients };
+
+    return { success: true, total, data: patients };
   }
 
   async addPatient(patient) {
@@ -188,13 +201,26 @@ class LabDB {
   }
 
   async getTests({ q = "", skip = 0, limit = 10 }) {
+    // Prepare the query to count the total number of tests
+    const countStmt = await this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM tests
+      WHERE name LIKE ?
+    `);
+
+    const countResult = countStmt.get(`%${q}%`);
+    const total = countResult?.total || 0;
+
+    // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT * FROM tests
       WHERE name LIKE ?
-      LIMIT ? OFFSET ? 
+      LIMIT ? OFFSET ?
     `);
+
     const tests = stmt.all(`%${q}%`, limit, skip);
-    return { data: tests };
+
+    return { success: true, total, data: tests };
   }
 
   async addPackage(data) {
@@ -320,23 +346,36 @@ class LabDB {
   }
 
   async getPackages({ q = "", skip = 0, limit = 10 }) {
+    // Prepare the query to count the total number of packages
+    const countStmt = await this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM packages
+      WHERE title LIKE ?
+    `);
+
+    const countResult = countStmt.get(`%${q}%`);
+    const total = countResult?.total || 0;
+
+    // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT * FROM packages
       WHERE title LIKE ?
       LIMIT ? OFFSET ?
-      `);
+    `);
+
     const packages = stmt.all(`%${q}%`, limit, skip);
     const packagesWithTests = packages.map((pkg) => {
       const testStmt = this.db.prepare(`
-          SELECT t.*
-          FROM tests t
-          INNER JOIN test_to_packages tp ON t.id = tp.testID
-          WHERE tp.packageID = ?
-          `);
+        SELECT t.*
+        FROM tests t
+        INNER JOIN test_to_packages tp ON t.id = tp.testID
+        WHERE tp.packageID = ?
+      `);
       const tests = testStmt.all(pkg.id);
       return { ...pkg, tests };
     });
-    return { data: packagesWithTests };
+
+    return { success: true, total, data: packagesWithTests };
   }
 
   async addVisit(data) {
@@ -395,10 +434,32 @@ class LabDB {
   async getVisits({ q = "", skip = 0, limit = 10, startDate, endDate }) {
     const whereClauses = [
       `p.name LIKE ?`,
-      startDate ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split('T')[0]}'` : "",
-      endDate ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split('T')[0]}'` : "",
-    ].filter(Boolean).join(" AND ");
-  
+      startDate
+        ? `DATE(v.createdAt) >= '${
+            new Date(startDate).toISOString().split("T")[0]
+          }'`
+        : "",
+      endDate
+        ? `DATE(v.createdAt) <= '${
+            new Date(endDate).toISOString().split("T")[0]
+          }'`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" AND ");
+
+    // Prepare the query to count the total number of visits
+    const countStmt = await this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM visits v
+      JOIN patients p ON v.patientID = p.id
+      WHERE ${whereClauses}
+    `);
+
+    const countResult = countStmt.get(`%${q}%`);
+    const total = countResult?.total || 0;
+
+    // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail, p.birth as patientBirth
       FROM visits v
@@ -406,7 +467,7 @@ class LabDB {
       WHERE ${whereClauses}
       LIMIT ? OFFSET ?
     `);
-  
+
     const visits = stmt.all(`%${q}%`, limit, skip);
     const results = visits?.map((el) => ({
       id: el?.id,
@@ -425,10 +486,9 @@ class LabDB {
         birth: el?.patientBirth,
       },
     }));
-    return { success: true, data: results };
-  }
-  
 
+    return { success: true, total, data: results };
+  }
 
   async updateVisit(id, update) {
     const { patientID, status, testType, tests, discount } = update;
@@ -445,18 +505,9 @@ class LabDB {
         updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
-    const info = stmt.run(
-      patientID,
-      status,
-      testType,
-      testsStr,
-      discount,
-      id
-    );
+    const info = stmt.run(patientID, status, testType, testsStr, discount, id);
     return { success: info.changes > 0 };
   }
-
-
 }
 
 module.exports = { LabDB };

@@ -62,8 +62,7 @@ export const PureTable = ({ isReport = false }) => {
     setRecord,
     isToday,
   } = useHomeStore();
-  // const { filterDate } = useReportsStore();
-  const { filterDate = [] } = useReportsStore();
+  const { filterDate } = useReportsStore();
 
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
@@ -72,7 +71,7 @@ export const PureTable = ({ isReport = false }) => {
   const [tempLoading, setTempLoading] = useState(false);
   const [isSend, setIsSend] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
-  const limit = 10;
+  const limit = 8;
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -289,14 +288,17 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-        let testType = record.testType.replace(/^"|"$/g, ''); // Remove surrounding quotes
+        let testType = record.testType.replace(/^"|"$/g, ""); // Remove surrounding quotes
         let list = record.tests;
         let numOfView = 2;
-        let restCount = list.length > numOfView ? list.length - numOfView : null;
+        let restCount =
+          list.length > numOfView ? list.length - numOfView : null;
         return (
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
-              <Tag key={el.id}>{el[testType === "CUSTOME" ? "name" : "title"]}</Tag>
+              <Tag key={el.id}>
+                {el[testType === "CUSTOME" ? "name" : "title"]}
+              </Tag>
             ))}
             {restCount && (
               <Popover
@@ -304,7 +306,9 @@ export const PureTable = ({ isReport = false }) => {
                   <div style={{ maxWidth: "300" }}>
                     <Space wrap>
                       {list?.map((el) => (
-                        <Tag key={el.id}>{el[testType === "CUSTOME" ? "name" : "title"]}</Tag>
+                        <Tag key={el.id}>
+                          {el[testType === "CUSTOME" ? "name" : "title"]}
+                        </Tag>
                       ))}
                     </Space>
                   </div>
@@ -326,10 +330,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -495,14 +499,13 @@ export const PureTable = ({ isReport = false }) => {
     setCreatedAt(createdAt);
   };
 
-
   useEffect(() => {
-    console.log("filterDate:", filterDate);
-
-    const defaultStartDate = dayjs().startOf("day").toDate();
-    const defaultEndDate = dayjs().endOf("day").toDate();
-
-    const [startDate = defaultStartDate, endDate = defaultEndDate] = filterDate.length === 2 ? filterDate : [defaultStartDate, defaultEndDate];
+    const startDate = filterDate
+      ? dayjs(filterDate[0]).startOf("day").toDate()
+      : "";
+    const endDate = filterDate
+      ? dayjs(filterDate[1]).endOf("day").toDate()
+      : "";
 
     send({
       query: "getVisits",
@@ -515,6 +518,7 @@ export const PureTable = ({ isReport = false }) => {
       },
     }).then((resp) => {
       if (resp.success) {
+        console.log(resp);
         setData(resp.data);
         setTotal(resp.total);
       } else {
@@ -522,7 +526,6 @@ export const PureTable = ({ isReport = false }) => {
       }
     });
   }, [page, isReload, querySearch, isToday, filterDate]);
-
 
   return (
     <>

@@ -33,12 +33,12 @@ export const PureTable = () => {
     setCreatedAt,
     setUID,
     querySearch,
-    setIsHistory
+    setIsHistory,
   } = usePatientStore();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = 8;
 
   const columns = [
     {
@@ -140,39 +140,27 @@ export const PureTable = () => {
   ];
 
   const handleRemove = (id) => {
-
     send({
       query: "deletePatient",
-      id
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Number of deleted rows:", resp.data.rowsDeleted);
-        message.success(`Removed Patient successfully.`);
-        setIsReload(!isReload);
-      } else {
-        console.error("Error deleting patient:", resp.error);
-        message.error("Error removing patient.");
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-      message.error("Error in IPC communication.");
-    });
-
-
+      id,
+    })
+      .then((resp) => {
+        if (resp.success) {
+          console.log("Number of deleted rows:", resp.data.rowsDeleted);
+          message.success(`Removed Patient successfully.`);
+          setIsReload(!isReload);
+        } else {
+          console.error("Error deleting patient:", resp.error);
+          message.error("Error removing patient.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+        message.error("Error in IPC communication.");
+      });
   };
 
-
-
-
-  const handleEdit = ({
-    id,
-    name,
-    birth,
-    phone,
-    email,
-    gender,
-    createdAt,
-  }) => {
+  const handleEdit = ({ id, name, birth, phone, email, gender, createdAt }) => {
     setId(id);
     setBirth(dayjs(birth));
     setName(name);
@@ -184,7 +172,6 @@ export const PureTable = () => {
   };
 
   useEffect(() => {
-  
     // send({
     //   doc: "patients",
     //   query: "find",
@@ -209,24 +196,24 @@ export const PureTable = () => {
     //   }
     // });
 
-
     send({
       query: "getPatients",
       q: querySearch,
-      skip: 0,
-      limit: 10
-    }).then(resp => {
-      if (resp.success) {
-        setData(resp.data);
-        console.log("Patients data:", resp.data);
-      } else {
-        console.error("Error fetching patients:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
-
+      skip: (page - 1) * limit,
+      limit,
+    })
+      .then((resp) => {
+        if (resp.success) {
+          setData(resp.data);
+          setTotal(resp?.total);
+          console.log("Patients data:", resp.data);
+        } else {
+          console.error("Error fetching patients:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
   }, [page, isReload, querySearch]);
 
   return (
