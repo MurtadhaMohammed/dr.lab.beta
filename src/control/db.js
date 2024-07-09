@@ -2,7 +2,6 @@ const path = require("path");
 const os = require("os");
 const { app } = require("electron");
 const Database = require("better-sqlite3");
-const { log } = require("console");
 
 class LabDB {
   constructor() {
@@ -462,6 +461,7 @@ class LabDB {
       FROM visits v
       JOIN patients p ON v.patientID = p.id
       WHERE ${whereClauses}
+      ORDER BY createdAt DESC
       LIMIT ? OFFSET ?
     `);
 
