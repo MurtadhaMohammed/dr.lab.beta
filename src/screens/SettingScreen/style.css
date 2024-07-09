@@ -1,0 +1,10 @@
+.card-settings{
+    margin: auto;
+    display: flex;
+    margin-top: 22px;
+    background: #ffffff;
+    width: 700px;
+    height: 500px;
+    border-radius: 20px;
+   border: #ccc;
+}
