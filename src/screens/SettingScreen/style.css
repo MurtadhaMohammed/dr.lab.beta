@@ -1,10 +1,63 @@
-.card-settings{
+.card-settings {
     margin: auto;
-    display: flex;
     margin-top: 22px;
     background: #ffffff;
     width: 700px;
     height: 500px;
     border-radius: 20px;
-   border: #ccc;
+    border: 1px solid #ccc;
+}
+
+.top {
+    margin-top: 20px;
+    padding: 10px 10px;
+    width: 600px;
+    margin-left: 35px;
+    height: 70px;
+    border-bottom: 1px solid #ccc;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+}
+
+.close {
+    font-size: 25px;
+    color: #857979;
+    margin-left: 35rem;
+    margin-top: -30px;
+    cursor: pointer;
+}
+
+.form {
+    width: 590px;
+    height: 290px;
+    margin-top: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-left: 40px;
+}
+
+input {
+    outline: none;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 10px 10px;
+}
+
+.btn {
+    outline: none;
+    border: none;
+    height: 40px;
+    text-align: center;
+    width: 140px;
+    border-radius: 8px;
+    background: #2489FF;
+    color: #fff;
+    margin-left: 40px;
+    margin-top: -20px;
 }

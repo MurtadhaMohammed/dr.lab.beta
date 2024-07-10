@@ -505,6 +505,7 @@ class LabDB {
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
     return { success: info.changes > 0 };
   }
+
 }
 
 module.exports = { LabDB };

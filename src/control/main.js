@@ -233,6 +233,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "updateVisit": {
       try {
+        console.log("Calling updateVisit with ID:", arg.id, "and data:", arg.data);
         const resp = await labDB.updateVisit(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
@@ -243,6 +244,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+
 
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {
