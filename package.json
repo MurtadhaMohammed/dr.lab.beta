@@ -6,6 +6,7 @@
     "@ant-design/icons": "^5.1.1",
     "antd": "^5.5.0",
     "better-sqlite3": "^11.0.0",
+    "caniuse-lite": "^1.0.30001641",
     "dayjs": "^1.11.7",
     "dropbox": "^10.34.0",
     "electron-is-dev": "^2.0.0",
