@@ -26,10 +26,42 @@
     "zustand": "^4.3.8"
   },
   "scripts": {
+    "start-ele": "concurrently \"npm run react-build\" \"wait-on dist/index.html && kill-port 1234 && electron .\"",
     "start": "concurrently \"parcel ./index.html  \" \"wait-on http://localhost:1234 && electron .\"",
-    "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
+    "build": "npx electron-packager . Dr.Lab --overwrite --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "react-build": "parcel  splash.html index.html  --public-url ./",
     "rebuild": "electron-rebuild -f -w better-sqlite3"
+  },
+  "build": {
+    "appId": "com.electron",
+    "files": [
+      "dist/electron.js",
+      "dist/index.html",
+      "dist/main.js",
+      "dist/images",
+      "dist/preload.js",
+      "dist/**"
+    ],
+    "extraResources": [
+      {
+        "from": "./database/",
+        "to": "databases/",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "directories": {
+      "output": "./electron"
+    },
+    "electronDownload": {
+      "cache": "./electron/cache"
+    },
+    "win": {
+      "target": "msi",
+      "icon": "./src/assets/images/icon.png"
+    },
+    "asar": false
   },
   "devDependencies": {
     "buffer": "^5.5.0",
@@ -39,6 +71,7 @@
     "electron-packager": "^17.1.1",
     "electron-rebuild": "^3.2.9",
     "events": "^3.3.0",
+    "kill-port": "^2.0.1",
     "parcel": "^2.8.3",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",

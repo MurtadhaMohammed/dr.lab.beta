@@ -1,17 +1,20 @@
-const path = require("path");
-const os = require("os");
-const { app } = require("electron");
-const Database = require("better-sqlite3");
+const path = require('path');
+const os = require('os');
+const fs = require('fs');  // <-- Add this line
+const { app } = require('electron');
+const Database = require('better-sqlite3');
 
 class LabDB {
   constructor() {
-    const isMac = os.platform() === "darwin";
-    const dbPath = !app.isPackaged
-      ? "database.sql"
-      : path.resolve(
-        app.getAppPath(),
-        isMac ? "../../../../database.sql" : "../../database.sql"
-      );
+    const isMac = os.platform() === 'darwin';
+    const dbPath = app.isPackaged 
+      ? path.join(app.getPath('userData'), 'database.db') 
+      : path.resolve('database.db');
+
+    const dbDir = path.dirname(dbPath);
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
 
     try {
       this.db = new Database(dbPath, {
