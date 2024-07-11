@@ -84,6 +84,14 @@ const MainHeader = () => {
                   Reports
                 </li>
               </Link>
+
+              <Link to={"/settings"}>
+                <li
+                  className={location?.pathname === "/settings" ? "active" : ""}
+                >
+                  Settings
+                </li>
+              </Link>
             </ul>
           </div>
           <Dropdown

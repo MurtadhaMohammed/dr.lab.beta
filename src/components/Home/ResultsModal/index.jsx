@@ -101,9 +101,10 @@ export const ResultsModal = () => {
     let data = { ...record, status: "COMPLETED", updatedAt: Date.now() };
 
     send({
+      doc: "visits",
       query: "updateVisit",
-      id: record?.id,
       data: { ...data },
+      id: record?.id
     }).then(({ err }) => {
       if (err) message.error("Error !");
       else {

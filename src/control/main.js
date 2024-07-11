@@ -27,7 +27,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           limit: arg?.limit || 10,
           skip: arg?.skip || 0,
         });
-        event.reply("asynchronous-reply", { success: true, data: resp.data });
+        event.reply("asynchronous-reply", resp);
       } catch (error) {
         event.reply("asynchronous-reply", {
           success: false,
@@ -121,7 +121,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getTests": {
       try {
         const resp = await labDB.getTests(arg.data);
-        event.reply("asynchronous-reply", { success: true, data: resp.data });
+        event.reply("asynchronous-reply", resp);
       } catch (error) {
         event.reply("asynchronous-reply", {
           success: false,
@@ -176,7 +176,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getPackages": {
       try {
         const resp = await labDB.getPackages(arg.data);
-        event.reply("asynchronous-reply", { success: true, data: resp.data });
+        event.reply("asynchronous-reply", resp);
       } catch (error) {
         event.reply("asynchronous-reply", {
           success: false,
@@ -214,8 +214,14 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getVisits": {
       const { q, skip, limit, startDate, endDate } = arg.data;
       try {
-        const resp = await labDB.getVisits({ q, skip, limit, startDate, endDate });
-        event.reply("asynchronous-reply", { success: true, data: resp.data });
+        const resp = await labDB.getVisits({
+          q,
+          skip,
+          limit,
+          startDate,
+          endDate,
+        });
+        event.reply("asynchronous-reply", resp);
       } catch (error) {
         event.reply("asynchronous-reply", {
           success: false,
@@ -224,9 +230,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
-    
+
     case "updateVisit": {
       try {
+        console.log("Calling updateVisit with ID:", arg.id, "and data:", arg.data);
         const resp = await labDB.updateVisit(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
@@ -237,6 +244,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+
 
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {
@@ -259,7 +267,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       });
       break;
 
-    case "find": 
+    case "find":
       db[arg.doc]
         .find(arg?.search)
         .skip(arg?.skip || 0)
