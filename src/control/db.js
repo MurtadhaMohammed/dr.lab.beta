@@ -15,7 +15,7 @@ class LabDB {
 
     try {
       this.db = new Database(dbPath, {
-        verbose: console.log,
+        // verbose: console.log,
       });
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
