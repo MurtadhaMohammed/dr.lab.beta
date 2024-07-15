@@ -1,21 +1,18 @@
 const path = require('path');
 const os = require('os');
-const fs = require('fs');  // <-- Add this line
+const fs = require('fs');
 const { app } = require('electron');
 const Database = require('better-sqlite3');
 
 class LabDB {
   constructor() {
-    const isMac = os.platform() === 'darwin';
-    const dbPath = app.isPackaged 
-      ? path.join(app.getPath('userData'), 'database.db') 
-      : path.resolve('database.db');
-
-    const dbDir = path.dirname(dbPath);
-    if (!fs.existsSync(dbDir)) {
-      fs.mkdirSync(dbDir, { recursive: true });
-    }
-
+    const isMac = os.platform() === "darwin";
+    const dbPath = !app.isPackaged
+      ? "database.db"
+      : path.join(
+        app.getAppPath(),
+        isMac ? "../../../../database.db" : "../../database.db"
+      );
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
@@ -61,8 +58,6 @@ class LabDB {
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-
-
       CREATE TABLE IF NOT EXISTS packages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title VARCHAR(100),
