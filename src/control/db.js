@@ -8,14 +8,14 @@ class LabDB {
     const isMac = os.platform() === "darwin";
     const dbPath = !app.isPackaged
       ? "database.sql"
-      : path.join(
-          app.getAppPath(),
-          isMac ? "../../../../database.sql" : "../../database.sql"
-        );
+      : path.resolve(
+        app.getAppPath(),
+        isMac ? "../../../../database.sql" : "../../database.sql"
+      );
 
     try {
       this.db = new Database(dbPath, {
-        // verbose: console.log,
+        verbose: console.log,
       });
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
@@ -90,7 +90,6 @@ class LabDB {
     const countResult = countStmt.get(`%${q}%`);
     const total = countResult?.total || 0;
 
-    // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
       WHERE name LIKE ?
@@ -434,14 +433,12 @@ class LabDB {
     const whereClauses = [
       `p.name LIKE ?`,
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
+        }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
+        }'`
         : "",
     ]
       .filter(Boolean)
@@ -508,6 +505,7 @@ class LabDB {
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
     return { success: info.changes > 0 };
   }
+
 }
 
 module.exports = { LabDB };

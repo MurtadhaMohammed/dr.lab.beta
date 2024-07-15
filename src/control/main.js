@@ -1,24 +1,11 @@
 const { ipcMain } = require("electron");
 var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
-
-var Datastore = require("nedb");
 const { LabDB } = require("./db");
-var db = {};
 
-db.patients = new Datastore({ filename: "database/patients.db" });
-db.tests = new Datastore({ filename: "database/tests.db" });
-db.packages = new Datastore({ filename: "database/packages.db" });
-db.visits = new Datastore({ filename: "database/visits.db" });
-
-db.patients.loadDatabase();
-db.tests.loadDatabase();
-db.packages.loadDatabase();
-db.visits.loadDatabase();
-
-let labDB = new LabDB();
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
+  let labDB = await new LabDB();
   switch (arg.query) {
     case "getPatients": {
       try {
@@ -233,6 +220,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "updateVisit": {
       try {
+        console.log("Calling updateVisit with ID:", arg.id, "and data:", arg.data);
         const resp = await labDB.updateVisit(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
@@ -243,6 +231,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+
 
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {
