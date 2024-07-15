@@ -105,6 +105,7 @@ export const ResultsModal = () => {
       query: "updateVisit",
       data: { ...data },
       id: record?.id
+      id: record?.id
     }).then(({ err }) => {
       if (err) message.error("Error !");
       else {
