@@ -57,9 +57,7 @@ class LabDB {
       isSelecte INTEGER,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-
+     );
       CREATE TABLE IF NOT EXISTS packages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title VARCHAR(100),
