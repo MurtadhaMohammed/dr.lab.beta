@@ -232,6 +232,20 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    case "getVisitByPatient": {
+      try {
+        const { patientId } = arg;
+        if (!patientId) throw new Error("Patient ID is required to get visits by patient.");
+        const resp = await labDB.getVisitByPatient(patientId);
+        event.reply("asynchronous-reply", resp);
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
 
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {

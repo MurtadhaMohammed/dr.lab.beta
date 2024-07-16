@@ -1,18 +1,18 @@
-const path = require("path");
-const os = require("os");
-const { app } = require("electron");
-const Database = require("better-sqlite3");
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
+const { app } = require('electron');
+const Database = require('better-sqlite3');
 
 class LabDB {
   constructor() {
     const isMac = os.platform() === "darwin";
     const dbPath = !app.isPackaged
-      ? "database.sql"
-      : path.resolve(
+      ? "database.db"
+      : path.join(
         app.getAppPath(),
-        isMac ? "../../../../database.sql" : "../../database.sql"
+        isMac ? "../../../../database.db" : "../../database.db"
       );
-
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
@@ -328,7 +328,6 @@ class LabDB {
 
       transaction();
 
-      // Return success message
       return {
         success: true,
         message: `Package with ID ${id} updated successfully.`,
@@ -442,7 +441,6 @@ class LabDB {
       .filter(Boolean)
       .join(" AND ");
 
-    // Prepare the query to count the total number of visits
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM visits v
@@ -453,7 +451,6 @@ class LabDB {
     const countResult = countStmt.get(`%${q}%`);
     const total = countResult?.total || 0;
 
-    // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail, p.birth as patientBirth
       FROM visits v
@@ -484,6 +481,38 @@ class LabDB {
 
     return { success: true, total, data: results };
   }
+
+  async getVisitByPatient(patientId) {
+    const stmt = await this.db.prepare(`
+      SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail,  p.birth as patientBirth
+      FROM visits v
+      JOIN patients p ON v.patientId = p.id
+      WHERE v.patientId = ?
+      ORDER BY v.createdAt DESC
+      `);
+
+    const visits = stmt.all(patientId);
+    const results = visits?.map((el) => ({
+      id: el?.id,
+      tests: JSON.parse(el?.tests) || [],
+      testType: el?.testType,
+      status: el?.status,
+      discount: el?.discount,
+      createdAt: el?.createdAt,
+      updatedAt: el?.updatedAt,
+      patient: {
+        id: el?.patientID,
+        name: el?.patientName,
+        gender: el?.patientGender,
+        phone: el?.patientPhone,
+        email: el?.patientEmail,
+        birth: el?.patientBirth,
+      },
+    }));
+
+    return { success: true, data: results };
+  }
+
 
   async updateVisit(id, update) {
     const { patientID, status, testType, tests, discount } = update;
