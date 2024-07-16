@@ -15,8 +15,6 @@ export const PatientHistory = () => {
   const { id, isHistory, setIsHistory, setReset } = usePatientStore();
   const [data, setData] = useState([]);
 
-  console.log(data)
-
   useEffect(() => {
     if (!id) return;
     send({
