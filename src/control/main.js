@@ -1,20 +1,7 @@
 const { ipcMain } = require("electron");
 var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
-
-var Datastore = require("nedb");
 const { LabDB } = require("./db");
-var db = {};
-
-db.patients = new Datastore({ filename: "database/patients.db" });
-db.tests = new Datastore({ filename: "database/tests.db" });
-db.packages = new Datastore({ filename: "database/packages.db" });
-db.visits = new Datastore({ filename: "database/visits.db" });
-
-db.patients.loadDatabase();
-db.tests.loadDatabase();
-db.packages.loadDatabase();
-db.visits.loadDatabase();
 
 let labDB = new LabDB();
 
