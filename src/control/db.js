@@ -37,7 +37,8 @@ class LabDB {
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
-      CREATE TABLE IF NOT EXISTS visits(
+
+        CREATE TABLE IF NOT EXISTS visits (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         patientID INTEGER,
         status TEXT DEFAULT "PENDING" NOT NULL,
@@ -46,8 +47,9 @@ class LabDB {
         discount INTEGER,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (patientID) REFERENCES patients(id) ON DELETE CASCADE
-      );
+        FOREIGN KEY(patientID) REFERENCES patients(id)
+);
+
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50),
@@ -377,45 +379,55 @@ class LabDB {
     const { patientID, status, testType, tests, discount } = data;
     const testTypeStr = testType;
     const testsStr = JSON.stringify(tests);
-
-    const patientCheckStmt = this.db.prepare(`
-      SELECT id FROM patients WHERE id = ?
-    `);
-    const patientExists = patientCheckStmt.get(patientID);
-
-    if (!patientExists) {
-      throw new Error(`Patient with ID ${patientID} does not exist.`);
-    }
-
-    const visitCheckStmt = this.db.prepare(`
-      SELECT id FROM visits WHERE patientID = ?
-    `);
-    const existingVisit = visitCheckStmt.get(patientID);
-
-    if (existingVisit) {
-      const updateStmt = this.db.prepare(`
-        UPDATE visits
-        SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
-        WHERE patientID = ?
+  
+    try {
+      // Check if patient exists
+      const patientCheckStmt = this.db.prepare(`
+        SELECT id FROM patients WHERE id = ?
       `);
-      updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
-
-      return { id: existingVisit.id };
-    } else {
-      const insertStmt = this.db.prepare(`
-        INSERT INTO visits (patientID, status, testType, tests, discount)
-        VALUES (?, ?, ?, ?, ?)
+      const patientExists = patientCheckStmt.get(patientID);
+  
+      if (!patientExists) {
+        throw new Error(`Patient with ID ${patientID} does not exist.`);
+      }
+  
+      const visitCheckStmt = this.db.prepare(`
+        SELECT id FROM visits WHERE patientID = ?
       `);
-      const info = insertStmt.run(
-        patientID,
-        status,
-        testTypeStr,
-        testsStr,
-        discount
-      );
-      return { id: info.lastInsertRowid };
+      const existingVisit = visitCheckStmt.get(patientID);
+  
+      if (existingVisit) {
+
+        const updateStmt = this.db.prepare(`
+          UPDATE visits
+          SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
+          WHERE patientID = ?
+        `);
+        updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
+  
+        return { id: existingVisit.id };
+      } else {
+        // Add new visit
+        const insertStmt = this.db.prepare(`
+          INSERT INTO visits (patientID, status, testType, tests, discount)
+          VALUES (?, ?, ?, ?, ?)
+        `);
+        const info = insertStmt.run(
+          patientID,
+          status,
+          testTypeStr,
+          testsStr,
+          discount
+        );
+  
+        return { id: info.lastInsertRowid };
+      }
+    } catch (error) {
+      console.error("Error in addVisit:", error);
+      throw new Error("Error adding visit");
     }
   }
+  
 
   async deleteVisit(id) {
     const stmt = await this.db.prepare(`

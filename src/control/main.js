@@ -176,8 +176,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "addVisit": {
       try {
         const resp = await labDB.addVisit(arg.data);
+        console.log("Visit added successfully:", resp.id);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
+        console.error("Error adding visit:", error.message);
         event.reply("asynchronous-reply", {
           success: false,
           error: error.message,
