@@ -89,7 +89,7 @@ export const PureModal = () => {
         if (pObj) {
           send({
             query: "updatePatient",
-            id : patientID,
+            id: patientID,
             data: { ...data.patient, createdAt: pObj.createdAt },
           }).then((resp) => {
             console.log("updatePatient response:", resp);
