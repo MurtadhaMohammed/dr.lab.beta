@@ -176,7 +176,6 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "addVisit": {
       try {
         const resp = await labDB.addVisit(arg.data);
-        console.log("Visit added successfully:", resp.id);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
         console.error("Error adding visit:", error.message);
@@ -222,7 +221,6 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "updateVisit": {
       try {
-        console.log("Calling updateVisit with ID:", arg.id, "and data:", arg.data);
         const resp = await labDB.updateVisit(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {

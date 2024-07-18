@@ -335,7 +335,6 @@ class LabDB {
         message: `Package with ID ${id} updated successfully.`,
       };
     } catch (error) {
-      // Catch any errors and throw a detailed error message
       throw new Error(
         `Failed to update package with ID ${id}: ${error.message}`
       );
@@ -381,7 +380,6 @@ class LabDB {
     const testsStr = JSON.stringify(tests);
   
     try {
-      // Check if patient exists
       const patientCheckStmt = this.db.prepare(`
         SELECT id FROM patients WHERE id = ?
       `);
@@ -391,37 +389,19 @@ class LabDB {
         throw new Error(`Patient with ID ${patientID} does not exist.`);
       }
   
-      const visitCheckStmt = this.db.prepare(`
-        SELECT id FROM visits WHERE patientID = ?
+      const insertStmt = this.db.prepare(`
+        INSERT INTO visits (patientID, status, testType, tests, discount)
+        VALUES (?, ?, ?, ?, ?)
       `);
-      const existingVisit = visitCheckStmt.get(patientID);
+      const info = insertStmt.run(
+        patientID,
+        status,
+        testTypeStr,
+        testsStr,
+        discount
+      );
   
-      if (existingVisit) {
-
-        const updateStmt = this.db.prepare(`
-          UPDATE visits
-          SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
-          WHERE patientID = ?
-        `);
-        updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
-  
-        return { id: existingVisit.id };
-      } else {
-        // Add new visit
-        const insertStmt = this.db.prepare(`
-          INSERT INTO visits (patientID, status, testType, tests, discount)
-          VALUES (?, ?, ?, ?, ?)
-        `);
-        const info = insertStmt.run(
-          patientID,
-          status,
-          testTypeStr,
-          testsStr,
-          discount
-        );
-  
-        return { id: info.lastInsertRowid };
-      }
+      return { id: info.lastInsertRowid };
     } catch (error) {
       console.error("Error in addVisit:", error);
       throw new Error("Error adding visit");

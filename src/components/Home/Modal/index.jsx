@@ -33,9 +33,11 @@ export const PureModal = () => {
   } = useHomeStore();
   const [step, setStep] = useState(0);
   console.log({ id, patientID });
+
   const handleSubmit = () => {
     let data = {
       patient: {
+        // id: patientID,
         name,
         gender,
         email,
@@ -49,7 +51,6 @@ export const PureModal = () => {
     };
 
     if (id) {
-      // Handle existing visit update
       send({
         query: "updateVisit",
         id,
@@ -83,9 +84,7 @@ export const PureModal = () => {
           console.error("Error in IPC communication:", err);
         });
     } else {
-      // Handle new visit creation
       if (patientID) {
-        // Update existing patient and add visit
         send({
           query: "updatePatient",
           id: patientID,
@@ -120,7 +119,6 @@ export const PureModal = () => {
           }
         });
       } else {
-        // Add new patient and then add visit
         send({
           query: "addPatient",
           data: { ...data.patient },
@@ -157,7 +155,6 @@ export const PureModal = () => {
       }
     }
   };
-
 
   const pageStep = [<TestForm />, <PatientForm />];
 
