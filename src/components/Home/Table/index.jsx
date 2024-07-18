@@ -61,6 +61,7 @@ export const PureTable = ({ isReport = false }) => {
     setIsResultsModal,
     setRecord,
     isToday,
+    setPatientID
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 
@@ -487,6 +488,7 @@ export const PureTable = ({ isReport = false }) => {
   }) => {
     setId(id);
     setTests(tests);
+    setPatientID(patient?.id)
     setBirth(dayjs(patient?.birth));
     setName(patient?.name);
     setEmail(patient?.email);

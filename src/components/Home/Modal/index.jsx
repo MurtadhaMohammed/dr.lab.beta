@@ -31,13 +31,14 @@ export const PureModal = () => {
     status,
     createdAt,
     uID,
+    patientID
   } = useHomeStore();
   const [step, setStep] = useState(0);
 
   const handleSubmit = () => {
     let data = {
       patient: {
-        id: uID,
+        // id: patientID,
         name,
         gender,
         email,
@@ -62,7 +63,7 @@ export const PureModal = () => {
             console.log("updateVisit response:", resp);
             send({
               query: "updatePatient",
-              id,
+              id: patientID,
               data: { ...data.patient, createdAt },
             }).then((resp) => {
               if (resp.success) {
@@ -88,7 +89,7 @@ export const PureModal = () => {
         if (pObj) {
           send({
             query: "updatePatient",
-            id,
+            id : patientID,
             data: { ...data.patient, createdAt: pObj.createdAt },
           }).then((resp) => {
             console.log("updatePatient response:", resp);
@@ -97,7 +98,7 @@ export const PureModal = () => {
                 query: "addVisit",
                 data: {
                   ...data,
-                  patientID: resp.data.id,
+                  patientID,
                   createdAt: Date.now(),
                 },
               })
@@ -166,7 +167,7 @@ export const PureModal = () => {
     })
       .then((resp) => {
         if (resp.success) {
-          const patient = resp.data.find((p) => p.id === id);
+          const patient = resp.data.find((p) => p.id === patientID);
           cb(patient);
         } else {
           console.error("Error fetching patients:", resp.error);
