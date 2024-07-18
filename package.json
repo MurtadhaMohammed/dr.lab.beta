@@ -27,42 +27,11 @@
     "zustand": "^4.3.8"
   },
   "scripts": {
-    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron .\"",
+    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron index.js .\"",
     "react-build": "parcel  splash.html index.html  --public-url ./",
     "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
     "package-windows": "electron-builder"
-  },
-  "build": {
-    "appId": "com.electron",
-    "files": [
-      "dist/electron.js",
-      "dist/index.html",
-      "dist/main.js",
-      "dist/images",
-      "dist/preload.js",
-      "dist/**"
-    ],
-    "extraResources": [
-      {
-        "from": "./database/",
-        "to": "databases/",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
-    "directories": {
-      "output": "./electron"
-    },
-    "electronDownload": {
-      "cache": "./electron/cache"
-    },
-    "win": {
-      "target": "msi",
-      "icon": "./src/assets/images/icon.png"
-    },
-    "asar": false
   },
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
@@ -73,12 +42,39 @@
     "electron-builder": "^24.13.3",
     "electron-packager": "^17.1.1",
     "events": "^3.3.0",
-    "kill-port": "^2.0.1",
     "parcel": "^2.8.3",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "util": "^0.12.5",
     "wait-on": "^7.0.1"
+  },
+  "build": {
+    "appId": "sqlite.electron-test.app",
+    "productName": "Dr.Lab",
+    "extends": null,
+    "files": [
+      "./electron.js",
+      "src/**/*",
+      "dist/**/*",
+      "./initPDF.js",
+      "./node_modules/**/*",
+      "./Frutiger-normal.js",
+      "./splash.html"
+    ],
+    "win": {
+      "icon": "logo.png",
+      "target": [
+        "nsis"
+      ]
+    },
+    "directories": {
+      "app": ".",
+      "buildResources": "public",
+      "output": "out"
+    },
+    "extraResources": [
+      "./database.sql"
+    ]
   }
 }
