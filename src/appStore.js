@@ -53,6 +53,7 @@ export const useHomeStore = create((set) => ({
   setReset: () =>
     set({
       id: null,
+      patientID: null,
       testType: null,
       createdAt: null,
       tests: [],
@@ -64,7 +65,6 @@ export const useHomeStore = create((set) => ({
       email: "",
       gender: null,
       record: null,
-      uID: nanoid(),
     }),
 }));
 

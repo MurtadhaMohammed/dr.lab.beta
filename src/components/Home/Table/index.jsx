@@ -56,7 +56,6 @@ export const PureTable = ({ isReport = false }) => {
     setPhone,
     setTests,
     setCreatedAt,
-    setUID,
     querySearch,
     setIsResultsModal,
     setRecord,
@@ -486,6 +485,7 @@ export const PureTable = ({ isReport = false }) => {
     tests,
     createdAt,
   }) => {
+    console.log(patient)
     setId(id);
     setTests(tests);
     setPatientID(patient?.id)

@@ -29,11 +29,10 @@ export const PureModal = () => {
     setReset,
     tests,
     status,
-    createdAt,
-    uID,
-    patientID
+    patientID,
   } = useHomeStore();
   const [step, setStep] = useState(0);
+  console.log({ id, patientID });
 
   const handleSubmit = () => {
     let data = {
@@ -64,7 +63,7 @@ export const PureModal = () => {
             send({
               query: "updatePatient",
               id: patientID,
-              data: { ...data.patient, createdAt },
+              data: { ...data.patient },
             }).then((resp) => {
               if (resp.success) {
                 message.success("Patient updated successfully");
@@ -85,26 +84,55 @@ export const PureModal = () => {
           console.error("Error in IPC communication:", err);
         });
     } else {
-      getPatien((pObj) => {
-        if (pObj) {
-          send({
-            query: "updatePatient",
-            id : patientID,
-            data: { ...data.patient, createdAt: pObj.createdAt },
-          }).then((resp) => {
-            console.log("updatePatient response:", resp);
+      if (patientID) {
+        send({
+          query: "updatePatient",
+          id: patientID,
+          data: { ...data.patient },
+        }).then((resp) => {
+          console.log("updatePatient response:", resp);
+          if (resp.success) {
+            send({
+              query: "addVisit",
+              data: {
+                ...data,
+                patientID,
+              },
+            })
+              .then((resp) => {
+                if (resp.success) {
+                  console.log("addVisit response:", resp);
+                  message.success("Visit added successfully");
+                  setReset();
+                  setIsModal(false);
+                  setIsReload(!isReload);
+                  setStep(0);
+                } else {
+                  message.error("Error adding visit");
+                }
+              })
+              .catch((err) => {
+                console.error("Error in IPC communication:", err);
+              });
+          } else {
+            message.error("Error updating patient");
+          }
+        });
+      } else {
+        send({
+          query: "addPatient",
+          data: { ...data.patient },
+        })
+          .then((resp) => {
             if (resp.success) {
+              console.log("addPatient response:", resp);
               send({
                 query: "addVisit",
-                data: {
-                  ...data,
-                  patientID,
-                  createdAt: Date.now(),
-                },
+                data: { ...data, patientID: resp.id },
               })
                 .then((resp) => {
+                  console.log("addVisit response:", resp);
                   if (resp.success) {
-                    console.log("addVisit response:", resp);
                     message.success("Visit added successfully");
                     setReset();
                     setIsModal(false);
@@ -118,66 +146,14 @@ export const PureModal = () => {
                   console.error("Error in IPC communication:", err);
                 });
             } else {
-              message.error("Error updating patient");
+              message.error("Error adding patient");
             }
-          });
-        } else {
-          send({
-            query: "addPatient",
-            data: { ...data.patient, createdAt: Date.now() },
           })
-            .then((resp) => {
-              if (resp.success) {
-                console.log("addPatient response:", resp);
-                send({
-                  query: "addVisit",
-                  data: { ...data, patientID: resp.id, createdAt: Date.now() },
-                })
-                  .then((resp) => {
-                    console.log("addVisit response:", resp);
-                    if (resp.success) {
-                      message.success("Visit added successfully");
-                      setReset();
-                      setIsModal(false);
-                      setIsReload(!isReload);
-                      setStep(0);
-                    } else {
-                      message.error("Error adding visit");
-                    }
-                  })
-                  .catch((err) => {
-                    console.error("Error in IPC communication:", err);
-                  });
-              } else {
-                message.error("Error adding patient");
-              }
-            })
-            .catch((err) => {
-              console.error("Error in IPC communication:", err);
-            });
-        }
-      });
+          .catch((err) => {
+            console.error("Error in IPC communication:", err);
+          });
+      }
     }
-  };
-
-  const getPatien = (cb) => {
-    send({
-      query: "getPatients",
-      q: "",
-    })
-      .then((resp) => {
-        if (resp.success) {
-          const patient = resp.data.find((p) => p.id === patientID);
-          cb(patient);
-        } else {
-          console.error("Error fetching patients:", resp.error);
-          cb();
-        }
-      })
-      .catch((err) => {
-        console.error("Error in IPC communication:", err);
-        cb();
-      });
   };
 
   const pageStep = [<TestForm />, <PatientForm />];
@@ -220,6 +196,7 @@ export const PureModal = () => {
       }}
       onCancel={() => {
         setIsModal(false);
+        setReset();
       }}
       footer={
         <div className="app-flex-space">
