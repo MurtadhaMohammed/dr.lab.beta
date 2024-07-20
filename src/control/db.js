@@ -3,6 +3,7 @@ const os = require('os');
 const fs = require('fs');
 const { app } = require('electron');
 const Database = require('better-sqlite3');
+const CSV = require('csv-parser')
 
 class LabDB {
   constructor() {
@@ -13,6 +14,7 @@ class LabDB {
         app.getAppPath(),
         isMac ? "../../../../database.db" : "../../database.db"
       );
+
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
@@ -20,6 +22,7 @@ class LabDB {
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
       this.initializeDatabase();
+      this.initTestsFromCSV();
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -56,7 +59,7 @@ class LabDB {
       price INTEGER, 
       normal TEXT,
       options TEXT,
-      isSelecte INTEGER,
+      isSelecte INTEGER DEFAULT 0,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
      );
@@ -78,6 +81,39 @@ class LabDB {
 
     `);
   }
+  async initTestsFromCSV() {
+    try {
+      const testCountStet = this.db.prepare(`
+      SELECT COUNT(*) as total FROM tests
+      `);
+      const { total } = testCountStet.get();
+      if (total === 0) {
+        const csvPath = path.join(__dirname, 'tests.csv');
+        const csvData = fs.readFileSync(csvPath, 'utf-8').trim().split('\n');
+
+        const insertStmt = this.db.prepare(`
+          INSERT INTO tests (name, price, normal, options, isSelecte)
+          VALUES (?, ?, ?, ?, ?)
+        `);
+
+        const insertTransaction = this.db.transaction((lines) => {
+          for (const line of lines) {
+            const [name, price, normal, options, isSelecte] = line.split(',');
+            insertStmt.run(name, Number(price), normal, options, Number(isSelecte));
+          }
+        });
+
+        insertTransaction(csvData);
+
+        console.log('Tests imported from tests.csv');
+      } else {
+        console.log('Tests table is not empty, skipping import');
+      }
+    } catch (error) {
+      console.error('Error importing tests from CSV:', error);
+    }
+  }
+
 
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
@@ -378,17 +414,17 @@ class LabDB {
     const { patientID, status, testType, tests, discount } = data;
     const testTypeStr = testType;
     const testsStr = JSON.stringify(tests);
-  
+
     try {
       const patientCheckStmt = this.db.prepare(`
         SELECT id FROM patients WHERE id = ?
       `);
       const patientExists = patientCheckStmt.get(patientID);
-  
+
       if (!patientExists) {
         throw new Error(`Patient with ID ${patientID} does not exist.`);
       }
-  
+
       const insertStmt = this.db.prepare(`
         INSERT INTO visits (patientID, status, testType, tests, discount)
         VALUES (?, ?, ?, ?, ?)
@@ -400,14 +436,13 @@ class LabDB {
         testsStr,
         discount
       );
-  
+
       return { id: info.lastInsertRowid };
     } catch (error) {
       console.error("Error in addVisit:", error);
       throw new Error("Error adding visit");
     }
   }
-  
 
   async deleteVisit(id) {
     const stmt = await this.db.prepare(`

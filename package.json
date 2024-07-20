@@ -8,6 +8,7 @@
     "antd": "^5.5.0",
     "better-sqlite3": "^11.0.0",
     "caniuse-lite": "^1.0.30001641",
+    "csv-parser": "^3.0.0",
     "dayjs": "^1.11.7",
     "dayjs-plugin-utc": "^0.1.2",
     "dropbox": "^10.34.0",
