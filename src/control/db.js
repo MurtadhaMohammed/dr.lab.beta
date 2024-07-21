@@ -1,16 +1,18 @@
 const path = require("path");
 const os = require("os");
+const fs = require("fs");
 const { app } = require("electron");
 const Database = require("better-sqlite3");
+// const CSV = require('csv-parser')
 
 class LabDB {
   constructor() {
     const isMac = os.platform() === "darwin";
     const dbPath = !app.isPackaged
-      ? "database.sql"
+      ? "database.db"
       : path.join(
           app.getAppPath(),
-          isMac ? "../../../../database.sql" : "../../database.sql"
+          isMac ? "../../../../database.db" : "../../database.db"
         );
 
     try {
@@ -20,6 +22,7 @@ class LabDB {
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
       this.initializeDatabase();
+      this.initTestsFromCSV();
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -37,7 +40,8 @@ class LabDB {
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
-      CREATE TABLE IF NOT EXISTS visits(
+
+        CREATE TABLE IF NOT EXISTS visits (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         patientID INTEGER,
         status TEXT DEFAULT "PENDING" NOT NULL,
@@ -46,20 +50,19 @@ class LabDB {
         discount INTEGER,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (patientID) REFERENCES patients(id) ON DELETE CASCADE
-      );
+        FOREIGN KEY(patientID) REFERENCES patients(id)
+);
+
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50),
       price INTEGER, 
       normal TEXT,
       options TEXT,
-      isSelecte INTEGER,
+      isSelecte INTEGER DEFAULT 0,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
-
+     );
       CREATE TABLE IF NOT EXISTS packages(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title VARCHAR(100),
@@ -78,6 +81,44 @@ class LabDB {
 
     `);
   }
+  async initTestsFromCSV() {
+    try {
+      const testCountStet = this.db.prepare(`
+      SELECT COUNT(*) as total FROM tests
+      `);
+      const { total } = testCountStet.get();
+      if (total === 0) {
+        const csvPath = path.join(__dirname, "tests.csv");
+        const csvData = fs.readFileSync(csvPath, "utf-8").trim().split("\n");
+
+        const insertStmt = this.db.prepare(`
+          INSERT INTO tests (name, price, normal, options, isSelecte)
+          VALUES (?, ?, ?, ?, ?)
+        `);
+
+        const insertTransaction = this.db.transaction((lines) => {
+          for (const line of lines) {
+            const [name, price, normal, options, isSelecte] = line.split(",");
+            insertStmt.run(
+              name,
+              Number(price),
+              normal,
+              options,
+              Number(isSelecte)
+            );
+          }
+        });
+
+        insertTransaction(csvData);
+
+        console.log("Tests imported from tests.csv");
+      } else {
+        console.log("Tests table is not empty, skipping import");
+      }
+    } catch (error) {
+      console.error("Error importing tests from CSV:", error);
+    }
+  }
 
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
@@ -90,7 +131,6 @@ class LabDB {
     const countResult = countStmt.get(`%${q}%`);
     const total = countResult?.total || 0;
 
-    // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
       WHERE name LIKE ?
@@ -331,13 +371,11 @@ class LabDB {
 
       transaction();
 
-      // Return success message
       return {
         success: true,
         message: `Package with ID ${id} updated successfully.`,
       };
     } catch (error) {
-      // Catch any errors and throw a detailed error message
       throw new Error(
         `Failed to update package with ID ${id}: ${error.message}`
       );
@@ -382,30 +420,16 @@ class LabDB {
     const testTypeStr = testType;
     const testsStr = JSON.stringify(tests);
 
-    const patientCheckStmt = this.db.prepare(`
-      SELECT id FROM patients WHERE id = ?
-    `);
-    const patientExists = patientCheckStmt.get(patientID);
-
-    if (!patientExists) {
-      throw new Error(`Patient with ID ${patientID} does not exist.`);
-    }
-
-    const visitCheckStmt = this.db.prepare(`
-      SELECT id FROM visits WHERE patientID = ?
-    `);
-    const existingVisit = visitCheckStmt.get(patientID);
-
-    if (existingVisit) {
-      const updateStmt = this.db.prepare(`
-        UPDATE visits
-        SET status = ?, testType = ?, tests = ?, discount = ?, updatedAt = CURRENT_TIMESTAMP
-        WHERE patientID = ?
+    try {
+      const patientCheckStmt = this.db.prepare(`
+        SELECT id FROM patients WHERE id = ?
       `);
-      updateStmt.run(status, testTypeStr, testsStr, discount, patientID);
+      const patientExists = patientCheckStmt.get(patientID);
 
-      return { id: existingVisit.id };
-    } else {
+      if (!patientExists) {
+        throw new Error(`Patient with ID ${patientID} does not exist.`);
+      }
+
       const insertStmt = this.db.prepare(`
         INSERT INTO visits (patientID, status, testType, tests, discount)
         VALUES (?, ?, ?, ?, ?)
@@ -417,7 +441,11 @@ class LabDB {
         testsStr,
         discount
       );
+
       return { id: info.lastInsertRowid };
+    } catch (error) {
+      console.error("Error in addVisit:", error);
+      throw new Error("Error adding visit");
     }
   }
 
@@ -447,7 +475,6 @@ class LabDB {
       .filter(Boolean)
       .join(" AND ");
 
-    // Prepare the query to count the total number of visits
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM visits v
@@ -458,7 +485,6 @@ class LabDB {
     const countResult = countStmt.get(`%${q}%`);
     const total = countResult?.total || 0;
 
-    // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail, p.birth as patientBirth
       FROM visits v
@@ -488,6 +514,66 @@ class LabDB {
     }));
 
     return { success: true, total, data: results };
+  }
+
+  async getTotalVisits({ startDate, endDate }) {
+    const whereClauses = [
+      startDate
+        ? `DATE(v.createdAt) >= '${
+            new Date(startDate).toISOString().split("T")[0]
+          }'`
+        : "",
+      endDate
+        ? `DATE(v.createdAt) <= '${
+            new Date(endDate).toISOString().split("T")[0]
+          }'`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" AND ");
+
+    const countStmt = await this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM visits v
+      JOIN patients p ON v.patientID = p.id
+      WHERE ${whereClauses}
+    `);
+
+    const countResult = countStmt.get();
+    const total = countResult?.total || 0;
+
+    return { success: true, total };
+  }
+
+  async getVisitByPatient(patientId) {
+    const stmt = await this.db.prepare(`
+      SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail,  p.birth as patientBirth
+      FROM visits v
+      JOIN patients p ON v.patientId = p.id
+      WHERE v.patientId = ?
+      ORDER BY v.createdAt DESC
+      `);
+
+    const visits = stmt.all(patientId);
+    const results = visits?.map((el) => ({
+      id: el?.id,
+      tests: JSON.parse(el?.tests) || [],
+      testType: el?.testType,
+      status: el?.status,
+      discount: el?.discount,
+      createdAt: el?.createdAt,
+      updatedAt: el?.updatedAt,
+      patient: {
+        id: el?.patientID,
+        name: el?.patientName,
+        gender: el?.patientGender,
+        phone: el?.patientPhone,
+        email: el?.patientEmail,
+        birth: el?.patientBirth,
+      },
+    }));
+
+    return { success: true, data: results };
   }
 
   async updateVisit(id, update) {

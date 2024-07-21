@@ -18,14 +18,11 @@ export const PatientHistory = () => {
   useEffect(() => {
     if (!id) return;
     send({
-      doc: "visits",
-      query: "find",
-      search: {
-        "patient.id": id,
-      },
-    }).then(({ err, rows }) => {
+      query: "getVisitByPatient",
+      patientId: id,
+    }).then(({ err, data }) => {
       if (err) message.error("Error !");
-      else setData(rows);
+      else setData(data);
     });
   }, [id]);
 
@@ -58,10 +55,10 @@ export const PatientHistory = () => {
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -112,7 +109,7 @@ export const PatientHistory = () => {
   return (
     <Modal
       title={
-        data[0]
+        data?.length > 0
           ? `Patient history for ${data[0]?.patient?.name}`
           : "Patient history"
       }
@@ -127,11 +124,11 @@ export const PatientHistory = () => {
     >
       <div className="history">
         <Table
-          //style={{ marginTop: "-16px" }}
           columns={columns}
           dataSource={data}
           pagination={false}
           size="small"
+          rowKey={(record) => record.id}
         />
       </div>
     </Modal>

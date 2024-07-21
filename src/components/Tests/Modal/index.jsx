@@ -87,7 +87,6 @@ export const PureModal = () => {
     borderStyle: "dashed",
   };
 
-
   const handleSubmit = () => {
     let data = {
       name,
@@ -97,37 +96,6 @@ export const PureModal = () => {
       options: isSelecte ? options : [],
       updatedAt: Date.now(),
     };
-
-    // if (id) {
-    //   send({
-    //     doc: "tests",
-    //     query: "update",
-    //     condition: { _id: id },
-    //     data: { ...data, createdAt },
-    //   }).then(({ err }) => {
-    //     if (err) message.error("Error !");
-    //     else {
-    //       message.success("Save Succefful.");
-    //       setReset();
-    //       setIsModal(false);
-    //       setIsReload(!isReload);
-    //     }
-    //   });
-    // } else {
-    //   send({
-    //     doc: "tests",
-    //     query: "insert",
-    //     data: { ...data, createdAt: Date.now() },
-    //   }).then(({ err }) => {
-    //     if (err) message.error("Error !");
-    //     else {
-    //       message.success("Save Succefful.");
-    //       setReset();
-    //       setIsModal(false);
-    //       setIsReload(!isReload);
-    //     }
-    //   });
-    // }
 
     if (!id) {
       send({
@@ -145,7 +113,6 @@ export const PureModal = () => {
       }).catch(err => {
         console.error("Error in IPC communication:", err);
       });
-
     } else {
       send({
         query: "editTest",
@@ -163,9 +130,7 @@ export const PureModal = () => {
       }).catch(err => {
         console.error("Error in IPC communication:", err);
       });
-    };
-
-
+    }
   };
 
   return (
@@ -244,13 +209,10 @@ export const PureModal = () => {
           {isSelecte ? (
             <Col span={24}>
               <Space size={[0, 6]} wrap>
-                {options?.map((el, i) => (
+                {Array.isArray(options) && options.map((el, i) => (
                   <Tag
                     key={i}
                     closable={true}
-                    // style={{
-                    //   userSelect: "none",
-                    // }}
                     color="red"
                     onClose={() => handleClose(el)}
                   >

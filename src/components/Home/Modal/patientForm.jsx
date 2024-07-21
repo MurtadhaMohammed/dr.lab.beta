@@ -27,6 +27,7 @@ const PatientForm = () => {
     gender,
     setName,
     setBirth,
+    setPatientID,
     setPhone,
     setEmail,
     setGender,
@@ -42,18 +43,20 @@ const PatientForm = () => {
       query: "getPatients",
       q: querySearch,
       skip: 0,
-      limit: 10
-    }).then(resp => {
-      if (resp.success) {
-        setPatientsList(resp.data);
-        console.log("Patients data:", resp.data);
-      } else {
-        console.error("Error fetching patients:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-  }
+      limit: 10,
+    })
+      .then((resp) => {
+        if (resp.success) {
+          setPatientsList(resp.data);
+          console.log("Patients data:", resp.data);
+        } else {
+          console.error("Error fetching patients:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
+  };
 
   useEffect(() => {
     isModal && getPtients();
@@ -62,6 +65,7 @@ const PatientForm = () => {
   useEffect(() => {
     if (!selected) return;
     let patientObj = patientsList.find((el) => el?.id === selected);
+    setPatientID(patientObj?.id);
     setBirth(dayjs(patientObj?.birth));
     setName(patientObj?.name);
     setEmail(patientObj?.email);

@@ -11,8 +11,9 @@ import LoginScreen from "./screens/LoginScreen";
 import { useAppStore } from "./appStore";
 import { useEffect } from "react";
 import dayjs from "dayjs";
-import { send } from "./control/renderer";
-import { title } from "process";
+// import { send } from "./control/renderer";
+// import { title } from "process";
+import SettingsScreen from "./screens/SettingScreen";
 
 function App() {
   const { isLogin, setIsLogin } = useAppStore();
@@ -314,6 +315,7 @@ function App() {
               <Route path="/tests" element={<TestsScreen />} />
               <Route path="/groups" element={<GroupsScreen />} />
               <Route path="/reports" element={<ReportsScreen />} />
+              <Route path="/settings" element={<SettingsScreen />} />
             </Routes>
           </MainContainer>
         </>

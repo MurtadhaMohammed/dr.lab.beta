@@ -2,10 +2,10 @@ const { ipcMain } = require("electron");
 var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
-
-let labDB = new LabDB();
+const fs = require("fs");
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
+  let labDB = await new LabDB();
   switch (arg.query) {
     case "getPatients": {
       try {
@@ -178,6 +178,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.addVisit(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
+        console.error("Error adding visit:", error.message);
         event.reply("asynchronous-reply", {
           success: false,
           error: error.message,
@@ -217,11 +218,61 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+    case "getTotalVisits": {
+      const { startDate, endDate } = arg.data;
+      try {
+        const resp = await labDB.getTotalVisits({
+          startDate,
+          endDate,
+        });
+        event.reply("asynchronous-reply", resp);
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
 
     case "updateVisit": {
       try {
         const resp = await labDB.updateVisit(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "getVisitByPatient": {
+      try {
+        const { patientId } = arg;
+        if (!patientId)
+          throw new Error("Patient ID is required to get visits by patient.");
+        const resp = await labDB.getVisitByPatient(patientId);
+        event.reply("asynchronous-reply", resp);
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+    case "saveHeadImage": {
+      try {
+        const { file } = arg;
+        fs.copyFile(file, "./head.png", (err) => {
+          if (err) {
+            event.reply("asynchronous-reply", { success: false, err });
+          } else {
+            event.reply("asynchronous-reply", { success: true });
+          }
+        });
       } catch (error) {
         event.reply("asynchronous-reply", {
           success: false,

@@ -56,11 +56,11 @@ export const PureTable = ({ isReport = false }) => {
     setPhone,
     setTests,
     setCreatedAt,
-    setUID,
     querySearch,
     setIsResultsModal,
     setRecord,
     isToday,
+    setPatientID
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 
@@ -330,10 +330,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -485,8 +485,10 @@ export const PureTable = ({ isReport = false }) => {
     tests,
     createdAt,
   }) => {
+    console.log(patient)
     setId(id);
     setTests(tests);
+    setPatientID(patient?.id)
     setBirth(dayjs(patient?.birth));
     setName(patient?.name);
     setEmail(patient?.email);
@@ -525,7 +527,6 @@ export const PureTable = ({ isReport = false }) => {
       },
     }).then((resp) => {
       if (resp.success) {
-        console.log(resp);
         setData(resp.data);
         setTotal(resp.total);
       } else {

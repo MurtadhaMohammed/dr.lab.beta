@@ -1,9 +1,8 @@
 const electron = require("electron");
 const isDev = require("electron-is-dev");
-
-// const { print } = require("pdf-to-printer");
 var { jsPDF } = require("jspdf");
 var fs = require("fs");
+const Jimp = require("jimp");
 require("jspdf-autotable");
 
 const path = require("path");
@@ -16,7 +15,11 @@ function base64_encode(file) {
   return "data:image/gif;base64," + fs.readFileSync(file, "base64");
 }
 
-const imgHeight = 65; // 245.66929134 px
+async function getImageDimensions(filePath) {
+  const image = await Jimp.read(filePath);
+  return { width: image.bitmap.width, height: image.bitmap.height };
+}
+// const imgHeight = 65; // 245.66929134 px
 const imgWidth = 210; // 793.7007874 px
 const imgUrl = "head.png";
 
@@ -109,7 +112,10 @@ function printReport(data, cb) {
   }
 }
 
-function createPDF(data, isView = true, cb) {
+async function createPDF(data, isView = true, cb) {
+  const imgDimensions = await getImageDimensions(imgUrl);
+  const aspectRatio = imgDimensions.width / imgDimensions.height;
+  const imgHeight = (imgWidth / aspectRatio) + 20;
   try {
     const doc = new jsPDF({
       orientation: "p",
@@ -189,22 +195,6 @@ function createPDF(data, isView = true, cb) {
           right: 10,
         },
         body: results,
-        // didParseCell: (hookData) => {
-        //   //console.log(JSON.stringify(hookData.cell));
-        //   if (hookData.section == "body") {
-        //     switch (hookData.column.dataKey) {
-        //       case "normal":
-        //         hookData.cell.text = String(hookData.cell.text).includes(",")
-        //           ? String(hookData.cell.text).split(",")[0] +
-        //             "\n" +
-        //             String(hookData.cell.text).split(",")[1]
-        //           : hookData.cell.text;
-        //         break;
-        //       default:
-        //         break;
-        //     }
-        //   }
-        // },
         columns: [
           { header: "Test", dataKey: "name" },
           { header: "Result", dataKey: "result" },
@@ -232,25 +222,10 @@ function createPDF(data, isView = true, cb) {
     doc.save("a4.pdf");
     isView &&
       shell.openPath(path.join(__dirname, isDev ? "a4.pdf" : "../../a4.pdf"));
-    // var isWin = process.platform === "win32";
-    // if (isWin)
-    //   print(path.join(__dirname, "a4.pdf"))
-    //     .then(console.log)
-    //     .catch(console.log);
-    // else shell.openPath(path.join(__dirname, "a4.pdf"));
-
-    // let file = fs.readFileSync(
-    //   path.join(__dirname, isDev ? "head.png" : "../../head.png"),
-    //   { encoding: "utf8"}
-    // );
 
     let file = new LocalFileData(
       path.join(__dirname, isDev ? "a4.pdf" : "../../a4.pdf")
     );
-
-    // let file = fs.createReadStream(
-    //   path.join(__dirname, isDev ? "head.png" : "../../head.png"),
-    // );
 
     pdf = new jsPDF({
       orientation: "landscape",

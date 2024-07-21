@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @font-face {
   font-family: "Frutiger";
   src: url("./fonts/Frutiger LT Arabic 55 Roman.ttf");
@@ -20,7 +24,6 @@
   font-family: "Frutiger";
   margin: 0;
   padding: 0;
- 
 }
 
 p {
@@ -41,7 +44,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: #f6f6f6;
-  
 }
 
 code {
@@ -62,7 +64,7 @@ code {
 
 /* width */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 4px;
 }
 
 /* Track */

@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import { create } from "zustand";
 
@@ -25,12 +26,14 @@ export const useHomeStore = create((set) => ({
   discount: null,
   status: "PENDING",
   //patient info
+  patientID: null,
   name: "",
   birth: "",
   phone: "",
   email: "",
   gender: null,
   record: null,
+  setPatientID: (patientID) => set({ patientID }),
   setIsToday: (isToday) => set({ isToday }),
   setRecord: (record) => set({ record }),
   setUID: (uID) => set({ uID }),
@@ -51,6 +54,7 @@ export const useHomeStore = create((set) => ({
   setReset: () =>
     set({
       id: null,
+      patientID: null,
       testType: null,
       createdAt: null,
       tests: [],
@@ -62,7 +66,6 @@ export const useHomeStore = create((set) => ({
       email: "",
       gender: null,
       record: null,
-      uID: nanoid(),
     }),
 }));
 
@@ -160,7 +163,7 @@ export const useGroupStore = create((set) => ({
 }));
 
 export const useReportsStore = create((set) => ({
-  filterDate: [],
+  filterDate: [dayjs(), dayjs()],
   data: null,
   loading: false,
   records: [],

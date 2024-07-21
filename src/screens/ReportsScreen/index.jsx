@@ -1,10 +1,4 @@
-import {
-  Button,
-  Card,
-  DatePicker,
-  Divider,
-  Space,
-} from "antd";
+import { Button, Card, DatePicker, Divider, Space } from "antd";
 import "./style.css";
 import { PureTable } from "../../components/Reports";
 import { PureTable as HomeTable } from "../../components/Home";
@@ -14,6 +8,7 @@ import dayjs from "dayjs";
 import { send } from "../../control/renderer";
 import { getTotalPrice } from "../../helper/price";
 import Info from "../../components/Reports/Info";
+import { useEffect } from "react";
 
 //  const getBrith = (ageInYears) =>{
 //   //var ageInYears = 23; //23 * 365 * 24 * 60 * 60
@@ -30,24 +25,15 @@ const ReportsScreen = () => {
   const { isReload, setIsReload } = useAppStore();
 
   const loadData = (cb) => {
-    let queryKey = new RegExp('', "gi");
     send({
-      doc: "visits",
-      query: "find",
-      search: {
-        $and: [
-          { "patient.name": queryKey },
-          {
-            createdAt: {
-              $gt: dayjs(dayjs(filterDate[0]).format("YYYY-MM-DD")).valueOf(),
-              $lt: dayjs(dayjs(filterDate[1]).format("YYYY-MM-DD")).valueOf(),
-            },
-          },
-        ],
+      query: "getVisits",
+      data: {
+        q: "",
+        startDate:dayjs(filterDate[0]).startOf("day").toISOString(),
+        endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
       },
-    }).then(({ err, rows }) => {
-      if (err) throw err;
-      cb(rows);
+    }).then(({ success, data }) => {
+      if (success) cb(data);
     });
   };
   const handlePrint = () => {
@@ -87,7 +73,11 @@ const ReportsScreen = () => {
     });
   };
 
-  const handleSearch = () => {
+  // const handleSearch = () => {
+
+  // };
+
+  useEffect(() => {
     setLoading(true);
     getTotalVisits(filterDate, (visits) => {
       getSubTotalAmount(filterDate, async (rows) => {
@@ -170,7 +160,7 @@ const ReportsScreen = () => {
         setIsReload(!isReload);
       });
     });
-  };
+  }, [filterDate]);
 
   return (
     <div className="reports-screen">
@@ -178,6 +168,7 @@ const ReportsScreen = () => {
         <section className="header app-flex-space">
           <Space>
             <DatePicker.RangePicker
+              allowClear={false}
               value={filterDate}
               onChange={setFilterDate}
             />
@@ -187,17 +178,17 @@ const ReportsScreen = () => {
             <Typography.Text>Years Old</Typography.Text> */}
           </Space>
           <Space>
-            <Button disabled={!data || !filterDate }   onClick={handlePrint}>
+            <Button disabled={!data || !filterDate} onClick={handlePrint}>
               Print
             </Button>
-            <Button type="primary" onClick={handleSearch}>
+            {/* <Button type="primary" onClick={handleSearch}>
               Search
-            </Button>
+            </Button> */}
           </Space>
         </section>
         <Divider />
         {/* <PureTable /> */}
-        <Info/>
+        <Info />
       </Card>
       <br />
       {data && (
