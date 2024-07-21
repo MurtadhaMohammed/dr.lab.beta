@@ -20,8 +20,9 @@ function App() {
 
   const checkExpire = () => {
     let exp = localStorage.getItem("lab-exp");
+    let user = localStorage.getItem("lab-user");
     let createdAt = localStorage.getItem("lab-created");
-    if (!exp || !createdAt) setIsLogin(false);
+    if (!exp || !createdAt || !user) setIsLogin(false);
     else {
       let isExp = dayjs().isAfter(dayjs(createdAt).add(exp, "d"));
       if (isExp) {
@@ -114,7 +115,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "deleteTest",
     //   id: 6
@@ -127,7 +127,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     // send({
     //   query: "editTest",
     //   id: 3,
@@ -240,7 +239,6 @@ function App() {
     // }).catch(err => {
     //   console.error("Error in IPC communication:", err);
     // });
-
     //  send({
     //       query: "deleteVisit",
     //       id: 20
@@ -253,7 +251,6 @@ function App() {
     //     }).catch(err => {
     //       console.error("Error in IPC communication:", err);
     //     });
-
     // send({
     //   query: "getVisits",
     //   data: {
