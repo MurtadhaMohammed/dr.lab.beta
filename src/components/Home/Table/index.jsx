@@ -527,7 +527,6 @@ export const PureTable = ({ isReport = false }) => {
       },
     }).then((resp) => {
       if (resp.success) {
-        console.log(resp);
         setData(resp.data);
         setTotal(resp.total);
       } else {

@@ -24,18 +24,22 @@ const MainHeader = () => {
   const signout = async () => {
     setLoading(true);
     try {
-      let id = localStorage.getItem("lab-id");
-      const resp = await fetch(`https://lab-beta-api.onrender.com/api/signout/${id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      const data = await resp.json();
-      setLoading(false);
-      if (data.success) {
+      let serialId = parseInt(localStorage.getItem("lab-serial-id"));
+      const resp = await fetch(
+        `https://dr-lab-apiv2.onrender.com/api/client/logout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ serialId }),
+        }
+      );
+      if (resp.status === 200) {
+        setLoading(false);
         localStorage.removeItem("lab-exp");
-        localStorage.removeItem("lab-id");
+        localStorage.removeItem("lab-serial-id");
+        localStorage.removeItem("lab-user");
         setIsLogin(false);
       } else message.error("Serial not found!");
     } catch (error) {

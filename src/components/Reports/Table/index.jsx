@@ -6,82 +6,27 @@ import { send } from "../../../control/renderer";
 
 export const getTotalVisits = (filterDate = null, cb) => {
   send({
-    doc: "visits",
-    query: "count",
-    search: {
-      $and: [
-        { "patient.name": new RegExp("", "gi") },
-        {
-          ...(filterDate && {
-            createdAt: {
-              $gt: dayjs(dayjs(filterDate[0]).format("YYYY-MM-DD")).valueOf(),
-              $lt: dayjs(dayjs(filterDate[1]).format("YYYY-MM-DD")).valueOf(),
-            },
-          }),
-        },
-      ],
+    query: "getTotalVisits",
+    data: {
+      startDate: dayjs(filterDate[0]).startOf("day").toISOString(),
+      endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
     },
-  }).then(({ err, count: total }) => {
-    if (err) message.error("Error !");
-    else {
-      setTimeout(() => {
-        send({
-          doc: "visits",
-          query: "count",
-          search: {
-            $and: [
-              {
-                "patient.name": new RegExp("", "gi"),
-                "patient.gender": "male",
-              },
-              {
-                ...(filterDate && {
-                  createdAt: {
-                    $gt: dayjs(
-                      dayjs(filterDate[0]).format("YYYY-MM-DD")
-                    ).valueOf(),
-                    $lt: dayjs(
-                      dayjs(filterDate[1]).format("YYYY-MM-DD")
-                    ).valueOf(),
-                  },
-                }),
-              },
-            ],
-          },
-        }).then(({ err, count: male }) => {
-          if (err) message.error("Error !");
-          else {
-            let female = total - male;
-            male = Math.round((male / total) * 100);
-            female = Math.round((female / total) * 100);
-            cb({ total, male, female });
-          }
-        });
-      }, 100);
-    }
+  }).then(({ success, total }) => {
+    if (!success) message.error("Error !");
+    else cb({ total });
   });
 };
 
 export const getSubTotalAmount = (filterDate = null, cb) => {
   send({
-    doc: "visits",
-    query: "find",
-    search: {
-      $and: [
-        { "patient.name": new RegExp("", "gi") },
-        {
-          ...(filterDate && {
-            createdAt: {
-              $gt: dayjs(dayjs(filterDate[0]).format("YYYY-MM-DD")).valueOf(),
-              $lt: dayjs(dayjs(filterDate[1]).format("YYYY-MM-DD")).valueOf(),
-            },
-          }),
-        },
-      ],
+    query: "getVisits",
+    data: {
+      startDate: dayjs(filterDate[0]).startOf("day").toISOString(),
+      endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
     },
-  }).then(({ err, rows }) => {
-    if (err) message.error("Error !");
-    else cb(rows);
+  }).then(({ success, data }) => {
+    if (!success) message.error("Error !");
+    else cb(data);
   });
 };
 

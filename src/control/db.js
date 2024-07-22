@@ -10,9 +10,11 @@ class LabDB {
     const dbPath = !app.isPackaged
       ? "database.db"
       : path.join(
-        app.getAppPath(),
-        isMac ? "../../../../database.db" : "../../database.db"
-      );
+
+          app.getAppPath(),
+          isMac ? "../../../../database.db" : "../../database.db"
+        );
+
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
@@ -86,8 +88,8 @@ class LabDB {
       `);
       const { total } = testCountStet.get();
       if (total === 0) {
-        const csvPath = path.join(__dirname, 'tests.csv');
-        const csvData = fs.readFileSync(csvPath, 'utf-8').trim().split('\n');
+        const csvPath = path.join(__dirname, "tests.csv");
+        const csvData = fs.readFileSync(csvPath, "utf-8").trim().split("\n");
 
         const insertStmt = this.db.prepare(`
           INSERT INTO tests (name, price, normal, options, isSelecte)
@@ -96,19 +98,25 @@ class LabDB {
 
         const insertTransaction = this.db.transaction((lines) => {
           for (const line of lines) {
-            const [name, price, normal, options, isSelecte] = line.split(',');
-            insertStmt.run(name, Number(price), normal, options, Number(isSelecte));
+            const [name, price, normal, options, isSelecte] = line.split(",");
+            insertStmt.run(
+              name,
+              Number(price),
+              normal,
+              options,
+              Number(isSelecte)
+            );
           }
         });
 
         insertTransaction(csvData);
 
-        console.log('Tests imported from tests.csv');
+        console.log("Tests imported from tests.csv");
       } else {
-        console.log('Tests table is not empty, skipping import');
+        console.log("Tests table is not empty, skipping import");
       }
     } catch (error) {
-      console.error('Error importing tests from CSV:', error);
+      console.error("Error importing tests from CSV:", error);
     }
   }
 
@@ -454,12 +462,14 @@ class LabDB {
     const whereClauses = [
       `p.name LIKE ?`,
       startDate
-        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) >= '${
+            new Date(startDate).toISOString().split("T")[0]
+          }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) <= '${
+            new Date(endDate).toISOString().split("T")[0]
+          }'`
         : "",
     ]
       .filter(Boolean)
@@ -506,6 +516,35 @@ class LabDB {
     return { success: true, total, data: results };
   }
 
+  async getTotalVisits({ startDate, endDate }) {
+    const whereClauses = [
+      startDate
+        ? `DATE(v.createdAt) >= '${
+            new Date(startDate).toISOString().split("T")[0]
+          }'`
+        : "",
+      endDate
+        ? `DATE(v.createdAt) <= '${
+            new Date(endDate).toISOString().split("T")[0]
+          }'`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" AND ");
+
+    const countStmt = await this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM visits v
+      JOIN patients p ON v.patientID = p.id
+      WHERE ${whereClauses}
+    `);
+
+    const countResult = countStmt.get();
+    const total = countResult?.total || 0;
+
+    return { success: true, total };
+  }
+
   async getVisitByPatient(patientId) {
     const stmt = await this.db.prepare(`
       SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail,  p.birth as patientBirth
@@ -537,7 +576,6 @@ class LabDB {
     return { success: true, data: results };
   }
 
-
   async updateVisit(id, update) {
     const { patientID, status, testType, tests, discount } = update;
     const testsStr = JSON.stringify(tests);
@@ -556,7 +594,6 @@ class LabDB {
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
     return { success: info.changes > 0 };
   }
-
 }
 
 module.exports = { LabDB };

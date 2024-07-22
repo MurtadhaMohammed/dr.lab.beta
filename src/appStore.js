@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import { create } from "zustand";
 
@@ -162,7 +163,7 @@ export const useGroupStore = create((set) => ({
 }));
 
 export const useReportsStore = create((set) => ({
-  filterDate: [],
+  filterDate: [dayjs(), dayjs()],
   data: null,
   loading: false,
   records: [],

@@ -2,7 +2,7 @@ const { ipcMain } = require("electron");
 var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
-
+const fs = require("fs");
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -218,6 +218,22 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+    case "getTotalVisits": {
+      const { startDate, endDate } = arg.data;
+      try {
+        const resp = await labDB.getTotalVisits({
+          startDate,
+          endDate,
+        });
+        event.reply("asynchronous-reply", resp);
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
 
     case "updateVisit": {
       try {
@@ -235,9 +251,28 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getVisitByPatient": {
       try {
         const { patientId } = arg;
-        if (!patientId) throw new Error("Patient ID is required to get visits by patient.");
+        if (!patientId)
+          throw new Error("Patient ID is required to get visits by patient.");
         const resp = await labDB.getVisitByPatient(patientId);
         event.reply("asynchronous-reply", resp);
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+    case "saveHeadImage": {
+      try {
+        const { file } = arg;
+        fs.copyFile(file, "./head.png", (err) => {
+          if (err) {
+            event.reply("asynchronous-reply", { success: false, err });
+          } else {
+            event.reply("asynchronous-reply", { success: true });
+          }
+        });
       } catch (error) {
         event.reply("asynchronous-reply", {
           success: false,
