@@ -2,7 +2,7 @@
   "name": "lab-beta",
   "version": "0.1.0",
   "homepage": "./",
-  "main": "index.js",
+  "main": "electron.js",
   "dependencies": {
     "@ant-design/icons": "^5.1.1",
     "antd": "^5.5.0",
@@ -28,7 +28,7 @@
     "zustand": "^4.3.8"
   },
   "scripts": {
-    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron index.js .\"",
+    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron .\"",
     "react-build": "parcel  splash.html index.html  --public-url ./",
     "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "rebuild": "electron-rebuild -f -w better-sqlite3",

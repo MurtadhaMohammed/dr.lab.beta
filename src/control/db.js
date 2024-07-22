@@ -3,7 +3,6 @@ const os = require('os');
 const fs = require('fs');
 const { app } = require('electron');
 const Database = require('better-sqlite3');
-const CSV = require('csv-parser')
 
 class LabDB {
   constructor() {
@@ -14,7 +13,6 @@ class LabDB {
         app.getAppPath(),
         isMac ? "../../../../database.db" : "../../database.db"
       );
-
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
@@ -113,7 +111,6 @@ class LabDB {
       console.error('Error importing tests from CSV:', error);
     }
   }
-
 
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
