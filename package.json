@@ -2,7 +2,7 @@
   "name": "lab-beta",
   "version": "0.1.0",
   "homepage": "./",
-  "main": "index.js",
+  "main": "electron.js",
   "dependencies": {
     "@ant-design/icons": "^5.1.1",
     "@parcel/watcher": "^2.4.1",
@@ -31,10 +31,10 @@
     "zustand": "^4.3.8"
   },
   "scripts": {
-    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron index.js .\"",
+    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron electron.js .\"",
     "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "build-mac": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=darwin --arch=arm64 --ignore=.parcel-cache --out=build",
-    "react-build": "rm -r dist && parcel  splash.html index.html  --public-url ./",
+    "react-build": "parcel  splash.html index.html  --public-url ./",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
     "package-windows": "electron-builder"
   },

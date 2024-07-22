@@ -11,7 +11,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
   const [isForm, setIsForm] = useState(false);
-  const { form } = Form.useForm();
+  const [form] = Form.useForm();
 
   const getUUID = () => {
     send({ query: "getUUID" }).then((resp) => {

@@ -16,7 +16,12 @@ import dayjs from "dayjs";
 import SettingsScreen from "./screens/SettingScreen";
 
 function App() {
-  const { isLogin, setIsLogin } = useAppStore();
+  const { isLogin, setIsLogin, setUser } = useAppStore();
+
+  useEffect(() => {
+    let userString = localStorage.getItem("lab-user");
+    if (userString) setUser(JSON.parse(userString));
+  }, []);
 
   const checkExpire = () => {
     let exp = localStorage.getItem("lab-exp");

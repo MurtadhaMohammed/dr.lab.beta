@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./style.css";
 import {
   Avatar,
@@ -8,6 +8,7 @@ import {
   Divider,
   Form,
   Input,
+  message,
   Row,
   Select,
   Space,
@@ -17,9 +18,36 @@ import headImage from "../../../head.png";
 // import newHeadImage from "../../../head.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
+import { useAppStore } from "../../appStore";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(headImage);
+  const [isUpdate, setIsUpdate] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { user, setPrintFontSize , printFontSize} = useAppStore();
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    form.setFieldsValue(user);
+  }, [user]);
+
+  const handleSizeChange = (val) => {
+    localStorage.setItem("lab-print-size", val);
+    setPrintFontSize(val);
+  };
+
+  const handelCancel = () => {
+    form.setFieldsValue(user);
+    setIsUpdate(false);
+  };
+
+  const onFieldsChange = (field) => {
+    let name = field[0].name[0];
+    let value = field[0].value;
+    if (value === "") value = null;
+    if (value !== user[name]) setIsUpdate(true);
+    else setIsUpdate(false);
+  };
 
   const handleChangeFile = async () => {
     fileDialog().then(async (file) => {
@@ -42,6 +70,39 @@ const SettingsScreen = () => {
     });
   };
 
+  const handleUpdateClient = async (values) => {
+    setLoading(true);
+    send({ query: "getUUID" }).then(async ({ UUID }) => {
+      try {
+        const resp = await fetch(
+          "https://dr-lab-apiv2.onrender.com/api/client/update-client",
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              ...values,
+              device: UUID,
+            }),
+          }
+        );
+
+        if (resp.status === 200) {
+          let data = await resp.json();
+          setLoading(false);
+          localStorage.setItem("lab-user", JSON.stringify(data));
+          message.success("Update Succesfully.");
+          setIsUpdate(false);
+        } else message.error("Update faild!");
+      } catch (error) {
+        console.log(error);
+        message.error(error.message);
+        setLoading(false);
+      }
+    });
+  };
+
   return (
     <div className="settings-page pb-[60px]">
       <Card styles={{ body: { padding: 46 } }}>
@@ -61,14 +122,16 @@ const SettingsScreen = () => {
           <p className="pl-[4px] opacity-60">Account Info</p>
           <Card className="mt-[6px]">
             <Form
-              initialValues={{
-                name: "Murtadha M. Abed",
-                email: "murtadha@email.co",
-                phone: "07718998982",
-                address: "Iraq - Baghdad",
-              }}
-              //   onFinish={onFinish}
+              form={form}
+              //   initialValues={{
+              //     name: user?.name,
+              //     email:user?.email,
+              //     phone: user?.phone,
+              //     address: user?.address,
+              //   }}
+              onFinish={handleUpdateClient}
               //   onFinishFailed={onFinishFailed}
+              onFieldsChange={onFieldsChange}
               layout="vertical"
               autoComplete="off"
             >
@@ -113,19 +176,25 @@ const SettingsScreen = () => {
                   </Form.Item>
                 </Col>
 
-                <Col span={6}>
-                 <Space> <Form.Item label=" ">
-                    <Button type="primary" htmlType="submit">
-                      Save Changes
-                    </Button>
-                  </Form.Item>
-                  <Form.Item label=" ">
-                    <Button  htmlType="submit">
-                      Cancel
-                    </Button>
-                  </Form.Item></Space>
-                </Col>
-                
+                {(isUpdate || loading) && (
+                  <Col span={6}>
+                    <Space>
+                      <Form.Item label=" ">
+                        <Button
+                          loading={loading}
+                          type="primary"
+                          htmlType="submit"
+                        >
+                          Save Changes
+                        </Button>
+                      </Form.Item>
+
+                      <Button disabled={loading} onClick={handelCancel}>
+                        Cancel
+                      </Button>
+                    </Space>
+                  </Col>
+                )}
               </Row>
             </Form>
           </Card>
@@ -146,10 +215,14 @@ const SettingsScreen = () => {
               <Divider />
               <div className="flex justify-between items-center">
                 <b className="text-[14px]">Font Size</b>
-                <Select value={"md"} variant="borderless">
-                  <Select.Option value="md">Medium</Select.Option>
-                  <Select.Option value="sm">Small</Select.Option>
-                  <Select.Option value="lg">Large</Select.Option>
+                <Select
+                  value={printFontSize}
+                  variant="borderless"
+                  onChange={handleSizeChange}
+                >
+                  <Select.Option value={14}>Medium</Select.Option>
+                  <Select.Option value={12}>Small</Select.Option>
+                  <Select.Option value={16}>Large</Select.Option>
                 </Select>
               </div>
             </Card>
