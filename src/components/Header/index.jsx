@@ -19,7 +19,7 @@ const items = [
 const MainHeader = () => {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
-  const { setIsLogin } = useAppStore();
+  const { setIsLogin, user } = useAppStore();
 
   const signout = async () => {
     setLoading(true);
@@ -114,7 +114,7 @@ const MainHeader = () => {
                 ) : (
                   <DownOutlined style={{ fontSize: 14 }} />
                 )}
-                <span style={{ color: loading ? "#ccc" : "#000" }}>Admin</span>
+                <span style={{ color: loading ? "#ccc" : "#000" }}>{user?.name || "Admin"}</span>
                 <Avatar size={"small"} icon={<UserOutlined />} />
               </Space>
             </a>

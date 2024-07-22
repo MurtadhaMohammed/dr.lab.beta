@@ -19,9 +19,11 @@ function App() {
   const { isLogin, setIsLogin, setUser } = useAppStore();
 
   useEffect(() => {
-    let userString = localStorage.getItem("lab-user");
-    if (userString) setUser(JSON.parse(userString));
-  }, []);
+    if (isLogin) {
+      let userString = localStorage.getItem("lab-user");
+      if (userString) setUser(JSON.parse(userString));
+    }
+  }, [isLogin]);
 
   const checkExpire = () => {
     let exp = localStorage.getItem("lab-exp");
