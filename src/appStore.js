@@ -4,9 +4,11 @@ import { create } from "zustand";
 
 export const useAppStore = create((set) => ({
   isLogin: true,
+  user: null,
   isReload: false,
   link: "home",
   printFontSize: 14,
+  setUser: (user) => set({ user }),
   setPrintFontSize: (printFontSize) => set({ printFontSize }),
   setLink: (link) => set({ link }),
   setIsReload: (isReload) => set({ isReload }),
