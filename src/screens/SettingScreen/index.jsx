@@ -21,6 +21,7 @@ import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
 import path from "path-browserify";
+// import path from 'path';
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(headImage);
