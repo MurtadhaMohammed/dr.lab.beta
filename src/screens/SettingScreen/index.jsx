@@ -9,6 +9,7 @@ import {
   Form,
   Input,
   message,
+  Popconfirm,
   Row,
   Select,
   Space,
@@ -24,12 +25,41 @@ const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(headImage);
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { user, setPrintFontSize , printFontSize} = useAppStore();
+  const [signoutLoading, setSignoutLoading] = useState(false);
+  const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
 
   useEffect(() => {
     form.setFieldsValue(user);
   }, [user]);
+
+  const signout = async () => {
+    setSignoutLoading(true);
+    try {
+      let serialId = parseInt(localStorage.getItem("lab-serial-id"));
+      const resp = await fetch(
+        `https://dr-lab-apiv2.onrender.com/api/client/logout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ serialId }),
+        }
+      );
+      if (resp.status === 200) {
+        setSignoutLoading(false);
+        localStorage.removeItem("lab-exp");
+        localStorage.removeItem("lab-serial-id");
+        localStorage.removeItem("lab-user");
+        setIsLogin(false);
+      } else message.error("Serial not found!");
+    } catch (error) {
+      console.log(error);
+      message.error(error.message);
+      setSignoutLoading(false);
+    }
+  };
 
   const handleSizeChange = (val) => {
     localStorage.setItem("lab-print-size", val);
@@ -110,13 +140,22 @@ const SettingsScreen = () => {
           <div className="flex items-center gap-4">
             <Avatar size={"large"} icon={<UserOutlined />} />
             <div>
-              <b className="text-[16px]">Murtadha M. Abed</b>
+              <b className="text-[16px]">{user?.name}</b>
               <span className="text-[14px] text-[#A5A5A5] block -mt-[6px]">
-                07719009898
+                {user?.phone}
               </span>
             </div>
           </div>
-          <Button danger>Sign Out</Button>
+          <Popconfirm
+            placement="rightBottom"
+            onConfirm={signout}
+            title="Signout Confirm"
+            description="Do you want to signout form this app ?"
+          >
+            <Button loading={signoutLoading} danger>
+              Sign Out
+            </Button>
+          </Popconfirm>
         </section>
         <section>
           <p className="pl-[4px] opacity-60">Account Info</p>

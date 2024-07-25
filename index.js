@@ -1,7 +1,12 @@
 const path = require("path");
 
-const { app, BrowserWindow } = require("electron");
+const { app, BrowserWindow, dialog } = require("electron");
+const { autoUpdater } = require("electron-updater");
+
 const isDev = require("electron-is-dev");
+const log = require("electron-log");
+
+log.transports.file.level = "info";
 
 require("./src/control/main");
 
@@ -71,6 +76,48 @@ function createWindow() {
   win.once("ready-to-show", () => {
     splash.close();
     win.show();
+    win.webContents.send("hello");
+
+    if (!isDev) {
+      // Configure the feed URL for GitHub Releases
+      autoUpdater.setFeedURL({
+        provider: "generic",
+        // url: "http://192.168.0.102:8080",
+        url: "https://github.com/MurtadhaMohammed/dr.lab.beta/releases/latest",
+        provider: "github",
+        repo: "dr.lab.beta",
+        owner: "MurtadhaMohammed",
+        //token: "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", // Optional: Add only if needed
+      });
+      autoUpdater.checkForUpdates();
+    }
+
+    autoUpdater.on("update-available", () => {
+      log.info("Update available.");
+      win.webContents.send("update-available");
+    });
+
+    autoUpdater.on("update-downloaded", () => {
+      log.info("Update downloaded");
+      win.webContents.send("update-downloaded");
+      const options = {
+        type: "info",
+        buttons: ["Restart", "Later"],
+        title: "Update Available",
+        message:
+          "A new version has been downloaded. Restart now to apply the update?",
+      };
+      dialog.showMessageBox(null, options).then(({ response }) => {
+        if (response === 0) {
+          autoUpdater.quitAndInstall();
+        }
+      });
+    });
+
+    autoUpdater.on("error", (err) => {
+      log.error("Update error:", err);
+      win.webContents.send("update-err", err);
+    });
   });
 
   win.on("closed", function () {

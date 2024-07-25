@@ -1,8 +1,8 @@
 {
   "name": "lab-beta",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "homepage": "./",
-  "main": "electron.js",
+  "main": "index.js",
   "dependencies": {
     "@ant-design/icons": "^5.1.1",
     "@parcel/watcher": "^2.4.1",
@@ -14,12 +14,15 @@
     "dayjs-plugin-utc": "^0.1.2",
     "dropbox": "^10.34.0",
     "electron-is-dev": "^2.0.0",
+    "electron-log": "^5.1.7",
+    "electron-updater": "^6.2.1",
     "file-dialog": "^0.0.8",
     "form-data": "^4.0.0",
     "get-file-object-from-local-path": "^1.0.2",
     "jimp": "^0.22.12",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.29",
+    "lightningcss": "^1.25.1",
     "nanoid": "^4.0.2",
     "nedb": "^1.8.0",
     "node-machine-id": "^1.1.12",
@@ -31,12 +34,12 @@
     "zustand": "^4.3.8"
   },
   "scripts": {
-    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron electron.js .\"",
+    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron index.js .\"",
     "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "build-mac": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=darwin --arch=arm64 --ignore=.parcel-cache --out=build",
     "react-build": "parcel  splash.html index.html  --public-url ./",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
-    "package-windows": "electron-builder"
+    "package": "electron-builder"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
@@ -63,7 +66,7 @@
     "productName": "Dr.Lab",
     "extends": null,
     "files": [
-      "./electron.js",
+      "./index.js",
       "src/**/*",
       "dist/**/*",
       "./initPDF.js",
