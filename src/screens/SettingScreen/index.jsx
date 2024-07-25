@@ -20,6 +20,7 @@ import headImage from "../../../head.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
+import path from "path-browserify";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(headImage);
@@ -79,6 +80,7 @@ const SettingsScreen = () => {
     else setIsUpdate(false);
   };
 
+
   const handleChangeFile = async () => {
     fileDialog().then(async (file) => {
       send({
@@ -86,7 +88,7 @@ const SettingsScreen = () => {
         file: file[0]?.path,
       }).then((resp) => {
         if (resp.success) {
-          import("../../../head.png")
+          path ? "../../../head.png" : "../../head.png"
             .then((module) => {
               setImagePath(module.default);
             })
