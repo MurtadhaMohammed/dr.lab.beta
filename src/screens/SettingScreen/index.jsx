@@ -86,7 +86,7 @@ const SettingsScreen = () => {
         file: file[0]?.path,
       }).then((resp) => {
         if (resp.success) {
-          import("/head.png")
+          import("../../../head.png")
             .then((module) => {
               setImagePath(module.default);
             })
