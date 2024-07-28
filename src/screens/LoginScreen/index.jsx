@@ -25,6 +25,14 @@ const LoginScreen = () => {
     }, 500);
   }, []);
 
+  const getPlatform = () => {
+    const { userAgent } = navigator;
+    if (userAgent.includes("Win")) return "Windows";
+    if (userAgent.includes("Mac")) return "MacOS";
+    if (userAgent.includes("Linux")) return "Linux";
+    return "Unknown";
+  };
+
   const login = async () => {
     setLoading(true);
     try {
@@ -38,6 +46,7 @@ const LoginScreen = () => {
           body: JSON.stringify({
             serial: key,
             device: UUID,
+            platform: getPlatform(),
           }),
         }
       );

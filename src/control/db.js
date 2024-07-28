@@ -9,12 +9,7 @@ class LabDB {
     const isMac = os.platform() === "darwin";
     const dbPath = !app.isPackaged
       ? "database.db"
-      : path.join(
-
-          app.getAppPath(),
-          isMac ? "../../../../database.db" : "../../database.db"
-        );
-
+      : app.getPath("userData") + "database.db"
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
