@@ -80,45 +80,6 @@ export const PureTable = ({ isReport = false }) => {
     return result;
   };
 
-  //https://lab-beta-api.onrender.com
-
-  // const sendMsg = async (file, type) => {
-  //   setMsgLoading(true);
-  //   var formdata = new FormData();
-  //   type === "message" && formdata.append("file", file);
-  //   formdata.append("phone", destPhone);
-  //   try {
-  //     let res = await fetch(
-  //       `http://lab-beta-api.onrender.com/api/lab/${type}`,
-  //       {
-  //         method: "POST",
-  //         body: formdata,
-  //       }
-  //     );
-  //     let resData = await res.json();
-  //     setMsgLoading(false);
-  //     if (resData?.success) {
-  //       type === "message" && setIsSend(true);
-  //       message.success("تم الارسال بنجاح.");
-  //     } else message.error("مشكلة بالنظام حاول لاحقا!");
-  //   } catch (error) {
-  //     setMsgLoading(false);
-  //     console.log(error);
-  //   }
-  // };
-
-  //   {
-  //     "name": "dUaZ-OH2uPVlyhhW-WPkN.pdf",
-  //     "path_lower": "/duaz-oh2upvlyhhw-wpkn.pdf",
-  //     "path_display": "/dUaZ-OH2uPVlyhhW-WPkN.pdf",
-  //     "id": "id:qvxxrWPlqCAAAAAAAAAAIA",
-  //     "client_modified": "2023-10-14T14:02:51Z",
-  //     "server_modified": "2023-10-14T14:02:51Z",
-  //     "rev": "607ada0f32b4bfd55e830",
-  //     "size": 7168610,
-  //     "is_downloadable": true,
-  //     "content_hash": "ebb92f2d98540cb8378a9890ae6694b945458a2f63758873cd611e2982767abf"
-  // }
 
   const getUrlFromDBX = async (path) => {
     try {

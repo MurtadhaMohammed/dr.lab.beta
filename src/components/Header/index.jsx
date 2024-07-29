@@ -1,11 +1,11 @@
 import MainContainer from "../Container";
 import { UserOutlined, DownOutlined, LogoutOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, Space, Spin, message } from "antd";
-
 import "./style.css";
 import { Link, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useAppStore } from "../../appStore";
+import { useTranslation } from "react-i18next";
 
 const items = [
   {
@@ -17,6 +17,7 @@ const items = [
 ];
 
 const MainHeader = () => {
+  const { t } = useTranslation();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
   const { setIsLogin, user } = useAppStore();
@@ -59,33 +60,33 @@ const MainHeader = () => {
             <ul>
               <Link to={"/"}>
                 <li className={location?.pathname === "/" ? "active" : ""}>
-                  Home
+                  {t("home")}
                 </li>
               </Link>
               <Link to={"/patients"}>
                 <li
                   className={location?.pathname === "/patients" ? "active" : ""}
                 >
-                  Patients
+                  {t("Patients")}
                 </li>
               </Link>
               <Link to={"/tests"}>
                 <li className={location?.pathname === "/tests" ? "active" : ""}>
-                  Tests
+                 {t("Tests")}
                 </li>
               </Link>
               <Link to={"/groups"}>
                 <li
                   className={location?.pathname === "/groups" ? "active" : ""}
                 >
-                  Packages
+                  {t("Packages")}
                 </li>
               </Link>
               <Link to={"/reports"}>
                 <li
                   className={location?.pathname === "/reports" ? "active" : ""}
                 >
-                  Reports
+                  {t("Reports")}
                 </li>
               </Link>
 
@@ -93,7 +94,7 @@ const MainHeader = () => {
                 <li
                   className={location?.pathname === "/settings" ? "active" : ""}
                 >
-                  Settings
+                  {t("Settings")}
                 </li>
               </Link>
             </ul>

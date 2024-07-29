@@ -13,21 +13,24 @@ import {
   Row,
   Select,
   Space,
+  Switch
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import headImage from "../../../head.png";
-// import newHeadImage from "../../../head.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
+import { useTranslation } from "react-i18next";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(headImage);
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
+  const [language, setLanguage] = useState("en");
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
+  const { i18n } = useTranslation();
 
   useEffect(() => {
     form.setFieldsValue(user);
@@ -122,15 +125,21 @@ const SettingsScreen = () => {
           let data = await resp.json();
           setLoading(false);
           localStorage.setItem("lab-user", JSON.stringify(data));
-          message.success("Update Succesfully.");
+          message.success("Update Successfully.");
           setIsUpdate(false);
-        } else message.error("Update faild!");
+        } else message.error("Update failed!");
       } catch (error) {
         console.log(error);
         message.error(error.message);
         setLoading(false);
       }
     });
+  };
+
+  const handleLang = (checked) => {
+    const newLanguage = checked ? "ar" : "en";
+    i18n.changeLanguage(newLanguage);
+    setLanguage(newLanguage);
   };
 
   return (
@@ -157,19 +166,24 @@ const SettingsScreen = () => {
             </Button>
           </Popconfirm>
         </section>
+
+        <section>
+          <Space direction="vertical">
+            <Switch
+              checkedChildren="عربي"
+              unCheckedChildren="Eng"
+              checked={language === "ar"}
+              onChange={handleLang}
+            />
+          </Space>
+        </section>
+
         <section>
           <p className="pl-[4px] opacity-60">Account Info</p>
           <Card className="mt-[6px]">
             <Form
               form={form}
-              //   initialValues={{
-              //     name: user?.name,
-              //     email:user?.email,
-              //     phone: user?.phone,
-              //     address: user?.address,
-              //   }}
               onFinish={handleUpdateClient}
-              //   onFinishFailed={onFinishFailed}
               onFieldsChange={onFieldsChange}
               layout="vertical"
               autoComplete="off"
@@ -268,12 +282,14 @@ const SettingsScreen = () => {
           </div>
           <div>
             <p className="pl-[4px] opacity-60">Subscription Info</p>
-            <Card className="mt-[6px] bg-[#00ff552b] border-none">
-              <b className="text-[18px]">Serial Number</b>
-              <p>089898727</p>
-              <p className="pt-[8px]">
-                Created At 2024 Jan, 03 | <b>360</b> days for expire{" "}
-              </p>
+            <Card className="mt-[6px]">
+              <b className="text-[14px]">Current Plan</b>
+              <div className="rounded-[4px] bg-[#F6F6F6] px-[8px] py-[4px] mt-[6px]">
+                Free Trail -{" "}
+                <span className="text-[12px] text-[#a5a5a5]">
+                  Will expired in 5 days.
+                </span>
+              </div>
             </Card>
           </div>
         </section>

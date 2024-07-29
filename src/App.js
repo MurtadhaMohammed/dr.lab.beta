@@ -14,7 +14,10 @@ import dayjs from "dayjs";
 // import { send } from "./control/renderer";
 // import { title } from "process";
 import SettingsScreen from "./screens/SettingScreen";
+import './i18n';
 const { ipcRenderer } = window.require("electron");
+
+
 
 function App() {
   const { isLogin, setIsLogin, setUser } = useAppStore();

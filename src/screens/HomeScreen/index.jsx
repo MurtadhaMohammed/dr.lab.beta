@@ -28,7 +28,7 @@ const types = [
     label: "Custome Test",
   },
 ];
-
+import { useTranslation } from "react-i18next";
 const HomeScreen = () => {
   const {
     setIsModal,
@@ -40,6 +40,7 @@ const HomeScreen = () => {
     setIsToday,
     isToday
   } = useHomeStore();
+  const { t } = useTranslation();
 
   const onClick = ({ key }) => {
     (id || testType !== key) && setReset();
@@ -61,7 +62,7 @@ const HomeScreen = () => {
             />
             <Divider type="vertical" />
             <span>
-              Request list for{" "}
+              {t("Request_list_for")}{" "}
               <Dropdown
                 menu={{
                   items,
@@ -99,7 +100,7 @@ const HomeScreen = () => {
         <PureTable />
         <PureModal />
         <ResultsModal />
-  
+
       </Card>
     </div>
   );

@@ -25,8 +25,6 @@ function createWindow() {
     autoHideMenuBar: true,
     width: 1300,
     height: 800,
-    // minWidth: 1040,
-    // minHeight: 670,
     show: false,
   });
   splash = new BrowserWindow({
@@ -45,10 +43,6 @@ function createWindow() {
     show: true,
     frame: false,
   });
-
-  //win.loadFile(`./dist/index.html`);
-  //win.loadURL(`file://${path.join(__dirname, "../build/index.html")}`);
-  // splash.loadFile("./src/splash.html");
 
   if (isDev) {
     win.loadURL("http://localhost:1234");
