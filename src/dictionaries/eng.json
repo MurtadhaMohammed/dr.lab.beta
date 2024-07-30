@@ -2,10 +2,13 @@
     "home": "Home",
     "Patients": "Patients",
     "Tests": "Tests",
-    "Packages":"Packages",
-    "Reports":"Reports",
-    "Settings":"Settings",
+    "Packages": "Packages",
+    "Reports": "Reports",
+    "Settings": "Settings",
 
+    "SignOut": "Sign Out",
 
-    "Request_list_for":"Request list for"
+    "signout": "signout",
+
+    "Request list for": "Request list for"
 }

@@ -21,6 +21,7 @@ import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
 import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(headImage);
@@ -30,7 +31,8 @@ const SettingsScreen = () => {
   const [language, setLanguage] = useState("en");
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
-  const { i18n } = useTranslation();
+
+  const { t } = useTranslation();
 
   useEffect(() => {
     form.setFieldsValue(user);
@@ -162,7 +164,7 @@ const SettingsScreen = () => {
             description="Do you want to signout form this app ?"
           >
             <Button loading={signoutLoading} danger>
-              Sign Out
+              {t("Sign Out")}
             </Button>
           </Popconfirm>
         </section>

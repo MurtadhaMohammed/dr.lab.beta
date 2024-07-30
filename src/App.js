@@ -1,26 +1,25 @@
+import React, { useEffect } from "react";
+import { ConfigProvider, message } from "antd";
+import { Routes, Route } from "react-router-dom";
+import dayjs from "dayjs";
 import MainHeader from "./components/Header";
 import MainContainer from "./components/Container";
 import PatientsScreen from "./screens/PatientsScreen";
 import TestsScreen from "./screens/TestsScreen";
 import GroupsScreen from "./screens/GroupsScreen";
-import { ConfigProvider, message } from "antd";
 import HomeScreen from "./screens/HomeScreen";
-import { Routes, Route } from "react-router-dom";
 import ReportsScreen from "./screens/ReportsScreen";
 import LoginScreen from "./screens/LoginScreen";
-import { useAppStore } from "./appStore";
-import { useEffect } from "react";
-import dayjs from "dayjs";
-// import { send } from "./control/renderer";
-// import { title } from "process";
 import SettingsScreen from "./screens/SettingScreen";
-import './i18n';
+import { useAppStore } from "./appStore";
+import { useTranslation } from "react-i18next";
+import i18n from "./i18n";
+
 const { ipcRenderer } = window.require("electron");
-
-
 
 function App() {
   const { isLogin, setIsLogin, setUser } = useAppStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     ipcRenderer.on("hello", () => {
@@ -42,19 +41,22 @@ function App() {
       let userString = localStorage.getItem("lab-user");
       if (userString) setUser(JSON.parse(userString));
     }
-  }, [isLogin]);
+  }, [isLogin, setUser]);
 
   const checkExpire = () => {
     let exp = localStorage.getItem("lab-exp");
     let user = localStorage.getItem("lab-user");
     let createdAt = localStorage.getItem("lab-created");
-    if (!exp || !createdAt || !user) setIsLogin(false);
-    else {
+    if (!exp || !createdAt || !user) {
+      setIsLogin(false);
+    } else {
       let isExp = dayjs().isAfter(dayjs(createdAt).add(exp, "d"));
       if (isExp) {
-        message.error("Searil Expired!");
+        message.error("Serial Expired!");
         setIsLogin(false);
-      } else setIsLogin(true);
+      } else {
+        setIsLogin(true);
+      }
     }
   };
 
@@ -62,8 +64,11 @@ function App() {
     checkExpire();
   }, [isLogin]);
 
+  const direction = i18n.language === "ar" ? "rtl" : "ltr";
+
   return (
     <ConfigProvider
+      direction={direction}
       theme={{
         token: {
           // colorPrimary: "#5b8c00",
