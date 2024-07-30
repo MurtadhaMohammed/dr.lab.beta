@@ -14,6 +14,7 @@ import dayjs from "dayjs";
 // import { send } from "./control/renderer";
 // import { title } from "process";
 import SettingsScreen from "./screens/SettingScreen";
+import MainContainerV2 from "./components/ContainerV2";
 const { ipcRenderer } = window.require("electron");
 
 function App() {
@@ -327,8 +328,8 @@ function App() {
       {!isLogin && <LoginScreen />}
       {isLogin && (
         <>
-          <MainHeader />
-          <MainContainer>
+          {/* <MainHeader /> */}
+          <MainContainerV2>
             <Routes>
               <Route exact path="/" element={<HomeScreen />} />
               <Route path="/patients" element={<PatientsScreen />} />
@@ -337,7 +338,7 @@ function App() {
               <Route path="/reports" element={<ReportsScreen />} />
               <Route path="/settings" element={<SettingsScreen />} />
             </Routes>
-          </MainContainer>
+          </MainContainerV2>
         </>
       )}
     </ConfigProvider>
