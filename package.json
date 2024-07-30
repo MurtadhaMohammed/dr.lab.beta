@@ -9,6 +9,7 @@
     "antd": "^5.5.0",
     "better-sqlite3": "^11.0.0",
     "caniuse-lite": "^1.0.30001641",
+    "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
     "dayjs": "^1.11.7",
     "dayjs-plugin-utc": "^0.1.2",
@@ -16,6 +17,7 @@
     "electron-is-dev": "^2.0.0",
     "electron-log": "^5.1.7",
     "electron-updater": "^6.2.1",
+    "express": "^4.19.2",
     "file-dialog": "^0.0.8",
     "form-data": "^4.0.0",
     "get-file-object-from-local-path": "^1.0.2",
@@ -38,12 +40,14 @@
     "zustand": "^4.3.8"
   },
   "scripts": {
-    "start": "concurrently \"parcel ./index.html \" \"wait-on http://localhost:1234 && electron index.js .\"",
+    "start": "concurrently \"npx parcel ./index.html\" \"wait-on http://localhost:1234 && electron index.js .\"",
     "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "build-mac": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=darwin --arch=arm64 --ignore=.parcel-cache --out=build",
     "react-build": "parcel  splash.html index.html  --public-url ./",
     "rebuild": "electron-rebuild -f -w better-sqlite3",
-    "package": "electron-builder"
+    "package": "electron-builder",
+    "package:win": "electron-builder --win",
+    "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
@@ -69,6 +73,7 @@
     "appId": "sqlite.electron-test.app",
     "productName": "Dr.Lab",
     "extends": null,
+    "npmRebuild": false,
     "files": [
       "./index.js",
       "src/**/*",
