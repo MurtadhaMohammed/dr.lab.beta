@@ -183,7 +183,7 @@ const SettingsScreen = () => {
           </div>
 
           <Switch
-          className="switchBtn"
+            className="switchBtn"
             checkedChildren="عربي"
             unCheckedChildren="Eng"
             checked={language === "ar"}
@@ -193,8 +193,8 @@ const SettingsScreen = () => {
           <Popconfirm
             placement="rightBottom"
             onConfirm={signout}
-            title="Signout Confirm"
-            description="Do you want to signout form this app ?"
+            title={t("SignoutConfirm")}
+            description={t("SignOutFormThisApp?")}
           >
             <Button loading={signoutLoading} danger>
               {t("SignOut")}
@@ -203,7 +203,7 @@ const SettingsScreen = () => {
         </section>
 
         <section>
-          <p className="pl-[4px] opacity-60">Account Info</p>
+          <p className="pl-[4px] opacity-60">{t("AccountInfo")}</p>
           <Card className="mt-[6px]">
             <Form
               form={form}
@@ -215,12 +215,12 @@ const SettingsScreen = () => {
               <Row gutter={[20, 0]}>
                 <Col span={8}>
                   <Form.Item
-                    label="Full Name"
+                    label={t("FullName")}
                     name="name"
                     rules={[
                       {
                         required: true,
-                        message: "Please input your Name!",
+                        message: t("PleaseInputYourName"),
                       },
                     ]}
                   >
@@ -230,12 +230,12 @@ const SettingsScreen = () => {
 
                 <Col span={6}>
                   <Form.Item
-                    label="Phone Number"
+                    label={t("PhoneNumber")}
                     name="phone"
                     rules={[
                       {
                         required: true,
-                        message: "Please input your Phone!",
+                        message: t("PleaseInputYourPhone!"),
                       },
                     ]}
                   >
@@ -243,12 +243,12 @@ const SettingsScreen = () => {
                   </Form.Item>
                 </Col>
                 <Col span={6}>
-                  <Form.Item label="Email" name="email">
+                  <Form.Item label={t("Email")} name="email">
                     <Input type="email" />
                   </Form.Item>
                 </Col>
                 <Col span={7}>
-                  <Form.Item label="Address" name="address">
+                  <Form.Item label={t("Address")} name="address">
                     <Input />
                   </Form.Item>
                 </Col>
@@ -260,14 +260,14 @@ const SettingsScreen = () => {
                         <Button
                           loading={loading}
                           type="primary"
-                          htmlType="submit"
+                          htmlType={t("submit")}
                         >
-                          Save Changes
+                          {t("SaveChanges")}
                         </Button>
                       </Form.Item>
 
                       <Button disabled={loading} onClick={handelCancel}>
-                        Cancel
+                        {t("Cancel")}
                       </Button>
                     </Space>
                   </Col>
@@ -278,12 +278,12 @@ const SettingsScreen = () => {
         </section>
         <section className=" grid grid-cols-2 gap-[20px] mt-[24px]">
           <div>
-            <p className="pl-[4px] opacity-60">PDF Setting</p>
+            <p className="pl-[4px] opacity-60">{t("PDFSetting")}</p>
             <Card className="mt-[6px]">
               <div className="flex justify-between items-center">
-                <b className="text-[14px]">Image Cover</b>
+                <b className="text-[14px]">{t("ImageCover")}</b>
                 <Button type="link" onClick={handleChangeFile}>
-                  Change Image
+                  {t("ChangeImage")}
                 </Button>
               </div>
               <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
@@ -291,27 +291,27 @@ const SettingsScreen = () => {
               </div>
               <Divider />
               <div className="flex justify-between items-center">
-                <b className="text-[14px]">Font Size</b>
+                <b className="text-[14px]">{t("FontSize")}</b>
                 <Select
                   value={printFontSize}
                   variant="borderless"
                   onChange={handleSizeChange}
                 >
-                  <Select.Option value={14}>Medium</Select.Option>
-                  <Select.Option value={12}>Small</Select.Option>
-                  <Select.Option value={16}>Large</Select.Option>
+                  <Select.Option value={14}>{t("Medium")}</Select.Option>
+                  <Select.Option value={12}>{t("Small")}</Select.Option>
+                  <Select.Option value={16}>{t("Large")}</Select.Option>
                 </Select>
               </div>
             </Card>
           </div>
           <div>
-            <p className="pl-[4px] opacity-60">Subscription Info</p>
+            <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
             <Card className="mt-[6px]">
-              <b className="text-[14px]">Current Plan</b>
+              <b className="text-[14px]">{t("CurrentPlan")}</b>
               <div className="rounded-[4px] bg-[#F6F6F6] px-[8px] py-[4px] mt-[6px]">
-                Free Trail -{" "}
+                {t("FreeTrail")} -{" "}
                 <span className="text-[12px] text-[#a5a5a5]">
-                  Will expired in 5 days.
+                  {t("expierd")}
                 </span>
               </div>
             </Card>

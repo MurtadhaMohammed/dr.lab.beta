@@ -15,6 +15,7 @@ import dayjs from "dayjs";
 import { send } from "../../../control/renderer";
 import { useAppStore, useGroupStore } from "../../../appStore";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -30,17 +31,18 @@ export const PureTable = () => {
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const { t } = useTranslation();
   const limit = 10;
 
   const columns = [
     {
-      title: "Package Title",
+      title: t("PackageTitle"),
       dataIndex: "title",
       key: "title",
       render: (title) => <b style={{ whiteSpace: "nowarp" }}>{title}</b>,
     },
     {
-      title: "Tests",
+      title: t("Tests"),
       dataIndex: "tests",
       key: "tests",
       render: (tests) => {
@@ -58,7 +60,7 @@ export const PureTable = () => {
       },
     },
     {
-      title: "Total Price",
+      title: t("TotalPrice"),
       dataIndex: "id",
       key: "id",
       render: (_, record) => {
@@ -81,7 +83,7 @@ export const PureTable = () => {
       },
     },
     {
-      title: "Custome Price",
+      title: t("CustomePrice"),
       dataIndex: "customePrice",
       key: "customePrice",
       render: (_, record) => {
@@ -94,7 +96,7 @@ export const PureTable = () => {
     },
 
     {
-      title: "Last Update",
+      title: t("LastUpdate"),
       dataIndex: "updatedAt",
       key: "updatedAt",
       render: (updatedAt) => (
@@ -115,8 +117,8 @@ export const PureTable = () => {
             onClick={() => handleEdit(record)}
           ></Button>
           <Popconfirm
-            title="Delete the record"
-            description="Are you sure to delete this record?"
+            title={t("DeleteTheRecord")}
+            description={t("DeleteThisRecord")}
             onConfirm={() => handleRemove(record.id)}
             okText="Yes"
             cancelText="No"
@@ -129,25 +131,10 @@ export const PureTable = () => {
     },
   ];
 
-
-
-
   const handleRemove = (id) => {
-    // send({
-    //   doc: "packages",
-    //   query: "remove",
-    //   condition: { id },
-    // }).then(({ err }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     message.success("Remove Succefful.");
-    //     setIsReload(!isReload);
-    //   }
-    // });
-
     send({
       query: "deletePackage",
-     id
+      id
     }).then(resp => {
       if (resp.success) {
         console.log("Success deletePackage");
@@ -173,29 +160,6 @@ export const PureTable = () => {
 
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
-    // send({
-    //   doc: "packages",
-    //   query: "find",
-    //   search: { title: queryKey },
-    //   limit,
-    //   skip: (page - 1) * limit,
-    // }).then(({ err, rows }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     setData(rows);
-    //     setTimeout(() => {
-    //       send({
-    //         doc: "packages",
-    //         query: "count",
-    //         search: { title: queryKey },
-    //       }).then(({ err, count }) => {
-    //         if (err) message.error("Error !");
-    //         else setTotal(count);
-    //       });
-    //     }, 100);
-    //   }
-    // });
-
 
     send({
       query: "getPackages",
@@ -224,7 +188,7 @@ export const PureTable = () => {
       />
       <div className="table-footer app-flex-space">
         <p>
-          <b>{total}</b> results fot this search
+          <b>{total}</b> {t("results")}
         </p>
         <Pagination
           simple

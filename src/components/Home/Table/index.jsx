@@ -34,9 +34,9 @@ import {
 } from "../../../helper/whatsapp";
 import { Dropbox } from "dropbox";
 import { nanoid } from "nanoid";
+import { useTranslation } from "react-i18next";
 
 var dbx = new Dropbox({ accessToken: ACCESS_TOKEN_DBX });
-
 const statusColor = {
   PENDING: "orange",
   COMPLETED: "green",
@@ -72,6 +72,8 @@ export const PureTable = ({ isReport = false }) => {
   const [isSend, setIsSend] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
   const limit = 8;
+  const { t } = useTranslation();
+
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -132,35 +134,9 @@ export const PureTable = ({ isReport = false }) => {
       }).then(async ({ err, res, file }) => {
         if (err) throw err;
         if (type === "document") {
-          // let msgResp = await sendMessage("template", destPhone, null, "hello");
-          // if (!msgResp.success)
-          //   message.error("مشكلة في الارسال حاول مجددا !");
-          // else message.success("تم الارسال بنجاح");
+
           setMsgLoading(true);
           const fileObject = constructFileFromLocalFileData(file);
-          // dbx
-          //   .filesUpload({
-          //     path: "/" + `${nanoid()}.pdf`,
-          //     contents: fileObject,
-          //   })
-          //   .then(async function (response) {
-          //     if (response?.status === 200) {
-          //       let respUrl = await getUrlFromDBX(
-          //         response?.result?.path_display
-          //       );
-          //       if (!respUrl?.success)
-          //         message.error("مشكلة في الارسال حاول مجددا !");
-          //       else {
-          //         let msgResp = await sendMessage("template", destPhone, null, respUrl?.url);
-          //         if (!msgResp.success)
-          //           message.error("مشكلة في الارسال حاول مجددا !");
-          //         else message.success("تم الارسال بنجاح");
-          //       }
-          //     } else message.error("مشكلة في الارسال حاول مجددا !");
-          //   })
-          //   .catch(function (error) {
-          //     message.error("مشكلة في الارسال حاول مجددا !");
-          //   });
 
           let fileResp = await uploadFile(fileObject);
           if (!fileResp?.success)
@@ -239,13 +215,13 @@ export const PureTable = ({ isReport = false }) => {
         ),
     },
     {
-      title: "Name",
+      title: t("Name"),
       dataIndex: "name",
       key: "name",
       render: (_, record) => <b>{record?.patient?.name}</b>,
     },
     {
-      title: "Tests",
+      title: t("Tests"),
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
@@ -258,7 +234,7 @@ export const PureTable = ({ isReport = false }) => {
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
               <Tag key={el.id}>
-                {el[testType === "CUSTOME" ? "name" : "title"]}
+                {el[testType === t("CUSTOME") ? "name" : "title"]}
               </Tag>
             ))}
             {restCount && (
@@ -268,7 +244,7 @@ export const PureTable = ({ isReport = false }) => {
                     <Space wrap>
                       {list?.map((el) => (
                         <Tag key={el.id}>
-                          {el[testType === "CUSTOME" ? "name" : "title"]}
+                          {el[testType === t("CUSTOME") ? "name" : "title"]}
                         </Tag>
                       ))}
                     </Space>
@@ -283,7 +259,7 @@ export const PureTable = ({ isReport = false }) => {
       },
     },
     {
-      title: "Price",
+      title: t("Price"),
       dataIndex: "id",
       key: "id",
       render: (_, record) => (
@@ -305,7 +281,7 @@ export const PureTable = ({ isReport = false }) => {
       ),
     },
     {
-      title: "End Price",
+      title: t("EndPrice"),
       dataIndex: "id",
       key: "id",
       render: (_, record) => (
@@ -318,7 +294,7 @@ export const PureTable = ({ isReport = false }) => {
       ),
     },
     {
-      title: "Discount",
+      title: t("Discount"),
       dataIndex: "discount",
       key: "discount",
       render: (_, record) =>
@@ -331,7 +307,7 @@ export const PureTable = ({ isReport = false }) => {
         ),
     },
     {
-      title: "Created At",
+      title: t("CreatedAt"),
       dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt) => (
@@ -344,7 +320,7 @@ export const PureTable = ({ isReport = false }) => {
       ),
     },
     {
-      title: "Status",
+      title: t("Status"),
       dataIndex: "status",
       key: "status",
       render: (status) => <Tag color={statusColor[status]}>{status}</Tag>,
@@ -355,47 +331,18 @@ export const PureTable = ({ isReport = false }) => {
         key: "action",
         render: (_, record) => (
           <Space size="small" className="custom-actions">
-            {/* {record?.status === "COMPLETED" && (
-              <Popover
-                trigger={"click"}
-                onClick={() => {
-                  setIsSend(false);
-                  setDestPhone(record?.patient?.phone);
-                }}
-                content={isSend ? whatsapfinish : whatsapContnet(record)}
-              >
-                <Button
-                  size="small"
-                  disabled={record?.status !== "COMPLETED"}
-                  icon={<WhatsAppOutlined />}
-                ></Button>
-              </Popover>
-            )} */}
-
-            {/* <Button
-              onClick={async () => {
-                let respUrl = await getUrlFromDBX();
-                if (!respUrl?.success)
-                  message.error("مشكلة في الارسال حاول مجددا !");
-                else console.log(respUrl);
-              }}
-              style={{ fontSize: 12 }}
-              size="small"
-            >
-              Print URL
-            </Button> */}
 
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
               size="small"
             >
-              Print Results
+              {t("PrintResults")}
             </Button>
             <Divider type="vertical" />
             <Button
               size="small"
-              disabled={record?.status === "COMPLETED"}
+              disabled={record?.status === t("COMPLETED")}
               icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
             ></Button>
@@ -507,7 +454,7 @@ export const PureTable = ({ isReport = false }) => {
       />
       <div className="table-footer app-flex-space">
         <p>
-          <b>{total}</b> results fot this search
+          <b>{total}</b> {t("results")}
         </p>
         <Pagination
           simple

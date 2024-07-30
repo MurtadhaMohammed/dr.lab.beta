@@ -19,7 +19,6 @@ const { ipcRenderer } = window.require("electron");
 
 function App() {
   const { isLogin, setIsLogin, setUser } = useAppStore();
-  const { t } = useTranslation();
 
   useEffect(() => {
     ipcRenderer.on("hello", () => {
@@ -71,7 +70,7 @@ function App() {
       direction={direction}
       theme={{
         token: {
-          // colorPrimary: "#5b8c00",
+
           borderRadius: 10,
         },
       }}

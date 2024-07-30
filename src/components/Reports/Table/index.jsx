@@ -3,6 +3,8 @@ import "./style.css";
 import dayjs from "dayjs";
 import { useReportsStore } from "../../../appStore";
 import { send } from "../../../control/renderer";
+import { useTranslation } from "react-i18next";
+import { useTransition } from "react";
 
 export const getTotalVisits = (filterDate = null, cb) => {
   send({
@@ -32,21 +34,22 @@ export const getSubTotalAmount = (filterDate = null, cb) => {
 
 export const PureTable = () => {
   const { data, loading } = useReportsStore();
+  const { t } = useTranslation();
 
   const columns = [
     {
-      title: "Report Title",
+      title: t("ReportTitle"),
       dataIndex: "title",
       key: "title",
       render: (val) => <b>{val}</b>,
     },
     {
-      title: "Total",
+      title: t("Total"),
       dataIndex: "total",
       key: "total",
     },
     {
-      title: "Male",
+      title: t("Male"),
       dataIndex: "male",
       key: "male",
       render: (val) => (
@@ -54,7 +57,7 @@ export const PureTable = () => {
       ),
     },
     {
-      title: "Female",
+      title: t("Female"),
       dataIndex: "female",
       key: "female",
       render: (val) => (
@@ -64,57 +67,58 @@ export const PureTable = () => {
   ];
 
   let records = [
-    {
-      id: 1,
-      title: "Total visits",
-      total: <Tag color="geekblue">{data?.visits?.total || 0}</Tag>,
-      male: `${data?.visits?.male || 0}%`,
-      female: `${data?.visits?.female || 0}%`,
+
+  {
+    id: 1,
+      title: t("Totalvisits"),
+        total: <Tag color="geekblue">{data?.visits?.total || 0}</Tag>,
+          male: `${data?.visits?.male || 0}%`,
+            female: `${data?.visits?.female || 0}%`,
     },
 
-    {
-      id: 2,
-      title: "Sub Total Amounts",
-      total: (
-        <b style={{ fontSize: 14 }}>
-          {Number(data?.subTotalAmount?.total || 0).toLocaleString("en")} IQD
-        </b>
-      ),
-      male: `${data?.subTotalAmount?.male || 0}%`,
-      female: `${data?.subTotalAmount?.female || 0}%`,
+  {
+    id: 2,
+      title: t("SubTotalAmounts"),
+        total: (
+          <b style={{ fontSize: 14 }}>
+            {Number(data?.subTotalAmount?.total || 0).toLocaleString("en")} IQD
+          </b>
+        ),
+          male: `${data?.subTotalAmount?.male || 0}%`,
+            female: `${data?.subTotalAmount?.female || 0}%`,
     },
-    {
-      id: 3,
-      title: "Total Discount",
-      total: (
-        <b style={{ fontSize: 14 }}>
-          {Number(data?.totalDiscount?.total || 0).toLocaleString("en")} IQD
-        </b>
-      ),
-      male: `${data?.totalDiscount?.male || 0}%`,
-      female: `${data?.totalDiscount?.female || 0}%`,
+  {
+    id: 3,
+      title: t("TotalDiscount"),
+        total: (
+          <b style={{ fontSize: 14 }}>
+            {Number(data?.totalDiscount?.total || 0).toLocaleString("en")} IQD
+          </b>
+        ),
+          male: `${data?.totalDiscount?.male || 0}%`,
+            female: `${data?.totalDiscount?.female || 0}%`,
     },
-    {
-      id: 4,
-      title: <span style={{ fontSize: 18 }}>Total Amounts</span>,
-      total: (
-        <b style={{ fontSize: 18 }}>
-          {Number(data?.totalAmount?.total || 0).toLocaleString("en")} IQD
-        </b>
-      ),
-      male: `${data?.totalAmount?.male || 0}%`,
-      female: `${data?.totalAmount?.female || 0}%`,
+  {
+    id: 4,
+      title: <span style={{ fontSize: 18 }}>{t("TotalAmounts")}</span>,
+        total: (
+          <b style={{ fontSize: 18 }}>
+            {Number(data?.totalAmount?.total || 0).toLocaleString("en")} IQD
+          </b>
+        ),
+          male: `${data?.totalAmount?.male || 0}%`,
+            female: `${data?.totalAmount?.female || 0}%`,
     },
   ];
 
-  return (
-    <Table
-      style={{ marginTop: "-16px" }}
-      columns={columns}
-      dataSource={data ? records : []}
-      pagination={false}
-      size="small"
-      loading={loading}
-    />
-  );
+return (
+  <Table
+    style={{ marginTop: "-16px" }}
+    columns={columns}
+    dataSource={data ? records : []}
+    pagination={false}
+    size="small"
+    loading={loading}
+  />
+);
 };

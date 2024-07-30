@@ -14,6 +14,7 @@ import dayjs from "dayjs";
 import { send } from "../../../control/renderer";
 import { useEffect, useState } from "react";
 import { useAppStore, useTestStore } from "../../../appStore";
+import { useTranslation } from "react-i18next";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -32,29 +33,30 @@ export const PureTable = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const limit = 10;
+  const { t } = useTranslation();
 
   const columns = [
     {
-      title: "Test Name",
+      title: t("TestName"),
       dataIndex: "name",
       key: "name",
       render: (name) => <b>{name}</b>,
     },
     {
-      title: "Normal Value",
+      title: t("NormalValue"),
       dataIndex: "normal",
       key: "normal",
       render: (normal) => normal || ". . .",
     },
     {
-      title: "Price",
+      title: t("Price"),
       dataIndex: "price",
       key: "price",
       render: (price) => <b>{Number(price).toLocaleString("en")} IQD</b>,
     },
 
     {
-      title: "Last Update",
+      title: t("LastUpdate"),
       dataIndex: "updatedAt",
       key: "updatedAt",
       render: (updatedAt) => (
@@ -75,8 +77,8 @@ export const PureTable = () => {
             onClick={() => handleEdit(record)}
           ></Button>
           <Popconfirm
-            title="Delete the record"
-            description="Are you sure to delete this record?"
+            title={t("DeleteTheRecord")}
+            description={t("DeleteThisRecord")}
             onConfirm={() => handleRemove(record.id)}
             okText="Yes"
             cancelText="No"
@@ -92,18 +94,6 @@ export const PureTable = () => {
 
 
   const handleRemove = (id) => {
-    // send({
-    //   doc: "tests",
-    //   query: "remove",
-    //   condition: { id },
-    // }).then(({ err }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     message.success("Remove Succefful.");
-    //     setIsReload(!isReload);
-    //   }
-    // });
-
     send({
       query: "deleteTest",
       id,
@@ -141,7 +131,7 @@ export const PureTable = () => {
     }).then(resp => {
       if (resp.success) {
         setData(resp.data);
-        setTotal(resp.total); 
+        setTotal(resp.total);
         console.log("Tests get successfully:", resp.data);
       } else {
         console.error("Error get tests:", resp.error);
@@ -150,39 +140,7 @@ export const PureTable = () => {
       console.error("Error in IPC communication:", err);
     });
 
-
-    // send({
-    //   doc: "tests",
-    //   query: "find",
-    //   search: { name: queryKey },
-    //   limit,
-    //   skip: (page - 1) * limit,
-    // }).then(({ err, rows }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     setData(rows);
-    //     setTimeout(() => {
-    //       send({
-    //         doc: "tests",
-    //         query: "count",
-    //         search: { name: queryKey },
-    //       }).then(({ err, count }) => {
-    //         if (err) message.error("Error !");
-    //         else setTotal(count);
-    //       });
-    //     }, 100);
-    //   }
-    // });
-
-
-
   }, [page, isReload, querySearch]);
-
-  // useEffect(() => {
-  //   if (page !== 1) {
-  //     setPage(1);
-  //   }
-  // }, [isReload]);
 
   return (
     <>
@@ -195,7 +153,7 @@ export const PureTable = () => {
       />
       <div className="table-footer app-flex-space">
         <p>
-          <b>{total}</b> results fot this search
+          <b>{total}</b>{t("results")}
         </p>
         <Pagination
           simple

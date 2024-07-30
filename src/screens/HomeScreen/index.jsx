@@ -4,30 +4,8 @@ import "./style.css";
 import { PureTable, PureModal, ResultsModal } from "../../components/Home";
 
 import { useHomeStore } from "../../appStore";
-
 const { Search } = Input;
 
-const items = [
-  {
-    key: "today",
-    label: "Today",
-  },
-  {
-    key: "all",
-    label: "All",
-  },
-];
-
-const types = [
-  {
-    key: "PACKAGE",
-    label: "Package Test",
-  },
-  {
-    key: "CUSTOME",
-    label: "Custome Test",
-  },
-];
 import { useTranslation } from "react-i18next";
 const HomeScreen = () => {
   const {
@@ -47,6 +25,27 @@ const HomeScreen = () => {
     setTestType(key);
     setIsModal(true);
   };
+  const items = [
+    {
+      key: "today",
+      label: t("Today"),
+    },
+    {
+      key: "all",
+      label: t("All"),
+    },
+  ];
+
+  const types = [
+    {
+      key: "PACKAGE",
+      label: t("PackageTest"),
+    },
+    {
+      key: "CUSTOME",
+      label: t("CustomeTest"),
+    },
+  ];
 
   return (
     <div className="home-screen">
@@ -54,7 +53,7 @@ const HomeScreen = () => {
         <section className="header app-flex-space">
           <Space size={16}>
             <Search
-              placeholder="Search patient"
+              placeholder={t("SearchPatient")}
               onSearch={(val) => setQuerySearch(val)}
               style={{
                 width: 280,
@@ -92,7 +91,7 @@ const HomeScreen = () => {
             }}
           >
             <Button type="link" onClick={(e) => e.preventDefault()}>
-              + Create Test
+              + {t("CreateTest")}
             </Button>
           </Dropdown>
         </section>

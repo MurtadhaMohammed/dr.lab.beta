@@ -19,6 +19,7 @@ import dayjs from "dayjs";
 import { useAppStore, usePatientStore } from "../../../appStore";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
+import { useTranslation } from "react-i18next";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -39,6 +40,8 @@ export const PureTable = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const limit = 8;
+  const { t } = useTranslation();
+
 
   const columns = [
     {
@@ -53,13 +56,13 @@ export const PureTable = () => {
         ),
     },
     {
-      title: "Name",
+      title: t("Name"),
       dataIndex: "name",
       key: "name",
       render: (text) => <b>{text}</b>,
     },
     {
-      title: "Age",
+      title: t("Age"),
       dataIndex: "birth",
       key: "birth",
       render: (birth) => (
@@ -71,7 +74,7 @@ export const PureTable = () => {
     },
 
     {
-      title: "Email",
+      title: t("Email"),
       dataIndex: "email",
       key: "email",
       render: (text) =>
@@ -82,7 +85,7 @@ export const PureTable = () => {
         ),
     },
     {
-      title: "Phone",
+      title: t("Phone"),
       dataIndex: "phone",
       key: "phone",
       render: (text) =>
@@ -93,7 +96,7 @@ export const PureTable = () => {
         ),
     },
     {
-      title: "Created At",
+      title: t("CreatedAt"),
       dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt) => (
@@ -116,7 +119,7 @@ export const PureTable = () => {
             style={{ fontSize: 12 }}
             size="small"
           >
-            View History
+            {t("ViewHistory")}
           </Button>
           <Divider type="vertical" />
           <Button
@@ -125,8 +128,8 @@ export const PureTable = () => {
             onClick={() => handleEdit(record)}
           ></Button>
           <Popconfirm
-            title="Delete the record"
-            description="Are you sure to delete this record?"
+            title={t("DeleteTheRecord")}
+            description={t("DeleteThisRecord")}
             onConfirm={() => handleRemove(record.id)}
             okText="Yes"
             cancelText="No"
@@ -172,30 +175,6 @@ export const PureTable = () => {
   };
 
   useEffect(() => {
-    // send({
-    //   doc: "patients",
-    //   query: "find",
-    //   search: { name: queryKey },
-    //   limit,
-    //   skip: (page - 1) * limit,
-    // }).then(({ err, rows }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     setData(rows);
-    //     console.log(rows);
-    //     setTimeout(() => {
-    //       send({
-    //         doc: "patients",
-    //         query: "count",
-    //         search: { name: queryKey },
-    //       }).then(({ err, count }) => {
-    //         if (err) message.error("Error !");
-    //         else setTotal(count);
-    //       });
-    //     }, 100);
-    //   }
-    // });
-
     send({
       query: "getPatients",
       q: querySearch,
@@ -227,7 +206,7 @@ export const PureTable = () => {
       />
       <div className="table-footer app-flex-space">
         <p>
-          <b>{total}</b> results fot this search
+          <b>{total}</b> {t("results")}
         </p>
         <Pagination
           simple
