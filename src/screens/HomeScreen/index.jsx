@@ -62,7 +62,7 @@ const HomeScreen = () => {
             />
             <Divider type="vertical" />
             <span>
-              {t("Request_list_for")}{" "}
+              {t("RequestListFor")}{" "}
               <Dropdown
                 menu={{
                   items,

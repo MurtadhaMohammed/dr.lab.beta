@@ -16,7 +16,7 @@ import {
   Switch
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-// import headImage from "../../../head.png";
+import headImage from "../../../image.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
@@ -37,7 +37,7 @@ const SettingsScreen = () => {
   async function fetchImagePath() {
     setImagePath(null);
     try {
-      const response = await fetch("http://localhost:3001/head.png"); // Adjust URL if needed
+      const response = await fetch("http://localhost:3001/head.png");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -181,6 +181,15 @@ const SettingsScreen = () => {
               </span>
             </div>
           </div>
+
+          <Switch
+          className="switchBtn"
+            checkedChildren="عربي"
+            unCheckedChildren="Eng"
+            checked={language === "ar"}
+            onChange={handleLang}
+          />
+          <Space />
           <Popconfirm
             placement="rightBottom"
             onConfirm={signout}
@@ -191,17 +200,6 @@ const SettingsScreen = () => {
               {t("SignOut")}
             </Button>
           </Popconfirm>
-        </section>
-
-        <section>
-          <Space direction="vertical">
-            <Switch
-              checkedChildren="عربي"
-              unCheckedChildren="Eng"
-              checked={language === "ar"}
-              onChange={handleLang}
-            />
-          </Space>
         </section>
 
         <section>
