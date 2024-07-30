@@ -3,6 +3,7 @@ const isDev = require("electron-is-dev");
 var { jsPDF } = require("jspdf");
 var fs = require("fs");
 const Jimp = require("jimp");
+const { app } = require("electron");
 require("jspdf-autotable");
 
 const path = require("path");
@@ -21,7 +22,7 @@ async function getImageDimensions(filePath) {
 }
 // const imgHeight = 65; // 245.66929134 px
 const imgWidth = 210; // 793.7007874 px
-const imgUrl = "head.png";
+const imgUrl = app.getPath("userData") + "/head.png";
 
 function printReport(data, cb) {
   try {
