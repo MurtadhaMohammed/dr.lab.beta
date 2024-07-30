@@ -15,19 +15,36 @@ import {
   Space,
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import headImage from "../../../head.png";
+// import headImage from "../../../head.png";
 // import newHeadImage from "../../../head.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
 
 const SettingsScreen = () => {
-  const [imagePath, setImagePath] = useState(headImage);
+  const [imagePath, setImagePath] = useState(null);
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
+
+  async function fetchImagePath() {
+    setImagePath(null);
+    try {
+      const response = await fetch("http://localhost:3001/head.png"); // Adjust URL if needed
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const imageURL = response.url;
+      setImagePath(imageURL);
+    } catch (error) {
+      console.error("Failed to load image:", error);
+    }
+  }
+  useEffect(() => {
+    fetchImagePath();
+  }, []);
 
   useEffect(() => {
     form.setFieldsValue(user);
@@ -79,6 +96,19 @@ const SettingsScreen = () => {
     else setIsUpdate(false);
   };
 
+  // async function loadImage() {
+  //   try {
+  //     // Dynamically import the image
+  //     const headImageModule = await import("/head.png");
+  //     const imgURL = headImageModule.default || headImageModule;
+  //     setImagePath(imgURL);
+
+  //     console.log("Image loaded successfully:", imgURL);
+  //   } catch (err) {
+  //     console.error("Failed to load image:", err);
+  //   }
+  // }
+
   const handleChangeFile = async () => {
     fileDialog().then(async (file) => {
       send({
@@ -86,13 +116,7 @@ const SettingsScreen = () => {
         file: file[0]?.path,
       }).then((resp) => {
         if (resp.success) {
-          import("../../../head.png")
-            .then((module) => {
-              setImagePath(module.default);
-            })
-            .catch((err) => {
-              console.error("Failed to load image:", err);
-            });
+          fetchImagePath();
         } else {
           console.error("Error retrieving visits:", resp.error);
         }
@@ -249,7 +273,7 @@ const SettingsScreen = () => {
                 </Button>
               </div>
               <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
-                <img className="w-full" src={imagePath} />
+                {imagePath && <img className="w-full" src={imagePath} />}
               </div>
               <Divider />
               <div className="flex justify-between items-center">

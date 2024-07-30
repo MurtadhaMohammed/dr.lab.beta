@@ -2,6 +2,7 @@ const { ipcMain } = require("electron");
 var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
+const { app } = require("electron");
 const fs = require("fs");
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
@@ -266,7 +267,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "saveHeadImage": {
       try {
         const { file } = arg;
-        fs.copyFile(file, "./head.png", (err) => {
+        fs.copyFile(file, app.getPath("userData") + "/head.png", (err) => {
           if (err) {
             event.reply("asynchronous-reply", { success: false, err });
           } else {
