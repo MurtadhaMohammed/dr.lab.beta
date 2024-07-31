@@ -1,6 +1,6 @@
 const path = require("path");
 
-const { app, BrowserWindow, dialog } = require("electron");
+const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const express = require("express");
 const Cors = require("cors");
@@ -28,6 +28,7 @@ function createWindow() {
     width: 1300,
     height: 800,
     show: false,
+    frame: false,
   });
   splash = new BrowserWindow({
     webPreferences: {
@@ -73,6 +74,24 @@ function createWindow() {
   //     ? `file://${path.join(__dirname, "./splash.html")}`
   //     : `file://${path.join(__dirname, "../dist/splash.html")}`
   // );
+
+  ipcMain.on("minimize-window", () => {
+    if (win) win.minimize();
+  });
+
+  ipcMain.on("maximize-window", () => {
+    if (win) {
+      if (win.isMaximized()) {
+        win.unmaximize();
+      } else {
+        win.maximize();
+      }
+    }
+  });
+
+  ipcMain.on("close-window", () => {
+    if (win) win.close();
+  });
 
   win.once("ready-to-show", () => {
     splash.close();
