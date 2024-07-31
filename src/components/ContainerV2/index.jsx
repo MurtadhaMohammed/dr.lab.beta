@@ -52,7 +52,7 @@ const MainContainerV2 = ({ children }) => {
             </div>
             <Menu
               style={{ border: "none" }}
-              className="bg-transparent"
+              className="bg-transparent p-[8px]"
               mode="inline"
               defaultSelectedKeys={[location?.pathname]}
               items={[
