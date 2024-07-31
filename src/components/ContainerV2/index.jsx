@@ -76,7 +76,9 @@ const MainContainerV2 = ({ children }) => {
           collapsed={collapsed}
           width={164}
         >
-          <div className="h-full flex flex-col justify-between">
+          <div className="flex flex-col justify-between" style={{
+            height: "calc(100% - 40px)"
+          }}>
             <div>
               <div className="mt-[30px] font-bold text-[18px] flex justify-center mb-[30px]">
                 <motion.div
