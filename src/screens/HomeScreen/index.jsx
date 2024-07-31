@@ -38,7 +38,7 @@ const HomeScreen = () => {
     id,
     setReset,
     setIsToday,
-    isToday
+    isToday,
   } = useHomeStore();
 
   const onClick = ({ key }) => {
@@ -49,8 +49,12 @@ const HomeScreen = () => {
 
   return (
     <div className="home-screen">
-      <Card bodyStyle={{ padding: 16 }}>
-        <section className="header app-flex-space">
+      <Card className="border-none" styles={{
+        body: {
+          padding: "2%"
+        }
+      }}>
+        <section className="header app-flex-space mb-[18px]">
           <Space size={16}>
             <Search
               placeholder="Search patient"
@@ -95,11 +99,10 @@ const HomeScreen = () => {
             </Button>
           </Dropdown>
         </section>
-        <Divider />
+        {/* <Divider /> */}
         <PureTable />
         <PureModal />
         <ResultsModal />
-  
       </Card>
     </div>
   );

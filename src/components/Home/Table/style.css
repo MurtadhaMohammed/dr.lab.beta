@@ -23,15 +23,15 @@
   width: 180px;
 }
 
-.whatsap-content b ,
+.whatsap-content b,
 .whatsap-finish b {
   display: block;
   padding-top: 16px;
   line-height: 0;
 }
 
-.whatsap-content input{
-    text-align: center;
+.whatsap-content input {
+  text-align: center;
 }
 
 .whatsap-content p,
@@ -41,7 +41,6 @@
   padding-bottom: 8px;
 }
 
-
 .whatsap-finish {
   display: flex;
   flex-direction: column;
@@ -50,5 +49,5 @@
 }
 
 .whatsap-finish {
-    padding: 16px;
+  padding: 16px;
 }

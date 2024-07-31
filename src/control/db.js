@@ -1,20 +1,15 @@
-const path = require("path");
-const os = require("os");
-const fs = require("fs");
-const { app } = require("electron");
-const Database = require("better-sqlite3");
-// const CSV = require('csv-parser')
+const path = require('path');
+const os = require('os');
+const fs = require('fs');
+const { app } = require('electron');
+const Database = require('better-sqlite3');
 
 class LabDB {
   constructor() {
     const isMac = os.platform() === "darwin";
     const dbPath = !app.isPackaged
       ? "database.db"
-      : path.join(
-          app.getAppPath(),
-          isMac ? "../../../../database.db" : "../../database.db"
-        );
-
+      : app.getPath("userData") + "database.db"
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,

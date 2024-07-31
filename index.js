@@ -117,6 +117,8 @@ function createWindow() {
       dialog.showMessageBox(null, options).then(({ response }) => {
         if (response === 0) {
           autoUpdater.quitAndInstall();
+        } else {
+          log.info("User chose to update later.");
         }
       });
     });

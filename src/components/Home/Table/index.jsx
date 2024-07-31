@@ -17,6 +17,7 @@ import {
   message,
   Popover,
   Input,
+  Card,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
@@ -34,6 +35,7 @@ import {
 } from "../../../helper/whatsapp";
 import { Dropbox } from "dropbox";
 import { nanoid } from "nanoid";
+import usePageLimit from "../../../hooks/usePageLimit";
 
 var dbx = new Dropbox({ accessToken: ACCESS_TOKEN_DBX });
 
@@ -60,7 +62,7 @@ export const PureTable = ({ isReport = false }) => {
     setIsResultsModal,
     setRecord,
     isToday,
-    setPatientID
+    setPatientID,
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 
@@ -71,7 +73,7 @@ export const PureTable = ({ isReport = false }) => {
   const [tempLoading, setTempLoading] = useState(false);
   const [isSend, setIsSend] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
-  const limit = 8;
+  const limit = usePageLimit();
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -330,10 +332,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -485,10 +487,9 @@ export const PureTable = ({ isReport = false }) => {
     tests,
     createdAt,
   }) => {
-    console.log(patient)
     setId(id);
     setTests(tests);
-    setPatientID(patient?.id)
+    setPatientID(patient?.id);
     setBirth(dayjs(patient?.birth));
     setName(patient?.name);
     setEmail(patient?.email);
@@ -533,31 +534,38 @@ export const PureTable = ({ isReport = false }) => {
         console.error("Error retrieving visits:", resp.error);
       }
     });
-  }, [page, isReload, querySearch, isToday, filterDate]);
+  }, [page, isReload, querySearch, isToday, filterDate, limit]);
 
   return (
     <>
       <Table
-        style={{ marginTop: "-16px" }}
+        style={{
+          marginTop: 16,
+          border: "1px solid #eee",
+          borderRadius: 10,
+          overflow: "hidden",
+        }}
         columns={columns}
         dataSource={data}
         pagination={false}
         size="small"
+        footer={() => (
+          <div className="table-footer app-flex-space">
+            <p>
+              <b>{total}</b> results fot this search
+            </p>
+            <Pagination
+              simple
+              current={page}
+              onChange={(_page) => {
+                setPage(_page);
+              }}
+              total={total}
+              pageSize={limit}
+            />
+          </div>
+        )}
       />
-      <div className="table-footer app-flex-space">
-        <p>
-          <b>{total}</b> results fot this search
-        </p>
-        <Pagination
-          simple
-          current={page}
-          onChange={(_page) => {
-            setPage(_page);
-          }}
-          total={total}
-          pageSize={limit}
-        />
-      </div>
     </>
   );
 };
