@@ -194,7 +194,7 @@ const SettingsScreen = () => {
             placement="rightBottom"
             onConfirm={signout}
             title={t("SignoutConfirm")}
-            description={t("SignOutFormThisApp?")}
+            description={t("SignOutFormThisApp")}
           >
             <Button loading={signoutLoading} danger>
               {t("SignOut")}
