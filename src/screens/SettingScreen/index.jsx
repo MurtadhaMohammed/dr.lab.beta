@@ -176,7 +176,7 @@ const SettingsScreen = () => {
             <Avatar size={"large"} icon={<UserOutlined />} />
             <div>
               <b className="text-[16px]">{user?.name}</b>
-              <span className="text-[14px] text-[#A5A5A5] block -mt-[6px]">
+              <span className="text-[14px] text-[#A5A5A5] block">
                 {user?.phone}
               </span>
             </div>
