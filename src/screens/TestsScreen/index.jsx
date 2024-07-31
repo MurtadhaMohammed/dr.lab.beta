@@ -10,8 +10,8 @@ const TestsScreen = () => {
   const { setIsModal, setQuerySearch, id, setReset } = useTestStore();
   const { t } = useTranslation();
   return (
-    <div className="tests-screen">
-      <Card bodyStyle={{ padding: 16 }}>
+    <div className="tests-screen page">
+      <div className="border-none h-screen p-[2%]">
         <section className="header app-flex-space">
           <Search
             placeholder={t("SearchTest")}
@@ -33,10 +33,10 @@ const TestsScreen = () => {
             </Button>
           </Space>
         </section>
-        <Divider />
+
         <PureTable />
         <PureModal />
-      </Card>
+      </div>
     </div>
   );
 };

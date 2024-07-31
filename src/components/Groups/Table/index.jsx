@@ -16,6 +16,7 @@ import { send } from "../../../control/renderer";
 import { useAppStore, useGroupStore } from "../../../appStore";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import usePageLimit from "../../../hooks/usePageLimit";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -32,7 +33,7 @@ export const PureTable = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
-  const limit = 10;
+  const limit = usePageLimit();
 
   const columns = [
     {
@@ -134,18 +135,19 @@ export const PureTable = () => {
   const handleRemove = (id) => {
     send({
       query: "deletePackage",
-      id
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Success deletePackage");
-        setIsReload(!isReload);
-      } else {
-        console.error("Error deletePackage:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
+      id,
+    })
+      .then((resp) => {
+        if (resp.success) {
+          console.log("Success deletePackage");
+          setIsReload(!isReload);
+        } else {
+          console.error("Error deletePackage:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
   };
 
   const handleEdit = ({ id, title, tests, customePrice, createdAt }) => {
@@ -157,49 +159,58 @@ export const PureTable = () => {
     setCreatedAt(createdAt);
   };
 
-
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
 
     send({
       query: "getPackages",
-      data: { q: queryKey, skip: (page - 1) * limit, limit }
-    }).then(resp => {
-      if (resp.success) {
-        setData(resp.data);
-        console.log("Packages retrieved successfully:", resp.data);
-      } else {
-        console.error("Error retrieving packages:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
-  }, [page, isReload, querySearch]);
+      data: { q: queryKey, skip: (page - 1) * limit, limit },
+    })
+      .then((resp) => {
+        if (resp.success) {
+          setData(resp.data);
+          console.log("Packages retrieved successfully:", resp.data);
+        } else {
+          console.error("Error retrieving packages:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
+  }, [page, isReload, querySearch, limit]);
 
   return (
-    <>
-      <Table
-        style={{ marginTop: "-16px" }}
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        size="small"
-      />
-      <div className="table-footer app-flex-space">
-        <p>
-          <b>{total}</b> {t("results")}
-        </p>
-        <Pagination
-          simple
-          current={page}
-          onChange={(_page) => {
-            setPage(_page);
-          }}
-          total={total}
-          pageSize={limit}
-        />
-      </div>
-    </>
+    <Table
+      style={{
+        marginTop: 16,
+        border: "1px solid #eee",
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+      columns={columns}
+      dataSource={data}
+      pagination={false}
+      size="small"
+      footer={() => (
+        <div className="table-footer app-flex-space">
+            <div
+            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+  pattern-size-6 pattern-opacity-5 absolute inset-0"
+          ></div>
+          <p>
+            <b>{total}</b> {t("results")}
+          </p>
+          <Pagination
+            simple
+            current={page}
+            onChange={(_page) => {
+              setPage(_page);
+            }}
+            total={total}
+            pageSize={limit}
+          />
+        </div>
+      )}
+    />
   );
 };

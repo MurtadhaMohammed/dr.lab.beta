@@ -13,10 +13,10 @@ import {
   Row,
   Select,
   Space,
-  Switch
+  Switch,
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-import headImage from "../../../image.png";
+// import headImage from "../../../image.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
@@ -169,37 +169,43 @@ const SettingsScreen = () => {
   };
 
   return (
-    <div className="settings-page pb-[60px]">
-      <Card styles={{ body: { padding: 46 } }}>
+    <div className="settings-page pb-[60px] page">
+     <div className="border-none h-screen p-[2%]">
         <section className="flex items-center justify-between w-full mb-[34px]">
           <div className="flex items-center gap-4">
             <Avatar size={"large"} icon={<UserOutlined />} />
             <div>
               <b className="text-[16px]">{user?.name}</b>
-              <span className="text-[14px] text-[#A5A5A5] block -mt-[6px]">
+              <span className="text-[14px] text-[#A5A5A5] block">
                 {user?.phone}
               </span>
             </div>
           </div>
 
-          <Switch
-            className="switchBtn"
-            checkedChildren="عربي"
-            unCheckedChildren="Eng"
-            checked={language === "ar"}
-            onChange={handleLang}
-          />
-          <Space />
-          <Popconfirm
-            placement="rightBottom"
-            onConfirm={signout}
-            title={t("SignoutConfirm")}
-            description={t("SignOutFormThisApp")}
-          >
-            <Button loading={signoutLoading} danger>
-              {t("SignOut")}
-            </Button>
-          </Popconfirm>
+          <Space size={28}>
+            <Space>
+              <span className="m-0 p-0">System Language : </span>
+              <Switch
+                className="switchBtn"
+                checkedChildren="عربي"
+                unCheckedChildren="Eng"
+                checked={language === "ar"}
+                onChange={handleLang}
+                style={{ width: 60 }}
+              />
+            </Space>
+            <Divider type="vertical" />
+            <Popconfirm
+              placement="rightBottom"
+              onConfirm={signout}
+              title={t("SignoutConfirm")}
+              description={t("SignOutFormThisApp?")}
+            >
+              <Button loading={signoutLoading} danger>
+                {t("SignOut")}
+              </Button>
+            </Popconfirm>
+          </Space>
         </section>
 
         <section>
@@ -317,7 +323,7 @@ const SettingsScreen = () => {
             </Card>
           </div>
         </section>
-      </Card>
+      </div>
     </div>
   );
 };

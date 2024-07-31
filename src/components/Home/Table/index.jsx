@@ -17,6 +17,7 @@ import {
   message,
   Popover,
   Input,
+  Card,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
@@ -34,6 +35,7 @@ import {
 } from "../../../helper/whatsapp";
 import { Dropbox } from "dropbox";
 import { nanoid } from "nanoid";
+import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
 
 var dbx = new Dropbox({ accessToken: ACCESS_TOKEN_DBX });
@@ -60,7 +62,7 @@ export const PureTable = ({ isReport = false }) => {
     setIsResultsModal,
     setRecord,
     isToday,
-    setPatientID
+    setPatientID,
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 
@@ -71,9 +73,8 @@ export const PureTable = ({ isReport = false }) => {
   const [tempLoading, setTempLoading] = useState(false);
   const [isSend, setIsSend] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
-  const limit = 8;
+  const limit = usePageLimit();
   const { t } = useTranslation();
-
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -81,7 +82,6 @@ export const PureTable = ({ isReport = false }) => {
     const result = regex.exec(phone);
     return result;
   };
-
 
   const getUrlFromDBX = async (path) => {
     try {
@@ -134,7 +134,6 @@ export const PureTable = ({ isReport = false }) => {
       }).then(async ({ err, res, file }) => {
         if (err) throw err;
         if (type === "document") {
-
           setMsgLoading(true);
           const fileObject = constructFileFromLocalFileData(file);
 
@@ -267,10 +266,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -331,7 +330,6 @@ export const PureTable = ({ isReport = false }) => {
         key: "action",
         render: (_, record) => (
           <Space size="small" className="custom-actions">
-
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
@@ -393,10 +391,9 @@ export const PureTable = ({ isReport = false }) => {
     tests,
     createdAt,
   }) => {
-    console.log(patient)
     setId(id);
     setTests(tests);
-    setPatientID(patient?.id)
+    setPatientID(patient?.id);
     setBirth(dayjs(patient?.birth));
     setName(patient?.name);
     setEmail(patient?.email);
@@ -441,31 +438,40 @@ export const PureTable = ({ isReport = false }) => {
         console.error("Error retrieving visits:", resp.error);
       }
     });
-  }, [page, isReload, querySearch, isToday, filterDate]);
+  }, [page, isReload, querySearch, isToday, filterDate, limit]);
 
   return (
-    <>
-      <Table
-        style={{ marginTop: "-16px" }}
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        size="small"
-      />
-      <div className="table-footer app-flex-space">
-        <p>
-          <b>{total}</b> {t("results")}
-        </p>
-        <Pagination
-          simple
-          current={page}
-          onChange={(_page) => {
-            setPage(_page);
-          }}
-          total={total}
-          pageSize={limit}
-        />
-      </div>
-    </>
+    <Table
+      style={{
+        marginTop: 16,
+        border: "1px solid #eee",
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+      columns={columns}
+      dataSource={data}
+      pagination={false}
+      size="small"
+      footer={() => (
+        <div className="table-footer app-flex-space">
+          <div
+            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+  pattern-size-6 pattern-opacity-5 absolute inset-0"
+          ></div>
+          <p>
+            <b>{total}</b> {t("results")}
+          </p>
+          <Pagination
+            simple
+            current={page}
+            onChange={(_page) => {
+              setPage(_page);
+            }}
+            total={total}
+            pageSize={limit}
+          />
+        </div>
+      )}
+    />
   );
 };

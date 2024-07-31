@@ -1,14 +1,4 @@
-.table-footer{
-    margin-top: 14px;
-}
 
-.table-footer p{
-    color: #666;
-}
-
-.table-footer  .ant-pagination-simple-pager input{
- padding: 0 !important;
-}
 
 .reports-screen tr:nth-child(4) {
     background-color: #f6f6f6 !important;

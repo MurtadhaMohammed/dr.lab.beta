@@ -45,12 +45,25 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* background: red; */
   background: #f6f6f6;
+  overflow: hidden;
   /* background: #666;  */
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
+}
+
+.table-footer {
+  padding: 8px 14px 8px 14px;
+}
+
+.table-footer p {
+  color: #666;
+}
+
+.table-footer .ant-pagination-simple-pager input {
+  padding: 0 !important;
 }
 
 .app-flex-space {
@@ -105,11 +118,40 @@ th,
 td,
 th,
 td {
-  padding: 12px 8px !important;
+  padding: 10px 8px !important;
+}
+th:last-child,
+td:last-child {
+  padding-right: 20px !important;
+}
+th:first-child,
+td:first-child {
+  padding-left: 20px !important;
 }
 
 th {
   font-weight: normal !important;
   color: #666 !important;
   background-color: transparent;
+}
+
+.page {
+  animation: fadIn 0.4s;
+}
+
+@keyframes fadIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+
+.ant-table-footer{
+  position: relative;
+  background-color: transparent !important;
 }

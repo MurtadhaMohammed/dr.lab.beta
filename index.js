@@ -82,11 +82,8 @@ function createWindow() {
     if (!isDev) {
       // Configure the feed URL for GitHub Releases
       autoUpdater.setFeedURL({
-
-        // provider: "generic",
         // provider: "generic",
         //url: "http://192.168.0.102:8080",
-
         url: "https://github.com/MurtadhaMohammed/dr.lab.beta/releases/latest",
         provider: "github",
         repo: "dr.lab.beta",

@@ -116,7 +116,7 @@ function printReport(data, cb) {
 async function createPDF(data, isView = true, cb) {
   const imgDimensions = await getImageDimensions(imgUrl);
   const aspectRatio = imgDimensions.width / imgDimensions.height;
-  const imgHeight = (imgWidth / aspectRatio) + 20;
+  const imgHeight = imgWidth / aspectRatio + 20;
   try {
     const doc = new jsPDF({
       orientation: "p",

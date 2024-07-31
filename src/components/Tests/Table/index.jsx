@@ -4,6 +4,7 @@ import {
   Divider,
   Pagination,
   Popconfirm,
+  Popover,
   Space,
   Table,
   Tag,
@@ -15,6 +16,7 @@ import { send } from "../../../control/renderer";
 import { useEffect, useState } from "react";
 import { useAppStore, useTestStore } from "../../../appStore";
 import { useTranslation } from "react-i18next";
+import usePageLimit from "../../../hooks/usePageLimit";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -27,12 +29,12 @@ export const PureTable = () => {
     setCreatedAt,
     querySearch,
     setOptions,
-    setIsSelecte
+    setIsSelecte,
   } = useTestStore();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const limit = usePageLimit(60, 35);
   const { t } = useTranslation();
 
   const columns = [
@@ -46,7 +48,14 @@ export const PureTable = () => {
       title: t("NormalValue"),
       dataIndex: "normal",
       key: "normal",
-      render: (normal) => normal || ". . .",
+      render: (normal) =>
+        normal?.length > 30 ? (
+          <Popover content={<div className="max-w-[260px]">{normal}</div>}>
+            {normal.substr(0, 30)}...
+          </Popover>
+        ) : (
+          normal || ". . ."
+        ),
     },
     {
       title: t("Price"),
@@ -91,27 +100,33 @@ export const PureTable = () => {
     },
   ];
 
-
-
   const handleRemove = (id) => {
     send({
       query: "deleteTest",
       id,
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Success deleting test");
-        setIsReload(!isReload);
-      } else {
-        console.error("Error deleting Test:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
-
+    })
+      .then((resp) => {
+        if (resp.success) {
+          console.log("Success deleting test");
+          setIsReload(!isReload);
+        } else {
+          console.error("Error deleting Test:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
   };
 
-  const handleEdit = ({ id, name, normal, price, options, isSelecte, createdAt }) => {
+  const handleEdit = ({
+    id,
+    name,
+    normal,
+    price,
+    options,
+    isSelecte,
+    createdAt,
+  }) => {
     setId(id);
     setName(name);
     setPrice(price);
@@ -127,44 +142,54 @@ export const PureTable = () => {
 
     send({
       query: "getTests",
-      data: { q: queryKey, skip: (page - 1) * limit, limit }
-    }).then(resp => {
-      if (resp.success) {
-        setData(resp.data);
-        setTotal(resp.total);
-        console.log("Tests get successfully:", resp.data);
-      } else {
-        console.error("Error get tests:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
-  }, [page, isReload, querySearch]);
+      data: { q: queryKey, skip: (page - 1) * limit, limit },
+    })
+      .then((resp) => {
+        if (resp.success) {
+          setData(resp.data);
+          setTotal(resp.total);
+          console.log("Tests get successfully:", resp.data);
+        } else {
+          console.error("Error get tests:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
+  }, [page, isReload, querySearch, limit]);
 
   return (
-    <>
-      <Table
-        style={{ marginTop: "-16px" }}
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        size="small"
-      />
-      <div className="table-footer app-flex-space">
-        <p>
-          <b>{total}</b>{t("results")}
-        </p>
-        <Pagination
-          simple
-          current={page}
-          onChange={(_page) => {
-            setPage(_page);
-          }}
-          total={total}
-          pageSize={limit}
-        />
-      </div>
-    </>
+    <Table
+      style={{
+        marginTop: 16,
+        border: "1px solid #eee",
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+      columns={columns}
+      dataSource={data}
+      pagination={false}
+      size="small"
+      footer={() => (
+        <div className="table-footer app-flex-space">
+            <div
+            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+  pattern-size-6 pattern-opacity-5 absolute inset-0"
+          ></div>
+          <p>
+            <b>{total}</b> {t("results")}
+          </p>
+          <Pagination
+            simple
+            current={page}
+            onChange={(_page) => {
+              setPage(_page);
+            }}
+            total={total}
+            pageSize={limit}
+          />
+        </div>
+      )}
+    />
   );
 };

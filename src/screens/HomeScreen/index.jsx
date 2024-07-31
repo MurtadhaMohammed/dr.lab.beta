@@ -16,7 +16,7 @@ const HomeScreen = () => {
     id,
     setReset,
     setIsToday,
-    isToday
+    isToday,
   } = useHomeStore();
   const { t } = useTranslation();
 
@@ -48,9 +48,9 @@ const HomeScreen = () => {
   ];
 
   return (
-    <div className="home-screen">
-      <Card bodyStyle={{ padding: 16 }}>
-        <section className="header app-flex-space">
+    <div className="home-screen page">
+      <div className="border-none h-screen p-[2%]">
+        <section className="header app-flex-space mb-[18px]">
           <Space size={16}>
             <Search
               placeholder={t("SearchPatient")}
@@ -59,7 +59,6 @@ const HomeScreen = () => {
                 width: 280,
               }}
             />
-            <Divider type="vertical" />
             <span>
               {t("RequestListFor")}{" "}
               <Dropdown
@@ -95,12 +94,11 @@ const HomeScreen = () => {
             </Button>
           </Dropdown>
         </section>
-        <Divider />
+        {/* <Divider /> */}
         <PureTable />
         <PureModal />
         <ResultsModal />
-
-      </Card>
+      </div>
     </div>
   );
 };

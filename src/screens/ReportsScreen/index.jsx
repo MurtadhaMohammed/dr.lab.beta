@@ -29,7 +29,7 @@ const ReportsScreen = () => {
       query: "getVisits",
       data: {
         q: "",
-        startDate:dayjs(filterDate[0]).startOf("day").toISOString(),
+        startDate: dayjs(filterDate[0]).startOf("day").toISOString(),
         endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
       },
     }).then(({ success, data }) => {
@@ -163,9 +163,9 @@ const ReportsScreen = () => {
   }, [filterDate]);
 
   return (
-    <div className="reports-screen">
-      <Card bodyStyle={{ padding: 16 }}>
-        <section className="header app-flex-space">
+    <div className="reports-screen page">
+     <div className="border-none h-screen p-[2%]">
+        <section className="header app-flex-space mb-[18px]">
           <Space>
             <DatePicker.RangePicker
               allowClear={false}
@@ -189,13 +189,12 @@ const ReportsScreen = () => {
         <Divider />
         {/* <PureTable /> */}
         <Info />
-      </Card>
-      <br />
-      {data && (
-        <Card>
-          <HomeTable isReport />
-        </Card>
-      )}
+        {data && (
+          <div className="mt-6">
+            <HomeTable isReport />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
