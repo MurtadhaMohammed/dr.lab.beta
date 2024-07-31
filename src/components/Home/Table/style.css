@@ -1,15 +1,3 @@
-.table-footer {
-  margin-top: 14px;
-}
-
-.table-footer p {
-  color: #666;
-}
-
-.table-footer .ant-pagination-simple-pager input {
-  padding: 0 !important;
-}
-
 .custom-actions {
   width: 100%;
   display: flex;

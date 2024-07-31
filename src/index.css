@@ -54,6 +54,18 @@ code {
     monospace;
 }
 
+.table-footer {
+  padding: 8px 14px 8px 14px;
+}
+
+.table-footer p {
+  color: #666;
+}
+
+.table-footer .ant-pagination-simple-pager input {
+  padding: 0 !important;
+}
+
 .app-flex-space {
   display: flex;
   align-items: center;
@@ -121,4 +133,25 @@ th {
   font-weight: normal !important;
   color: #666 !important;
   background-color: transparent;
+}
+
+.page {
+  animation: fadIn 0.4s;
+}
+
+@keyframes fadIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+}
+
+
+.ant-table-footer{
+  position: relative;
+  background-color: transparent !important;
 }

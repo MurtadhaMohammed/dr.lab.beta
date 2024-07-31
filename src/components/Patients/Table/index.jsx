@@ -19,6 +19,8 @@ import dayjs from "dayjs";
 import { useAppStore, usePatientStore } from "../../../appStore";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
+import { useTranslation } from "react-i18next";
+import usePageLimit from "../../../hooks/usePageLimit";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -38,7 +40,8 @@ export const PureTable = () => {
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const limit = 8;
+  const limit = usePageLimit()
+  const { t } = useTranslation();
 
   const columns = [
     {
@@ -53,13 +56,13 @@ export const PureTable = () => {
         ),
     },
     {
-      title: "Name",
+      title: t("Name"),
       dataIndex: "name",
       key: "name",
       render: (text) => <b>{text}</b>,
     },
     {
-      title: "Age",
+      title: t("Age"),
       dataIndex: "birth",
       key: "birth",
       render: (birth) => (
@@ -71,7 +74,7 @@ export const PureTable = () => {
     },
 
     {
-      title: "Email",
+      title: t("Email"),
       dataIndex: "email",
       key: "email",
       render: (text) =>
@@ -82,7 +85,7 @@ export const PureTable = () => {
         ),
     },
     {
-      title: "Phone",
+      title: t("Phone"),
       dataIndex: "phone",
       key: "phone",
       render: (text) =>
@@ -93,7 +96,7 @@ export const PureTable = () => {
         ),
     },
     {
-      title: "Created At",
+      title: t("CreatedAt"),
       dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt) => (
@@ -116,7 +119,7 @@ export const PureTable = () => {
             style={{ fontSize: 12 }}
             size="small"
           >
-            View History
+            {t("ViewHistory")}
           </Button>
           <Divider type="vertical" />
           <Button
@@ -125,8 +128,8 @@ export const PureTable = () => {
             onClick={() => handleEdit(record)}
           ></Button>
           <Popconfirm
-            title="Delete the record"
-            description="Are you sure to delete this record?"
+            title={t("DeleteTheRecord")}
+            description={t("DeleteThisRecord")}
             onConfirm={() => handleRemove(record.id)}
             okText="Yes"
             cancelText="No"
@@ -172,30 +175,6 @@ export const PureTable = () => {
   };
 
   useEffect(() => {
-    // send({
-    //   doc: "patients",
-    //   query: "find",
-    //   search: { name: queryKey },
-    //   limit,
-    //   skip: (page - 1) * limit,
-    // }).then(({ err, rows }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     setData(rows);
-    //     console.log(rows);
-    //     setTimeout(() => {
-    //       send({
-    //         doc: "patients",
-    //         query: "count",
-    //         search: { name: queryKey },
-    //       }).then(({ err, count }) => {
-    //         if (err) message.error("Error !");
-    //         else setTotal(count);
-    //       });
-    //     }, 100);
-    //   }
-    // });
-
     send({
       query: "getPatients",
       q: querySearch,
@@ -214,31 +193,40 @@ export const PureTable = () => {
       .catch((err) => {
         console.error("Error in IPC communication:", err);
       });
-  }, [page, isReload, querySearch]);
+  }, [page, isReload, querySearch, limit]);
 
   return (
-    <>
-      <Table
-        style={{ marginTop: "-16px" }}
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        size="small"
-      />
-      <div className="table-footer app-flex-space">
-        <p>
-          <b>{total}</b> results fot this search
-        </p>
-        <Pagination
-          simple
-          current={page}
-          onChange={(_page) => {
-            setPage(_page);
-          }}
-          total={total}
-          pageSize={limit}
-        />
-      </div>
-    </>
+    <Table
+      style={{
+        marginTop: 16,
+        border: "1px solid #eee",
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+      columns={columns}
+      dataSource={data}
+      pagination={false}
+      size="small"
+      footer={() => (
+        <div className="table-footer app-flex-space">
+             <div
+            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+  pattern-size-6 pattern-opacity-5 absolute inset-0"
+          ></div>
+          <p>
+            <b>{total}</b> {t("results")}
+          </p>
+          <Pagination
+            simple
+            current={page}
+            onChange={(_page) => {
+              setPage(_page);
+            }}
+            total={total}
+            pageSize={limit}
+          />
+        </div>
+      )}
+    />
   );
 };

@@ -264,6 +264,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+
     case "saveHeadImage": {
       try {
         const { file } = arg;
@@ -283,6 +284,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {
         event.reply("asynchronous-reply", { err, rows });

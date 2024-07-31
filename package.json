@@ -1,6 +1,6 @@
 {
   "name": "lab-beta",
-  "version": "1.0.8",
+  "version": "2.0.0",
   "homepage": "./",
   "main": "index.js",
   "dependencies": {
@@ -22,6 +22,9 @@
     "form-data": "^4.0.0",
     "framer-motion": "^11.3.19",
     "get-file-object-from-local-path": "^1.0.2",
+    "i18next": "^23.12.2",
+    "i18next-browser-languagedetector": "^8.0.0",
+    "i18next-electron-fs-backend": "^3.0.2",
     "jimp": "^0.22.12",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.29",
@@ -32,6 +35,7 @@
     "pdf-to-printer": "^5.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-i18next": "^15.0.0",
     "react-icons": "^5.2.1",
     "react-router-dom": "^6.11.2",
     "zustand": "^4.3.8"
@@ -62,6 +66,7 @@
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "tailwindcss": "^3.4.6",
+    "tailwindcss-bg-patterns": "^0.3.0",
     "util": "^0.12.5",
     "vm-browserify": "^1.1.2",
     "wait-on": "^7.0.1"

@@ -15,6 +15,8 @@ import dayjs from "dayjs";
 import { send } from "../../../control/renderer";
 import { useAppStore, useGroupStore } from "../../../appStore";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import usePageLimit from "../../../hooks/usePageLimit";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -30,17 +32,18 @@ export const PureTable = () => {
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const limit = 10;
+  const { t } = useTranslation();
+  const limit = usePageLimit();
 
   const columns = [
     {
-      title: "Package Title",
+      title: t("PackageTitle"),
       dataIndex: "title",
       key: "title",
       render: (title) => <b style={{ whiteSpace: "nowarp" }}>{title}</b>,
     },
     {
-      title: "Tests",
+      title: t("Tests"),
       dataIndex: "tests",
       key: "tests",
       render: (tests) => {
@@ -58,7 +61,7 @@ export const PureTable = () => {
       },
     },
     {
-      title: "Total Price",
+      title: t("TotalPrice"),
       dataIndex: "id",
       key: "id",
       render: (_, record) => {
@@ -81,7 +84,7 @@ export const PureTable = () => {
       },
     },
     {
-      title: "Custome Price",
+      title: t("CustomePrice"),
       dataIndex: "customePrice",
       key: "customePrice",
       render: (_, record) => {
@@ -94,7 +97,7 @@ export const PureTable = () => {
     },
 
     {
-      title: "Last Update",
+      title: t("LastUpdate"),
       dataIndex: "updatedAt",
       key: "updatedAt",
       render: (updatedAt) => (
@@ -115,8 +118,8 @@ export const PureTable = () => {
             onClick={() => handleEdit(record)}
           ></Button>
           <Popconfirm
-            title="Delete the record"
-            description="Are you sure to delete this record?"
+            title={t("DeleteTheRecord")}
+            description={t("DeleteThisRecord")}
             onConfirm={() => handleRemove(record.id)}
             okText="Yes"
             cancelText="No"
@@ -129,36 +132,22 @@ export const PureTable = () => {
     },
   ];
 
-
-
-
   const handleRemove = (id) => {
-    // send({
-    //   doc: "packages",
-    //   query: "remove",
-    //   condition: { id },
-    // }).then(({ err }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     message.success("Remove Succefful.");
-    //     setIsReload(!isReload);
-    //   }
-    // });
-
     send({
       query: "deletePackage",
-     id
-    }).then(resp => {
-      if (resp.success) {
-        console.log("Success deletePackage");
-        setIsReload(!isReload);
-      } else {
-        console.error("Error deletePackage:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
+      id,
+    })
+      .then((resp) => {
+        if (resp.success) {
+          console.log("Success deletePackage");
+          setIsReload(!isReload);
+        } else {
+          console.error("Error deletePackage:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
   };
 
   const handleEdit = ({ id, title, tests, customePrice, createdAt }) => {
@@ -170,72 +159,58 @@ export const PureTable = () => {
     setCreatedAt(createdAt);
   };
 
-
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
-    // send({
-    //   doc: "packages",
-    //   query: "find",
-    //   search: { title: queryKey },
-    //   limit,
-    //   skip: (page - 1) * limit,
-    // }).then(({ err, rows }) => {
-    //   if (err) message.error("Error !");
-    //   else {
-    //     setData(rows);
-    //     setTimeout(() => {
-    //       send({
-    //         doc: "packages",
-    //         query: "count",
-    //         search: { title: queryKey },
-    //       }).then(({ err, count }) => {
-    //         if (err) message.error("Error !");
-    //         else setTotal(count);
-    //       });
-    //     }, 100);
-    //   }
-    // });
-
 
     send({
       query: "getPackages",
-      data: { q: queryKey, skip: (page - 1) * limit, limit }
-    }).then(resp => {
-      if (resp.success) {
-        setData(resp.data);
-        console.log("Packages retrieved successfully:", resp.data);
-      } else {
-        console.error("Error retrieving packages:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
-  }, [page, isReload, querySearch]);
+      data: { q: queryKey, skip: (page - 1) * limit, limit },
+    })
+      .then((resp) => {
+        if (resp.success) {
+          setData(resp.data);
+          console.log("Packages retrieved successfully:", resp.data);
+        } else {
+          console.error("Error retrieving packages:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
+  }, [page, isReload, querySearch, limit]);
 
   return (
-    <>
-      <Table
-        style={{ marginTop: "-16px" }}
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        size="small"
-      />
-      <div className="table-footer app-flex-space">
-        <p>
-          <b>{total}</b> results fot this search
-        </p>
-        <Pagination
-          simple
-          current={page}
-          onChange={(_page) => {
-            setPage(_page);
-          }}
-          total={total}
-          pageSize={limit}
-        />
-      </div>
-    </>
+    <Table
+      style={{
+        marginTop: 16,
+        border: "1px solid #eee",
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+      columns={columns}
+      dataSource={data}
+      pagination={false}
+      size="small"
+      footer={() => (
+        <div className="table-footer app-flex-space">
+            <div
+            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+  pattern-size-6 pattern-opacity-5 absolute inset-0"
+          ></div>
+          <p>
+            <b>{total}</b> {t("results")}
+          </p>
+          <Pagination
+            simple
+            current={page}
+            onChange={(_page) => {
+              setPage(_page);
+            }}
+            total={total}
+            pageSize={limit}
+          />
+        </div>
+      )}
+    />
   );
 };

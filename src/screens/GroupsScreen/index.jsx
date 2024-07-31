@@ -2,17 +2,26 @@ import { Button, Card, Divider, Input, Space } from "antd";
 import "./style.css";
 import { PureModal, PureTable } from "../../components/Groups";
 import { useGroupStore } from "../../appStore";
+import { useTranslation } from "react-i18next";
 
 const { Search } = Input;
 
 const GroupsScreen = () => {
+  const { t } = useTranslation();
   const { setIsModal, setQuerySearch, id, setReset } = useGroupStore();
   return (
-    <div className="group-screen">
-      <Card bodyStyle={{ padding: 16 }}>
-        <section className="header app-flex-space">
+    <div className="group-screen page">
+      <Card
+        className="border-none"
+        styles={{
+          body: {
+            padding: "2%",
+          },
+        }}
+      >
+        <section className="header app-flex-space mb-[18px]">
           <Search
-            placeholder="Search Group"
+            placeholder={t("SearchGroup")}
             onSearch={(val) => setQuerySearch(val)}
             style={{
               width: 280,
@@ -27,11 +36,10 @@ const GroupsScreen = () => {
                 setIsModal(true);
               }}
             >
-              + New Group
+              + {t("NewGroup")}
             </Button>
           </Space>
         </section>
-        <Divider />
         <PureTable />
         <PureModal />
       </Card>

@@ -3,7 +3,7 @@ import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
 import { Layout, Menu, theme } from "antd";
 import { useState } from "react";
-import {  TbReportSearch } from "react-icons/tb";
+import { TbReportSearch } from "react-icons/tb";
 import { GrDocumentTest } from "react-icons/gr";
 import { LuPackage2, LuSettings2 } from "react-icons/lu";
 import { IoMdLogOut } from "react-icons/io";
@@ -12,17 +12,19 @@ import { motion } from "framer-motion";
 
 import logo1 from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const { Sider, Content } = Layout;
 
-
-
 const MainContainerV2 = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
   return (
     <Layout className="h-screen">
       <Sider
@@ -52,37 +54,43 @@ const MainContainerV2 = ({ children }) => {
               style={{ border: "none" }}
               className="bg-transparent"
               mode="inline"
-              defaultSelectedKeys={["home"]}
+              defaultSelectedKeys={[location?.pathname]}
               items={[
                 {
-                  key: "home",
+                  key: "/",
                   icon: <HiOutlineHome size={20} />,
                   label: <p className="text-[15px]">Home</p>,
+                  onClick: () => navigate("/", { replace: true }),
                 },
                 {
-                  key: "patients",
+                  key: "/patients",
                   icon: <MdOutlinePersonalInjury size={20} />,
                   label: <p className="text-[15px]">Patients</p>,
+                  onClick: () => navigate("/patients", { replace: true }),
                 },
                 {
-                  key: "tests",
+                  key: "/tests",
                   icon: <GrDocumentTest size={16} />,
                   label: <p className="text-[15px]">Tests</p>,
+                  onClick: () => navigate("/tests", { replace: true }),
                 },
                 {
-                  key: "package",
+                  key: "/package",
                   icon: <LuPackage2 size={18} />,
                   label: <p className="text-[15px]">Package</p>,
+                  onClick: () => navigate("/groups", { replace: true }),
                 },
                 {
-                  key: "reports",
+                  key: "/reports",
                   icon: <TbReportSearch size={20} />,
                   label: <p className="text-[15px]">Reports</p>,
+                  onClick: () => navigate("/reports", { replace: true }),
                 },
                 {
-                  key: "settings",
+                  key: "/settings",
                   icon: <LuSettings2 size={19} />,
                   label: <p className="text-[15px]">Settings</p>,
+                  onClick: () => navigate("/settings", { replace: true }),
                 },
               ]}
             />
@@ -109,11 +117,13 @@ const MainContainerV2 = ({ children }) => {
           </div>
         </div>
       </Sider>
+
       <Content
         style={{
           background: colorBgContainer,
           borderRadius: 0,
           overflow: "auto",
+          width: "100%",
         }}
       >
         {children}

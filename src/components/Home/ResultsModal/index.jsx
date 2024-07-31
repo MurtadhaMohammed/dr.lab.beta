@@ -14,8 +14,11 @@ import "./style.css";
 import { useAppStore, useHomeStore } from "../../../appStore";
 import { send } from "../../../control/renderer";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
+
 
 export const parseTests = (record) => {
+  const { t } = useTranslation();
   let tests = [];
   if (record?.testType === "CUSTOME") {
     tests = [
@@ -30,7 +33,7 @@ export const parseTests = (record) => {
         }),
       },
     ];
-  } else if (record?.testType === "PACKAGE") {
+  } else if (record?.testType === t("PACKAGE")) {
     tests = record.tests.map((group) => {
       return {
         title: group.title,

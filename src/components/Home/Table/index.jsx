@@ -36,9 +36,9 @@ import {
 import { Dropbox } from "dropbox";
 import { nanoid } from "nanoid";
 import usePageLimit from "../../../hooks/usePageLimit";
+import { useTranslation } from "react-i18next";
 
 var dbx = new Dropbox({ accessToken: ACCESS_TOKEN_DBX });
-
 const statusColor = {
   PENDING: "orange",
   COMPLETED: "green",
@@ -74,6 +74,7 @@ export const PureTable = ({ isReport = false }) => {
   const [isSend, setIsSend] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
   const limit = usePageLimit();
+  const { t } = useTranslation();
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -81,46 +82,6 @@ export const PureTable = ({ isReport = false }) => {
     const result = regex.exec(phone);
     return result;
   };
-
-  //https://lab-beta-api.onrender.com
-
-  // const sendMsg = async (file, type) => {
-  //   setMsgLoading(true);
-  //   var formdata = new FormData();
-  //   type === "message" && formdata.append("file", file);
-  //   formdata.append("phone", destPhone);
-  //   try {
-  //     let res = await fetch(
-  //       `http://lab-beta-api.onrender.com/api/lab/${type}`,
-  //       {
-  //         method: "POST",
-  //         body: formdata,
-  //       }
-  //     );
-  //     let resData = await res.json();
-  //     setMsgLoading(false);
-  //     if (resData?.success) {
-  //       type === "message" && setIsSend(true);
-  //       message.success("تم الارسال بنجاح.");
-  //     } else message.error("مشكلة بالنظام حاول لاحقا!");
-  //   } catch (error) {
-  //     setMsgLoading(false);
-  //     console.log(error);
-  //   }
-  // };
-
-  //   {
-  //     "name": "dUaZ-OH2uPVlyhhW-WPkN.pdf",
-  //     "path_lower": "/duaz-oh2upvlyhhw-wpkn.pdf",
-  //     "path_display": "/dUaZ-OH2uPVlyhhW-WPkN.pdf",
-  //     "id": "id:qvxxrWPlqCAAAAAAAAAAIA",
-  //     "client_modified": "2023-10-14T14:02:51Z",
-  //     "server_modified": "2023-10-14T14:02:51Z",
-  //     "rev": "607ada0f32b4bfd55e830",
-  //     "size": 7168610,
-  //     "is_downloadable": true,
-  //     "content_hash": "ebb92f2d98540cb8378a9890ae6694b945458a2f63758873cd611e2982767abf"
-  // }
 
   const getUrlFromDBX = async (path) => {
     try {
@@ -173,35 +134,8 @@ export const PureTable = ({ isReport = false }) => {
       }).then(async ({ err, res, file }) => {
         if (err) throw err;
         if (type === "document") {
-          // let msgResp = await sendMessage("template", destPhone, null, "hello");
-          // if (!msgResp.success)
-          //   message.error("مشكلة في الارسال حاول مجددا !");
-          // else message.success("تم الارسال بنجاح");
           setMsgLoading(true);
           const fileObject = constructFileFromLocalFileData(file);
-          // dbx
-          //   .filesUpload({
-          //     path: "/" + `${nanoid()}.pdf`,
-          //     contents: fileObject,
-          //   })
-          //   .then(async function (response) {
-          //     if (response?.status === 200) {
-          //       let respUrl = await getUrlFromDBX(
-          //         response?.result?.path_display
-          //       );
-          //       if (!respUrl?.success)
-          //         message.error("مشكلة في الارسال حاول مجددا !");
-          //       else {
-          //         let msgResp = await sendMessage("template", destPhone, null, respUrl?.url);
-          //         if (!msgResp.success)
-          //           message.error("مشكلة في الارسال حاول مجددا !");
-          //         else message.success("تم الارسال بنجاح");
-          //       }
-          //     } else message.error("مشكلة في الارسال حاول مجددا !");
-          //   })
-          //   .catch(function (error) {
-          //     message.error("مشكلة في الارسال حاول مجددا !");
-          //   });
 
           let fileResp = await uploadFile(fileObject);
           if (!fileResp?.success)
@@ -280,13 +214,13 @@ export const PureTable = ({ isReport = false }) => {
         ),
     },
     {
-      title: "Name",
+      title: t("Name"),
       dataIndex: "name",
       key: "name",
       render: (_, record) => <b>{record?.patient?.name}</b>,
     },
     {
-      title: "Tests",
+      title: t("Tests"),
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
@@ -299,7 +233,7 @@ export const PureTable = ({ isReport = false }) => {
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
               <Tag key={el.id}>
-                {el[testType === "CUSTOME" ? "name" : "title"]}
+                {el[testType === t("CUSTOME") ? "name" : "title"]}
               </Tag>
             ))}
             {restCount && (
@@ -309,7 +243,7 @@ export const PureTable = ({ isReport = false }) => {
                     <Space wrap>
                       {list?.map((el) => (
                         <Tag key={el.id}>
-                          {el[testType === "CUSTOME" ? "name" : "title"]}
+                          {el[testType === t("CUSTOME") ? "name" : "title"]}
                         </Tag>
                       ))}
                     </Space>
@@ -324,7 +258,7 @@ export const PureTable = ({ isReport = false }) => {
       },
     },
     {
-      title: "Price",
+      title: t("Price"),
       dataIndex: "id",
       key: "id",
       render: (_, record) => (
@@ -346,7 +280,7 @@ export const PureTable = ({ isReport = false }) => {
       ),
     },
     {
-      title: "End Price",
+      title: t("EndPrice"),
       dataIndex: "id",
       key: "id",
       render: (_, record) => (
@@ -359,7 +293,7 @@ export const PureTable = ({ isReport = false }) => {
       ),
     },
     {
-      title: "Discount",
+      title: t("Discount"),
       dataIndex: "discount",
       key: "discount",
       render: (_, record) =>
@@ -372,7 +306,7 @@ export const PureTable = ({ isReport = false }) => {
         ),
     },
     {
-      title: "Created At",
+      title: t("CreatedAt"),
       dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt) => (
@@ -385,7 +319,7 @@ export const PureTable = ({ isReport = false }) => {
       ),
     },
     {
-      title: "Status",
+      title: t("Status"),
       dataIndex: "status",
       key: "status",
       render: (status) => <Tag color={statusColor[status]}>{status}</Tag>,
@@ -396,47 +330,17 @@ export const PureTable = ({ isReport = false }) => {
         key: "action",
         render: (_, record) => (
           <Space size="small" className="custom-actions">
-            {/* {record?.status === "COMPLETED" && (
-              <Popover
-                trigger={"click"}
-                onClick={() => {
-                  setIsSend(false);
-                  setDestPhone(record?.patient?.phone);
-                }}
-                content={isSend ? whatsapfinish : whatsapContnet(record)}
-              >
-                <Button
-                  size="small"
-                  disabled={record?.status !== "COMPLETED"}
-                  icon={<WhatsAppOutlined />}
-                ></Button>
-              </Popover>
-            )} */}
-
-            {/* <Button
-              onClick={async () => {
-                let respUrl = await getUrlFromDBX();
-                if (!respUrl?.success)
-                  message.error("مشكلة في الارسال حاول مجددا !");
-                else console.log(respUrl);
-              }}
-              style={{ fontSize: 12 }}
-              size="small"
-            >
-              Print URL
-            </Button> */}
-
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
               size="small"
             >
-              Print Results
+              {t("PrintResults")}
             </Button>
             <Divider type="vertical" />
             <Button
               size="small"
-              disabled={record?.status === "COMPLETED"}
+              disabled={record?.status === t("COMPLETED")}
               icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
             ></Button>
@@ -537,35 +441,37 @@ export const PureTable = ({ isReport = false }) => {
   }, [page, isReload, querySearch, isToday, filterDate, limit]);
 
   return (
-    <>
-      <Table
-        style={{
-          marginTop: 16,
-          border: "1px solid #eee",
-          borderRadius: 10,
-          overflow: "hidden",
-        }}
-        columns={columns}
-        dataSource={data}
-        pagination={false}
-        size="small"
-        footer={() => (
-          <div className="table-footer app-flex-space">
-            <p>
-              <b>{total}</b> results fot this search
-            </p>
-            <Pagination
-              simple
-              current={page}
-              onChange={(_page) => {
-                setPage(_page);
-              }}
-              total={total}
-              pageSize={limit}
-            />
-          </div>
-        )}
-      />
-    </>
+    <Table
+      style={{
+        marginTop: 16,
+        border: "1px solid #eee",
+        borderRadius: 10,
+        overflow: "hidden",
+      }}
+      columns={columns}
+      dataSource={data}
+      pagination={false}
+      size="small"
+      footer={() => (
+        <div className="table-footer app-flex-space">
+          <div
+            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+  pattern-size-6 pattern-opacity-5 absolute inset-0"
+          ></div>
+          <p>
+            <b>{total}</b> {t("results")}
+          </p>
+          <Pagination
+            simple
+            current={page}
+            onChange={(_page) => {
+              setPage(_page);
+            }}
+            total={total}
+            pageSize={limit}
+          />
+        </div>
+      )}
+    />
   );
 };

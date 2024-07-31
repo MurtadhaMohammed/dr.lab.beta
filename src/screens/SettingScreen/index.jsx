@@ -13,26 +13,31 @@ import {
   Row,
   Select,
   Space,
+  Switch,
 } from "antd";
 import { UserOutlined } from "@ant-design/icons";
-// import headImage from "../../../head.png";
-// import newHeadImage from "../../../head.png";
+// import headImage from "../../../image.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
+  const [language, setLanguage] = useState("en");
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
+
+  const { t } = useTranslation();
 
   async function fetchImagePath() {
     setImagePath(null);
     try {
-      const response = await fetch("http://localhost:3001/head.png"); // Adjust URL if needed
+      const response = await fetch("http://localhost:3001/head.png");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -146,9 +151,9 @@ const SettingsScreen = () => {
           let data = await resp.json();
           setLoading(false);
           localStorage.setItem("lab-user", JSON.stringify(data));
-          message.success("Update Succesfully.");
+          message.success("Update Successfully.");
           setIsUpdate(false);
-        } else message.error("Update faild!");
+        } else message.error("Update failed!");
       } catch (error) {
         console.log(error);
         message.error(error.message);
@@ -157,9 +162,15 @@ const SettingsScreen = () => {
     });
   };
 
+  const handleLang = (checked) => {
+    const newLanguage = checked ? "ar" : "en";
+    i18n.changeLanguage(newLanguage);
+    setLanguage(newLanguage);
+  };
+
   return (
-    <div className="settings-page pb-[60px]">
-      <Card styles={{ body: { padding: 46 } }}>
+    <div className="settings-page pb-[60px] page">
+     <div className="border-none h-screen p-[2%]">
         <section className="flex items-center justify-between w-full mb-[34px]">
           <div className="flex items-center gap-4">
             <Avatar size={"large"} icon={<UserOutlined />} />
@@ -170,30 +181,39 @@ const SettingsScreen = () => {
               </span>
             </div>
           </div>
-          <Popconfirm
-            placement="rightBottom"
-            onConfirm={signout}
-            title="Signout Confirm"
-            description="Do you want to signout form this app ?"
-          >
-            <Button loading={signoutLoading} danger>
-              Sign Out
-            </Button>
-          </Popconfirm>
+
+          <Space size={28}>
+            <Space>
+              <span className="m-0 p-0">System Language : </span>
+              <Switch
+                className="switchBtn"
+                checkedChildren="عربي"
+                unCheckedChildren="Eng"
+                checked={language === "ar"}
+                onChange={handleLang}
+                style={{ width: 60 }}
+              />
+            </Space>
+            <Divider type="vertical" />
+            <Popconfirm
+              placement="rightBottom"
+              onConfirm={signout}
+              title={t("SignoutConfirm")}
+              description={t("SignOutFormThisApp?")}
+            >
+              <Button loading={signoutLoading} danger>
+                {t("SignOut")}
+              </Button>
+            </Popconfirm>
+          </Space>
         </section>
+
         <section>
-          <p className="pl-[4px] opacity-60">Account Info</p>
+          <p className="pl-[4px] opacity-60">{t("AccountInfo")}</p>
           <Card className="mt-[6px]">
             <Form
               form={form}
-              //   initialValues={{
-              //     name: user?.name,
-              //     email:user?.email,
-              //     phone: user?.phone,
-              //     address: user?.address,
-              //   }}
               onFinish={handleUpdateClient}
-              //   onFinishFailed={onFinishFailed}
               onFieldsChange={onFieldsChange}
               layout="vertical"
               autoComplete="off"
@@ -201,12 +221,12 @@ const SettingsScreen = () => {
               <Row gutter={[20, 0]}>
                 <Col span={8}>
                   <Form.Item
-                    label="Full Name"
+                    label={t("FullName")}
                     name="name"
                     rules={[
                       {
                         required: true,
-                        message: "Please input your Name!",
+                        message: t("PleaseInputYourName"),
                       },
                     ]}
                   >
@@ -216,12 +236,12 @@ const SettingsScreen = () => {
 
                 <Col span={6}>
                   <Form.Item
-                    label="Phone Number"
+                    label={t("PhoneNumber")}
                     name="phone"
                     rules={[
                       {
                         required: true,
-                        message: "Please input your Phone!",
+                        message: t("PleaseInputYourPhone!"),
                       },
                     ]}
                   >
@@ -229,12 +249,12 @@ const SettingsScreen = () => {
                   </Form.Item>
                 </Col>
                 <Col span={6}>
-                  <Form.Item label="Email" name="email">
+                  <Form.Item label={t("Email")} name="email">
                     <Input type="email" />
                   </Form.Item>
                 </Col>
                 <Col span={7}>
-                  <Form.Item label="Address" name="address">
+                  <Form.Item label={t("Address")} name="address">
                     <Input />
                   </Form.Item>
                 </Col>
@@ -246,14 +266,14 @@ const SettingsScreen = () => {
                         <Button
                           loading={loading}
                           type="primary"
-                          htmlType="submit"
+                          htmlType={t("submit")}
                         >
-                          Save Changes
+                          {t("SaveChanges")}
                         </Button>
                       </Form.Item>
 
                       <Button disabled={loading} onClick={handelCancel}>
-                        Cancel
+                        {t("Cancel")}
                       </Button>
                     </Space>
                   </Col>
@@ -264,12 +284,12 @@ const SettingsScreen = () => {
         </section>
         <section className=" grid grid-cols-2 gap-[20px] mt-[24px]">
           <div>
-            <p className="pl-[4px] opacity-60">PDF Setting</p>
+            <p className="pl-[4px] opacity-60">{t("PDFSetting")}</p>
             <Card className="mt-[6px]">
               <div className="flex justify-between items-center">
-                <b className="text-[14px]">Image Cover</b>
+                <b className="text-[14px]">{t("ImageCover")}</b>
                 <Button type="link" onClick={handleChangeFile}>
-                  Change Image
+                  {t("ChangeImage")}
                 </Button>
               </div>
               <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
@@ -277,31 +297,33 @@ const SettingsScreen = () => {
               </div>
               <Divider />
               <div className="flex justify-between items-center">
-                <b className="text-[14px]">Font Size</b>
+                <b className="text-[14px]">{t("FontSize")}</b>
                 <Select
                   value={printFontSize}
                   variant="borderless"
                   onChange={handleSizeChange}
                 >
-                  <Select.Option value={14}>Medium</Select.Option>
-                  <Select.Option value={12}>Small</Select.Option>
-                  <Select.Option value={16}>Large</Select.Option>
+                  <Select.Option value={14}>{t("Medium")}</Select.Option>
+                  <Select.Option value={12}>{t("Small")}</Select.Option>
+                  <Select.Option value={16}>{t("Large")}</Select.Option>
                 </Select>
               </div>
             </Card>
           </div>
           <div>
-            <p className="pl-[4px] opacity-60">Subscription Info</p>
-            <Card className="mt-[6px] bg-[#00ff552b] border-none">
-              <b className="text-[18px]">Serial Number</b>
-              <p>089898727</p>
-              <p className="pt-[8px]">
-                Created At 2024 Jan, 03 | <b>360</b> days for expire{" "}
-              </p>
+            <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
+            <Card className="mt-[6px]">
+              <b className="text-[14px]">{t("CurrentPlan")}</b>
+              <div className="rounded-[4px] bg-[#F6F6F6] px-[8px] py-[4px] mt-[6px]">
+                {t("FreeTrail")} -{" "}
+                <span className="text-[12px] text-[#a5a5a5]">
+                  {t("expierd")}
+                </span>
+              </div>
             </Card>
           </div>
         </section>
-      </Card>
+      </div>
     </div>
   );
 };
