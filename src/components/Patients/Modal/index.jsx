@@ -15,6 +15,7 @@ import {
 import { useAppStore, usePatientStore } from "../../../appStore";
 import "./style.css";
 import { send } from "../../../control/renderer";
+import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
@@ -38,6 +39,7 @@ export const PureModal = () => {
     setIsModal,
     setReset,
   } = usePatientStore();
+  const { t } = useTranslation();
 
   const handleSubmit = () => {
     let data = {
@@ -49,38 +51,8 @@ export const PureModal = () => {
       updatedAt: Date.now(),
     };
 
-    // if (id) {
-    //   send({
-    //     doc: "patients",
-    //     query: "update",
-    //     condition: { _id: id },
-    //     data: { ...data, createdAt },
-    //   }).then(({ err }) => {
-    //     if (err) message.error("Error !");
-    //     message.success("Save Succefful.");
-    //     setReset();
-    //     setIsModal(false);
-    //     setIsReload(!isReload);
-    //   });
-    // } else {
-    //   send({
-    //     doc: "patients",
-    //     query: "insert",
-    //     data: { ...data, createdAt: Date.now() },
-    //   }).then(({ err }) => {
-    //     if (err) message.error("Error !");
-    //     else {
-    //       message.success("Save Succefful.");
-    //       setReset();
-    //       setIsModal(false);
-    //       setIsReload(!isReload);
-    //     }
-    //   });
-    // }
-
-
     if (id) {
-      console.log("Updating patient with ID:", id); 
+      console.log("Updating patient with ID:", id);
       send({
         query: "updatePatient",
         id,
@@ -114,13 +86,13 @@ export const PureModal = () => {
       }).catch(err => {
         console.error("Error in IPC communication:", err);
       });
-
     }
   };
 
+
   return (
     <Modal
-      title={`${id ? "Edit" : "Add"} New Patient`}
+      title={`${id ? t("Edit") : t("Add")} ${t("NewPatient")}`}
       open={isModal}
       width={400}
       onOk={() => {
@@ -136,14 +108,14 @@ export const PureModal = () => {
               setIsModal(false);
             }}
           >
-            Close
+            {t("Close")}
           </Button>
           <Button
             disabled={!name || !gender || !birth}
             type="primary"
             onClick={handleSubmit}
           >
-            Save
+            {t("Save")}
           </Button>
         </Space>
       }
@@ -153,19 +125,19 @@ export const PureModal = () => {
         <Row gutter={[16, 16]}>
           <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>Patient Name</Text>
+              <Text>{t("PatientName")}</Text>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Ali Mohammed"
+                placeholder={t("ExName")}
               />
             </Space>
           </Col>
           <Col span={10}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>Birth Date</Text>
+              <Text>{t("BirthDate")}</Text>
               <DatePicker
-                picker="year"
+                picker={t("year")}
                 value={birth}
                 onChange={(val) => setBirth(val)}
                 style={{ width: "100%" }}
@@ -175,7 +147,7 @@ export const PureModal = () => {
           <Col span={14}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
-                Phone Number <Text type="secondary">(Optional)</Text>
+                {t("PhoneNumber")} <Text type="secondary">{t("Optional")}</Text>
               </Text>
               <Input
                 value={phone}
@@ -188,7 +160,7 @@ export const PureModal = () => {
           <Col span={16}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
-                Email <Text type="secondary">(Optional)</Text>
+                {t("Email")} <Text type="secondary">{t("Optional")}</Text>
               </Text>
               <Input
                 value={email}
@@ -200,17 +172,17 @@ export const PureModal = () => {
           </Col>
           <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={0}>
-              <Text>Gender</Text>
+              <Text>{t("Gender")}</Text>
               <Radio.Group
                 value={gender}
                 onChange={(e) => setGender(e.target.value)}
               >
                 <Space>
                   <Card hoverable bodyStyle={{ padding: 8 }}>
-                    <Radio value={"male"}> Male</Radio>
+                    <Radio value={"male"}> {t("Male")}</Radio>
                   </Card>
                   <Card hoverable bodyStyle={{ padding: 8 }}>
-                    <Radio value={"female"}>Female</Radio>
+                    <Radio value={"female"}>{("Female")}</Radio>
                   </Card>
                 </Space>
               </Radio.Group>

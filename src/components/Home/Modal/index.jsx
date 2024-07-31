@@ -7,11 +7,8 @@ import { send } from "../../../control/renderer";
 import TestForm from "./testForm";
 import PatientForm from "./patientForm";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
-const testLabel = {
-  CUSTOME: "Custome",
-  PACKAGE: "Package",
-};
 
 export const PureModal = () => {
   const { setIsReload, isReload } = useAppStore();
@@ -32,7 +29,17 @@ export const PureModal = () => {
     patientID,
   } = useHomeStore();
   const [step, setStep] = useState(0);
-  console.log({ id, patientID });
+
+  const { t } = useTranslation();
+  // const testLabel = {
+  //   [t("CUSTOME")]: "Custome",
+  //   [t("PACKAGE")]: "Package",
+  // };
+
+  const testLabel = {
+    CUSTOME: t("Custome"),
+    PACKAGE: t("Packages"),
+  };
 
   const handleSubmit = () => {
     let data = {
@@ -165,30 +172,30 @@ export const PureModal = () => {
           setIsModal(false);
         }}
       >
-        Close
+        {t("Close")}
       </Button>
       <Button
         disabled={!tests || tests.length === 0}
         onClick={() => setStep(1)}
       >
-        Next
+        {t("Next")}
       </Button>
     </Space>,
     <Space>
-      <Button onClick={() => setStep(0)}>Previous</Button>
+      <Button onClick={() => setStep(0)}>{t("Previous")}</Button>
       <Button
         disabled={!name || !gender || !birth || !tests || tests.length === 0}
         onClick={handleSubmit}
         type="primary"
       >
-        Finish
+       {t("Finish")}
       </Button>
     </Space>,
   ];
 
   return (
     <Modal
-      title={`${id ? "Edit" : "Add"} ${testLabel[testType]} Test for Patient`}
+      title={`${id ? t("Edit") : t("Add")} ${testLabel[testType]} ${t("TestForPatient")}`}
       open={isModal}
       width={400}
       onOk={() => {

@@ -233,7 +233,7 @@ export const PureTable = ({ isReport = false }) => {
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
               <Tag key={el.id}>
-                {el[testType === t("CUSTOME") ? "name" : "title"]}
+                {el[testType === t("CUSTOME") ? t("name") : t("title")]}
               </Tag>
             ))}
             {restCount && (
@@ -243,7 +243,7 @@ export const PureTable = ({ isReport = false }) => {
                     <Space wrap>
                       {list?.map((el) => (
                         <Tag key={el.id}>
-                          {el[testType === t("CUSTOME") ? "name" : "title"]}
+                          {el[testType === t("CUSTOME") ? t("name") : t("title")]}
                         </Tag>
                       ))}
                     </Space>
@@ -266,10 +266,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -345,11 +345,11 @@ export const PureTable = ({ isReport = false }) => {
               onClick={() => handleEdit(record)}
             ></Button>
             <Popconfirm
-              title="Delete the record"
-              description="Are you sure to delete this record?"
+              title={t("DeleteTheRecord")}
+              description={t("DeleteThisRecord")}
               onConfirm={() => handleRemove(record.id)}
-              okText="Yes"
-              cancelText="No"
+              okText={t("Yes")}
+              cancelText={t("No")}
               placement="leftBottom"
             >
               <Button danger size="small" icon={<DeleteOutlined />}></Button>

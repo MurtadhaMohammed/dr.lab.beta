@@ -9,20 +9,13 @@ import { send } from "../../control/renderer";
 import { getTotalPrice } from "../../helper/price";
 import Info from "../../components/Reports/Info";
 import { useEffect } from "react";
-
-//  const getBrith = (ageInYears) =>{
-//   //var ageInYears = 23; //23 * 365 * 24 * 60 * 60
-//   var ageInMillis = ageInYears * 365 * 24 * 60 * 60;
-//   console.log(ageInMillis)
-//  // var dateOfBirth = new Date(new Date().getTime() - ageInMillis);
-//   var dateOfBirth = dayjs(dayjs().format("YYYY-MM-DD")).valueOf() - ageInMillis
-//   return dateOfBirth
-//  }
+import { useTranslation } from "react-i18next";
 
 const ReportsScreen = () => {
   const { filterDate, setFilterDate, data, setData, setLoading } =
     useReportsStore();
   const { isReload, setIsReload } = useAppStore();
+  const { t } = useTranslation();
 
   const loadData = (cb) => {
     send({
@@ -73,10 +66,6 @@ const ReportsScreen = () => {
     });
   };
 
-  // const handleSearch = () => {
-
-  // };
-
   useEffect(() => {
     setLoading(true);
     getTotalVisits(filterDate, (visits) => {
@@ -88,9 +77,9 @@ const ReportsScreen = () => {
                 el?.testType === "CUSTOME"
                   ? test?.price
                   : test?.customePrice ||
-                    test?.tests
-                      ?.map((group) => group?.price)
-                      ?.reduce((a, b) => a + b, 0);
+                  test?.tests
+                    ?.map((group) => group?.price)
+                    ?.reduce((a, b) => a + b, 0);
               return price;
             })
             .reduce((a, b) => a + b, 0);
@@ -164,7 +153,7 @@ const ReportsScreen = () => {
 
   return (
     <div className="reports-screen page">
-     <div className="border-none h-screen p-[2%]">
+      <div className="border-none h-screen p-[2%]">
         <section className="header app-flex-space mb-[18px]">
           <Space>
             <DatePicker.RangePicker
@@ -179,7 +168,7 @@ const ReportsScreen = () => {
           </Space>
           <Space>
             <Button disabled={!data || !filterDate} onClick={handlePrint}>
-              Print
+              {t("Print")}
             </Button>
             {/* <Button type="primary" onClick={handleSearch}>
               Search

@@ -94,7 +94,6 @@ const HomeScreen = () => {
             </Button>
           </Dropdown>
         </section>
-        {/* <Divider /> */}
         <PureTable />
         <PureModal />
         <ResultsModal />

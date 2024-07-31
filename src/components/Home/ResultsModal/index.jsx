@@ -20,7 +20,7 @@ import { useTranslation } from "react-i18next";
 export const parseTests = (record) => {
   const { t } = useTranslation();
   let tests = [];
-  if (record?.testType === "CUSTOME") {
+  if (record?.testType === t("CUSTOME")) {
     tests = [
       {
         title: "",
@@ -55,10 +55,11 @@ export const ResultsModal = () => {
     useAppStore();
   const { setIsResultsModal, isResultsModal, record, setRecord } =
     useHomeStore();
+  const { t } = useTranslation();
 
   const handleChange = (val, row) => {
     let newRecord = [];
-    if (record?.testType === "CUSTOME") {
+    if (record?.testType === t("CUSTOME")) {
       newRecord = {
         ...record,
         tests: record?.tests.map((el) => {
@@ -66,7 +67,7 @@ export const ResultsModal = () => {
           return el;
         }),
       };
-    } else if (record?.testType === "PACKAGE") {
+    } else if (record?.testType === t("PACKAGE")) {
       newRecord = {
         ...record,
         tests: record?.tests?.map((group) => {
@@ -159,48 +160,6 @@ export const ResultsModal = () => {
               </div>
             ))}
           </div>
-          {/* <Table
-            dataSource={record?.tests}
-            columns={[
-              {
-                title: "Test Name",
-                dataIndex: "name",
-                key: "name",
-                render: (val) => <b>{val}</b>,
-              },
-
-              {
-                title: "Result",
-                dataIndex: "result",
-                key: "result",
-                render: (val, row) => (
-                  <div className="custom-actions">
-                    {row?.isSelecte ? (
-                      <Select
-                        style={{ width: 160 }}
-                        value={val}
-                        onChange={(selctedVal) => handleChange(selctedVal, row)}
-                      >
-                        {row?.options?.map((option, i) => (
-                          <Select.Option key={i} value={option}>
-                            {option}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    ) : (
-                      <Input
-                        value={val}
-                        onChange={(e) => handleChange(e.target.value, row)}
-                        style={{ width: 160 }}
-                        //placeholder=". . ."
-                      />
-                    )}
-                  </div>
-                ),
-              },
-            ]}
-            pagination={false}
-          /> */}
         </Space>
       </div>
     ),
@@ -241,48 +200,6 @@ export const ResultsModal = () => {
               </div>
             ))}
           </div>
-          {/* <Table
-            dataSource={group?.tests}
-            columns={[
-              {
-                title: "Test Name",
-                dataIndex: "name",
-                key: "name",
-                render: (val) => <b>{val}</b>,
-              },
-
-              {
-                title: "Result",
-                dataIndex: "result",
-                key: "result",
-                render: (val, row) => (
-                  <div className="custom-actions">
-                   {row?.isSelecte ? (
-                      <Select
-                        style={{ width: 160 }}
-                        value={val}
-                        onChange={(selctedVal) => handleChange(selctedVal, row)}
-                      >
-                        {row?.options?.map((option, i) => (
-                          <Select.Option key={i} value={option}>
-                            {option}
-                          </Select.Option>
-                        ))}
-                      </Select>
-                    ) : (
-                      <Input
-                        value={val}
-                        onChange={(e) => handleChange(e.target.value, row)}
-                        style={{ width: 160 }}
-                        //placeholder=". . ."
-                      />
-                    )}
-                  </div>
-                ),
-              },
-            ]}
-            pagination={false}
-          /> */}
         </Space>
       </div>
     )),
@@ -292,7 +209,7 @@ export const ResultsModal = () => {
     <Modal
       title={
         <Typography.Text type="secondary">
-          {`Test results for `}{" "}
+          {`Test results for`}{" "}
           <b style={{ color: "#000" }}>{record?.patient?.name}</b>
         </Typography.Text>
       }
@@ -302,11 +219,10 @@ export const ResultsModal = () => {
         setIsResultsModal(false);
         setRecord(null);
       }}
-      //destroyOnClose
       footer={
         <div className={"results-modal-footer"}>
           <Space>
-            <b>Font Size :</b>
+            <b>{t("FontSize")}</b>
             <Radio.Group
               value={printFontSize}
               onChange={(e) => setPrintFontSize(e.target.value)}
@@ -329,10 +245,10 @@ export const ResultsModal = () => {
                 setRecord(null);
               }}
             >
-              Close
+              {t("Close")}
             </Button>
             <Button type="primary" onClick={handleSubmit}>
-              Save & Print
+             {t("SavePrint")}
             </Button>
           </Space>
         </div>

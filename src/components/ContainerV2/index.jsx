@@ -20,7 +20,7 @@ const MainContainerV2 = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-const {t}=useTranslation();
+  const { t } = useTranslation();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
