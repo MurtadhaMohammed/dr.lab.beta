@@ -170,7 +170,7 @@ const SettingsScreen = () => {
 
   return (
     <div className="settings-page pb-[60px] page">
-     <div className="border-none h-screen p-[2%]">
+     <div className="border-none  p-[2%]">
         <section className="flex items-center justify-between w-full mb-[34px]">
           <div className="flex items-center gap-4">
             <Avatar size={"large"} icon={<UserOutlined />} />

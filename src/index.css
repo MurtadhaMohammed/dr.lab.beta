@@ -155,3 +155,10 @@ th {
   position: relative;
   background-color: transparent !important;
 }
+
+#title-bar, #title-bar-title {
+  -webkit-app-region: drag;
+}
+#title-bar-buttons button {
+  -webkit-app-region: no-drag !important;
+}

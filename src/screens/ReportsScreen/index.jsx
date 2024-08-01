@@ -152,8 +152,11 @@ const ReportsScreen = () => {
   }, [filterDate]);
 
   return (
-    <div className="reports-screen page">
+
       <div className="border-none h-screen p-[2%]">
+
+     <div className="border-none  p-[2%]">
+
         <section className="header app-flex-space mb-[18px]">
           <Space>
             <DatePicker.RangePicker

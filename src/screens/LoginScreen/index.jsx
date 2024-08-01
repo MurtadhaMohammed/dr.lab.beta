@@ -1,12 +1,25 @@
-import { Button, Card, Form, Input, Space, message } from "antd";
+import {
+  Avatar,
+  Button,
+  Card,
+  Divider,
+  Form,
+  Input,
+  Space,
+  Typography,
+  message,
+} from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useAppStore } from "../../appStore";
 import dayjs from "dayjs";
+import { UserOutlined } from "@ant-design/icons";
 import { send } from "../../control/renderer";
+import isValidPhoneNumber from "../../helper/phoneValidation";
 
 const LoginScreen = () => {
   const [key, setKey] = useState(null);
+  const [phone, setPhone] = useState(null);
   const { setIsLogin } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
@@ -70,19 +83,62 @@ const LoginScreen = () => {
     }
   };
 
-  const onSave = async (values) => {
+  const getClient = async () => {
     setLoading(true);
     try {
       const resp = await fetch(
-        "https://dr-lab-apiv2.onrender.com/api/client/add-client",
+        //"http://localhost:3000/api/client/check-client",
+        "https://dr-lab-apiv2.onrender.com/api/client/check-client",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            ...values,
-            serialId: parseInt(localStorage.getItem("lab-serial-id")),
+            phone,
+            serial: key,
+          }),
+        }
+      );
+
+      if (resp.status === 200) {
+        let data = await resp.json();
+        if (data.success) {
+          register();
+        } else {
+          console.log(data.message);
+          setIsForm(true);
+          setLoading(false);
+        }
+      } else {
+        let data = await resp.json();
+        message.error(data?.message || "Serial not found!");
+        setLoading(false);
+      }
+    } catch (error) {
+      console.log(error);
+      message.error(error.message);
+      setLoading(false);
+    }
+  };
+
+  const register = async (values) => {
+    setLoading(true);
+    try {
+      const resp = await fetch(
+        //"http://localhost:3000/api/client/register",
+        "https://dr-lab-apiv2.onrender.com/api/client/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            serial: key,
+            device: UUID,
+            platform: getPlatform(),
+            phone,
+            client: values || null,
           }),
         }
       );
@@ -90,9 +146,16 @@ const LoginScreen = () => {
       if (resp.status === 200) {
         let data = await resp.json();
         setLoading(false);
-        localStorage.setItem("lab-user", JSON.stringify(data));
+        localStorage.setItem("lab-exp", data.serial.exp);
+        localStorage.setItem("lab-serial-id", data.serial.id);
+        localStorage.setItem("lab-created", data.serial.registeredAt);
+        localStorage.setItem("lab-user", JSON.stringify(data.client));
         setIsLogin(true);
-      } else message.error("Serial not found!");
+      } else {
+        let data = await resp.json();
+        message.error(data?.message || "Error");
+        setIsLogin(true);
+      }
     } catch (error) {
       console.log(error);
       message.error(error.message);
@@ -106,7 +169,10 @@ const LoginScreen = () => {
         <Card className="w-[400px]" title="Add Your Info">
           <Form
             form={form}
-            onFinish={onSave}
+            onFinish={register}
+            initialValues={{
+              phone,
+            }}
             layout="vertical"
             autoComplete="off"
           >
@@ -150,20 +216,50 @@ const LoginScreen = () => {
           </Form>
         </Card>
       ) : (
-        <Card>
+        <Card
+          styles={{
+            header: {
+              padding: 0,
+              overflow: "hidden",
+            },
+          }}
+          title={
+            <div className="text-center py-6 relative">
+              <div
+                class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+  pattern-size-6 pattern-opacity-5 absolute inset-0"
+              ></div>
+              <Avatar size={"large"} icon={<UserOutlined />} />
+              {/* <Typography.Text className="block text-[22px]">Login</Typography.Text> */}
+              <Typography.Text
+                className="block mt-[8px] font-normal"
+                type="secondary"
+              >
+                Please enter your info.
+              </Typography.Text>
+            </div>
+          }
+        >
           <Space direction="vertical" size={16}>
+            <Input
+              style={{ width: 300, textAlign: "center" }}
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="Phone Number"
+            />
             <Input
               style={{ width: 300, textAlign: "center" }}
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="Serial Number"
             />
+            <Divider style={{ margin: 0 }} />
             <Button
-              disabled={!key || key.length < 8}
+              disabled={!key || key.length < 8 || !isValidPhoneNumber(phone)}
               loading={loading}
               type="primary"
               block
-              onClick={login}
+              onClick={getClient}
             >
               Login
             </Button>
