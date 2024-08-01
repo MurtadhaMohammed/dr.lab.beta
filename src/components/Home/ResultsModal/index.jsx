@@ -14,6 +14,7 @@ import "./style.css";
 import { useAppStore, useHomeStore } from "../../../appStore";
 import { send } from "../../../control/renderer";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 
 export const parseTests = (record) => {
