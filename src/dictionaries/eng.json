@@ -112,5 +112,6 @@
     "TestItem": "TestItem",
     "IsSelect": "Is Select ?",
     "NewOption": "NewOption",
-    "Print": "Print"
+    "Print": "Print",
+    "SerialKeyWilBeExpiredSoon":"Serial key wil be expired soon"
 }

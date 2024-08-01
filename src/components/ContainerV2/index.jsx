@@ -174,7 +174,7 @@ const MainContainerV2 = ({ children }) => {
             width: "100%",
           }}
         >
-           <Alert className="sticky top-0 z-10" message="Serial key will be expired soon" banner closable />
+          <Alert className="sticky top-0 z-10" message={t("SerialKeyWilBeExpiredSoon")} banner closable />
           {children}
         </Content>
       </Layout>

@@ -116,5 +116,7 @@
     "TestItem": "عنصر الاختبار",
     "IsSelect": "هل تم التحديد؟",
     "NewOption": "خيار جديد",
-    "Print":"طباعة"
+    "Print":"طباعة",
+    "SerialKeyWilBeExpiredSoon": "ستنتهي صلاحية المفتاح قريبًا"
+
 }
