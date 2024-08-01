@@ -81,7 +81,7 @@ export const PureTable = ({ isReport = false }) => {
   };
   const statusColor = {
     PENDING: "orange",
-   COMPLETED: "green",
+    COMPLETED: "green",
   };
 
 
