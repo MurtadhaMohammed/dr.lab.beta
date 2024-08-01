@@ -131,7 +131,6 @@ const MainContainerV2 = ({ children }) => {
           {children}
         </Content>
       </Layout>
-    </div>
   );
 };
 
