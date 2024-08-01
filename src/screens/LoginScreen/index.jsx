@@ -128,7 +128,7 @@ const LoginScreen = () => {
     try {
       const resp = await fetch(
         // "http://localhost:3000/api/client/register",
-        "https://dr-lab-apiv2.onrender.com/api/client/add-client",
+        "https://dr-lab-apiv2.onrender.com/api/client/register",
         {
           method: "POST",
           headers: {
