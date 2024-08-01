@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import { UserOutlined } from "@ant-design/icons";
 import { send } from "../../control/renderer";
 import isValidPhoneNumber from "../../helper/phoneValidation";
+import background from "../../assets/login.svg";
 
 const LoginScreen = () => {
   const [key, setKey] = useState(null);
@@ -126,8 +127,8 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const resp = await fetch(
-        //"http://localhost:3000/api/client/register",
-        "https://dr-lab-apiv2.onrender.com/api/client/register",
+        // "http://localhost:3000/api/client/register",
+        "https://dr-lab-apiv2.onrender.com/api/client/add-client",
         {
           method: "POST",
           headers: {
@@ -164,7 +165,15 @@ const LoginScreen = () => {
   };
 
   return (
-    <div className="login-screen">
+    <div
+      className="h-screen flex items-center justify-center bg-gradient-to-r from-violet-600 to-[#0000ff]"
+      style={{
+        backgroundImage: `url(${background})`,
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
       {isForm ? (
         <Card className="w-[400px]" title="Add Your Info">
           <Form
@@ -217,11 +226,15 @@ const LoginScreen = () => {
         </Card>
       ) : (
         <Card
+          className=" -mt-[80px]"
           styles={{
             header: {
               padding: 0,
               overflow: "hidden",
             },
+            body:{
+              padding: 32
+            }
           }}
           title={
             <div className="text-center py-6 relative">
@@ -229,10 +242,16 @@ const LoginScreen = () => {
                 class="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
               ></div>
-              <Avatar size={"large"} icon={<UserOutlined />} />
+              <Avatar className="w-[80px] h-[80px]" icon={<UserOutlined  className="text-[30px]"/>} />
               {/* <Typography.Text className="block text-[22px]">Login</Typography.Text> */}
               <Typography.Text
-                className="block mt-[8px] font-normal"
+                className="block mt-[8px]  text-[18px] font-bold"
+                
+              >
+               Login.
+              </Typography.Text>
+              <Typography.Text
+                className="block  font-normal"
                 type="secondary"
               >
                 Please enter your info.
@@ -242,12 +261,14 @@ const LoginScreen = () => {
         >
           <Space direction="vertical" size={16}>
             <Input
+             size="large"
               style={{ width: 300, textAlign: "center" }}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Phone Number"
             />
             <Input
+             size="large"
               style={{ width: 300, textAlign: "center" }}
               value={key}
               onChange={(e) => setKey(e.target.value)}
@@ -259,6 +280,7 @@ const LoginScreen = () => {
               loading={loading}
               type="primary"
               block
+              size="large"
               onClick={getClient}
             >
               Login
