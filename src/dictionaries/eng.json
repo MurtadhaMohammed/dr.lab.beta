@@ -116,6 +116,10 @@
     "Print": "Print",
     "SerialKeyWilBeExpiredSoon":"Serial key wil be expired soon",
     "HasNoEmail":"Has no email!.",
-    "HasNoPhone":"Has no phone"
+    "HasNoPhone":"Has no phone",
+    "Days": "days",
+  "Loading": "Loading...",
+  "RemainingDaysInLabAccount": "Remaining Days in Lab Account"
+
 
 }

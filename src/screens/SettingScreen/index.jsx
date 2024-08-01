@@ -22,12 +22,14 @@ import { send } from "../../control/renderer";
 import { useAppStore } from "../../appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
+import dayjs from "dayjs";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
+  const [remainingDays, setRemainingDays] = useState(null);
   const [language, setLanguage] = useState("en");
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
@@ -82,6 +84,24 @@ const SettingsScreen = () => {
       setSignoutLoading(false);
     }
   };
+
+  useEffect(() => {
+    calculateRemainingDays();
+  }, []);
+
+  const calculateRemainingDays = () => {
+    const labCreated = localStorage.getItem("lab-created");
+    const labExp = parseInt(localStorage.getItem("lab-exp"));
+
+    if (labCreated && labExp) {
+      const createdDate = dayjs(labCreated);
+      const today = dayjs();
+      const dayPassed = today.diff(createdDate, "day");
+      const remaining = labExp - dayPassed;
+      setRemainingDays(remaining > 0 ? remaining : 0)
+
+    }
+  }
 
   const handleSizeChange = (val) => {
     localStorage.setItem("lab-print-size", val);
@@ -155,11 +175,11 @@ const SettingsScreen = () => {
     setLanguage(newLanguage);
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
   };
-  
+
 
   return (
     <div className="settings-page pb-[60px] page">
-     <div className="border-none  p-[2%]">
+      <div className="border-none  p-[2%]">
         <section className="flex items-center justify-between w-full mb-[34px]">
           <div className="flex items-center gap-4">
             <Avatar size={"large"} icon={<UserOutlined />} />
@@ -302,6 +322,15 @@ const SettingsScreen = () => {
           <div>
             <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
             <Card className="mt-[6px]">
+              <div>
+                <p className="pl-[4px] opacity-60">{t("LabAccount")}</p>
+               
+                  <div className="flex justify-between items-center">
+                    <b className="text-[14px]">{t("RemainingDaysInLabAccount")}</b>
+                    <span>{remainingDays !== null ? `${remainingDays} ${t("Days")}` : t("Loading")}</span>
+                  </div>
+           
+              </div>
               <b className="text-[14px]">{t("CurrentPlan")}</b>
               <div className="rounded-[4px] bg-[#F6F6F6] px-[8px] py-[4px] mt-[6px]">
                 {t("FreeTrail")} -{" "}

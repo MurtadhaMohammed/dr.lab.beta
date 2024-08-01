@@ -65,8 +65,6 @@ function App() {
     checkExpire();
   }, [isLogin]);
 
-  // const direction = i18n.language === "ar" ? "rtl" : "ltr";
-
   const direction = i18n.language === "ar" ? "rtl" : "ltr";
 
   useEffect(() => {
