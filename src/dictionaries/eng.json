@@ -18,6 +18,7 @@
     "FreeTrail": "Free Trail",
     "CurrentPlan": "Current Plan",
     "expierd": "Will expired in 5 days.",
+    
     "Medium": "Medium",
     "Small": "Small",
     "Large": "Large",
@@ -113,5 +114,8 @@
     "IsSelect": "Is Select ?",
     "NewOption": "NewOption",
     "Print": "Print",
-    "SerialKeyWilBeExpiredSoon":"Serial key wil be expired soon"
+    "SerialKeyWilBeExpiredSoon":"Serial key wil be expired soon",
+    "HasNoEmail":"Has no email!.",
+    "HasNoPhone":"Has no phone"
+
 }

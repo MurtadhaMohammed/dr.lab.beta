@@ -39,10 +39,7 @@ import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
 
 var dbx = new Dropbox({ accessToken: ACCESS_TOKEN_DBX });
-const statusColor = {
-  PENDING: "orange",
-  COMPLETED: "green",
-};
+
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload, printFontSize } = useAppStore();
@@ -82,6 +79,11 @@ export const PureTable = ({ isReport = false }) => {
     const result = regex.exec(phone);
     return result;
   };
+  const statusColor = {
+    PENDING: "orange",
+   COMPLETED: "green",
+  };
+
 
   const getUrlFromDBX = async (path) => {
     try {

@@ -149,12 +149,6 @@ const SettingsScreen = () => {
     });
   };
 
-  // const handleLang = (checked) => {
-  //   const newLanguage = checked ? "ar" : "en";
-  //   i18n.changeLanguage(newLanguage);
-  //   setLanguage(newLanguage);
-  // };
-
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
     i18n.changeLanguage(newLanguage);

@@ -182,7 +182,7 @@ export const PureModal = () => {
                     <Radio value={"male"}> {t("Male")}</Radio>
                   </Card>
                   <Card hoverable bodyStyle={{ padding: 8 }}>
-                    <Radio value={"female"}>{("Female")}</Radio>
+                    <Radio value={"female"}>{t("Female")}</Radio>
                   </Card>
                 </Space>
               </Radio.Group>

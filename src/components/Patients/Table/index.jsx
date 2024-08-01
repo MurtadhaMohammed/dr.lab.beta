@@ -81,7 +81,7 @@ export const PureTable = () => {
         text ? (
           <span style={{ color: "#666" }}>{text}</span>
         ) : (
-          <span style={{ color: "#c6c6c6" }}>Has no email !.</span>
+          <span style={{ color: "#c6c6c6" }}>{t("HasNoEmail")}</span>
         ),
     },
     {
@@ -92,7 +92,7 @@ export const PureTable = () => {
         text ? (
           <span style={{ color: "#666" }}>{text}</span>
         ) : (
-          <span style={{ color: "#c6c6c6" }}>Has no phone !.</span>
+          <span style={{ color: "#c6c6c6" }}>{t("HasNoPhone")}</span>
         ),
     },
     {
