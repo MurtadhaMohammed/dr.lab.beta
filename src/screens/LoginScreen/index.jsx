@@ -88,7 +88,7 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const resp = await fetch(
-        //"http://localhost:3000/api/client/check-client",
+       
         "https://dr-lab-apiv2.onrender.com/api/client/check-client",
         {
           method: "POST",

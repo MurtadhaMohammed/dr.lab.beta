@@ -324,12 +324,12 @@ const SettingsScreen = () => {
             <Card className="mt-[6px]">
               <div>
                 <p className="pl-[4px] opacity-60">{t("LabAccount")}</p>
-               
-                  <div className="flex justify-between items-center">
-                    <b className="text-[14px]">{t("RemainingDaysInLabAccount")}</b>
-                    <span>{remainingDays !== null ? `${remainingDays} ${t("Days")}` : t("Loading")}</span>
-                  </div>
-           
+
+                <div className="flex justify-between items-center">
+                  <b className="text-[14px]">{t("RemainingDaysInLabAccount")}</b>
+                  <span>{remainingDays !== null ? `${remainingDays} ${t("Days")}` : t("Loading")}</span>
+                </div>
+
               </div>
               <b className="text-[14px]">{t("CurrentPlan")}</b>
               <div className="rounded-[4px] bg-[#F6F6F6] px-[8px] py-[4px] mt-[6px]">
