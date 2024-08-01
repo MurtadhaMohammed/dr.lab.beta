@@ -15,6 +15,7 @@ import MainContainerV2 from "./components/ContainerV2";
 import { useAppStore } from "./appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "./i18n";
+import TiteBar from "./components/TitleBar/titleBar";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -84,6 +85,7 @@ function App() {
         },
       }}
     >
+      <TiteBar/>
       {!isLogin && <LoginScreen />}
       {isLogin && (
         <>
