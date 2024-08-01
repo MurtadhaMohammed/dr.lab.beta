@@ -75,7 +75,7 @@ const HomeScreen = () => {
                   onClick={(e) => e.preventDefault()}
                 >
                   <Space align="center">
-                    <b>{isToday ? "Today" : "All"}</b>
+                    <b>{isToday ? t("Today") : t("All")}</b>
                     <DownOutlined style={{ fontSize: 13 }} />
                   </Space>
                 </a>
