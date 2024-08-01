@@ -13,6 +13,7 @@ import "./style.css";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import { getPrice, getTotalPrice } from "../../../helper/price";
+import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
@@ -21,32 +22,12 @@ const testLabel = {
   PACKAGE: "Package",
 };
 
-// const getPrice = (type, record) => {
-//   let totalPrice = 0;
-//   if (type === "CUSTOME") {
-//     totalPrice = record.price;
-//   } else if (type === "PACKAGE" && record.customePrice) {
-//     totalPrice = record.customePrice;
-//   } else if (type === "PACKAGE" && !record.customePrice) {
-//     totalPrice = record?.tests
-//       ?.map((el) => el?.price)
-//       ?.reduce((a, b) => a + b, 0);
-//   }
-
-//   return totalPrice || 0;
-// };
-
-// const getTotalPrice = (type, tests) => {
-//   let totalPrice = tests
-//     .map((el) => getPrice(type, el))
-//     ?.reduce((a, b) => a + b, 0);
-//   return totalPrice || 0;
-// };
 
 const TestForm = () => {
   const { testType, isModal, setTests, tests, discount, setDiscount } = useHomeStore();
   const [testsList, setTestList] = useState([]);
   const [packageList, setPackageList] = useState([]);
+  const { t } = useTranslation();
 
   const getTests = (querySearch = "") => {
     send({
@@ -114,7 +95,7 @@ const TestForm = () => {
           (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
         }
         options={
-          testType === "CUSTOME"
+          testType ===  "CUSTOME"
             ? testsList?.map((el) => {
               return {
                 label: el?.name,
@@ -142,7 +123,7 @@ const TestForm = () => {
                 type="text"
                 icon={<DeleteOutlined />}
               />
-              <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
+              <Text>{testType ===  "CUSTOME"? el?.name : el?.title}</Text>
             </Space>
             <Text type="secondary">
               {Number(getPrice(testType, el)).toLocaleString("en")} IQD
@@ -153,7 +134,7 @@ const TestForm = () => {
       <div className="test-form-footer">
         <div className="overlay-top"></div>
         <div className="app-flex-space">
-          <Text type="secondary">Menual discount (Optional) </Text>
+          <Text type="secondary">{t("MenualDiscount")} {t("Optional")} </Text>
           <InputNumber
             value={discount}
             onChange={setDiscount}
@@ -164,7 +145,7 @@ const TestForm = () => {
         <Divider />
         <div className="total-values">
           <div className="app-flex-space">
-            <Text type="secondary">Total Price </Text>
+            <Text type="secondary">{t("TotalPrice")} </Text>
             <Text
               style={
                 discount
@@ -182,7 +163,7 @@ const TestForm = () => {
           </div>
           {discount && (
             <div className="app-flex-space">
-              <Text type="secondary">Final Price </Text>
+              <Text type="secondary">{t("FinalPrice")}</Text>
               <Text style={{ fontSize: 18 }}>
                 <b>
                   {Number(getTotalPrice(testType, tests) - discount).toLocaleString("en")} IQD

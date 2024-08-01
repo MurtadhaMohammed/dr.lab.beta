@@ -4,7 +4,6 @@ import dayjs from "dayjs";
 import { useReportsStore } from "../../../appStore";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
-import { useTransition } from "react";
 
 export const getTotalVisits = (filterDate = null, cb) => {
   send({

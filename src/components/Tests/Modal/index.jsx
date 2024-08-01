@@ -18,6 +18,7 @@ import { send } from "../../../control/renderer";
 import "./style.css";
 import { useEffect, useRef, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
+import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
@@ -43,6 +44,7 @@ export const PureModal = () => {
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const { token } = theme.useToken();
+  const { t } = useTranslation();
 
   const inputRef = useRef(null);
   const editInputRef = useRef(null);
@@ -135,7 +137,7 @@ export const PureModal = () => {
 
   return (
     <Modal
-      title={`${id ? "Edit" : "Create"} Test Item`}
+      title={`${id ? t("Edit") : t("Create")} ${t("TestItem")}`}
       open={isModal}
       width={400}
       onCancel={() => {
@@ -148,14 +150,14 @@ export const PureModal = () => {
               setIsModal(false);
             }}
           >
-            Close
+            {t("Close")}
           </Button>
           <Button
             disabled={!name || price === "" || price === null}
             type="primary"
             onClick={handleSubmit}
           >
-            Save
+            {t("Save")}
           </Button>
         </Space>
       }
@@ -165,7 +167,7 @@ export const PureModal = () => {
         <Row gutter={[16, 16]}>
           <Col span={14}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>Test Name</Text>
+              <Text>{t("TestName")}</Text>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -175,7 +177,7 @@ export const PureModal = () => {
           </Col>
           <Col span={10}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>Price</Text>
+              <Text>{t("Price")}</Text>
               <InputNumber
                 value={price}
                 onChange={(val) => setPrice(val)}
@@ -186,7 +188,7 @@ export const PureModal = () => {
           </Col>
           <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>Normal Value</Text>
+              <Text>{t("NormalValue")}</Text>
               <Input.TextArea
                 value={normal}
                 onChange={(e) => setNormal(e.target.value)}
@@ -202,7 +204,7 @@ export const PureModal = () => {
                 checked={isSelecte}
                 onChange={(e) => setIsSelecte(e.target.checked)}
               >
-                Is Select ?
+               {t("IsSelect")}
               </Checkbox>
             </Space>
           </Col>
@@ -232,7 +234,7 @@ export const PureModal = () => {
                   />
                 ) : (
                   <Tag style={tagPlusStyle} onClick={showInput}>
-                    <PlusOutlined /> New Option
+                    <PlusOutlined /> {t("NewOption")}
                   </Tag>
                 )}
               </Space>

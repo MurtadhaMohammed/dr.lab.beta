@@ -12,6 +12,7 @@ import { motion } from "framer-motion";
 import { HiMiniXMark, HiMinusSmall } from "react-icons/hi2";
 import { MdOutlineFullscreenExit } from "react-icons/md";
 
+import { useTranslation } from "react-i18next";
 import logo1 from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -23,7 +24,7 @@ const MainContainerV2 = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { t } = useTranslation();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -106,37 +107,37 @@ const MainContainerV2 = ({ children }) => {
                   {
                     key: "/",
                     icon: <HiOutlineHome size={20} />,
-                    label: <p className="text-[15px]">Home</p>,
+                    label: <p className="text-[15px]">{t("Home")}</p>,
                     onClick: () => navigate("/", { replace: true }),
                   },
                   {
                     key: "/patients",
                     icon: <MdOutlinePersonalInjury size={20} />,
-                    label: <p className="text-[15px]">Patients</p>,
+                    label: <p className="text-[15px]">{t("Patients")}</p>,
                     onClick: () => navigate("/patients", { replace: true }),
                   },
                   {
                     key: "/tests",
                     icon: <GrDocumentTest size={16} />,
-                    label: <p className="text-[15px]">Tests</p>,
+                    label: <p className="text-[15px]">{t("Tests")}</p>,
                     onClick: () => navigate("/tests", { replace: true }),
                   },
                   {
                     key: "/package",
                     icon: <LuPackage2 size={18} />,
-                    label: <p className="text-[15px]">Package</p>,
+                    label: <p className="text-[15px]">{t("Package")}</p>,
                     onClick: () => navigate("/groups", { replace: true }),
                   },
                   {
                     key: "/reports",
                     icon: <TbReportSearch size={20} />,
-                    label: <p className="text-[15px]">Reports</p>,
+                    label: <p className="text-[15px]">{t("Reports")}</p>,
                     onClick: () => navigate("/reports", { replace: true }),
                   },
                   {
                     key: "/settings",
                     icon: <LuSettings2 size={19} />,
-                    label: <p className="text-[15px]">Settings</p>,
+                    label: <p className="text-[15px]">{t("Settings")}</p>,
                     onClick: () => navigate("/settings", { replace: true }),
                   },
                 ]}

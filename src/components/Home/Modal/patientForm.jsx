@@ -15,6 +15,7 @@ import { useHomeStore } from "../../../appStore";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
@@ -37,6 +38,7 @@ const PatientForm = () => {
   } = useHomeStore();
   const [patientsList, setPatientsList] = useState([]);
   const [selected, setSelected] = useState(null);
+  const { t } = useTranslation();
 
   const getPtients = (querySearch = "") => {
     send({
@@ -79,7 +81,7 @@ const PatientForm = () => {
       <Select
         showSearch
         disabled={id}
-        placeholder="Select Patient"
+        placeholder={t("SelectPatient")}
         optionFilterProp="children"
         style={{ width: "100%" }}
         onSearch={getPtients}
@@ -99,19 +101,19 @@ const PatientForm = () => {
       <Row gutter={[16, 16]}>
         <Col span={24}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
-            <Text>Patient Name</Text>
+            <Text>{t("PatientName")}</Text>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Ex: Ali Mohammed"
+              placeholder={t("ExName")}
             />
           </Space>
         </Col>
         <Col span={10}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
-            <Text>Birth Date</Text>
+            <Text>{t("BirthDate")}</Text>
             <DatePicker
-              picker="year"
+              picker={t("year")}
               value={birth}
               onChange={(val) => setBirth(val)}
               style={{ width: "100%" }}
@@ -121,7 +123,7 @@ const PatientForm = () => {
         <Col span={14}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>
-              Phone Number <Text type="secondary">(Optional)</Text>
+              {t("PhoneNumber")} <Text type="secondary">{t("Optional")}</Text>
             </Text>
             <Input
               value={phone}
@@ -134,7 +136,7 @@ const PatientForm = () => {
         <Col span={16}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>
-              Email <Text type="secondary">(Optional)</Text>
+              {t("Email")} <Text type="secondary">{t("Optional")}</Text>
             </Text>
             <Input
               value={email}
@@ -146,17 +148,17 @@ const PatientForm = () => {
         </Col>
         <Col span={24}>
           <Space style={{ width: "100%" }} direction="vertical" size={0}>
-            <Text>Gender</Text>
+            <Text>{t("Gender")}</Text>
             <Radio.Group
               value={gender}
               onChange={(e) => setGender(e.target.value)}
             >
               <Space>
                 <Card hoverable bodyStyle={{ padding: 8 }}>
-                  <Radio value={"male"}> Male</Radio>
+                  <Radio value={"male"}>{t("Male")}</Radio>
                 </Card>
                 <Card hoverable bodyStyle={{ padding: 8 }}>
-                  <Radio value={"female"}>Female</Radio>
+                  <Radio value={"female"}>{t("Female")}</Radio>
                 </Card>
               </Space>
             </Radio.Group>

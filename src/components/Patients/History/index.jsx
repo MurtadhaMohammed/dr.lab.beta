@@ -5,15 +5,19 @@ import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import { getTotalPrice } from "../../../helper/price";
 import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
 
-const statusColor = {
-  PENDING: "orange",
-  COMPLETED: "green",
-};
 
 export const PatientHistory = () => {
   const { id, isHistory, setIsHistory, setReset } = usePatientStore();
   const [data, setData] = useState([]);
+  const { t } = useTranslation();
+
+
+  const statusColor = {
+    [t("PENDING")]: "orange",
+    [t("COMPLETED")]: "green",
+  };
 
   useEffect(() => {
     if (!id) return;
@@ -28,7 +32,7 @@ export const PatientHistory = () => {
 
   const columns = [
     {
-      title: "Tests",
+      title: t("Tests"),
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
@@ -47,7 +51,7 @@ export const PatientHistory = () => {
       },
     },
     {
-      title: "Price",
+      title: t("Price"),
       dataIndex: "id",
       key: "id",
       render: (_, record) => (
@@ -69,7 +73,7 @@ export const PatientHistory = () => {
       ),
     },
     {
-      title: "End Price",
+      title: t("EndPrice"),
       dataIndex: "id",
       key: "id",
       render: (_, record) => (
@@ -82,7 +86,7 @@ export const PatientHistory = () => {
       ),
     },
     {
-      title: "Discount",
+      title: t("Discount"),
       dataIndex: "discount",
       key: "discount",
       render: (_, record) =>
@@ -95,7 +99,7 @@ export const PatientHistory = () => {
         ),
     },
     {
-      title: "Visit Date",
+      title: t("VisitDate"),
       dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt) => (
@@ -110,8 +114,8 @@ export const PatientHistory = () => {
     <Modal
       title={
         data?.length > 0
-          ? `Patient history for ${data[0]?.patient?.name}`
-          : "Patient history"
+          ? `${("PatientHistoryFor")} ${data[0]?.patient?.name}`
+          : t("PatientHistory")
       }
       open={isHistory}
       width={800}

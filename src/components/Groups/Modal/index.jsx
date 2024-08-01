@@ -17,7 +17,7 @@ import { useAppStore, useGroupStore } from "../../../appStore";
 import "./style.css";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
-
+import { useTranslation } from "react-i18next";
 const { Text } = Typography;
 
 export const PureModal = () => {
@@ -36,6 +36,7 @@ export const PureModal = () => {
     setReset,
   } = useGroupStore();
   const [testsList, setTestsList] = useState([]);
+  const { t } = useTranslation();
 
   const getTests = (querySearch) => {
     let queryKey = new RegExp(querySearch, "gi");
@@ -102,38 +103,7 @@ export const PureModal = () => {
         message.error("Failed to communicate with server.");
       });
 
-
-      // send({
-      //   doc: "packages",
-      //   query: "update",
-      //   condition: { id: id },
-      //   data: { ...data, createdAt },
-      // }).then(({ err }) => {
-      //   if (err) message.error("Error !");
-      //   else {
-      //     message.success("Save Succefful.");
-      //     setReset();
-      //     setIsModal(false);
-      //     setIsReload(!isReload);
-      //   }
-      // });
-
     } else {
-      // send({
-      //   doc: "packages",
-      //   query: "insert",
-      //   data: { ...data, createdAt: Date.now() },
-      // }).then(({ err }) => {
-      //   if (err) message.error("Error !");
-      //   else {
-      //     message.success("Save Succefful.");
-      //     setReset();
-      //     setIsModal(false);
-      //     setIsReload(!isReload);
-      //   }
-      // });
-
-      // For adding a new package
       send({
         query: "addPackage",
         data: { ...data },
@@ -156,7 +126,7 @@ export const PureModal = () => {
 
   return (
     <Modal
-      title={`${id ? "Edit" : "Create"} New Package`}
+      title={`${id ? t("Edit") : t("Create")} ${t("NewPackage")}`}
       open={isModal}
       width={400}
       onCancel={() => {
@@ -169,14 +139,14 @@ export const PureModal = () => {
               setIsModal(false);
             }}
           >
-            Close
+            {t("Close")}
           </Button>
           <Button
             disabled={tests?.length === 0 || !title}
             onClick={handleSubmit}
             type="primary"
           >
-            Save
+            {t("Save")}
           </Button>
         </Space>
       }
@@ -186,7 +156,7 @@ export const PureModal = () => {
         <div className="test-form">
           <Select
             showSearch
-            placeholder="Select a test"
+            placeholder={t("SelectATest")}
             optionFilterProp="children"
             style={{ width: "100%" }}
             onSearch={getTests}
@@ -227,9 +197,9 @@ export const PureModal = () => {
             <Row gutter={[16, 16]}>
               <Col span={15}>
                 <Space style={{ width: "100%" }} direction="vertical" size={3}>
-                  <Text>Package title</Text>
+                  <Text>{t("Packagetitle")}</Text>
                   <Input
-                    placeholder="Ex: Lipid profile"
+                    placeholder={t("LipidProfile")}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                   />
@@ -237,9 +207,9 @@ export const PureModal = () => {
               </Col>
               <Col span={9}>
                 <Space direction="vertical" size={3}>
-                  <Tooltip title="Custome price on this package instead of total">
+                  <Tooltip title={t("CustomePackageInsteadOfTotal")}>
                     <Space size={3}>
-                      <Text>Custome Price</Text>
+                      <Text>{t("CustomePrice")}</Text>
                       <InfoCircleOutlined
                         style={{ color: "#ff0000", fontSize: 14 }}
                       />
@@ -258,7 +228,7 @@ export const PureModal = () => {
             <Divider />
             <div className="total-values">
               <div className="app-flex-space">
-                <Text type="secondary"> Total Price </Text>
+                <Text type="secondary"> {t("TotalPrice")} </Text>
                 <Text
                   style={
                     customePrice
@@ -279,9 +249,9 @@ export const PureModal = () => {
               </div>
               {customePrice && (
                 <div className="app-flex-space">
-                  <Text type="secondary">Final Price </Text>
+                  <Text type="secondary">{t("FinalPrice")} </Text>
                   <Text style={{ fontSize: 18 }}>
-                    <b>{Number(customePrice).toLocaleString("en")} IQD</b>
+                    <b>{Number(customePrice).toLocaleString("en")}  {t("IQD")}</b>
                   </Text>
                 </div>
               )}

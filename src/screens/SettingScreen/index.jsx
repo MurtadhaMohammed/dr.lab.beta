@@ -184,7 +184,7 @@ const SettingsScreen = () => {
 
           <Space size={28}>
             <Space>
-              <span className="m-0 p-0">System Language : </span>
+              <span className="m-0 p-0">{t("SystemLanguage")} </span>
               <Switch
                 className="switchBtn"
                 checkedChildren="عربي"
