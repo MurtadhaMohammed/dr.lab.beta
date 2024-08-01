@@ -1,8 +1,8 @@
 import "./style.css";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
-import { Button, Divider, Layout, Menu, Space, theme } from "antd";
 import { useState } from "react";
+import { Alert, Button, Divider, Layout, Menu, Space, theme } from "antd";
 import { TbReportSearch } from "react-icons/tb";
 import { GrDocumentTest } from "react-icons/gr";
 import { LuPackage2, LuSettings2 } from "react-icons/lu";
@@ -76,9 +76,12 @@ const MainContainerV2 = ({ children }) => {
           collapsed={collapsed}
           width={164}
         >
-          <div className="flex flex-col justify-between" style={{
-            height: "calc(100% - 40px)"
-          }}>
+          <div
+            className="flex flex-col justify-between"
+            style={{
+              height: "calc(100% - 40px)",
+            }}
+          >
             <div>
               <div className="mt-[30px] font-bold text-[18px] flex justify-center mb-[30px]">
                 <motion.div
@@ -170,6 +173,7 @@ const MainContainerV2 = ({ children }) => {
             width: "100%",
           }}
         >
+           <Alert className="sticky top-0 z-10" message="Serial key will be expired soon" banner closable />
           {children}
         </Content>
       </Layout>

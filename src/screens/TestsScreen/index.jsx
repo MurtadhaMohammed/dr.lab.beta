@@ -11,7 +11,7 @@ const TestsScreen = () => {
   const { t } = useTranslation();
   return (
     <div className="tests-screen page">
-      <div className="border-none h-screen p-[2%]">
+      <div className="border-none  p-[2%]">
         <section className="header app-flex-space">
           <Search
             placeholder={t("SearchTest")}

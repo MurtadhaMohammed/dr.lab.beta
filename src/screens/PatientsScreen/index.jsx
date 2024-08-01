@@ -15,7 +15,7 @@ const PatientsScreen = () => {
   const { t } = useTranslation();
   return (
     <div className="patients-screen page">
-     <div className="border-none h-screen p-[2%]">
+     <div className="border-none  p-[2%]">
         <section className="header app-flex-space mb-[18px]">
           <Space size={16}>
             <Search
