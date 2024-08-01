@@ -101,19 +101,6 @@ const SettingsScreen = () => {
     else setIsUpdate(false);
   };
 
-  // async function loadImage() {
-  //   try {
-  //     // Dynamically import the image
-  //     const headImageModule = await import("/head.png");
-  //     const imgURL = headImageModule.default || headImageModule;
-  //     setImagePath(imgURL);
-
-  //     console.log("Image loaded successfully:", imgURL);
-  //   } catch (err) {
-  //     console.error("Failed to load image:", err);
-  //   }
-  // }
-
   const handleChangeFile = async () => {
     fileDialog().then(async (file) => {
       send({
