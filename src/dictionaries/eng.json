@@ -18,7 +18,6 @@
     "FreeTrail": "Free Trail",
     "CurrentPlan": "Current Plan",
     "expierd": "Will expired in 5 days.",
-    
     "Medium": "Medium",
     "Small": "Small",
     "Large": "Large",
@@ -114,8 +113,10 @@
     "IsSelect": "Is Select ?",
     "NewOption": "NewOption",
     "Print": "Print",
-    "SerialKeyWilBeExpiredSoon":"Serial key wil be expired soon",
-    "HasNoEmail":"Has no email!.",
-    "HasNoPhone":"Has no phone"
-
+    "SerialKeyWilBeExpiredSoon": "Serial key wil be expired soon",
+    "HasNoEmail": "Has no email!.",
+    "HasNoPhone": "Has no phone",
+    "Days": "days",
+    "Loading": "Loading...",
+    "RemainingDaysInLabAccount": "Remaining Days in Lab Account"
 }

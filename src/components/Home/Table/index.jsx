@@ -334,6 +334,7 @@ export const PureTable = ({ isReport = false }) => {
       }),
     },
   ];
+//commit
 
   const handleResults = (record) => {
     setRecord(record);

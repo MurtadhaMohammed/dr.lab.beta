@@ -49,8 +49,8 @@ const HomeScreen = () => {
 
   return (
     <div className="home-screen page">
-      <div className="border-none  p-[2%]">
-        <section className="header app-flex-space mb-[18px]">
+      <div className="border-none p-[2%]">
+        <section className="header app-flex-space mb-[22px]">
           <Space size={16}>
             <Search
               placeholder={t("SearchPatient")}
@@ -75,7 +75,7 @@ const HomeScreen = () => {
                   onClick={(e) => e.preventDefault()}
                 >
                   <Space align="center">
-                    <b>{isToday ? "Today" : "All"}</b>
+                    <b>{isToday ? t("Today") : t("All")}</b>
                     <DownOutlined style={{ fontSize: 13 }} />
                   </Space>
                 </a>
