@@ -16,7 +16,7 @@ import {
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
-import { useAppStore, usePatientStore } from "../../../appStore";
+import { useAppStore, usePatientStore } from "../../../libs/appStore";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
@@ -81,7 +81,7 @@ export const PureTable = () => {
         text ? (
           <span style={{ color: "#666" }}>{text}</span>
         ) : (
-          <span style={{ color: "#c6c6c6" }}>Has no email !.</span>
+          <span style={{ color: "#c6c6c6" }}>{t("HasNoEmail")}</span>
         ),
     },
     {
@@ -92,7 +92,7 @@ export const PureTable = () => {
         text ? (
           <span style={{ color: "#666" }}>{text}</span>
         ) : (
-          <span style={{ color: "#c6c6c6" }}>Has no phone !.</span>
+          <span style={{ color: "#c6c6c6" }}>{t("HasNoPhone")}</span>
         ),
     },
     {

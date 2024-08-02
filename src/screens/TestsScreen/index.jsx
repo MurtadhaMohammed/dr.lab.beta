@@ -1,7 +1,7 @@
 import { Button, Card, Divider, Input, Space } from "antd";
 import "./style.css";
 import { PureModal, PureTable } from "../../components/Tests";
-import { useTestStore } from "../../appStore";
+import { useTestStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 
 const { Search } = Input;

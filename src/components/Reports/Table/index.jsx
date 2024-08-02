@@ -1,7 +1,7 @@
 import { Table, Tag, Typography, message } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
-import { useReportsStore } from "../../../appStore";
+import { useReportsStore } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
 

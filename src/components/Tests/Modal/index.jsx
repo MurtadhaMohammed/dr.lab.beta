@@ -13,7 +13,7 @@ import {
   message,
   theme,
 } from "antd";
-import { useAppStore, useTestStore } from "../../../appStore";
+import { useAppStore, useTestStore } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
 import "./style.css";
 import { useEffect, useRef, useState } from "react";

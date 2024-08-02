@@ -1,6 +1,6 @@
 import { Modal, Space, Table, Tag, message } from "antd";
 import "./style.css";
-import { usePatientStore } from "../../../appStore";
+import { usePatientStore } from "../../../libs/appStore";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import { getTotalPrice } from "../../../helper/price";

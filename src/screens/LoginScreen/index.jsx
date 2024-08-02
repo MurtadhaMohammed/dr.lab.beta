@@ -11,12 +11,12 @@ import {
 } from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
-import { useAppStore } from "../../appStore";
-import dayjs from "dayjs";
+import { useAppStore } from "../../libs/appStore";
 import { UserOutlined } from "@ant-design/icons";
 import { send } from "../../control/renderer";
 import isValidPhoneNumber from "../../helper/phoneValidation";
 import background from "../../assets/login.svg";
+import { apiCall } from "../../libs/api";
 
 const LoginScreen = () => {
   const [key, setKey] = useState(null);
@@ -47,60 +47,18 @@ const LoginScreen = () => {
     return "Unknown";
   };
 
-  const login = async () => {
-    setLoading(true);
-    try {
-      const resp = await fetch(
-        "https://dr-lab-apiv2.onrender.com/api/client/register-device",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            serial: key,
-            device: UUID,
-            platform: getPlatform(),
-          }),
-        }
-      );
-
-      if (resp.status === 200) {
-        let data = await resp.json();
-        setLoading(false);
-        localStorage.setItem("lab-exp", data.exp);
-        localStorage.setItem("lab-serial-id", data.id);
-        localStorage.setItem("lab-created", data.registeredAt);
-        if (!data?.client) setIsForm(true);
-        else {
-          localStorage.setItem("lab-user", JSON.stringify(data?.client));
-          setIsLogin(true);
-        }
-      } else message.error("Serial not found!");
-    } catch (error) {
-      console.log(error);
-      message.error(error.message);
-      setLoading(false);
-    }
-  };
-
   const getClient = async () => {
     setLoading(true);
     try {
-      const resp = await fetch(
-        //"http://localhost:3000/api/client/check-client",
-        "https://dr-lab-apiv2.onrender.com/api/client/check-client",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            phone,
-            serial: key,
-          }),
-        }
-      );
+      const resp = await apiCall({
+        method: "POST",
+        pathname: "/client/check-client",
+        isFormData: false,
+        data: {
+          phone,
+          serial: key,
+        },
+      });
 
       if (resp.status === 200) {
         let data = await resp.json();
@@ -126,23 +84,18 @@ const LoginScreen = () => {
   const register = async (values) => {
     setLoading(true);
     try {
-      const resp = await fetch(
-        // "http://localhost:3000/api/client/register",
-        "https://dr-lab-apiv2.onrender.com/api/client/register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            serial: key,
-            device: UUID,
-            platform: getPlatform(),
-            phone,
-            client: values || null,
-          }),
-        }
-      );
+      const resp = await apiCall({
+        method: "POST",
+        pathname: "/client/register",
+        isFormData: false,
+        data: {
+          serial: key,
+          device: UUID,
+          platform: getPlatform(),
+          phone,
+          client: values || null,
+        },
+      });
 
       if (resp.status === 200) {
         let data = await resp.json();
@@ -197,6 +150,18 @@ const LoginScreen = () => {
             >
               <Input placeholder="Ali M. Salim" />
             </Form.Item>
+            <Form.Item
+              label="Lab Name"
+              name="labName"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your Lab Name!",
+                },
+              ]}
+            >
+              <Input placeholder="Ali M. Salim" />
+            </Form.Item>
 
             <Form.Item
               label="Phone Number"
@@ -232,9 +197,9 @@ const LoginScreen = () => {
               padding: 0,
               overflow: "hidden",
             },
-            body:{
-              padding: 32
-            }
+            body: {
+              padding: 32,
+            },
           }}
           title={
             <div className="text-center py-6 relative">
@@ -242,18 +207,15 @@ const LoginScreen = () => {
                 class="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
               ></div>
-              <Avatar className="w-[80px] h-[80px]" icon={<UserOutlined  className="text-[30px]"/>} />
+              <Avatar
+                className="w-[80px] h-[80px]"
+                icon={<UserOutlined className="text-[30px]" />}
+              />
               {/* <Typography.Text className="block text-[22px]">Login</Typography.Text> */}
-              <Typography.Text
-                className="block mt-[8px]  text-[18px] font-bold"
-                
-              >
-               Login.
+              <Typography.Text className="block mt-[8px]  text-[18px] font-bold">
+                Login.
               </Typography.Text>
-              <Typography.Text
-                className="block  font-normal"
-                type="secondary"
-              >
+              <Typography.Text className="block  font-normal" type="secondary">
                 Please enter your info.
               </Typography.Text>
             </div>
@@ -261,14 +223,14 @@ const LoginScreen = () => {
         >
           <Space direction="vertical" size={16}>
             <Input
-             size="large"
+              size="large"
               style={{ width: 300, textAlign: "center" }}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="Phone Number"
             />
             <Input
-             size="large"
+              size="large"
               style={{ width: 300, textAlign: "center" }}
               value={key}
               onChange={(e) => setKey(e.target.value)}

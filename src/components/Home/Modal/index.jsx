@@ -1,5 +1,5 @@
 import { Button, Modal, Space, message } from "antd";
-import { useAppStore, useHomeStore } from "../../../appStore";
+import { useAppStore, useHomeStore } from "../../../libs/appStore";
 import "./style.css";
 import PureSteps from "../../Global/Steps";
 import { useState } from "react";

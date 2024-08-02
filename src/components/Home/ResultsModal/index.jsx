@@ -11,7 +11,7 @@ import {
   message,
 } from "antd";
 import "./style.css";
-import { useAppStore, useHomeStore } from "../../../appStore";
+import { useAppStore, useHomeStore } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
@@ -19,7 +19,7 @@ import { useTranslation } from "react-i18next";
 
 export const parseTests = (record) => {
   let tests = [];
-  if (record?.testType === t("CUSTOME")) {
+  if (record?.testType === "CUSTOME") {
     tests = [
       {
         title: "",
@@ -32,7 +32,7 @@ export const parseTests = (record) => {
         }),
       },
     ];
-  } else if (record?.testType === t("PACKAGE")) {
+  } else if (record?.testType === "PACKAGE") {
     tests = record.tests.map((group) => {
       return {
         title: group.title,
@@ -58,7 +58,7 @@ export const ResultsModal = () => {
 
   const handleChange = (val, row) => {
     let newRecord = [];
-    if (record?.testType === t("CUSTOME")) {
+    if (record?.testType === "CUSTOME") {
       newRecord = {
         ...record,
         tests: record?.tests.map((el) => {
@@ -66,7 +66,7 @@ export const ResultsModal = () => {
           return el;
         }),
       };
-    } else if (record?.testType === t("PACKAGE")) {
+    } else if (record?.testType === "PACKAGE") {
       newRecord = {
         ...record,
         tests: record?.tests?.map((group) => {

@@ -1,5 +1,5 @@
 import { Col, Row, Statistic, Typography } from "antd";
-import { useReportsStore } from "../../../appStore";
+import { useReportsStore } from "../../../libs/appStore";
 import { UserOutlined } from "@ant-design/icons";
 import { useTranslation } from "react-i18next";
 

@@ -19,7 +19,7 @@ import { UserOutlined } from "@ant-design/icons";
 // import headImage from "../../../image.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
-import { useAppStore } from "../../appStore";
+import { useAppStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 
@@ -153,7 +153,9 @@ const SettingsScreen = () => {
     const newLanguage = checked ? "ar" : "en";
     i18n.changeLanguage(newLanguage);
     setLanguage(newLanguage);
+    document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
   };
+  
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -175,7 +177,7 @@ const SettingsScreen = () => {
               <Switch
                 className="switchBtn"
                 checkedChildren="عربي"
-                unCheckedChildren="Eng"
+                unCheckedChildren="en"
                 checked={language === "ar"}
                 onChange={handleLang}
                 style={{ width: 60 }}
@@ -186,7 +188,7 @@ const SettingsScreen = () => {
               placement="rightBottom"
               onConfirm={signout}
               title={t("SignoutConfirm")}
-              description={t("SignOutFormThisApp?")}
+              description={t("SignOutFormThisApp")}
             >
               <Button loading={signoutLoading} danger>
                 {t("SignOut")}

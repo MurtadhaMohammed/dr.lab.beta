@@ -4,7 +4,6 @@ import {
   EditOutlined,
   DeleteOutlined,
   WhatsAppOutlined,
-  FileDoneOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,35 +16,25 @@ import {
   message,
   Popover,
   Input,
-  Card,
+  Checkbox,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
 import { getTotalPrice } from "../../../helper/price";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
-import { useAppStore, useHomeStore, useReportsStore } from "../../../appStore";
-import { parseTests } from "../ResultsModal";
-import { constructFileFromLocalFileData } from "get-file-object-from-local-path";
 import {
-  ACCESS_TOKEN_DBX,
-  sendMessage,
-  uploadFile,
-  uploadFileDbx,
-} from "../../../helper/whatsapp";
-import { Dropbox } from "dropbox";
-import { nanoid } from "nanoid";
+  useAppStore,
+  useHomeStore,
+  useReportsStore,
+} from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
-
-var dbx = new Dropbox({ accessToken: ACCESS_TOKEN_DBX });
-const statusColor = {
-  PENDING: "orange",
-  COMPLETED: "green",
-};
+import fileDialog from "file-dialog";
+import { apiCall } from "../../../libs/api";
 
 export const PureTable = ({ isReport = false }) => {
-  const { isReload, setIsReload, printFontSize } = useAppStore();
+  const { isReload, setIsReload } = useAppStore();
   const {
     setIsModal,
     setId,
@@ -71,7 +60,7 @@ export const PureTable = ({ isReport = false }) => {
   const [page, setPage] = useState(1);
   const [msgLoading, setMsgLoading] = useState(false);
   const [tempLoading, setTempLoading] = useState(false);
-  const [isSend, setIsSend] = useState(false);
+  const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
   const limit = usePageLimit();
   const { t } = useTranslation();
@@ -82,83 +71,60 @@ export const PureTable = ({ isReport = false }) => {
     const result = regex.exec(phone);
     return result;
   };
+  const statusColor = {
+    PENDING: "orange",
+    COMPLETED: "green",
+  };
 
-  const getUrlFromDBX = async (path) => {
+  const updatePatient = async (record, phone) => {
+    let data = { ...record, phone };
     try {
-      const response = await fetch(
-        "https://api.dropboxapi.com/2/sharing/create_shared_link_with_settings",
-        {
-          body: JSON.stringify({
-            path,
-            settings: {
-              access: "viewer",
-              allow_download: true,
-              audience: "public",
-              requested_visibility: "public",
-            },
-          }),
-          headers: {
-            Authorization: `Bearer ${ACCESS_TOKEN_DBX}`,
-            "Content-Type": "application/json",
-          },
-          method: "POST",
-        }
-      );
-      const data = await response.json();
-      if (data?.error) return { success: false, ...data };
-      else return { success: true, ...data };
+      const resp = await send({
+        query: "updatePatient",
+        id: data?.id,
+        data: { ...data },
+      });
+
+      if (resp.success) {
+        setIsReload(!isReload);
+      } else {
+        console.error("Error updating patient:", resp.error);
+      }
     } catch (error) {
-      return { success: false, ...error };
+      console.error("Error in IPC communication:", error);
     }
   };
 
-  const handleSandWhatsap = async (record, type) => {
+  const handleSandWhatsap = async (record) => {
+    if (destPhone !== record?.phone) await updatePatient(record, destPhone);
     let phone = destPhone;
     if (!phoneValidate(phone)) {
       message.error("رقم الهاتف غير صحيح!");
       return;
     } else if (phone[0] === "0") phone = phone.substr(1);
-    {
-      let data = {
-        patient: record.patient.name,
-        age: dayjs().diff(dayjs(record.patient.birth), "y"),
-        date: dayjs(record.createdAt).format("YYYY-MM-DD"),
-        tests: parseTests(record),
-        isHeader: true,
-        fontSize: printFontSize,
-      };
-      send({
-        query: "print",
-        isView: false,
-        data,
-      }).then(async ({ err, res, file }) => {
-        if (err) throw err;
-        if (type === "document") {
-          setMsgLoading(true);
-          const fileObject = constructFileFromLocalFileData(file);
 
-          let fileResp = await uploadFile(fileObject);
-          if (!fileResp?.success)
-            message.error("مشكلة في الارسال حاول مجددا !");
-          else {
-            let msgResp = await sendMessage(type, destPhone, fileResp?.id);
-            if (!msgResp.success)
-              message.error("مشكلة في الارسال حاول مجددا !");
-            else {
-              message.success("تم الارسال بنجاح");
-              setIsSend(true);
-            }
-          }
-          setMsgLoading(false);
-        } else if (type === "template") {
-          setTempLoading(true);
-          let msgResp = await sendMessage(type, destPhone);
-          if (!msgResp.success) message.error("مشكلة في الارسال حاول مجددا !");
-          else message.success("تم الارسال بنجاح");
-          setTempLoading(false);
-        }
+    fileDialog(async (files) => {
+      setMsgLoading(true);
+      const resp = await apiCall({
+        method: "POST",
+        pathname: "/send/whatsapp-message",
+        isFormData: true,
+        data: {
+          name: record?.patient?.name,
+          phone,
+          lab: JSON.parse(localStorage?.getItem("lab-user"))?.labName || "",
+          file: files[0],
+        },
       });
-    }
+      const data = await resp.json();
+      if (data?.messages && data?.messages[0]?.message_status === "accepted") {
+        message.success("Send Succefully.");
+        setMsgLoading(false);
+      } else {
+        setMsgLoading(false);
+        message.error("Error!");
+      }
+    });
   };
 
   const whatsapContnet = (record) => (
@@ -171,33 +137,25 @@ export const PureTable = ({ isReport = false }) => {
         value={destPhone}
         onChange={(e) => setDestPhone(e.target.value)}
       />
+
+      <Space className="mt-[12px]">
+        <Checkbox
+          checked={isConfirm}
+          onChange={(e) => setIsConfirm(e.target.checked)}
+        />
+        <span className="text-[14px]">Confirm Phone Number</span>
+      </Space>
+
       <Divider />
       <Button
-        loading={tempLoading}
-        disabled={!destPhone || !phoneValidate(destPhone) || msgLoading}
-        onClick={() => handleSandWhatsap(record, "template")}
-        block
-      >
-        Say Hello
-      </Button>
-      <Button
-        style={{ marginTop: 10 }}
         loading={msgLoading}
-        disabled={!destPhone || !phoneValidate(destPhone) || tempLoading}
-        onClick={() => handleSandWhatsap(record, "document")}
+        disabled={!isConfirm || !destPhone || !phoneValidate(destPhone)}
+        onClick={() => handleSandWhatsap(record)}
         type="primary"
         block
       >
-        Send Result
+        Send
       </Button>
-    </div>
-  );
-
-  const whatsapfinish = (
-    <div className="whatsap-finish">
-      <FileDoneOutlined style={{ fontSize: 60, color: "green" }} />
-      <b>ارسال ناجح</b>
-      <p>تم ارسال الرسالة بنجاح</p>
     </div>
   );
 
@@ -243,7 +201,11 @@ export const PureTable = ({ isReport = false }) => {
                     <Space wrap>
                       {list?.map((el) => (
                         <Tag key={el.id}>
-                          {el[testType === t("CUSTOME") ? t("name") : t("title")]}
+                          {
+                            el[
+                              testType === t("CUSTOME") ? t("name") : t("title")
+                            ]
+                          }
                         </Tag>
                       ))}
                     </Space>
@@ -266,10 +228,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -338,6 +300,19 @@ export const PureTable = ({ isReport = false }) => {
               {t("PrintResults")}
             </Button>
             <Divider type="vertical" />
+            <Popover
+              onOpenChange={(isOpen) => {
+                if (isOpen) setDestPhone(record?.patient?.phone);
+                else setIsConfirm(false);
+              }}
+              content={whatsapContnet(record)}
+            >
+              <Button
+                size="small"
+                icon={<WhatsAppOutlined WhatsAppOutlined />}
+                loading={msgLoading && record?.patient?.phone === destPhone}
+              ></Button>
+            </Popover>
             <Button
               size="small"
               disabled={record?.status === t("COMPLETED")}

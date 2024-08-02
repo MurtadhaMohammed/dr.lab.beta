@@ -13,7 +13,7 @@ import "./style.css";
 import dayjs from "dayjs";
 // import { getEndPrice } from "../../../helper/price";
 import { send } from "../../../control/renderer";
-import { useAppStore, useGroupStore } from "../../../appStore";
+import { useAppStore, useGroupStore } from "../../../libs/appStore";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";

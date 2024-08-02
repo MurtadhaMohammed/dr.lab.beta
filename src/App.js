@@ -12,7 +12,7 @@ import ReportsScreen from "./screens/ReportsScreen";
 import LoginScreen from "./screens/LoginScreen";
 import SettingsScreen from "./screens/SettingScreen";
 import MainContainerV2 from "./components/ContainerV2";
-import { useAppStore } from "./appStore";
+import { useAppStore } from "./libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "./i18n";
 import TiteBar from "./components/TitleBar/titleBar";
@@ -65,7 +65,13 @@ function App() {
     checkExpire();
   }, [isLogin]);
 
+  // const direction = i18n.language === "ar" ? "rtl" : "ltr";
+
   const direction = i18n.language === "ar" ? "rtl" : "ltr";
+
+  useEffect(() => {
+    document.documentElement.dir = direction;
+  }, [direction]);
 
   return (
     <ConfigProvider

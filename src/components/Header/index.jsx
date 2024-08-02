@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { UserOutlined, DownOutlined, LogoutOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, Space, Spin, message } from "antd";
 import { Link, useLocation } from "react-router-dom";
-import { useAppStore } from "../../appStore";
+import { useAppStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import MainContainer from "../Container";
 import "./style.css";

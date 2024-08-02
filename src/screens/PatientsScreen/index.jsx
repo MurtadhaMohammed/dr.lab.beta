@@ -6,7 +6,7 @@ import {
   PureModal,
   PureTable,
 } from "../../components/Patients";
-import { usePatientStore } from "../../appStore";
+import { usePatientStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 const { Search } = Input;
 

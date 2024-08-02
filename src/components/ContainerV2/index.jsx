@@ -109,7 +109,7 @@ const MainContainerV2 = ({ children }) => {
               className="border-t border-t-[#eee] h-[48px] flex items-center gap-2 text-[#eb2f96] justify-center text-[22px] transition-all active:opacity-40"
             >
               <IoMdLogOut />
-              {!collapsed && <p className="text-[15px]">Sign Out</p>}
+              {!collapsed && <p className="text-[15px]">{t("SignOut")}</p>}
             </button>
             <button
               onClick={() => setCollapsed(!collapsed)}
@@ -136,13 +136,14 @@ const MainContainerV2 = ({ children }) => {
       >
         <Alert
           className="sticky top-0 z-10"
-          message="Serial key will be expired soon"
+          message={t("SerialKeyWilBeExpiredSoon")}
           banner
           closable
         />
         {children}
       </Content>
     </Layout>
+
   );
 };
 

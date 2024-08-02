@@ -14,7 +14,7 @@ import "./style.css";
 import dayjs from "dayjs";
 import { send } from "../../../control/renderer";
 import { useEffect, useState } from "react";
-import { useAppStore, useTestStore } from "../../../appStore";
+import { useAppStore, useTestStore } from "../../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
 

@@ -3,7 +3,7 @@ import { Button, Card, Divider, Input, Space, Dropdown, message } from "antd";
 import "./style.css";
 import { PureTable, PureModal, ResultsModal } from "../../components/Home";
 
-import { useHomeStore } from "../../appStore";
+import { useHomeStore } from "../../libs/appStore";
 const { Search } = Input;
 
 import { useTranslation } from "react-i18next";

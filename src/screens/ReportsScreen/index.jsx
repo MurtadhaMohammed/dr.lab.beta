@@ -2,7 +2,7 @@ import { Button, Card, DatePicker, Divider, Space } from "antd";
 import "./style.css";
 import { PureTable } from "../../components/Reports";
 import { PureTable as HomeTable } from "../../components/Home";
-import { useAppStore, useReportsStore } from "../../appStore";
+import { useAppStore, useReportsStore } from "../../libs/appStore";
 import { getTotalVisits, getSubTotalAmount } from "../../components/Reports";
 import dayjs from "dayjs";
 import { send } from "../../control/renderer";

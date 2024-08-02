@@ -61,6 +61,9 @@ code {
 .table-footer p {
   color: #666;
 }
+.table-footer ul.ant-pagination {
+  z-index: 1;
+}
 
 .table-footer .ant-pagination-simple-pager input {
   padding: 0 !important;
@@ -150,13 +153,13 @@ th {
   }
 }
 
-
-.ant-table-footer{
+.ant-table-footer {
   position: relative;
   background-color: transparent !important;
 }
 
-#title-bar, #title-bar-title {
+#title-bar,
+#title-bar-title {
   -webkit-app-region: drag;
 }
 #title-bar-buttons button {

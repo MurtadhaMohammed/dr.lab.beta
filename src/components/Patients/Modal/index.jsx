@@ -12,7 +12,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { useAppStore, usePatientStore } from "../../../appStore";
+import { useAppStore, usePatientStore } from "../../../libs/appStore";
 import "./style.css";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
@@ -48,7 +48,7 @@ export const PureModal = () => {
       email,
       phone,
       birth: birth.toString(),
-      updatedAt: Date.now(),
+      // updatedAt: Date.now(),
     };
 
     if (id) {
@@ -182,7 +182,7 @@ export const PureModal = () => {
                     <Radio value={"male"}> {t("Male")}</Radio>
                   </Card>
                   <Card hoverable bodyStyle={{ padding: 8 }}>
-                    <Radio value={"female"}>{("Female")}</Radio>
+                    <Radio value={"female"}>{t("Female")}</Radio>
                   </Card>
                 </Space>
               </Radio.Group>

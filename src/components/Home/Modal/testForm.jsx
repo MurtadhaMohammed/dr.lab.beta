@@ -8,7 +8,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { useHomeStore } from "../../../appStore";
+import { useHomeStore } from "../../../libs/appStore";
 import "./style.css";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
