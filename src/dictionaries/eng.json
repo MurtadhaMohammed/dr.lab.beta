@@ -118,5 +118,11 @@
     "HasNoPhone": "Has no phone",
     "Days": "days",
     "Loading": "Loading...",
-    "RemainingDaysInLabAccount": "Remaining Days in Lab Account"
+    "RemainingDaysInLabAccount": "Remaining Days in Lab Account",
+    "SendResults":"Send Results",
+    "SendResulsOnWhatsaap":"Send resuls on Whatsaap",
+    "ConfirmPhoneNumber":"Confirm Phone Number",
+    "Send":"Send",
+    "EnterPhoneNumber":"Enter Phone Number"
+
 }
