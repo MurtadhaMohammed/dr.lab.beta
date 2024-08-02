@@ -126,10 +126,12 @@ td {
 th:last-child,
 td:last-child {
   padding-right: 20px !important;
+  padding-left: 20px !important;
 }
 th:first-child,
 td:first-child {
   padding-left: 20px !important;
+  padding-right: 20px !important;
 }
 
 th {
