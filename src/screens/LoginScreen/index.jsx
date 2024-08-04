@@ -205,7 +205,7 @@ const LoginScreen = () => {
             <div className="text-center py-6 relative">
               <div
                 class="pattern-isometric pattern-indigo-400 pattern-bg-white 
-  pattern-size-6 pattern-opacity-5 absolute inset-0"
+                    pattern-size-6 pattern-opacity-5 absolute inset-0"
               ></div>
               <Avatar
                 className="w-[80px] h-[80px]"
