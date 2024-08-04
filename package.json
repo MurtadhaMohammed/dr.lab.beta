@@ -4,7 +4,7 @@
   "homepage": "./",
   "main": "index.js",
   "dependencies": {
-    "@ant-design/icons": "^5.1.1",
+    "@ant-design/icons": "^5.4.0",
     "@parcel/watcher": "^2.4.1",
     "antd": "^5.5.0",
     "better-sqlite3": "^11.0.0",
