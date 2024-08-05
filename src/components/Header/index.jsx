@@ -32,7 +32,7 @@ const MainHeader = () => {
     try {
       let serialId = parseInt(localStorage.getItem("lab-serial-id"));
       const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/client/logout`,
+        `https://dr-lab-apiv2.onrender.com/api/a/logout`,
         {
           method: "POST",
           headers: {

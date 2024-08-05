@@ -7,16 +7,20 @@ const useLogin = () => {
     const { isLogin, setIsLogin, setUser } = useAppStore();
 
     useEffect(() => {
-        if (isLogin) {
-            let userString = localStorage.getItem("lab-user");
-            if (userString) setUser(JSON.parse(userString));
+        const userString = localStorage.getItem("lab-user");
+        if (userString) {
+            setUser(JSON.parse(userString));
+            checkExpire(JSON.parse(userString));
+        } else {
+            // No user data in localStorage, force logout
+            setIsLogin(false);
         }
-    }, [isLogin, setUser]);
+    }, []);
 
-    const checkExpire = async () => {
+    const checkExpire = async (user) => {
         try {
             const serialId = localStorage.getItem("lab-serial-id");
-            if (!serialId) {
+            if (!serialId && user?.type !== "trial") {
                 setIsLogin(false);
                 return;
             }
@@ -55,10 +59,6 @@ const useLogin = () => {
             setIsLogin(false);
         }
     };
-
-    useEffect(() => {
-        checkExpire();
-    }, [isLogin]);
 
     return { isLogin };
 };

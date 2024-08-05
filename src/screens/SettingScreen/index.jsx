@@ -62,7 +62,7 @@ const SettingsScreen = () => {
     try {
       let serialId = parseInt(localStorage.getItem("lab-serial-id"));
       const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/client/logout`,
+        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
         {
           method: "POST",
           headers: {
@@ -141,7 +141,7 @@ const SettingsScreen = () => {
     send({ query: "getUUID" }).then(async ({ UUID }) => {
       try {
         const resp = await fetch(
-          "https://dr-lab-apiv2.onrender.com/api/client/update-client",
+          "https://dr-lab-apiv2.onrender.com/api/app/update-client",
           {
             method: "PUT",
             headers: {
