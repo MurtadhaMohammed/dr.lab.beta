@@ -27,10 +27,9 @@ const LoginScreen = () => {
   const [isForm, setIsForm] = useState(false);
   const [form] = Form.useForm();
 
-  const getUUID = () => {
-    send({ query: "getUUID" }).then((resp) => {
-      setUUID(resp.UUID);
-    });
+  const getUUID = async () => {
+    const resp = await send({ query: "getUUID" });
+    setUUID(resp.UUID);
   };
 
   const getPlatform = () => {
@@ -42,9 +41,7 @@ const LoginScreen = () => {
   };
 
   useEffect(() => {
-    setTimeout(() => {
-      getUUID();
-    }, 500);
+    getUUID();
   }, []);
 
   const getClient = async () => {
@@ -56,19 +53,18 @@ const LoginScreen = () => {
         isFormData: false,
         data: {
           serial: key,
-          device: getUUID,
-          Platform: getPlatform
-        },
+          device: UUID,
+          platform: getPlatform(),
+        }
       });
 
       if (resp.status === 200) {
         const data = await resp.json();
 
         if (data.success) {
-
           localStorage.setItem("lab-user", JSON.stringify(data.client));
-          localStorage.setItem("lab-serial-id", data.serialId);
-          localStorage.setItem("lab-exp", data.exp);
+          localStorage.setItem("lab-serial-id", data.client.serialId);
+          localStorage.setItem("lab-exp", data.client.exp);
           setIsLogin(true);
         } else {
           console.log(data.message);
@@ -99,18 +95,20 @@ const LoginScreen = () => {
           phone,
           email,
           address,
-          client: null,
+          // client: null,
         },
       });
 
       if (resp.status === 200) {
-        const data = await resp.json();
+        const data = await resp?.json();
         localStorage.setItem("lab-exp", data.serial.exp);
         localStorage.setItem("lab-serial-id", data.serial.id);
         localStorage.setItem("lab-created", data.serial.registeredAt);
         localStorage.setItem("lab-user", JSON.stringify(data.client));
         setIsLogin(true);
       } else {
+        console.log("__________________Im here");
+        
         const data = await resp.json();
         message.error(data?.message || "Error");
       }
