@@ -52,8 +52,8 @@ function App() {
       }}
     >
       <TitleBar />
-      {/* {!isLogin && <LoginScreen />} */}
-      {/* {isLogin && ( */}
+      {!isLogin && <LoginScreen />}
+      {isLogin && (
         <>
           <MainContainerV2>
             <Routes>
@@ -66,7 +66,7 @@ function App() {
             </Routes>
           </MainContainerV2>
         </>
-      {/* )} */}
+      )}
     </ConfigProvider>
   );
 }

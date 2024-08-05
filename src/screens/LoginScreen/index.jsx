@@ -52,7 +52,7 @@ const LoginScreen = () => {
     try {
       const resp = await apiCall({
         method: "POST",
-        pathname: "/client/check-client",
+        pathname: "/app/check-client",
         isFormData: false,
         data: {
           phone,
@@ -86,12 +86,14 @@ const LoginScreen = () => {
     try {
       const resp = await apiCall({
         method: "POST",
-        pathname: "/client/register",
+        pathname: "/app/register",
         isFormData: false,
         data: {
+          name,
+          labName,
           serial: key,
           device: UUID,
-          platform: getPlatform(),
+          // platform: getPlatform(),
           phone,
           client: values || null,
         },
@@ -105,11 +107,12 @@ const LoginScreen = () => {
         localStorage.setItem("lab-created", data.serial.registeredAt);
         localStorage.setItem("lab-user", JSON.stringify(data.client));
         setIsLogin(true);
-      } else {
-        let data = await resp.json();
-        message.error(data?.message || "Error");
-        setIsLogin(true);
       }
+      //  else {
+      //   let data = await resp.json();
+      //   message.error(data?.message || "Error");
+      //   setIsLogin(true);
+      // }
     } catch (error) {
       console.log(error);
       message.error(error.message);

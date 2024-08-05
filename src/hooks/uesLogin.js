@@ -21,7 +21,7 @@ const useLogin = () => {
                 return;
             }
 
-            const response = await fetch('https://dr-lab-apiv2.onrender.com/api/client/check-serial-expiration', {
+            const response = await fetch('https://dr-lab-apiv2.onrender.com/api/app/check-serial-expiration', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
