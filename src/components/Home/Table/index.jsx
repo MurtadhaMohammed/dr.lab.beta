@@ -130,10 +130,10 @@ export const PureTable = ({ isReport = false }) => {
   const whatsapContnet = (record) => (
     <div className="whatsap-content">
       <WhatsAppOutlined style={{ fontSize: 40 }} />
-      <b>Send Results</b>
-      <p>Send resuls on Whatsaap</p>
+      <b>{t("SendResults")}</b>
+      <p>{t("SendResulsOnWhatsaap")}</p>
       <Input
-        placeholder="Enter Phone Number"
+        placeholder={t("EnterPhoneNumber")}
         value={destPhone}
         onChange={(e) => setDestPhone(e.target.value)}
       />
@@ -143,7 +143,7 @@ export const PureTable = ({ isReport = false }) => {
           checked={isConfirm}
           onChange={(e) => setIsConfirm(e.target.checked)}
         />
-        <span className="text-[14px]">Confirm Phone Number</span>
+        <span className="text-[14px]">{t("ConfirmPhoneNumber")}</span>
       </Space>
 
       <Divider />
@@ -154,7 +154,7 @@ export const PureTable = ({ isReport = false }) => {
         type="primary"
         block
       >
-        Send
+        {t("Send")}
       </Button>
     </div>
   );

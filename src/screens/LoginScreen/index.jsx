@@ -229,7 +229,7 @@ const LoginScreen = () => {
         //         }
         >
 
-          <Space direction="vertical" size={52} className="w-96 h-full">
+          <Space direction="vertical" size={32} className="w-96 h-full">
             <div className="w-full flex flex-col items-center gap-8">
               <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
 
@@ -263,7 +263,7 @@ const LoginScreen = () => {
                 <div className="w-full border-[0.5px] relative">
                   <p className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 font-semibold text-base text-[#0000009d]">or</p>
                 </div>
-                <p className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter" onClick={() => setIsForm(true)}>click here to get a <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">Free Trial</span></p>
+                <p className="text-[#000000a1] text-center text-base font-medium leading-[29.05px] inter" onClick={() => setIsForm(true)}>click here to get a <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff] font-semibold">Free Trial</span></p>
               </div>
 
             </div>

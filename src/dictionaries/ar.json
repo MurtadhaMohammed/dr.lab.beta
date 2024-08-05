@@ -113,9 +113,14 @@
     "IsSelect": "هل تم التحديد؟",
     "NewOption": "خيار جديد",
     "Print": "طباعة",
-    "SerialKeyWilBeExpiredSoon": "ستنتهي صلاحية المفتاح قريبًا",
+    "SerialKeyWilBeExpiredSoon": "ستنتهي صلاحية الاشتراك قريبًا",
     "HasNoEmail": "لا يوجد بريد إلكتروني",
     "HasNoPhone": "لا يوجد هاتف",
     "RemainingDaysInLabAccount": "الأيام المتبقية في حساب المختبر",
-    "Days": "ايام"
+    "Days": "ايام",
+    "SendResults":"ارسال النتائج",
+    "SendResulsOnWhatsaap":"ارسال النتائج على الواتساب",
+    "ConfirmPhoneNumber":"تأكيد رقم الهاتف",
+    "Send":"ارسال",
+    "EnterPhoneNumber":"ادخال رقم الهاتف"
 }

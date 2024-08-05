@@ -321,22 +321,40 @@ const SettingsScreen = () => {
           </div>
           <div>
             <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
-            <Card className="mt-[6px]">
-              <div>
-                <p className="pl-[4px] opacity-60">{t("LabAccount")}</p>
+            <Card className="mt-[6px] min-h-[212px]">
 
-                <div className="flex justify-between items-center">
-                  <b className="text-[14px]">{t("RemainingDaysInLabAccount")}</b>
-                  <span>{remainingDays !== null ? `${remainingDays} ${t("Days")}` : t("Loading")}</span>
+              <div className="flex flex-col w-full gap-[10px]">
+                <div className=" bg-[#C8E6C942] w-full flex justify-between border-[1px] border-[#4CAF50] px-3 py-2 rounded-lg inters leading-[19.36px]">
+                  <p className=" font-normal">Serial Number</p>
+                  <p className=" font-bold">10992909</p>
                 </div>
 
-              </div>
-              <b className="text-[14px]">{t("CurrentPlan")}</b>
-              <div className="rounded-[4px] bg-[#F6F6F6] px-[8px] py-[4px] mt-[6px]">
-                {t("FreeTrail")} -{" "}
-                <span className="text-[12px] text-[#a5a5a5]">
-                  {t("expierd")}
-                </span>
+                <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">Please settle your support payment as soon as possible to avoid any interruption in your service.</p>
+
+                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
+                  <p className=" font-normal text-sm">Registered At</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">2024 Jan , 02</p>
+                </div>
+
+                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
+                  <p className=" font-normal text-sm">Expired At</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">2024 Jan , 02</p>
+                </div>
+                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
+                  <p className=" font-normal text-sm">Days left</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">2024 Jan , 02</p>
+                </div>
+
+                <div className="px-1 h-full flex flex-col gap-2">
+                  <Divider className="!m-0 px-1" />
+                  <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
+                    <p className=" font-normal">Whatsapp Integration</p>
+                    <p className=" text-[#F68A06] font-bold text-sm">online</p>
+                  </div>
+
+
+                  <p className=" p-2 border-[1px] border-[#BF6A0223] rounded-lg bg-[#F187060A] text-[#F68A06] !mt-1.5">Your WhatsApp integration plan is nearing its end</p>
+                </div>
               </div>
             </Card>
           </div>
