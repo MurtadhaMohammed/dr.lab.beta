@@ -12,9 +12,8 @@ import {
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useAppStore } from "../../libs/appStore";
-import { FullscreenOutlined, LeftCircleOutlined, UserOutlined } from "@ant-design/icons";
+import Logo from "../../assets/logo2.png";
 import { send } from "../../control/renderer";
-import isValidPhoneNumber from "../../helper/phoneValidation";
 import background from "../../assets/login.svg";
 import { apiCall } from "../../libs/api";
 import BackIcon from "./BackIcon";
@@ -209,57 +208,65 @@ const LoginScreen = () => {
               padding: 32,
             },
           }}
-          title={
-            <div className="text-center py-6 relative">
-              <div
-                class="pattern-isometric pattern-indigo-400 pattern-bg-white 
-  pattern-size-6 pattern-opacity-5 absolute inset-0"
-              ></div>
-              <Avatar
-                className="w-[80px] h-[80px]"
-                icon={<UserOutlined className="text-[30px]" />}
-              />
-              {/* <Typography.Text className="block text-[22px]">Login</Typography.Text> */}
-              <Typography.Text className="block mt-[8px]  text-[18px] font-bold">
-                Login.
-              </Typography.Text>
-              <Typography.Text className="block  font-normal" type="secondary">
-                Please enter your info.
-              </Typography.Text>
-            </div>
-          }
+        //         title={
+        //           <div className="text-center py-6 relative">
+        //             <div
+        //               class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+        // pattern-size-6 pattern-opacity-5 absolute inset-0"
+        //             ></div>
+        //             <Avatar
+        //               className="w-[80px] h-[80px]"
+        //               icon={<UserOutlined className="text-[30px]" />}
+        //             />
+        //             {/* <Typography.Text className="block text-[22px]">Login</Typography.Text> */}
+        //             <Typography.Text className="block mt-[8px]  text-[18px] font-bold">
+        //               Login.
+        //             </Typography.Text>
+        //             <Typography.Text className="block  font-normal" type="secondary">
+        //               Please enter your info.
+        //             </Typography.Text>
+        //           </div>
+        //         }
         >
-          <Space direction="vertical" size={16}>
-            <Input
-              size="large"
-              style={{ width: 300, textAlign: "center" }}
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Phone Number"
-            />
-            <Input
-              size="large"
-              style={{ width: 300, textAlign: "center" }}
-              value={key}
-              onChange={(e) => setKey(e.target.value)}
-              placeholder="Serial Number"
-            />
 
-            <div className="w-full flex justify-center">
-              <p className="text-[#0006] hover:text-black hover:cursor-pointer" onClick={() => setIsForm(true)}>Take a Trail</p>
+          <Space direction="vertical" size={52} className="w-96 h-full">
+            <div className="w-full flex flex-col items-center gap-8">
+              <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
+
+              <div className="w-full">
+                <h1 className=" text-[32px] text-center leading-[43.57px] !font-light mb-2 inter">Try <span className=" !font-bold">Dr.lab</span> business plan</h1>
+              </div>
             </div>
 
-            <Divider style={{ margin: 0 }} />
-            <Button
-              disabled={!key || key.length < 8 || !isValidPhoneNumber(phone)}
-              loading={loading}
-              type="primary"
-              block
-              size="large"
-              onClick={getClient}
-            >
-              Login
-            </Button>
+            <div className="flex flex-col gap-7">
+              <Input
+                size="large"
+                style={{ width: "100%", textAlign: "center" }}
+                className="h-12"
+                value={key}
+                onChange={(e) => setKey(e.target.value)}
+                placeholder="Serial Number"
+              />
+
+              <Button
+                disabled={!key || key.length < 8}
+                loading={loading}
+                type="primary"
+                block
+                className="h-12"
+                onClick={getClient}
+              >
+                Login
+              </Button>
+
+              <div className="h-full flex flex-col gap-4">
+                <div className="w-full border-[0.5px] relative">
+                  <p className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 font-semibold text-base text-[#0000009d]">or</p>
+                </div>
+                <p className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter" onClick={() => setIsForm(true)}>click here to get a <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">Free Trial</span></p>
+              </div>
+
+            </div>
           </Space>
         </Card>
       )}
