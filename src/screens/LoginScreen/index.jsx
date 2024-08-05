@@ -12,11 +12,12 @@ import {
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useAppStore } from "../../libs/appStore";
-import { UserOutlined } from "@ant-design/icons";
+import { FullscreenOutlined, LeftCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { send } from "../../control/renderer";
 import isValidPhoneNumber from "../../helper/phoneValidation";
 import background from "../../assets/login.svg";
 import { apiCall } from "../../libs/api";
+import BackIcon from "./BackIcon";
 
 const LoginScreen = () => {
   const [key, setKey] = useState(null);
@@ -108,17 +109,21 @@ const LoginScreen = () => {
         localStorage.setItem("lab-user", JSON.stringify(data.client));
         setIsLogin(true);
       }
-      //  else {
-      //   let data = await resp.json();
-      //   message.error(data?.message || "Error");
-      //   setIsLogin(true);
-      // }
+       else {
+        let data = await resp.json();
+        message.error(data?.message || "Error");
+        setIsLogin(true);
+      }
     } catch (error) {
       console.log(error);
       message.error(error.message);
       setLoading(false);
     }
   };
+
+  const handleClose = () => {
+    setIsForm(false);
+  }
 
   return (
     <div
@@ -131,7 +136,7 @@ const LoginScreen = () => {
       }}
     >
       {isForm ? (
-        <Card className="w-[400px]" title="Add Your Info">
+        <Card className="w-[400px]" title={<BackIcon onClose={handleClose} />} >
           <Form
             form={form}
             onFinish={register}
@@ -144,6 +149,7 @@ const LoginScreen = () => {
             <Form.Item
               label="Full Name"
               name="name"
+              className="h-16 mb-5"
               rules={[
                 {
                   required: true,
@@ -151,11 +157,12 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input placeholder="Ali M. Salim" />
+              <Input placeholder="Ali M. Salim" className=" h-[40px] mt-0.5" />
             </Form.Item>
             <Form.Item
               label="Lab Name"
               name="labName"
+              className="h-16 mb-5"
               rules={[
                 {
                   required: true,
@@ -163,12 +170,13 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input placeholder="Ali M. Salim" />
+              <Input placeholder="Ali M. Salim" className=" h-[40px] p-2" />
             </Form.Item>
 
             <Form.Item
               label="Phone Number"
               name="phone"
+              className="h-16 mb-5"
               rules={[
                 {
                   required: true,
@@ -176,15 +184,15 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input placeholder="07xxxxxxxx" />
+              <Input placeholder="07xxxxxxxx" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Form.Item label="Email" name="email">
-              <Input type="email" placeholder="example@email.com" />
+            <Form.Item label="Email" name="email" className="h-16 mb-5">
+              <Input type="email" placeholder="example@email.com" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Form.Item label="Address" name="address">
-              <Input placeholder="Iraq - baghdad" />
+            <Form.Item label="Address" name="address" className="h-16 mb-8">
+              <Input placeholder="Iraq - baghdad" className=" h-[40px] p-2" />
             </Form.Item>
 
             <Button loading={loading} type="primary" htmlType="submit">
@@ -239,6 +247,11 @@ const LoginScreen = () => {
               onChange={(e) => setKey(e.target.value)}
               placeholder="Serial Number"
             />
+
+            <div className="w-full flex justify-center">
+              <p className="text-[#0006] hover:text-black hover:cursor-pointer" onClick={() => setIsForm(true)}>Take a Trail</p>
+            </div>
+
             <Divider style={{ margin: 0 }} />
             <Button
               disabled={!key || key.length < 8 || !isValidPhoneNumber(phone)}

@@ -1,3 +1,4 @@
+// import jwtDecode from "jwt-decode";
 import { jwtDecode } from "jwt-decode";
 import { useAppStore } from "./appStore";
 
@@ -57,6 +58,3 @@ export const apiCall = async ({
     return error;
   }
 };
-
-// "07800000001"
-// "11111111"
