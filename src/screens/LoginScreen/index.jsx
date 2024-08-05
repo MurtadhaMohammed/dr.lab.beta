@@ -85,38 +85,43 @@ const LoginScreen = () => {
 
   const register = async () => {
     try {
+      // Get form values from the Ant Design form
+      const formData = form.getFieldsValue();
+  
+      // Make the API call to register
       const resp = await apiCall({
         method: "POST",
         pathname: "/app/register",
-        isFormData: false,
         data: {
-          name,
-          labName,
-          phone,
-          email,
-          address,
-          // client: null,
+          name: formData.name,
+          labName: formData.labName,
+          phone: formData.phone,
+          email: formData.email,
+          address: formData.address,
         },
+        auth: false,
       });
-
-      if (resp.status === 200) {
-        const data = await resp?.json();
-        localStorage.setItem("lab-exp", data.serial.exp);
-        localStorage.setItem("lab-serial-id", data.serial.id);
-        localStorage.setItem("lab-created", data.serial.registeredAt);
-        localStorage.setItem("lab-user", JSON.stringify(data.client));
+  
+      console.log('API Response:', resp);
+  
+      // Check if the response is valid (i.e., if it has the required fields)
+      if (resp && resp.id) {
+        // Store the necessary information in local storage
+        localStorage.setItem("lab-user", JSON.stringify(resp));
+        // localStorage.setItem("lab-serial-id", resp.id);
+        localStorage.setItem("lab-created", resp.createdAt);
         setIsLogin(true);
       } else {
-        console.log("__________________Im here");
-        
-        const data = await resp.json();
-        message.error(data?.message || "Error");
+        // If the response doesn't have an id, consider it an error
+        message.error("Error during registration");
       }
     } catch (error) {
-      console.log(error);
-      message.error(error.message);
+      console.error('Registration error:', error);
+      message.error(error.message || "An unknown error occurred");
     }
   };
+  
+  
 
   const handleClose = () => {
     setIsForm(false);

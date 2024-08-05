@@ -9,10 +9,15 @@ const useLogin = () => {
     useEffect(() => {
         const userString = localStorage.getItem("lab-user");
         if (userString) {
-            setUser(JSON.parse(userString));
-            checkExpire(JSON.parse(userString));
+            try {
+                const user = JSON.parse(userString);
+                setUser(user);
+                checkExpire(user);
+            } catch (error) {
+                console.error("Failed to parse user data:", error);
+                setIsLogin(false);
+            }
         } else {
-            // No user data in localStorage, force logout
             setIsLogin(false);
         }
     }, []);
@@ -62,5 +67,6 @@ const useLogin = () => {
 
     return { isLogin };
 };
+
 
 export default useLogin;
