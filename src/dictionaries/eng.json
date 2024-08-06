@@ -123,6 +123,18 @@
     "SendResulsOnWhatsaap":"Send resuls on Whatsaap",
     "ConfirmPhoneNumber":"Confirm Phone Number",
     "Send":"Send",
-    "EnterPhoneNumber":"Enter Phone Number"
-
+    "EnterPhoneNumber":"Enter Phone Number",
+    "serialNumber": "Serial Number",
+    "supportPaymentReminder": "Please settle your support payment as soon as possible to avoid any interruption in your service.",
+    "registeredAt": "Registered At",
+    "day": "day",
+    "expiredAt": "Expired At",
+    "daysLeft": "Days left",
+    "online": "online",
+    "Disabled": "Disabled",
+    "Subscrib": "Subscrib",
+    "whatsappIntegration": "Whatsapp Integration",
+    "nearingEndDescription": "Your WhatsApp integration plan is nearing its end",
+    "disabledDescription": "It looks like your WhatsApp integration plan has reached its limit! To keep your communication running smoothly, we're here to help you renew your subscription.",
+    "subscribeDescription": "Join our WhatsApp integration plan and take your patients interactions to the next level!"
 }

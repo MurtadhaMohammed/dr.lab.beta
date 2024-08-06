@@ -193,17 +193,17 @@ const SettingsScreen = () => {
 
   const handleWhatsUpExpireation = (expire) => {
     if (expire > 7) {
-      return { status: "online", textStyle: "text-[#14AE5C] inter font-bold text-sm leading-[16.94px]", descStyle: "hidden" };
+      return { status: t("online"), textStyle: "text-[#14AE5C] inter font-bold text-sm leading-[16.94px]", descStyle: "hidden" };
     } else if (expire > 0 && expire <= 7) {
-      return { status: "online", textStyle: "text-[#F68A06] inter font-bold text-sm leading-[16.94px]", descStyle: "bg-[#F187060A] border-[#BF6A0224] text-[#F68A06]", description: "Your WhatsApp integration plan is nearing its end" };
+      return { status: t("online"), textStyle: "text-[#F68A06] inter font-bold text-sm leading-[16.94px]", descStyle: "bg-[#F187060A] border-[#BF6A0224] text-[#F68A06]", description: t("nearingEndDescription") };
     } else if (expire === 0) {
-      return { status: "Disabled", textStyle: "text-[#FF0000] inter font-bold text-sm leading-[16.94px]", descStyle: "bg-[#FFEDEC] border-[#FFB9B8] text-[#FF0000]", description: "It looks like your WhatsApp integration plan has reached its limit! To keep your communication running smoothly, we're here to help you renew your subscription." };
+      return { status: t("Disabled"), textStyle: "text-[#FF0000] inter font-bold text-sm leading-[16.94px]", descStyle: "bg-[#FFEDEC] border-[#FFB9B8] text-[#FF0000]", description: t("disabledDescription") };
     } else {
-      return { status: "Subscrib", textStyle: "text-[#0000FF] text-sm font-bold inter leading-[16.94px]", descStyle: "bg-[#F6F6F6] border-[#EEEEEE] text-black", description: "Join our WhatsApp integration plan and take your patients interactions to the next level!" };
+      return { status: t("Subscrib"), textStyle: "text-[#0000FF] text-sm font-bold inter leading-[16.94px]", descStyle: "bg-[#F6F6F6] border-[#EEEEEE] text-black", description: t('subscribeDescription') };
     }
   }
 
-  const whatsAppStatus = useMemo(() => handleWhatsUpExpireation(), [remainingDays]); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
+  const whatsAppStatus = useMemo(() => handleWhatsUpExpireation(), [remainingDays, language]); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -353,36 +353,36 @@ const SettingsScreen = () => {
 
               <div className="flex flex-col w-full gap-[10px]">
                 <div className={`${remainingDays < 7 ? "bg-[#F187060A] border-[#BF6A0224]" : "bg-[#C8E6C942] border-[#4CAF50]"}  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}>
-                  <p className=" font-normal">Serial Number</p>
+                  <p className=" font-normal">{t("serialNumber")}</p>
                   <p className=" font-bold">10992909</p>
                 </div>
 
                 {
                   remainingDays < 7 ?
-                    <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">Please settle your support payment as soon as possible to avoid any interruption in your service.</p>
+                    <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">{t("supportPaymentReminder")}</p>
                     :
                     null
                 }
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">Registered At</p>
+                  <p className=" font-normal text-sm">{t('registeredAt')}</p>
                   <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.register || "2024 Jan , 02"}</p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">Expired At</p>
+                  <p className=" font-normal text-sm">{t("expiredAt")}</p>
                   <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.expire || "2025 Jan , 02"}</p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">Days left</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{(remainingDays || 120) + " day"}</p>
+                  <p className=" font-normal text-sm">{t('daysLeft')}</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">{`${(remainingDays || 120)} ${t('day')}`}</p>
                 </div>
 
                 <div className="px-1 h-full flex flex-col gap-2">
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
-                    <p className=" font-normal">Whatsapp Integration</p>
+                    <p className=" font-normal">{t('whatsappIntegration')}</p>
                     <p className={`${whatsAppStatus.textStyle} font-bold text-sm`}>{whatsAppStatus.status}</p>
                   </div>
 

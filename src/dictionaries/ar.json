@@ -122,5 +122,18 @@
     "SendResulsOnWhatsaap":"ارسال النتائج على الواتساب",
     "ConfirmPhoneNumber":"تأكيد رقم الهاتف",
     "Send":"ارسال",
-    "EnterPhoneNumber":"ادخال رقم الهاتف"
+    "EnterPhoneNumber":"ادخال رقم الهاتف",
+    "serialNumber": "رقم التسلسل",
+    "supportPaymentReminder": "يرجى تسوية دفعة الدعم الخاصة بك في أقرب وقت ممكن لتجنب أي انقطاع في الخدمة.",
+    "registeredAt": "تم التسجيل في",
+    "day": "يوم",
+    "expiredAt": "ينتهي في",
+    "daysLeft": "الأيام المتبقية",
+    "online": "متصل",
+    "Disabled": "معطل",
+    "Subscrib": "مشترك",
+    "whatsappIntegration": "واتساب",
+    "nearingEndDescription": "خطة الواتساب الخاصة بك تقترب من نهايتها",
+    "disabledDescription": "يبدو أن خطة الواتساب الخاصة بك قد وصلت إلى حدها! للحفاظ على سير التواصل بسلاسة، نحن هنا لمساعدتك في تجديد اشتراكك.",
+    "subscribeDescription": "انضم إلى خطة  الواتساب الخاصة بنا وارتقِ بتفاعلات المرضى الخاصة بك إلى المستوى التالي!"
 }
