@@ -39,6 +39,10 @@ function App() {
     document.documentElement.dir = direction;
   }, [direction]);
 
+  useEffect(() => {
+    console.log("Login status:", isLogin);
+  }, [isLogin]);
+  
   return (
     <ConfigProvider
       direction={direction}

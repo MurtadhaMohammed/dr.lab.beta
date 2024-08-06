@@ -44,6 +44,7 @@ const LoginScreen = () => {
     getUUID();
   }, []);
 
+
   const getClient = async () => {
     setLoading(true);
     try {
@@ -55,24 +56,28 @@ const LoginScreen = () => {
           serial: key,
           device: UUID,
           platform: getPlatform(),
-        }
+        },
       });
-
-      if (resp.status === 200) {
-        const data = await resp.json();
-
-        if (data.success) {
-          localStorage.setItem("lab-user", JSON.stringify(data.client));
-          localStorage.setItem("lab-serial-id", data.client.serialId);
-          localStorage.setItem("lab-exp", data.client.exp);
-          setIsLogin(true);
+  
+      console.log("API Response from getClient:", resp);
+  
+      const { client, serialId, exp } = resp;
+  
+      if (resp.success) {
+        if (client) {
+          localStorage.setItem("lab-user", JSON.stringify(client));
+          localStorage.setItem("lab-serial-id", serialId);
+          localStorage.setItem("lab-exp", exp);
         } else {
-          console.log(data.message);
-          setIsForm(false);
+          localStorage.setItem("lab-user", JSON.stringify(resp));
+          localStorage.setItem("lab-serial-id", serialId);
+          localStorage.setItem("lab-exp", exp);
         }
+        setIsLogin(true);
       } else {
-        const data = await resp.json();
-        message.error(data?.message || "Serial not found!");
+        console.log(resp.message);
+        setIsForm(false);
+        message.error(resp.message || "Serial not found!");
       }
     } catch (error) {
       console.log(error);
@@ -81,14 +86,12 @@ const LoginScreen = () => {
       setLoading(false);
     }
   };
-
+  
 
   const register = async () => {
     try {
-      // Get form values from the Ant Design form
       const formData = form.getFieldsValue();
-  
-      // Make the API call to register
+
       const resp = await apiCall({
         method: "POST",
         pathname: "/app/register",
@@ -101,9 +104,9 @@ const LoginScreen = () => {
         },
         auth: false,
       });
-  
+
       console.log('API Response:', resp);
-  
+
       // Check if the response is valid (i.e., if it has the required fields)
       if (resp && resp.id) {
         // Store the necessary information in local storage
@@ -120,8 +123,8 @@ const LoginScreen = () => {
       message.error(error.message || "An unknown error occurred");
     }
   };
-  
-  
+
+
 
   const handleClose = () => {
     setIsForm(false);
