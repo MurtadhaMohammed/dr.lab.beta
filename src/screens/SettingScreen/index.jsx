@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./style.css";
 import {
   Avatar,
@@ -33,10 +33,6 @@ const SettingsScreen = () => {
   const [language, setLanguage] = useState("en");
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
-  const [expireData, _] = useState({
-    register: localStorage.getItem('lab-created'),
-    expire: localStorage.getItem('lab-exp')
-  })
 
   const { t } = useTranslation();
 
@@ -103,6 +99,7 @@ const SettingsScreen = () => {
       const dayPassed = today.diff(createdDate, "day");
       const remaining = labExp - dayPassed;
       setRemainingDays(remaining > 0 ? remaining : 0)
+
     }
   }
 
@@ -191,19 +188,6 @@ const SettingsScreen = () => {
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
   };
 
-  const handleWhatsUpExpireation = (expire) => {
-    if (expire > 7) {
-      return { status: t("online"), textStyle: "text-[#14AE5C] inter font-bold text-sm leading-[16.94px]", descStyle: "hidden" };
-    } else if (expire > 0 && expire <= 7) {
-      return { status: t("online"), textStyle: "text-[#F68A06] inter font-bold text-sm leading-[16.94px]", descStyle: "bg-[#F187060A] border-[#BF6A0224] text-[#F68A06]", description: t("nearingEndDescription") };
-    } else if (expire === 0) {
-      return { status: t("Disabled"), textStyle: "text-[#FF0000] inter font-bold text-sm leading-[16.94px]", descStyle: "bg-[#FFEDEC] border-[#FFB9B8] text-[#FF0000]", description: t("disabledDescription") };
-    } else {
-      return { status: t("Subscrib"), textStyle: "text-[#0000FF] text-sm font-bold inter leading-[16.94px]", descStyle: "bg-[#F6F6F6] border-[#EEEEEE] text-black", description: t('subscribeDescription') };
-    }
-  }
-
-  const whatsAppStatus = useMemo(() => handleWhatsUpExpireation(), [remainingDays, language]); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -349,45 +333,22 @@ const SettingsScreen = () => {
           </div>
           <div>
             <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
-            <Card className="mt-[6px] min-h-[212px]">
+            <Card className="mt-[6px]">
+              <div>
+                <p className="pl-[4px] opacity-60">{t("LabAccount")}</p>
 
-              <div className="flex flex-col w-full gap-[10px]">
-                <div className={`${remainingDays < 7 ? "bg-[#F187060A] border-[#BF6A0224]" : "bg-[#C8E6C942] border-[#4CAF50]"}  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}>
-                  <p className=" font-normal">{t("serialNumber")}</p>
-                  <p className=" font-bold">10992909</p>
+                <div className="flex justify-between items-center">
+                  <b className="text-[14px]">{t("RemainingDaysInLabAccount")}</b>
+                  <span>{remainingDays !== null ? `${remainingDays} ${t("Days")}` : t("Loading")}</span>
                 </div>
 
-                {
-                  remainingDays < 7 ?
-                    <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">{t("supportPaymentReminder")}</p>
-                    :
-                    null
-                }
-
-                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">{t('registeredAt')}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.register || "2024 Jan , 02"}</p>
-                </div>
-
-                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">{t("expiredAt")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.expire || "2025 Jan , 02"}</p>
-                </div>
-
-                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">{t('daysLeft')}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{`${(remainingDays || 120)} ${t('day')}`}</p>
-                </div>
-
-                <div className="px-1 h-full flex flex-col gap-2">
-                  <Divider className="!m-0 px-1" />
-                  <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
-                    <p className=" font-normal">{t('whatsappIntegration')}</p>
-                    <p className={`${whatsAppStatus.textStyle} font-bold text-sm`}>{whatsAppStatus.status}</p>
-                  </div>
-
-                  <p className={`${whatsAppStatus.descStyle} p-2 border-[1px] rounded-lg !mt-2`}>{whatsAppStatus.description}</p>
-                </div>
+              </div>
+              <b className="text-[14px]">{t("CurrentPlan")}</b>
+              <div className="rounded-[4px] bg-[#F6F6F6] px-[8px] py-[4px] mt-[6px]">
+                {t("FreeTrail")} -{" "}
+                <span className="text-[12px] text-[#a5a5a5]">
+                  {t("expierd")}
+                </span>
               </div>
             </Card>
           </div>
