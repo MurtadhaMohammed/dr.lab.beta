@@ -116,6 +116,7 @@ const LoginScreen = () => {
         setIsLogin(true);
       } else {
         // If the response doesn't have an id, consider it an error
+        //push to ali
         message.error("Error during registration");
       }
     } catch (error) {
