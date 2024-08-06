@@ -33,6 +33,10 @@ const SettingsScreen = () => {
   const [language, setLanguage] = useState("en");
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
+  const [expireData, _] = useState({
+    register: localStorage.getItem('lab-created'),
+    expire: localStorage.getItem('lab-exp')
+  })
 
   const { t } = useTranslation();
 
@@ -62,7 +66,7 @@ const SettingsScreen = () => {
     try {
       let serialId = parseInt(localStorage.getItem("lab-serial-id"));
       const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/client/logout`,
+        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
         {
           method: "POST",
           headers: {
@@ -99,7 +103,6 @@ const SettingsScreen = () => {
       const dayPassed = today.diff(createdDate, "day");
       const remaining = labExp - dayPassed;
       setRemainingDays(remaining > 0 ? remaining : 0)
-
     }
   }
 
@@ -141,7 +144,7 @@ const SettingsScreen = () => {
     send({ query: "getUUID" }).then(async ({ UUID }) => {
       try {
         const resp = await fetch(
-          "https://dr-lab-apiv2.onrender.com/api/client/update-client",
+          "https://dr-lab-apiv2.onrender.com/api/app/update-client",
           {
             method: "PUT",
             headers: {
@@ -324,25 +327,31 @@ const SettingsScreen = () => {
             <Card className="mt-[6px] min-h-[212px]">
 
               <div className="flex flex-col w-full gap-[10px]">
-                <div className=" bg-[#C8E6C942] w-full flex justify-between border-[1px] border-[#4CAF50] px-3 py-2 rounded-lg inters leading-[19.36px]">
+                <div className={`${remainingDays < 7 ? "bg-[#F187060A] border-[#BF6A0224]" : "bg-[#C8E6C942] border-[#4CAF50]"}  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}>
                   <p className=" font-normal">Serial Number</p>
                   <p className=" font-bold">10992909</p>
                 </div>
 
-                <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">Please settle your support payment as soon as possible to avoid any interruption in your service.</p>
+                {
+                  remainingDays < 7 ?
+                    <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">Please settle your support payment as soon as possible to avoid any interruption in your service.</p>
+                    :
+                    null
+                }
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p className=" font-normal text-sm">Registered At</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">2024 Jan , 02</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.register || "2024 Jan , 02"}</p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p className=" font-normal text-sm">Expired At</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">2024 Jan , 02</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.expire || "2025 Jan , 02"}</p>
                 </div>
+
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p className=" font-normal text-sm">Days left</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">2024 Jan , 02</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">{(remainingDays || 120) + " day"}</p>
                 </div>
 
                 <div className="px-1 h-full flex flex-col gap-2">

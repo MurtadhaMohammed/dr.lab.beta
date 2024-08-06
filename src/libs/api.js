@@ -1,4 +1,5 @@
 import { jwtDecode } from "jwt-decode";
+
 import { useAppStore } from "./appStore";
 
 // export const URL = "http://localhost:3000/api";
@@ -33,7 +34,7 @@ export const apiCall = async ({
     let body = undefined;
     const myHeaders = new Headers();
 
-    if (auth) myHeaders.append("Authorization", `Bearer ${token}`);
+    if (auth) myHeaders.append("Authorization", Bearer `${token}`);
     if (!!data && isFormData) {
       var formdata = new FormData();
       Object.entries(data).forEach(([key, value]) => {
@@ -57,6 +58,3 @@ export const apiCall = async ({
     return error;
   }
 };
-
-// "07800000001"
-// "11111111"

@@ -11,7 +11,7 @@ import ReportsScreen from "./screens/ReportsScreen";
 import LoginScreen from "./screens/LoginScreen";
 import SettingsScreen from "./screens/SettingScreen";
 import TitleBar from "./components/TitleBar/titleBar";
-import useLogin from "./hooks/uesLogin"
+import useLogin from "./hooks/useLogin"
 
 const { ipcRenderer } = window.require("electron");
 
@@ -53,20 +53,20 @@ function App() {
     >
       <TitleBar />
       {/* {!isLogin && <LoginScreen />} */}
-      {/* {isLogin && ( */}
-      <>
-        <MainContainerV2>
-          <Routes>
-            <Route exact path="/" element={<HomeScreen />} />
-            <Route path="/patients" element={<PatientsScreen />} />
-            <Route path="/tests" element={<TestsScreen />} />
-            <Route path="/groups" element={<GroupsScreen />} />
-            <Route path="/reports" element={<ReportsScreen />} />
-            <Route path="/settings" element={<SettingsScreen />} />
-          </Routes>
-        </MainContainerV2>
-      </>
-      {/* )} */}
+      {isLogin || (
+        <>
+          <MainContainerV2>
+            <Routes>
+              <Route exact path="/" element={<HomeScreen />} />
+              <Route path="/patients" element={<PatientsScreen />} />
+              <Route path="/tests" element={<TestsScreen />} />
+              <Route path="/groups" element={<GroupsScreen />} />
+              <Route path="/reports" element={<ReportsScreen />} />
+              <Route path="/settings" element={<SettingsScreen />} />
+            </Routes>
+          </MainContainerV2>
+        </>
+      )}
     </ConfigProvider>
   );
 }

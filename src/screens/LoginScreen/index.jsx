@@ -19,25 +19,18 @@ import { apiCall } from "../../libs/api";
 import BackIcon from "./BackIcon";
 
 const LoginScreen = () => {
-  const [key, setKey] = useState(null);
-  const [phone, setPhone] = useState(null);
+  const [key, setKey] = useState('');
+  const [phone, setPhone] = useState('');
   const { setIsLogin } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
   const [isForm, setIsForm] = useState(false);
   const [form] = Form.useForm();
 
-  const getUUID = () => {
-    send({ query: "getUUID" }).then((resp) => {
-      setUUID(resp.UUID);
-    });
+  const getUUID = async () => {
+    const resp = await send({ query: "getUUID" });
+    setUUID(resp.UUID);
   };
-
-  useEffect(() => {
-    setTimeout(() => {
-      getUUID();
-    }, 500);
-  }, []);
 
   const getPlatform = () => {
     const { userAgent } = navigator;
@@ -47,73 +40,81 @@ const LoginScreen = () => {
     return "Unknown";
   };
 
+  useEffect(() => {
+    getUUID();
+  }, []);
+
   const getClient = async () => {
     setLoading(true);
     try {
       const resp = await apiCall({
         method: "POST",
-        pathname: "/client/check-client",
-        isFormData: false,
-        data: {
-          phone,
-          serial: key,
-        },
-      });
-
-      if (resp.status === 200) {
-        let data = await resp.json();
-        if (data.success) {
-          register();
-        } else {
-          console.log(data.message);
-          setIsForm(true);
-          setLoading(false);
-        }
-      } else {
-        let data = await resp.json();
-        message.error(data?.message || "Serial not found!");
-        setLoading(false);
-      }
-    } catch (error) {
-      console.log(error);
-      message.error(error.message);
-      setLoading(false);
-    }
-  };
-
-  const register = async (values) => {
-    setLoading(true);
-    try {
-      const resp = await apiCall({
-        method: "POST",
-        pathname: "/client/register",
+        pathname: "/app/check-client",
         isFormData: false,
         data: {
           serial: key,
           device: UUID,
           platform: getPlatform(),
+        }
+      });
+
+      if (resp.status === 200) {
+        const data = await resp.json();
+
+        if (data.success) {
+          localStorage.setItem("lab-user", JSON.stringify(data.client));
+          localStorage.setItem("lab-serial-id", data.client.serialId);
+          localStorage.setItem("lab-exp", data.client.exp);
+          setIsLogin(true);
+        } else {
+          console.log(data.message);
+          setIsForm(false);
+        }
+      } else {
+        const data = await resp.json();
+        message.error(data?.message || "Serial not found!");
+      }
+    } catch (error) {
+      console.log(error);
+      message.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const register = async () => {
+    try {
+      const resp = await apiCall({
+        method: "POST",
+        pathname: "/app/register",
+        isFormData: false,
+        data: {
+          name,
+          labName,
           phone,
-          client: values || null,
+          email,
+          address,
+          // client: null,
         },
       });
 
       if (resp.status === 200) {
-        let data = await resp.json();
-        setLoading(false);
+        const data = await resp?.json();
         localStorage.setItem("lab-exp", data.serial.exp);
         localStorage.setItem("lab-serial-id", data.serial.id);
         localStorage.setItem("lab-created", data.serial.registeredAt);
         localStorage.setItem("lab-user", JSON.stringify(data.client));
         setIsLogin(true);
       } else {
-        let data = await resp.json();
+        console.log("__________________Im here");
+
+        const data = await resp.json();
         message.error(data?.message || "Error");
-        setIsLogin(true);
       }
     } catch (error) {
       console.log(error);
       message.error(error.message);
-      setLoading(false);
     }
   };
 
@@ -188,10 +189,10 @@ const LoginScreen = () => {
             </Form.Item>
 
             <Form.Item label="Address" name="address" className="h-16 mb-8">
-              <Input placeholder="Iraq - baghdad" className=" h-[40px] p-2" />
+              <Input placeholder="Iraq - Baghdad" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Button loading={loading} type="primary" htmlType="submit">
+            <Button loading={loading} type="primary" htmlType="submit" >
               Continue
             </Button>
           </Form>
