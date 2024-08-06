@@ -191,7 +191,7 @@ export const PureTable = ({ isReport = false }) => {
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
               <Tag key={el.id}>
-                {el[testType === t("CUSTOME") ? t("name") : t("title")]}
+                {el[testType === "CUSTOME" ? "name" : "title"]}
               </Tag>
             ))}
             {restCount && (
@@ -201,11 +201,7 @@ export const PureTable = ({ isReport = false }) => {
                     <Space wrap>
                       {list?.map((el) => (
                         <Tag key={el.id}>
-                          {
-                            el[
-                              testType === t("CUSTOME") ? t("name") : t("title")
-                            ]
-                          }
+                          {el[testType === "CUSTOME" ? "name" : "title"]}
                         </Tag>
                       ))}
                     </Space>
@@ -334,7 +330,7 @@ export const PureTable = ({ isReport = false }) => {
       }),
     },
   ];
-//commit
+  //commit
 
   const handleResults = (record) => {
     setRecord(record);
