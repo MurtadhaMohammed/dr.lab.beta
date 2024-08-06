@@ -17,6 +17,7 @@ import { send } from "../../control/renderer";
 import background from "../../assets/login.svg";
 import { apiCall } from "../../libs/api";
 import BackIcon from "./BackIcon";
+import { useTranslation } from "react-i18next";
 
 const LoginScreen = () => {
   const [key, setKey] = useState("");
@@ -26,6 +27,8 @@ const LoginScreen = () => {
   const [UUID, setUUID] = useState(null);
   const [isForm, setIsForm] = useState(false);
   const [form] = Form.useForm();
+  const { t } = useTranslation();
+
 
   const getUUID = async () => {
     const resp = await send({ query: "getUUID" });
@@ -57,15 +60,15 @@ const LoginScreen = () => {
           platform: getPlatform(),
         },
       });
-  
+
       console.log("API Response from getClient:", resp);
-    
+
       if (resp.success) {
-        const { client, serialId, exp, serial } = resp;
+        const { client, serialId, exp, startAt } = resp;
         localStorage.setItem("lab-user", JSON.stringify(client));
         localStorage.setItem("lab-serial-id", serialId);
         localStorage.setItem("lab-exp", exp);
-        localStorage.setItem("lab-created", serial?.startAt);
+        localStorage.setItem("lab-created", startAt);
         setIsLogin(true);
       } else {
         setIsForm(false);
@@ -78,7 +81,7 @@ const LoginScreen = () => {
       setLoading(false);
     }
   };
-  
+
 
   const register = async () => {
     try {
@@ -96,19 +99,22 @@ const LoginScreen = () => {
         auth: false,
       });
 
-      if (resp && resp.success) {
-        localStorage.setItem("lab-user", JSON.stringify(resp));
-        localStorage.setItem("lab-exp", 7);
-        localStorage.setItem("lab-created", resp.createdAt);
+      if (resp.success) {
+        const { client, serialId, exp, startAt } = resp;
+        localStorage.setItem("lab-user", JSON.stringify(client));
+        localStorage.setItem("lab-serial-id", serialId);
+        localStorage.setItem("lab-exp", exp);
+        localStorage.setItem("lab-created", startAt);
         setIsLogin(true);
       } else {
-        // If the response doesn't have an id, consider it an error
-  
-        message.error("Error during registration");
+        setIsForm(false);
+        message.error(resp.message || "Serial not found!");
       }
     } catch (error) {
-      console.error("Registration error:", error);
-      message.error(error.message || "An unknown error occurred");
+      console.log(error);
+      message.error(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -138,47 +144,47 @@ const LoginScreen = () => {
             autoComplete="off"
           >
             <Form.Item
-              label="Full Name"
+              label={t("FullName")}
               name="name"
               className="h-16 mb-5"
               rules={[
                 {
                   required: true,
-                  message: "Please input your Name!",
+                  message: t("PleaseInputyourName!"),
                 },
               ]}
             >
-              <Input placeholder="Ali M. Salim" className=" h-[40px] mt-0.5" />
+              <Input placeholder={t("AliSalim")} className=" h-[40px] mt-0.5" />
             </Form.Item>
             <Form.Item
-              label="Lab Name"
+              label={t("LabName")}
               name="labName"
               className="h-16 mb-5"
               rules={[
                 {
                   required: true,
-                  message: "Please input your Lab Name!",
+                  message: t("PleaseInputYourLabName!"),
                 },
               ]}
             >
-              <Input placeholder="Ali M. Salim" className=" h-[40px] p-2" />
+              <Input placeholder={t("AliSalim")} className=" h-[40px] p-2" />
             </Form.Item>
 
             <Form.Item
-              label="Phone Number"
+              label={t("PhoneNumber")}
               name="phone"
               className="h-16 mb-5"
               rules={[
                 {
                   required: true,
-                  message: "Please input your Phone!",
+                  message: t("PleaseInputYourPhone!"),
                 },
               ]}
             >
               <Input placeholder="07xxxxxxxx" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Form.Item label="Email" name="email" className="h-16 mb-5">
+            <Form.Item label={t("Email")} name="email" className="h-16 mb-5">
               <Input
                 type="email"
                 placeholder="example@email.com"
@@ -186,12 +192,12 @@ const LoginScreen = () => {
               />
             </Form.Item>
 
-            <Form.Item label="Address" name="address" className="h-16 mb-8">
+            <Form.Item label={t("Address")} name="address" className="h-16 mb-8">
               <Input placeholder="Iraq - Baghdad" className=" h-[40px] p-2" />
             </Form.Item>
 
             <Button loading={loading} type="primary" htmlType="submit">
-              Continue
+              {t("Continue")}
             </Button>
           </Form>
         </Card>
@@ -234,7 +240,7 @@ const LoginScreen = () => {
 
               <div className="w-full">
                 <h1 className=" text-[32px] text-center leading-[43.57px] !font-light mb-2 inter">
-                  Try <span className=" !font-bold">Dr.lab</span> business plan
+                  {t("Try")} <span className=" !font-bold">Dr.lab</span> {t("businessplan")}
                 </h1>
               </div>
             </div>
@@ -246,7 +252,7 @@ const LoginScreen = () => {
                 className="h-12"
                 value={key}
                 onChange={(e) => setKey(e.target.value)}
-                placeholder="Serial Number"
+                placeholder={t("SerialNumber")}
               />
 
               <Button
@@ -257,16 +263,17 @@ const LoginScreen = () => {
                 className="h-12"
                 onClick={checkSerial}
               >
-                Login
+                {t("Login")}
               </Button>
 
               <div className="h-full flex flex-col gap-4">
                 <div className="w-full border-[0.5px] relative">
                   <p className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 font-semibold text-base text-[#0000009d]">
-                    or
+                    {t("or")}
                   </p>
                 </div>
-                <p className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter" onClick={() => setIsForm(true)}>click here to get a <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">Free Trial</span></p>
+                <p className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter" onClick={() => setIsForm(true)}>{t("clickHereToGetA")}
+                  <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">{t("FreeTrial")}</span></p>
               </div>
             </div>
           </Space>

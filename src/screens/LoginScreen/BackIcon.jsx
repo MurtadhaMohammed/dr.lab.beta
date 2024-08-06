@@ -1,9 +1,12 @@
 import { LeftCircleFilled, LeftCircleOutlined } from '@ant-design/icons';
 import { Avatar } from 'antd';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const BackIcon = ({ onClose }) => {
     const [flag, setFlag] = useState(false);
+    const { t } = useTranslation();
+
 
     const handleButton = () => {
         return flag ? <LeftCircleFilled className="text-black hover:cursor-pointer" onMouseLeave={() => setFlag(false)} onClick={() => onClose()} /> : <LeftCircleOutlined className="text-black hover:cursor-pointer" onMouseEnter={() => setFlag(true)} />
@@ -16,7 +19,7 @@ const BackIcon = ({ onClose }) => {
                 size={48}
                 icon={handleButton()}
             />
-            <p>Add Your Info</p>
+            <p>{t("AddYourInfo")}</p>
         </div>
     );
 }

@@ -19,7 +19,7 @@ const { ipcRenderer } = window.require("electron");
 function App() {
   const { isLogin } = useAppStore();
 
-  
+
   useLogin();
 
   useEffect(() => {
@@ -56,8 +56,8 @@ function App() {
       }}
     >
       <TitleBar />
-      {/* {!isLogin && <LoginScreen />} */}
-      {isLogin || (
+      {!isLogin && <LoginScreen />}
+      {isLogin && (
         <>
           <MainContainerV2>
             <Routes>

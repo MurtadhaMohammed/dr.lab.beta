@@ -188,21 +188,9 @@ const SettingsScreen = () => {
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
   };
 
-  const checkLocalStorage = () => {
 
-    const serialId = localStorage.getItem("lab-serial-id");
-    const labUser = localStorage.getItem("lab-user");
-    const labExp = localStorage.getItem("lab-exp");
-
-    if (!serialId || !labUser || !labExp) {
-      signout();
-    }
-  };
-
-  
   useEffect(() => {
     fetchImagePath();
-    checkLocalStorage();
   }, []);
 
 
