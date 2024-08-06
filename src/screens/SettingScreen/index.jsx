@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./style.css";
 import {
   Avatar,
@@ -179,6 +179,19 @@ const SettingsScreen = () => {
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
   };
 
+  const handleWhatsUpExpireation = (expire) => {
+    if (expire > 7) {
+      return { status: "online", textStyle: "text-[#14AE5C] inter font-bold text-sm leading-[16.94px]", descStyle: "hidden" };
+    } else if (expire > 0 && expire <= 7) {
+      return { status: "online", textStyle: "text-[#F68A06] inter font-bold text-sm leading-[16.94px]", descStyle: "bg-[#F187060A] border-[#BF6A0224] text-[#F68A06]", description: "Your WhatsApp integration plan is nearing its end" };
+    } else if (expire === 0) {
+      return { status: "Disabled", textStyle: "text-[#FF0000] inter font-bold text-sm leading-[16.94px]", descStyle: "bg-[#FFEDEC] border-[#FFB9B8] text-[#FF0000]", description: "It looks like your WhatsApp integration plan has reached its limit! To keep your communication running smoothly, we're here to help you renew your subscription." };
+    } else {
+      return { status: "Subscrib", textStyle: "text-[#0000FF] text-sm font-bold inter leading-[16.94px]", descStyle: "bg-[#F6F6F6] border-[#EEEEEE] text-black", description: "Join our WhatsApp integration plan and take your patients interactions to the next level!" };
+    }
+  }
+
+  const whatsAppStatus = useMemo(() => handleWhatsUpExpireation(), [remainingDays]); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -358,11 +371,10 @@ const SettingsScreen = () => {
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
                     <p className=" font-normal">Whatsapp Integration</p>
-                    <p className=" text-[#F68A06] font-bold text-sm">online</p>
+                    <p className={`${whatsAppStatus.textStyle} font-bold text-sm`}>{whatsAppStatus.status}</p>
                   </div>
 
-
-                  <p className=" p-2 border-[1px] border-[#BF6A0223] rounded-lg bg-[#F187060A] text-[#F68A06] !mt-1.5">Your WhatsApp integration plan is nearing its end</p>
+                  <p className={`${whatsAppStatus.descStyle} p-2 border-[1px] rounded-lg !mt-2`}>{whatsAppStatus.description}</p>
                 </div>
               </div>
             </Card>
