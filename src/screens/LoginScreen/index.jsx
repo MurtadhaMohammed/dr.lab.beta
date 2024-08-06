@@ -44,6 +44,7 @@ const LoginScreen = () => {
     getUUID();
   }, []);
 
+
   const getClient = async () => {
     setLoading(true);
     try {
@@ -55,24 +56,28 @@ const LoginScreen = () => {
           serial: key,
           device: UUID,
           platform: getPlatform(),
-        }
+        },
       });
 
-      if (resp.status === 200) {
-        const data = await resp.json();
+      console.log("API Response from getClient:", resp);
 
-        if (data.success) {
-          localStorage.setItem("lab-user", JSON.stringify(data.client));
-          localStorage.setItem("lab-serial-id", data.client.serialId);
-          localStorage.setItem("lab-exp", data.client.exp);
-          setIsLogin(true);
+      const { client, serialId, exp } = resp;
+
+      if (resp.success) {
+        if (client) {
+          localStorage.setItem("lab-user", JSON.stringify(client));
+          localStorage.setItem("lab-serial-id", serialId);
+          localStorage.setItem("lab-exp", exp);
         } else {
-          console.log(data.message);
-          setIsForm(false);
+          localStorage.setItem("lab-user", JSON.stringify(resp));
+          localStorage.setItem("lab-serial-id", serialId);
+          localStorage.setItem("lab-exp", exp);
         }
+        setIsLogin(true);
       } else {
-        const data = await resp.json();
-        message.error(data?.message || "Serial not found!");
+        console.log(resp.message);
+        setIsForm(false);
+        message.error(resp.message || "Serial not found!");
       }
     } catch (error) {
       console.log(error);
@@ -85,38 +90,43 @@ const LoginScreen = () => {
 
   const register = async () => {
     try {
+      const formData = form.getFieldsValue();
+
       const resp = await apiCall({
         method: "POST",
         pathname: "/app/register",
-        isFormData: false,
         data: {
-          name,
-          labName,
-          phone,
-          email,
-          address,
-          // client: null,
+          name: formData.name,
+          labName: formData.labName,
+          phone: formData.phone,
+          email: formData.email,
+          address: formData.address,
         },
+        auth: false,
       });
 
-      if (resp.status === 200) {
-        const data = await resp?.json();
-        localStorage.setItem("lab-exp", data.serial.exp);
-        localStorage.setItem("lab-serial-id", data.serial.id);
-        localStorage.setItem("lab-created", data.serial.registeredAt);
-        localStorage.setItem("lab-user", JSON.stringify(data.client));
+      console.log('API Response:', resp);
+
+      // Check if the response is valid (i.e., if it has the required fields)
+      if (resp && resp.id) {
+        // Store the necessary information in local storage
+        localStorage.setItem("lab-user", JSON.stringify(resp));
+        // localStorage.setItem("lab-serial-id", resp.id);
+        localStorage.setItem("lab-created", resp.createdAt);
         setIsLogin(true);
       } else {
-        console.log("__________________Im here");
-
+        // If the response doesn't have an id, consider it an error
+        message.error("Error during registration");
         const data = await resp.json();
         message.error(data?.message || "Error");
       }
     } catch (error) {
-      console.log(error);
-      message.error(error.message);
+      console.error('Registration error:', error);
+      message.error(error.message || "An unknown error occurred");
     }
   };
+
+
 
   const handleClose = () => {
     setIsForm(false);
