@@ -19,8 +19,8 @@ import { apiCall } from "../../libs/api";
 import BackIcon from "./BackIcon";
 
 const LoginScreen = () => {
-  const [key, setKey] = useState('');
-  const [phone, setPhone] = useState('');
+  const [key, setKey] = useState("");
+  const [phone, setPhone] = useState("");
   const { setIsLogin } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
@@ -44,8 +44,7 @@ const LoginScreen = () => {
     getUUID();
   }, []);
 
-
-  const getClient = async () => {
+  const checkSerial = async () => {
     setLoading(true);
     try {
       const resp = await apiCall({
@@ -58,24 +57,17 @@ const LoginScreen = () => {
           platform: getPlatform(),
         },
       });
-
+  
       console.log("API Response from getClient:", resp);
-
-      const { client, serialId, exp } = resp;
-
+    
       if (resp.success) {
-        if (client) {
-          localStorage.setItem("lab-user", JSON.stringify(client));
-          localStorage.setItem("lab-serial-id", serialId);
-          localStorage.setItem("lab-exp", exp);
-        } else {
-          localStorage.setItem("lab-user", JSON.stringify(resp));
-          localStorage.setItem("lab-serial-id", serialId);
-          localStorage.setItem("lab-exp", exp);
-        }
+        const { client, serialId, exp, serial } = resp;
+        localStorage.setItem("lab-user", JSON.stringify(client));
+        localStorage.setItem("lab-serial-id", serialId);
+        localStorage.setItem("lab-exp", exp);
+        localStorage.setItem("lab-created", serial?.startAt);
         setIsLogin(true);
       } else {
-        console.log(resp.message);
         setIsForm(false);
         message.error(resp.message || "Serial not found!");
       }
@@ -86,12 +78,11 @@ const LoginScreen = () => {
       setLoading(false);
     }
   };
-
+  
 
   const register = async () => {
     try {
       const formData = form.getFieldsValue();
-
       const resp = await apiCall({
         method: "POST",
         pathname: "/app/register",
@@ -105,33 +96,25 @@ const LoginScreen = () => {
         auth: false,
       });
 
-      console.log('API Response:', resp);
-
-      // Check if the response is valid (i.e., if it has the required fields)
-      if (resp && resp.id) {
-        // Store the necessary information in local storage
+      if (resp && resp.success) {
         localStorage.setItem("lab-user", JSON.stringify(resp));
-        // localStorage.setItem("lab-serial-id", resp.id);
+        localStorage.setItem("lab-exp", 7);
         localStorage.setItem("lab-created", resp.createdAt);
         setIsLogin(true);
       } else {
         // If the response doesn't have an id, consider it an error
-        //push to ali
+  
         message.error("Error during registration");
-        const data = await resp.json();
-        message.error(data?.message || "Error");
       }
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error("Registration error:", error);
       message.error(error.message || "An unknown error occurred");
     }
   };
 
-
-
   const handleClose = () => {
     setIsForm(false);
-  }
+  };
 
   return (
     <div
@@ -144,7 +127,7 @@ const LoginScreen = () => {
       }}
     >
       {isForm ? (
-        <Card className="w-[400px]" title={<BackIcon onClose={handleClose} />} >
+        <Card className="w-[400px]" title={<BackIcon onClose={handleClose} />}>
           <Form
             form={form}
             onFinish={register}
@@ -196,14 +179,18 @@ const LoginScreen = () => {
             </Form.Item>
 
             <Form.Item label="Email" name="email" className="h-16 mb-5">
-              <Input type="email" placeholder="example@email.com" className=" h-[40px] p-2" />
+              <Input
+                type="email"
+                placeholder="example@email.com"
+                className=" h-[40px] p-2"
+              />
             </Form.Item>
 
             <Form.Item label="Address" name="address" className="h-16 mb-8">
               <Input placeholder="Iraq - Baghdad" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Button loading={loading} type="primary" htmlType="submit" >
+            <Button loading={loading} type="primary" htmlType="submit">
               Continue
             </Button>
           </Form>
@@ -246,7 +233,9 @@ const LoginScreen = () => {
               <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
 
               <div className="w-full">
-                <h1 className=" text-[32px] text-center leading-[43.57px] !font-light mb-2 inter">Try <span className=" !font-bold">Dr.lab</span> business plan</h1>
+                <h1 className=" text-[32px] text-center leading-[43.57px] !font-light mb-2 inter">
+                  Try <span className=" !font-bold">Dr.lab</span> business plan
+                </h1>
               </div>
             </div>
 
@@ -266,18 +255,19 @@ const LoginScreen = () => {
                 type="primary"
                 block
                 className="h-12"
-                onClick={getClient}
+                onClick={checkSerial}
               >
                 Login
               </Button>
 
               <div className="h-full flex flex-col gap-4">
                 <div className="w-full border-[0.5px] relative">
-                  <p className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 font-semibold text-base text-[#0000009d]">or</p>
+                  <p className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 font-semibold text-base text-[#0000009d]">
+                    or
+                  </p>
                 </div>
-                <p className="text-[#000000a1] text-center text-base font-medium leading-[29.05px] inter" onClick={() => setIsForm(true)}>click here to get a <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff] font-semibold">Free Trial</span></p>
+                <p className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter" onClick={() => setIsForm(true)}>click here to get a <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">Free Trial</span></p>
               </div>
-
             </div>
           </Space>
         </Card>

@@ -11,12 +11,16 @@ import ReportsScreen from "./screens/ReportsScreen";
 import LoginScreen from "./screens/LoginScreen";
 import SettingsScreen from "./screens/SettingScreen";
 import TitleBar from "./components/TitleBar/titleBar";
-import useLogin from "./hooks/useLogin"
+import useLogin from "./hooks/useLogin";
+import { useAppStore } from "./libs/appStore";
 
 const { ipcRenderer } = window.require("electron");
 
 function App() {
-  const { isLogin } = useLogin();
+  const { isLogin } = useAppStore();
+
+  
+  useLogin();
 
   useEffect(() => {
     ipcRenderer.on("hello", () => {
@@ -39,10 +43,6 @@ function App() {
     document.documentElement.dir = direction;
   }, [direction]);
 
-  useEffect(() => {
-    console.log("Login status:", isLogin);
-  }, [isLogin]);
-  
   return (
     <ConfigProvider
       direction={direction}
