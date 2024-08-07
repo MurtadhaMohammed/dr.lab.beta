@@ -27,36 +27,40 @@ export const apiCall = async ({
       useAppStore.setState({
         isLogin: false,
       });
-      throw Error("refresh token expired");
+      throw new Error("refresh token expired");
     }
 
     let body = undefined;
     const myHeaders = new Headers();
 
     if (auth) myHeaders.append("Authorization", `Bearer ${token}`);
-    if (!!data && isFormData) {
-      var formdata = new FormData();
+    if (data && isFormData) {
+      const formdata = new FormData();
       Object.entries(data).forEach(([key, value]) => {
         formdata.append(key, value);
       });
       body = formdata;
-    } else if (!!data) {
+    } else if (data) {
       myHeaders.append("Content-Type", "application/json");
       body = JSON.stringify(data);
     }
 
-    let res = await fetch(`${URL}${pathname}`, {
+    const res = await fetch(`${URL}${pathname}`, {
       method,
       headers: myHeaders,
       body,
     });
 
-    // let jsonRes = await res.json();
+    // Handle non-2xx responses
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+
+    // Assuming the response is JSON
+    // const jsonRes = await res.json();
     return res;
   } catch (error) {
-    return error;
+    console.error("API call error:", error);
+    throw error; // Propagate the error to the calling function
   }
 };
-
-// "07800000001"
-// "11111111"

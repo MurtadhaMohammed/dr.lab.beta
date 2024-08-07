@@ -62,7 +62,7 @@ const SettingsScreen = () => {
     try {
       let serialId = parseInt(localStorage.getItem("lab-serial-id"));
       const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/client/logout`,
+        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
         {
           method: "POST",
           headers: {
@@ -138,10 +138,14 @@ const SettingsScreen = () => {
 
   const handleUpdateClient = async (values) => {
     setLoading(true);
+    console.log("Form values:", values);
+
     send({ query: "getUUID" }).then(async ({ UUID }) => {
+      console.log("UUID:", UUID);
+
       try {
         const resp = await fetch(
-          "https://dr-lab-apiv2.onrender.com/api/client/update-client",
+          "https://dr-lab-apiv2.onrender.com/api/app/update-client",
           {
             method: "PUT",
             headers: {
@@ -154,20 +158,28 @@ const SettingsScreen = () => {
           }
         );
 
-        if (resp.status === 200) {
+        console.log("Response status:", resp.status);
+
+        if (resp.ok) {
           let data = await resp.json();
-          setLoading(false);
+          console.log("Response data:", data);
           localStorage.setItem("lab-user", JSON.stringify(data));
           message.success("Update Successfully.");
           setIsUpdate(false);
-        } else message.error("Update failed!");
+        } else {
+          let errorData = await resp.json();
+          console.error("Update failed:", errorData);
+          message.error(`Update failed: ${errorData.message || "Unknown error"}`);
+        }
       } catch (error) {
-        console.log(error);
+        console.log("Network error:", error);
         message.error(error.message);
+      } finally {
         setLoading(false);
       }
     });
   };
+
 
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
@@ -175,6 +187,12 @@ const SettingsScreen = () => {
     setLanguage(newLanguage);
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
   };
+
+
+  useEffect(() => {
+    fetchImagePath();
+  }, []);
+
 
 
   return (
