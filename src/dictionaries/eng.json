@@ -109,7 +109,7 @@
     "PatientHistoryFor": "Patient history for",
     "VisitDate": "Visit Date",
     "TotalAmounts": "TotalAmounts",
-    "TestItem": "TestItem",
+    "TestItem": "Test Item",
     "IsSelect": "Is Select ?",
     "NewOption": "NewOption",
     "Print": "Print",
@@ -147,7 +147,9 @@
     "businessplan": "business plan",
     "SerialNumber": "SerialNumber",
     "or": "or",
-    "clickHereToGetA": "click here to get a",
+    "clickHereToGetA": "click here to get a ",
     "FreeTrial": "Free Trial",
-    "AddYourInfo": "Add your info"
+    "AddYourInfo": "Add your info",
+    "Drlab":"Dr.lab",
+    "Login":"Login"
 }

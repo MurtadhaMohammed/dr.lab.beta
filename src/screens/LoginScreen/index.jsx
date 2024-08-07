@@ -8,6 +8,7 @@ import {
   Space,
   Typography,
   message,
+  Switch
 } from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
@@ -18,6 +19,7 @@ import background from "../../assets/login.svg";
 import { apiCall } from "../../libs/api";
 import BackIcon from "./BackIcon";
 import { useTranslation } from "react-i18next";
+import i18n from "../../i18n";
 
 const LoginScreen = () => {
   const [key, setKey] = useState("");
@@ -26,14 +28,40 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
   const [isForm, setIsForm] = useState(false);
+  const [language, setLanguage] = useState("en");
   const [form] = Form.useForm();
   const { t } = useTranslation();
 
 
+
+  // const getUUID = async () => {
+  //   const resp = await send({ query: "getUUID" });
+  //   setUUID(resp.UUID);
+  // };
+  // const getUUID = async () => {
+  //   const resp = await send({ query: "getUUID" });
+  //   console.log("Retrieved UUID:", resp.UUID); 
+  //   setUUID(resp.UUID);
+  // };
+
   const getUUID = async () => {
-    const resp = await send({ query: "getUUID" });
-    setUUID(resp.UUID);
+    try {
+      const resp = await send({ query: "getUUID" });
+      console.log("Full response:", resp);
+      if (resp && resp.UUID) {
+        setUUID(resp.UUID);
+        console.log("Updated UUID state:", resp.UUID);
+      } else {
+        console.error("UUID is not available in the response");
+      }
+    } catch (error) {
+      console.error("Error retrieving UUID:", error);
+    }
   };
+
+  useEffect(() => {
+    getUUID();
+  }, []);
 
   const getPlatform = () => {
     const { userAgent } = navigator;
@@ -43,9 +71,7 @@ const LoginScreen = () => {
     return "Unknown";
   };
 
-  useEffect(() => {
-    getUUID();
-  }, []);
+
 
   const checkSerial = async () => {
     setLoading(true);
@@ -64,11 +90,11 @@ const LoginScreen = () => {
       console.log("API Response from getClient:", resp);
 
       if (resp.success) {
-        const { client, serialId, exp, startAt } = resp;
+        const { client, serial } = resp;
         localStorage.setItem("lab-user", JSON.stringify(client));
-        localStorage.setItem("lab-serial-id", serialId);
-        localStorage.setItem("lab-exp", exp);
-        localStorage.setItem("lab-created", startAt);
+        localStorage.setItem("lab-serial-id", serial?.id);
+        localStorage.setItem("lab-exp", serial.exp);
+        localStorage.setItem("lab-created", serial.startAt);
         setIsLogin(true);
       } else {
         setIsForm(false);
@@ -95,16 +121,17 @@ const LoginScreen = () => {
           phone: formData.phone,
           email: formData.email,
           address: formData.address,
+          device: "838cec58-7cb6-4c2c-b6ca-9c15dff1118ff",
         },
-        auth: false,
+        // auth: false,
       });
 
       if (resp.success) {
-        const { client, serialId, exp, startAt } = resp;
+        const { client, serial } = resp;
         localStorage.setItem("lab-user", JSON.stringify(client));
-        localStorage.setItem("lab-serial-id", serialId);
-        localStorage.setItem("lab-exp", exp);
-        localStorage.setItem("lab-created", startAt);
+        localStorage.setItem("lab-serial-id", serial?.id);
+        localStorage.setItem("lab-exp", serial.exp);
+        localStorage.setItem("lab-created", serial.startAt);
         setIsLogin(true);
       } else {
         setIsForm(false);
@@ -120,6 +147,23 @@ const LoginScreen = () => {
 
   const handleClose = () => {
     setIsForm(false);
+  };
+
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem("app-language");
+    if (savedLanguage) {
+      i18n.changeLanguage(savedLanguage);
+      setLanguage(savedLanguage);
+      document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
+    }
+  }, []);
+
+  const handleLang = (checked) => {
+    const newLanguage = checked ? "ar" : "en";
+    i18n.changeLanguage(newLanguage);
+    setLanguage(newLanguage);
+    document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
+    localStorage.setItem("app-language", newLanguage); // Save the language to localStorage
   };
 
   return (
@@ -213,25 +257,6 @@ const LoginScreen = () => {
               padding: 32,
             },
           }}
-        //         title={
-        //           <div className="text-center py-6 relative">
-        //             <div
-        //               class="pattern-isometric pattern-indigo-400 pattern-bg-white 
-        // pattern-size-6 pattern-opacity-5 absolute inset-0"
-        //             ></div>
-        //             <Avatar
-        //               className="w-[80px] h-[80px]"
-        //               icon={<UserOutlined className="text-[30px]" />}
-        //             />
-        //             {/* <Typography.Text className="block text-[22px]">Login</Typography.Text> */}
-        //             <Typography.Text className="block mt-[8px]  text-[18px] font-bold">
-        //               Login.
-        //             </Typography.Text>
-        //             <Typography.Text className="block  font-normal" type="secondary">
-        //               Please enter your info.
-        //             </Typography.Text>
-        //           </div>
-        //         }
         >
 
           <Space direction="vertical" size={32} className="w-96 h-full">
@@ -240,7 +265,7 @@ const LoginScreen = () => {
 
               <div className="w-full">
                 <h1 className=" text-[32px] text-center leading-[43.57px] !font-light mb-2 inter">
-                  {t("Try")} <span className=" !font-bold">Dr.lab</span> {t("businessplan")}
+                  {t("Try")} {t("Drlab")} {t("businessplan")}
                 </h1>
               </div>
             </div>
@@ -274,9 +299,20 @@ const LoginScreen = () => {
                 </div>
                 <p className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter" onClick={() => setIsForm(true)}>{t("clickHereToGetA")}
                   <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">{t("FreeTrial")}</span></p>
+                <Space>
+                  <Switch
+                    className="switchBtn"
+                    checkedChildren="عربي"
+                    unCheckedChildren="en"
+                    checked={language === "ar"}
+                    onChange={handleLang}
+                    style={{ width: 60 }}
+                  />
+                </Space>
               </div>
             </div>
           </Space>
+
         </Card>
       )}
     </div>

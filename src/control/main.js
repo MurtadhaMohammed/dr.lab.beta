@@ -284,7 +284,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
-    
+
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {
         event.reply("asynchronous-reply", { err, rows });
@@ -332,9 +332,15 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { err, res });
       });
       break;
-    case "getUUID": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
-      let UUID = await machineIdSync(true);
-      event.reply("asynchronous-reply", { UUID });
+    case "getUUID":
+      try {
+        let UUID = await machineIdSync(true);
+        console.log("Retrieved UUID:", UUID); // Log the UUID in the main process
+        event.reply("asynchronous-reply", { UUID });
+      } catch (error) {
+        console.error("Error retrieving UUID:", error);
+        event.reply("asynchronous-reply", { UUID: null });
+      }
       break;
     default:
       break;

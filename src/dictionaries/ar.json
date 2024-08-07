@@ -142,10 +142,12 @@
     "PleaseInputYourLabName": "يرجى إدخال اسم المختبر الخاص بك",
     "Continue": "استمر",
     "Try": "جرب",
-    "businessplan": "خطة عمل",
+    "businessplan": "لخطة العمل",
     "SerialNumber": "رقم الاشتراك",
     "or": "أو",
-    "clickHereToGetA": "انقر هنا للحصول على",
+    "clickHereToGetA": " انقر هنا للحصول على ",
     "FreeTrial": "تجربة مجانية",
-    "AddYourInfo": "أضف معلوماتك"
+    "AddYourInfo": "أضف معلوماتك",
+    "Drlab":"دكتور لاب",
+    "Login":"تسجيل دخول"
 }
