@@ -182,7 +182,7 @@ const SettingsScreen = () => {
       }
     });
   };
-
+//test push
 
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
