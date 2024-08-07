@@ -12,7 +12,7 @@ const useLogin = () => {
       try {
         const user = JSON.parse(userString);
         setUser(user);
-        //checkExpire(user);
+        checkExpire(user);
       } catch (error) {
         console.error("Failed to parse user data:", error);
         setIsLogin(false);
@@ -58,39 +58,20 @@ const useLogin = () => {
       );
 
       if (!response.ok) {
-        console.error(`API error: ${response.status} ${response.statusText}`);
         throw new Error(
           `Failed to check serial expiration, status code: ${response.status}`
         );
       }
 
       const data = await response.json();
-      console.log("Expiration check response:", data);
 
-      if (!data.success) {
-        console.error("API returned success: false, data:", data);
-        message.error("Failed to retrieve client information.");
-        setIsLogin(false);
-        return;
-      }
-
-      if (data.client.type === "trial") {
-        setIsLogin(true);
-        localStorage.setItem("lab-exp", data.exp);
-        localStorage.setItem("lab-serial-id", data.serialId);
-        return;
-      }
-
-      const expirationDate = dayjs(data.client.createdAt).add(data.exp, "day");
-      const isExpired = dayjs().isAfter(expirationDate);
-
-      if (isExpired) {
+      if (data?.expired) {
         message.error("Serial Expired!");
         setIsLogin(false);
       } else {
         setIsLogin(true);
-        localStorage.setItem("lab-exp", data.exp);
-        localStorage.setItem("lab-serial-id", data.serialId);
+        localStorage.setItem("lab-exp", data?.serial?.exp);
+        localStorage.setItem("lab-created", data?.serial?.startAt);
       }
     } catch (error) {
       console.error(

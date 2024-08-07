@@ -278,7 +278,7 @@ const SettingsScreen = () => {
                     rules={[
                       {
                         required: true,
-                        message: t("PleaseInputYourPhone!"),
+                        message: t("PleaseInputYourPhone"),
                       },
                     ]}
                   >

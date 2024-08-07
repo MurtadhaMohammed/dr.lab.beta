@@ -8,7 +8,7 @@ import {
   Space,
   Typography,
   message,
-  Switch
+  Switch,
 } from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
@@ -32,18 +32,6 @@ const LoginScreen = () => {
   const [form] = Form.useForm();
   const { t } = useTranslation();
 
-
-
-  // const getUUID = async () => {
-  //   const resp = await send({ query: "getUUID" });
-  //   setUUID(resp.UUID);
-  // };
-  // const getUUID = async () => {
-  //   const resp = await send({ query: "getUUID" });
-  //   console.log("Retrieved UUID:", resp.UUID); 
-  //   setUUID(resp.UUID);
-  // };
-
   const getUUID = async () => {
     try {
       const resp = await send({ query: "getUUID" });
@@ -63,6 +51,7 @@ const LoginScreen = () => {
     getUUID();
   }, []);
 
+
   const getPlatform = () => {
     const { userAgent } = navigator;
     if (userAgent.includes("Win")) return "Windows";
@@ -70,8 +59,6 @@ const LoginScreen = () => {
     if (userAgent.includes("Linux")) return "Linux";
     return "Unknown";
   };
-
-
 
   const checkSerial = async () => {
     setLoading(true);
@@ -87,10 +74,9 @@ const LoginScreen = () => {
         },
       });
 
-      console.log("API Response from getClient:", resp);
-
       if (resp.success) {
-        const { client, serial } = resp;
+        let data = resp.json();
+        const { client, serial } = data;
         localStorage.setItem("lab-user", JSON.stringify(client));
         localStorage.setItem("lab-serial-id", serial?.id);
         localStorage.setItem("lab-exp", serial.exp);
@@ -98,7 +84,8 @@ const LoginScreen = () => {
         setIsLogin(true);
       } else {
         setIsForm(false);
-        message.error(resp.message || "Serial not found!");
+        let data = resp.json();
+        message.error(data.message || "Serial not found!");
       }
     } catch (error) {
       console.log(error);
@@ -108,8 +95,12 @@ const LoginScreen = () => {
     }
   };
 
-
   const register = async () => {
+    // if (!UUID) {
+    //   message.error("Error !");
+    //   return;
+    // }
+    setLoading(true);
     try {
       const formData = form.getFieldsValue();
       const resp = await apiCall({
@@ -121,13 +112,15 @@ const LoginScreen = () => {
           phone: formData.phone,
           email: formData.email,
           address: formData.address,
+          platform: getPlatform(),
           device: UUID,
         },
         // auth: false,
       });
 
       if (resp.success) {
-        const { client, serial } = resp;
+        let data = resp.json();
+        const { client, serial } = data;
         localStorage.setItem("lab-user", JSON.stringify(client));
         localStorage.setItem("lab-serial-id", serial?.id);
         localStorage.setItem("lab-exp", serial.exp);
@@ -135,8 +128,10 @@ const LoginScreen = () => {
         setIsLogin(true);
       } else {
         setIsForm(false);
-        message.error(resp.message || "Serial not found!");
+        let data = resp.json();
+        message.error(data.message || "Serial not found!");
       }
+      setLoading(false);
     } catch (error) {
       console.log(error);
       message.error(error.message);
@@ -154,7 +149,7 @@ const LoginScreen = () => {
     if (savedLanguage) {
       i18n.changeLanguage(savedLanguage);
       setLanguage(savedLanguage);
-      document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
+      document.documentElement.dir = savedLanguage === "ar" ? "ltr" : "ltr";
     }
   }, []);
 
@@ -163,7 +158,7 @@ const LoginScreen = () => {
     i18n.changeLanguage(newLanguage);
     setLanguage(newLanguage);
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("app-language", newLanguage); // Save the language to localStorage
+    localStorage.setItem("app-language", newLanguage);
   };
 
   return (
@@ -194,7 +189,7 @@ const LoginScreen = () => {
               rules={[
                 {
                   required: true,
-                  message: t("PleaseInputyourName!"),
+                  message: t("PleaseInputyourName"),
                 },
               ]}
             >
@@ -207,7 +202,7 @@ const LoginScreen = () => {
               rules={[
                 {
                   required: true,
-                  message: t("PleaseInputYourLabName!"),
+                  message: t("PleaseInputYourLabName"),
                 },
               ]}
             >
@@ -221,7 +216,7 @@ const LoginScreen = () => {
               rules={[
                 {
                   required: true,
-                  message: t("PleaseInputYourPhone!"),
+                  message: t("PleaseInputYourPhone"),
                 },
               ]}
             >
@@ -236,7 +231,11 @@ const LoginScreen = () => {
               />
             </Form.Item>
 
-            <Form.Item label={t("Address")} name="address" className="h-16 mb-8">
+            <Form.Item
+              label={t("Address")}
+              name="address"
+              className="h-16 mb-8"
+            >
               <Input placeholder="Iraq - Baghdad" className=" h-[40px] p-2" />
             </Form.Item>
 
@@ -258,7 +257,6 @@ const LoginScreen = () => {
             },
           }}
         >
-
           <Space direction="vertical" size={32} className="w-96 h-full">
             <div className="w-full flex flex-col items-center gap-8">
               <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
@@ -297,8 +295,15 @@ const LoginScreen = () => {
                     {t("or")}
                   </p>
                 </div>
-                <p className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter" onClick={() => setIsForm(true)}>{t("clickHereToGetA")}
-                  <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">{t("FreeTrial")}</span></p>
+                <p
+                  className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter"
+                  onClick={() => setIsForm(true)}
+                >
+                  {t("clickHereToGetA")}
+                  <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">
+                    {t("FreeTrial")}
+                  </span>
+                </p>
                 <Space>
                   <Switch
                     className="switchBtn"
@@ -312,7 +317,6 @@ const LoginScreen = () => {
               </div>
             </div>
           </Space>
-
         </Card>
       )}
     </div>

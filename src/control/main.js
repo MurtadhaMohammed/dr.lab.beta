@@ -334,12 +334,12 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     case "getUUID":
       try {
-        let UUID = await machineIdSync(true);
-        console.log("Retrieved UUID:", UUID); // Log the UUID in the main process
+        const UUID = machineIdSync(true);
+        console.log("Retrieved UUID:", UUID);
         event.reply("asynchronous-reply", { UUID });
       } catch (error) {
         console.error("Error retrieving UUID:", error);
-        event.reply("asynchronous-reply", { UUID: null });
+        event.reply("asynchronous-reply", { error: "Failed to retrieve UUID" });
       }
       break;
     default:

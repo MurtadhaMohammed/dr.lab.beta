@@ -57,8 +57,8 @@ export const apiCall = async ({
     }
 
     // Assuming the response is JSON
-    const jsonRes = await res.json();
-    return jsonRes;
+    // const jsonRes = await res.json();
+    return res;
   } catch (error) {
     console.error("API call error:", error);
     throw error; // Propagate the error to the calling function

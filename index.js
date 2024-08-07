@@ -4,6 +4,7 @@ const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const express = require("express");
 const Cors = require("cors");
+const os = require("os");
 
 const isDev = require("electron-is-dev");
 const log = require("electron-log");
@@ -100,13 +101,16 @@ function createWindow() {
 
     if (!isDev) {
       // Configure the feed URL for GitHub Releases
+      const isMac = os.platform() === "darwin";
       autoUpdater.setFeedURL({
-        // provider: "generic",
-        //url: "http://192.168.0.102:8080",
-        url: "https://github.com/MurtadhaMohammed/dr.lab.beta/releases/latest",
-        provider: "github",
-        repo: "dr.lab.beta",
-        owner: "MurtadhaMohammed",
+        provider: "generic",
+        url: `https://drlab.us-east-1.linodeobjects.com/release/${
+          isMac ? "mac" : "win"
+        }`,
+        // url: "https://github.com/MurtadhaMohammed/dr.lab.beta/releases/latest",
+        // provider: "github",
+        // repo: "dr.lab.beta",
+        // owner: "MurtadhaMohammed",
         //token: "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", // Optional: Add only if needed
       });
       autoUpdater.checkForUpdates();
