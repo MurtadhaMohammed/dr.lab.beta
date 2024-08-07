@@ -12,7 +12,7 @@ const useLogin = () => {
       try {
         const user = JSON.parse(userString);
         setUser(user);
-        checkExpire(user);
+        //checkExpire(user);
       } catch (error) {
         console.error("Failed to parse user data:", error);
         setIsLogin(false);

@@ -121,7 +121,7 @@ const LoginScreen = () => {
           phone: formData.phone,
           email: formData.email,
           address: formData.address,
-          device: "838cec58-7cb6-4c2c-b6ca-9c15dff1118ff",
+          device: UUID,
         },
         // auth: false,
       });
