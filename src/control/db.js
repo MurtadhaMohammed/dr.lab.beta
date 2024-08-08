@@ -46,6 +46,8 @@ class LabDB {
         FOREIGN KEY(patientID) REFERENCES patients(id)
 );
 
+
+
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50),
@@ -151,13 +153,47 @@ class LabDB {
     return { id: info.lastInsertRowid };
   }
 
+  // async deletePatient(id) {
+  //   const stmt = await this.db.prepare(`
+  //     DELETE FROM patients WHERE id = ?
+  //   `);
+  //   const info = stmt.run(id);
+  //   return { success: info.changes > 0, rowsDeleted: info.changes };
+  // }
+
+  // async deletePatient(id) {
+  //   const deleteVisitsStmt = await this.db.prepare(`
+  //     DELETE FROM visits WHERE patientID = ?
+  //   `);
+  //   await deleteVisitsStmt.run(id);
+  
+  //   const deletePatientStmt = await this.db.prepare(`
+  //     DELETE FROM patients WHERE id = ?
+  //   `);
+  //   const info = await deletePatientStmt.run(id);
+  
+  //   return { success: info.changes > 0, rowsDeleted: info.changes };
+  // }
+
   async deletePatient(id) {
-    const stmt = await this.db.prepare(`
+    const checkVisitsStmt = await this.db.prepare(`
+      SELECT COUNT(*) AS count FROM visits WHERE patientID = ?
+    `);
+    const visits = await checkVisitsStmt.get(id);
+  
+    if (visits.count > 0) {
+      return { success: false, error: "Patient has associated visits." };
+    }
+  
+    const deletePatientStmt = await this.db.prepare(`
       DELETE FROM patients WHERE id = ?
     `);
-    const info = stmt.run(id);
+    const info = await deletePatientStmt.run(id);
+  
     return { success: info.changes > 0, rowsDeleted: info.changes };
   }
+  
+  
 
   async updatePatient(id, updates) {
     const { name, gender, email, phone, birth } = updates;

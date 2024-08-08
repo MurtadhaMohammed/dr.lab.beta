@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { message } from "antd";
 import dayjs from "dayjs";
@@ -13,9 +12,10 @@ const useLogin = () => {
       try {
         const user = JSON.parse(userString);
         setUser(user);
-        // Ensure that lab-exp and other values exist before calling checkExpire
+
         const exp = localStorage.getItem("lab-exp");
         const labCreated = localStorage.getItem("lab-created");
+
         if (exp && labCreated) {
           checkExpire(user);
         } else {
@@ -48,11 +48,18 @@ const useLogin = () => {
       const createdDate = dayjs(labCreated);
       const today = dayjs();
       const dayPassed = today.diff(createdDate, "day");
-      const remaining = parseInt(exp, 10) - dayPassed;
+      
+      // Define the expiration period based on the user type
+      const expirationPeriod = user?.type === "trial" ? 7 : 365;
+      const remaining = expirationPeriod - dayPassed;
+      
+      console.log("tttesttt",expirationPeriod);
+      
 
-      if (!remaining) {
+      if (remaining <= 0) {
         setIsLogin(false);
         setUser(null);
+        message.error("Subscription has expired.");
         return;
       }
 
@@ -79,6 +86,7 @@ const useLogin = () => {
         if (data?.expired) {
           message.error("Serial Expired!");
           setIsLogin(false);
+          setUser(null);
         } else {
           setIsLogin(true);
           localStorage.setItem("lab-exp", data?.serial?.exp);
@@ -92,10 +100,12 @@ const useLogin = () => {
       );
       message.error("Failed to check serial expiration");
       setIsLogin(false);
+      setUser(null);
     }
   };
 
   return null;
 };
+
 
 export default useLogin;

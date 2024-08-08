@@ -182,7 +182,7 @@ const SettingsScreen = () => {
       }
     });
   };
-  //test push
+
 
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
@@ -364,7 +364,8 @@ const SettingsScreen = () => {
 
               <div className="flex flex-col w-full gap-[10px]">
                 <div className={`${remainingDays < 7 ? "bg-[#F187060A] border-[#BF6A0224]" : "bg-[#C8E6C942] border-[#4CAF50]"}  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}>
-                  <p className=" font-normal">{t("serialNumber")}</p>
+                  {/* <p className=" font-normal">{t("SerialNumber")}</p> */}
+                  <p>{t("SerialNumber")}</p>
                   <p className=" font-bold">10992909</p>
                 </div>
 
@@ -376,7 +377,8 @@ const SettingsScreen = () => {
                 }
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">{t('registeredAt')}</p>
+                  {/* <p className=" font-normal text-sm">{t('startedAt')}</p> */}
+                  <p>{t('startedAt')}</p>
                   <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.register || "2024 Jan , 02"}</p>
                 </div>
 
