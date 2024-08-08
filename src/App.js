@@ -19,7 +19,7 @@ const { ipcRenderer } = window.require("electron");
 function App() {
   const { isLogin } = useAppStore();
 
-  
+
   useLogin();
 
   useEffect(() => {

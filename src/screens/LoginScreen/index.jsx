@@ -263,7 +263,7 @@ const LoginScreen = () => {
 
               <div className="w-full">
                 <h1 className=" text-[32px] text-center leading-[43.57px] !font-light mb-2 inter">
-                  {t("Try")} {t("Drlab")} {t("businessplan")}
+                  {t("Try")} <span className=" font-bold">{t("Drlab")}</span> {t("businessplan")}
                 </h1>
               </div>
             </div>
@@ -300,7 +300,7 @@ const LoginScreen = () => {
                   onClick={() => setIsForm(true)}
                 >
                   {t("clickHereToGetA")}
-                  <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]">
+                  <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff] inter font-bold">
                     {t("FreeTrial")}
                   </span>
                 </p>

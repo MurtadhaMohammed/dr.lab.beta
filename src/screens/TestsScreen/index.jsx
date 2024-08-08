@@ -8,7 +8,10 @@ const { Search } = Input;
 
 const TestsScreen = () => {
   const { setIsModal, setQuerySearch, id, setReset } = useTestStore();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const direction = i18n.dir();
+
   return (
     <div className="tests-screen page">
       <div className="border-none  p-[2%]">
@@ -19,6 +22,8 @@ const TestsScreen = () => {
             style={{
               width: 280,
             }}
+            className={`${direction === "rtl" ? "search-input" : ""}`}
+            dir={direction}
           />
 
           <Space>

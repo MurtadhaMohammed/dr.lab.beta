@@ -7,8 +7,11 @@ import { useTranslation } from "react-i18next";
 const { Search } = Input;
 
 const GroupsScreen = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { setIsModal, setQuerySearch, id, setReset } = useGroupStore();
+
+  const direction = i18n.dir();
+
   return (
     <div className="group-screen page">
       <Card
@@ -26,6 +29,8 @@ const GroupsScreen = () => {
             style={{
               width: 280,
             }}
+            className={`${direction === "rtl" ? "search-input" : ""}`}
+            dir={direction}
           />
 
           <Space>

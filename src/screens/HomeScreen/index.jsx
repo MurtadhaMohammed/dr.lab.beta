@@ -18,7 +18,9 @@ const HomeScreen = () => {
     setIsToday,
     isToday,
   } = useHomeStore();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const direction = i18n.dir();
 
   const onClick = ({ key }) => {
     (id || testType !== key) && setReset();
@@ -58,6 +60,8 @@ const HomeScreen = () => {
               style={{
                 width: 280,
               }}
+              className={`${direction === "rtl" ? "search-input" : ""}`}
+              dir={direction}
             />
             <span>
               {t("RequestListFor")}{" "}
