@@ -12,10 +12,13 @@ const { Search } = Input;
 
 const PatientsScreen = () => {
   const { setIsModal, setQuerySearch, id, setReset } = usePatientStore();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const direction = i18n.dir();
+
   return (
     <div className="patients-screen page">
-     <div className="border-none  p-[2%]">
+      <div className="border-none  p-[2%]">
         <section className="header app-flex-space mb-[18px]">
           <Space size={16}>
             <Search
@@ -24,6 +27,8 @@ const PatientsScreen = () => {
               style={{
                 width: 280,
               }}
+              className={`${direction === "rtl" ? "search-input" : ""}`}
+              dir={direction}
             />
           </Space>
           <Button

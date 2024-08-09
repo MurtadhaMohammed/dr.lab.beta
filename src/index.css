@@ -167,3 +167,15 @@ th {
 #title-bar-buttons button {
   -webkit-app-region: no-drag !important;
 }
+
+.search-input {
+  border-left: 1px solid #d9d9d9;
+  box-sizing: border-box;
+  border-radius: 10px;
+}
+
+.search-input:focus,
+.search-input:active,
+.search-input:hover {
+  border-color: #004075;
+}

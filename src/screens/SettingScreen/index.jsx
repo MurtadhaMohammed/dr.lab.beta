@@ -376,8 +376,8 @@ const SettingsScreen = () => {
 
               <div className="flex flex-col w-full gap-[10px]">
                 <div className={`${remainingDays < 7 ? "bg-[#F187060A] border-[#BF6A0224]" : "bg-[#C8E6C942] border-[#4CAF50]"}  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}>
-                  {/* <p className=" font-normal">{t("SerialNumber")}</p> */}
-                  <p>{t("SerialNumber")}</p>
+                  <p className=" font-normal">{t("SerialNumber")}</p>
+                  {/* <p>{t("SerialNumber")}</p> */}
                   <p className=" font-bold">10992909</p>
                 </div>
 
