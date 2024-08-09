@@ -184,12 +184,24 @@ const SettingsScreen = () => {
   };
 
 
+  useEffect(() => {
+    const savedLanguage = localStorage.getItem("app-language");
+    if (savedLanguage) {
+      i18n.changeLanguage(savedLanguage);
+      setLanguage(savedLanguage);
+      document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
+    }
+  }, []);
+
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
     i18n.changeLanguage(newLanguage);
     setLanguage(newLanguage);
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
+    localStorage.setItem("app-language", newLanguage);
   };
+  
+  
 
   const handleWhatsUpExpireation = (expire) => {
     if (expire > 7) {
