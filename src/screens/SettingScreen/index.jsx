@@ -19,7 +19,7 @@ import { UserOutlined } from "@ant-design/icons";
 // import headImage from "../../../image.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
-import { useAppStore } from "../../libs/appStore";
+import { useAppStore, useLanguage } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
@@ -30,7 +30,8 @@ const SettingsScreen = () => {
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
   const [remainingDays, setRemainingDays] = useState(null);
-  const [language, setLanguage] = useState("en");
+  // const [language, setLanguage] = useState("en");
+  const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
@@ -182,14 +183,23 @@ const SettingsScreen = () => {
       }
     });
   };
-//test push
+  //test push
 
   const handleLang = (checked) => {
-    const newLanguage = checked ? "ar" : "en";
-    i18n.changeLanguage(newLanguage);
-    setLanguage(newLanguage);
-    document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
+    if (checked != undefined) {
+      const newLanguage = checked ? "ar" : "en";
+      i18n.changeLanguage(newLanguage);
+      setLang(newLanguage);
+      document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
+    } else {
+      i18n.changeLanguage(lang);
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    }
   };
+
+  useEffect(() => {
+    handleLang();
+  }, []);
 
   const handleWhatsUpExpireation = (expire) => {
     if (expire > 7) {
@@ -203,7 +213,9 @@ const SettingsScreen = () => {
     }
   }
 
-  const whatsAppStatus = useMemo(() => handleWhatsUpExpireation(), [remainingDays, language]); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
+  const whatsAppStatus = useMemo(() => handleWhatsUpExpireation(), [remainingDays, lang]); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
+
+  console.log(lang);
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -226,7 +238,7 @@ const SettingsScreen = () => {
                 className="switchBtn"
                 checkedChildren="عربي"
                 unCheckedChildren="en"
-                checked={language === "ar"}
+                checked={lang === "ar"}
                 onChange={handleLang}
                 style={{ width: 60 }}
               />
@@ -353,7 +365,7 @@ const SettingsScreen = () => {
 
               <div className="flex flex-col w-full gap-[10px]">
                 <div className={`${remainingDays < 7 ? "bg-[#F187060A] border-[#BF6A0224]" : "bg-[#C8E6C942] border-[#4CAF50]"}  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}>
-                  <p className=" font-normal">{t("serialNumber")}</p>
+                  <p className=" font-normal">{t("SerialNumber")}</p>
                   <p className=" font-bold">10992909</p>
                 </div>
 

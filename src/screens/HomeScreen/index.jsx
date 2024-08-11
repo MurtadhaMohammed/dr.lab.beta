@@ -7,6 +7,7 @@ import { useHomeStore } from "../../libs/appStore";
 const { Search } = Input;
 
 import { useTranslation } from "react-i18next";
+import useLang from "../../hooks/useLang";
 const HomeScreen = () => {
   const {
     setIsModal,
@@ -19,7 +20,6 @@ const HomeScreen = () => {
     isToday,
   } = useHomeStore();
   const { t, i18n } = useTranslation();
-
   const direction = i18n.dir();
 
   const onClick = ({ key }) => {

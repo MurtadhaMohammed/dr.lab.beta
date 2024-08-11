@@ -8,12 +8,12 @@ import {
 } from "../../components/Patients";
 import { usePatientStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
+import useLang from "../../hooks/useLang";
 const { Search } = Input;
 
 const PatientsScreen = () => {
   const { setIsModal, setQuerySearch, id, setReset } = usePatientStore();
   const { t, i18n } = useTranslation();
-
   const direction = i18n.dir();
 
   return (
