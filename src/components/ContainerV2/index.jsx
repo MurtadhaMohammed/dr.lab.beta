@@ -2,31 +2,59 @@ import "./style.css";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
 import { useState } from "react";
-import { Alert, Button, Divider, Layout, Menu, Space, theme } from "antd";
+import { Alert, Button,message, Divider, Layout, Menu, Space, theme, Popconfirm } from "antd";
 import { TbReportSearch } from "react-icons/tb";
 import { GrDocumentTest } from "react-icons/gr";
 import { LuPackage2, LuSettings2 } from "react-icons/lu";
 import { IoMdLogOut } from "react-icons/io";
 import { RxDoubleArrowRight } from "react-icons/rx";
 import { motion } from "framer-motion";
-
-
+import { useAppStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import logo1 from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
 
-
 const { Sider, Content } = Layout;
 
 const MainContainerV2 = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
+  const [signoutLoading, setSignoutLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
+  const { setIsLogin } = useAppStore();
+
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const signout = async () => {
+    setSignoutLoading(true);
+    try {
+      let serialId = parseInt(localStorage.getItem("lab-serial-id"));
+      const resp = await fetch(
+        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ serialId }),
+        }
+      );
+      if (resp.status === 200) {
+        setSignoutLoading(false);
+        localStorage.removeItem("lab-exp");
+        localStorage.removeItem("lab-serial-id");
+        localStorage.removeItem("lab-user");
+        setIsLogin(false);
+      } else message.error("Serial not found!");
+    } catch (error) {
+      console.log(error);
+      message.error(error.message);
+      setSignoutLoading(false);
+    }
+  };
 
   return (
     <Layout className="h-screen">
@@ -104,13 +132,19 @@ const MainContainerV2 = ({ children }) => {
             />
           </div>
           <div className="w-full grid">
+          <Popconfirm
+              onConfirm={signout}
+              title={t("SignoutConfirm")}
+              description={t("SignOutFormThisApp")}
+            >
             <button
-              onClick={() => setCollapsed(!collapsed)}
+              onClick={() => loading={signoutLoading}}
               className="border-t border-t-[#eee] h-[48px] flex items-center gap-2 text-[#eb2f96] justify-center text-[22px] transition-all active:opacity-40"
             >
               <IoMdLogOut />
               {!collapsed && <p className="text-[15px]">{t("SignOut")}</p>}
             </button>
+            </Popconfirm>
             <button
               onClick={() => setCollapsed(!collapsed)}
               className="border-t border-t-[#eee] h-[48px] flex items-center justify-center text-[22px] transition-all active:opacity-40"
