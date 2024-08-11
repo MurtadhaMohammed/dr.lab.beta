@@ -76,6 +76,7 @@ const LoginScreen = () => {
           localStorage.setItem("lab-serial-id", updatedSerial?.id);
           localStorage.setItem("lab-exp", updatedSerial.exp);
           localStorage.setItem("lab-created", updatedSerial.startAt);
+          localStorage.setItem("lab-serial", updatedSerial.serial);
           setIsLogin(true);
         } else {
           throw new Error("Serial data is missing or incomplete");
@@ -169,6 +170,7 @@ const LoginScreen = () => {
           localStorage.setItem("lab-serial-id", serial.id);
           localStorage.setItem("lab-exp", serial.exp);
           localStorage.setItem("lab-created", serial.startAt);
+          localStorage.setItem("lab-serial", serial.serial);
           setIsLogin(true);
           setIsForm(false); // Hide the form if registration is successful
         } else {
@@ -198,7 +200,7 @@ const LoginScreen = () => {
       document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
     }
   }, []);
-  
+
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
     i18n.changeLanguage(newLanguage);
@@ -206,7 +208,7 @@ const LoginScreen = () => {
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
     localStorage.setItem("app-language", newLanguage);
   };
-  
+
 
 
   return (

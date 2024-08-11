@@ -10,12 +10,13 @@ import {
   Input,
   message,
   Popconfirm,
+  Popover,
   Row,
   Select,
   Space,
   Switch,
 } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { PhoneOutlined, UserOutlined } from "@ant-design/icons";
 // import headImage from "../../../image.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
@@ -23,6 +24,9 @@ import { useAppStore, useLanguage } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
+import Logo from "../../assets/logo2.png";
+import WorldWideIcon from "./WorldWideIcon";
+import EmailIcon from "./EmailIcon";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -215,16 +219,6 @@ const SettingsScreen = () => {
 
   const whatsAppStatus = useMemo(() => handleWhatsUpExpireation(), [remainingDays, lang]); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
-  const formatDate = (expireData) => {
-    const date = new Date(expireData);
-    const year = date.getFullYear();
-    const month = date.toLocaleString("en-US", { month: "short" });
-    const day = date.getDate().toString().padStart(2, '0');
-    return `${year} ${month}, ${day}`;
-  }
-
-  console.log(expireData.register, 'register', expireData.expire, 'expire');
-
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -322,7 +316,7 @@ const SettingsScreen = () => {
                 </Col>
 
                 <Col span={6}>
-                  <Form.Item label={t("LabName")} name="LabName">
+                  <Form.Item label={t("LabName")} name="labName">
                     <Input />
                   </Form.Item>
                 </Col>
@@ -385,7 +379,7 @@ const SettingsScreen = () => {
               <div className="flex flex-col w-full gap-[10px]">
                 <div className={`${remainingDays < 7 ? "bg-[#F187060A] border-[#BF6A0224]" : "bg-[#C8E6C942] border-[#4CAF50]"}  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}>
                   <p className=" font-normal">{t("SerialNumber")}</p>
-                  <p className=" font-bold">10992909</p>
+                  <p className=" font-bold">{localStorage.getItem('lab-serial') || "10992909"}</p>
                 </div>
 
                 {
@@ -398,13 +392,13 @@ const SettingsScreen = () => {
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p>{t('startedAt')}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
-                    {expireData.register ? formatDate(expireData.register) : "2024 Aug, 11"}
+                    {expireData.register ? dayjs(expireData.register).format('YYYY MMM, DD') : "2024 Aug, 11"}
                   </p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p className=" font-normal text-sm">{t("expiredAt")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.expire ? formatDate(expireData.expire) : "2024 Aug, 11"}</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.expire ? dayjs().add(expireData.expire, 'day').format('YYYY MMM, DD') : "2024 Aug, 11"}</p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
@@ -416,7 +410,28 @@ const SettingsScreen = () => {
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
                     <p className=" font-normal">{t('whatsappIntegration')}</p>
-                    <p className={`${whatsAppStatus.textStyle} font-bold text-sm`}>{whatsAppStatus.status}</p>
+                    <Popover trigger="hover" content={
+                      <div className=" flex flex-col gap-4 pb-2">
+                        <div className="w-full px-10 py-2">
+                          <img src={Logo} alt="logo" className="w-full h-10" />
+                        </div>
+                        <h1 className="px-2 font-semibold">{t("contact_us_to_subscribe")}:</h1>
+                        <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
+                          <WorldWideIcon />
+                          <a href="/" target="blank">https://google.com</a>
+                        </div>
+                        <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
+                          <EmailIcon />
+                          <a href="/" target="blank">dr.lab@lab.com</a>
+                        </div>
+                        <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
+                          <PhoneOutlined rotate={-46} />
+                          <a href="/" target="blank">0770000000</a>
+                        </div>
+                      </div>
+                    }>
+                      <p className={`${whatsAppStatus.textStyle} font-bold text-sm`}>{whatsAppStatus.status}</p>
+                    </Popover>
                   </div>
 
                   <p className={`${whatsAppStatus.descStyle} p-2 border-[1px] rounded-lg !mt-2`}>{whatsAppStatus.description}</p>
