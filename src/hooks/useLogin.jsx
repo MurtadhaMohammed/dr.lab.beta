@@ -12,7 +12,16 @@ const useLogin = () => {
       try {
         const user = JSON.parse(userString);
         setUser(user);
-        checkExpire(user);
+
+        const exp = localStorage.getItem("lab-exp");
+        const labCreated = localStorage.getItem("lab-created");
+
+        if (exp && labCreated) {
+          checkExpire(user);
+        } else {
+          console.warn("Expiration data not found in localStorage.");
+          setIsLogin(false);
+        }
       } catch (error) {
         console.error("Failed to parse user data:", error);
         setIsLogin(false);
@@ -29,49 +38,60 @@ const useLogin = () => {
       const exp = localStorage.getItem("lab-exp");
       const labCreated = localStorage.getItem("lab-created");
 
-      const createdDate = dayjs(labCreated);
-      const today = dayjs();
-      const dayPassed = today.diff(createdDate, "day");
-      const remaining = parseInt(exp) - dayPassed;
-
-      if (!remaining) {
+      if (!exp || !labCreated || !serialId) {
+        console.warn("Required data missing for expiration check.");
         setIsLogin(false);
         setUser(null);
         return;
       }
 
-      if (!serialId && user?.type !== "trial") {
-        console.warn("No serial ID found, and user is not on a trial.");
+      const createdDate = dayjs(labCreated);
+      const today = dayjs();
+      const dayPassed = today.diff(createdDate, "day");
+      
+      // Define the expiration period based on the user type
+      const expirationPeriod = user?.type === "trial" ? 7 : 365;
+      const remaining = expirationPeriod - dayPassed;
+      
+      console.log("tttesttt",expirationPeriod);
+      
+
+      if (remaining <= 0) {
         setIsLogin(false);
+        setUser(null);
+        message.error("Subscription has expired.");
         return;
       }
 
-      const response = await fetch(
-        "https://dr-lab-apiv2.onrender.com/api/app/check-serial-expiration",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ serialId: parseInt(serialId, 10) }),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to check serial expiration, status code: ${response.status}`
+      if (user?.type !== "trial") {
+        const response = await fetch(
+          "https://dr-lab-apiv2.onrender.com/api/app/check-serial-expiration",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ serialId: parseInt(serialId, 10) }),
+          }
         );
-      }
 
-      const data = await response.json();
+        if (!response.ok) {
+          throw new Error(
+            `Failed to check serial expiration, status code: ${response.status}`
+          );
+        }
 
-      if (data?.expired) {
-        message.error("Serial Expired!");
-        setIsLogin(false);
-      } else {
-        setIsLogin(true);
-        localStorage.setItem("lab-exp", data?.serial?.exp);
-        localStorage.setItem("lab-created", data?.serial?.startAt);
+        const data = await response.json();
+
+        if (data?.expired) {
+          message.error("Serial Expired!");
+          setIsLogin(false);
+          setUser(null);
+        } else {
+          setIsLogin(true);
+          localStorage.setItem("lab-exp", data?.serial?.exp);
+          localStorage.setItem("lab-created", data?.serial?.startAt);
+        }
       }
     } catch (error) {
       console.error(
@@ -80,10 +100,12 @@ const useLogin = () => {
       );
       message.error("Failed to check serial expiration");
       setIsLogin(false);
+      setUser(null);
     }
   };
 
   return null;
 };
+
 
 export default useLogin;

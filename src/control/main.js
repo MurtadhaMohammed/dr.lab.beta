@@ -332,16 +332,22 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { err, res });
       });
       break;
+    // case "getUUID":
+    //   try {
+    //     const UUID = machineIdSync(true);
+    //     console.log("Retrieved UUID:", UUID);
+    //     event.reply("asynchronous-reply", { UUID });
+    //   } catch (error) {
+    //     console.error("Error retrieving UUID:", error);
+    //     event.reply("asynchronous-reply", { error: "Failed to retrieve UUID" });
+    //   }
+    //   break;
+
     case "getUUID":
-      try {
-        const UUID = machineIdSync(true);
-        console.log("Retrieved UUID:", UUID);
-        event.reply("asynchronous-reply", { UUID });
-      } catch (error) {
-        console.error("Error retrieving UUID:", error);
-        event.reply("asynchronous-reply", { error: "Failed to retrieve UUID" });
-      }
+      let UUID = await machineIdSync(true);
+      event.reply("asynchronous-reply", { UUID });
       break;
+
     default:
       break;
   }

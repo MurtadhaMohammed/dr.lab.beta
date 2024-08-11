@@ -32,23 +32,16 @@ const LoginScreen = () => {
   const [form] = Form.useForm();
   const { t } = useTranslation();
 
-  const getUUID = async () => {
-    try {
-      const resp = await send({ query: "getUUID" });
-      console.log("Full response:", resp);
-      if (resp && resp.UUID) {
-        setUUID(resp.UUID);
-        console.log("Updated UUID state:", resp.UUID);
-      } else {
-        console.error("UUID is not available in the response");
-      }
-    } catch (error) {
-      console.error("Error retrieving UUID:", error);
-    }
+  const getUUID = () => {
+    send({ query: "getUUID" }).then((resp) => {
+      setUUID(resp.UUID);
+    });
   };
 
   useEffect(() => {
-    getUUID();
+    setTimeout(() => {
+      getUUID();
+    }, 500);
   }, []);
 
 
@@ -74,17 +67,21 @@ const LoginScreen = () => {
         },
       });
 
-      if (resp.success) {
-        let data = resp.json();
-        const { client, serial } = data;
-        localStorage.setItem("lab-user", JSON.stringify(client));
-        localStorage.setItem("lab-serial-id", serial?.id);
-        localStorage.setItem("lab-exp", serial.exp);
-        localStorage.setItem("lab-created", serial.startAt);
-        setIsLogin(true);
+      if (resp.ok) {
+        const data = await resp.json();
+        const { client, updatedSerial } = data;
+
+        if (updatedSerial && updatedSerial.exp) {
+          localStorage.setItem("lab-user", JSON.stringify(client));
+          localStorage.setItem("lab-serial-id", updatedSerial?.id);
+          localStorage.setItem("lab-exp", updatedSerial.exp);
+          localStorage.setItem("lab-created", updatedSerial.startAt);
+          setIsLogin(true);
+        } else {
+          throw new Error("Serial data is missing or incomplete");
+        }
       } else {
-        setIsForm(false);
-        let data = resp.json();
+        const data = await resp.json();
         message.error(data.message || "Serial not found!");
       }
     } catch (error) {
@@ -95,12 +92,58 @@ const LoginScreen = () => {
     }
   };
 
+
+  // const checkSerial = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const resp = await apiCall({
+  //       method: "POST",
+  //       pathname: "/app/check-client",
+  //       isFormData: false,
+  //       data: {
+  //         serial: key,
+  //         device: UUID,
+  //         platform: getPlatform(),
+  //       },
+  //     });
+
+  //     if (resp.ok) {
+  //       const data = await resp.json();
+  //       console.log("API Response:", data);
+
+  //       const { client, serial } = data;
+
+  //       if (serial && serial.exp) {
+  //         localStorage.setItem("lab-user", JSON.stringify(client));
+  //         localStorage.setItem("lab-serial-id", serial.id);
+  //         localStorage.setItem("lab-exp", serial.exp);
+  //         localStorage.setItem("lab-created", serial.startAt);
+  //         setIsLogin(true);
+  //       } else {
+  //         throw new Error("Serial data is missing or incomplete");
+  //       }
+  //     } else {
+  //       const data = await resp.json();
+  //       message.error(data.message || "Serial not found!");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error checking serial:", error);
+  //     message.error(error.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
+
   const register = async () => {
-    // if (!UUID) {
-    //   message.error("Error !");
-    //   return;
-    // }
+    if (!UUID) {
+      message.error("Error!");
+      return;
+    }
+
     setLoading(true);
+
     try {
       const formData = form.getFieldsValue();
       const resp = await apiCall({
@@ -112,26 +155,29 @@ const LoginScreen = () => {
           phone: formData.phone,
           email: formData.email,
           address: formData.address,
-          platform: getPlatform(),
           device: UUID,
+          platform: getPlatform(),
         },
-        // auth: false,
       });
 
-      if (resp.success) {
-        let data = resp.json();
+      if (resp.ok) {
+        const data = await resp.json();
         const { client, serial } = data;
-        localStorage.setItem("lab-user", JSON.stringify(client));
-        localStorage.setItem("lab-serial-id", serial?.id);
-        localStorage.setItem("lab-exp", serial.exp);
-        localStorage.setItem("lab-created", serial.startAt);
-        setIsLogin(true);
+
+        if (serial && serial.exp && serial.startAt) {
+          localStorage.setItem("lab-user", JSON.stringify(client));
+          localStorage.setItem("lab-serial-id", serial.id);
+          localStorage.setItem("lab-exp", serial.exp);
+          localStorage.setItem("lab-created", serial.startAt);
+          setIsLogin(true);
+          setIsForm(false); // Hide the form if registration is successful
+        } else {
+          throw new Error("Serial data is missing or incomplete");
+        }
       } else {
-        setIsForm(false);
-        let data = resp.json();
-        message.error(data.message || "Serial not found!");
+        const errorData = await resp.json();
+        message.error(errorData.message || "Serial not found!");
       }
-      setLoading(false);
     } catch (error) {
       console.log(error);
       message.error(error.message);
@@ -149,10 +195,10 @@ const LoginScreen = () => {
     if (savedLanguage) {
       i18n.changeLanguage(savedLanguage);
       setLanguage(savedLanguage);
-      document.documentElement.dir = savedLanguage === "ar" ? "ltr" : "ltr";
+      document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
     }
   }, []);
-
+  
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
     i18n.changeLanguage(newLanguage);
@@ -160,6 +206,8 @@ const LoginScreen = () => {
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
     localStorage.setItem("app-language", newLanguage);
   };
+  
+
 
   return (
     <div

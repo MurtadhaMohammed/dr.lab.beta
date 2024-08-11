@@ -268,7 +268,7 @@ const SettingsScreen = () => {
               autoComplete="off"
             >
               <Row gutter={[20, 0]}>
-                <Col span={8}>
+                <Col span={6}>
                   <Form.Item
                     label={t("FullName")}
                     name="name"
@@ -294,16 +294,27 @@ const SettingsScreen = () => {
                       },
                     ]}
                   >
+
                     <Input />
                   </Form.Item>
                 </Col>
+
                 <Col span={6}>
                   <Form.Item label={t("Email")} name="email">
                     <Input type="email" />
                   </Form.Item>
                 </Col>
-                <Col span={7}>
+              </Row>
+
+              <Row gutter={[20, 0]}>
+                <Col span={6}>
                   <Form.Item label={t("Address")} name="address">
+                    <Input />
+                  </Form.Item>
+                </Col>
+
+                <Col span={6}>
+                  <Form.Item label={t("LabName")} name="LabName">
                     <Input />
                   </Form.Item>
                 </Col>
@@ -377,7 +388,8 @@ const SettingsScreen = () => {
                 }
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">{t('registeredAt')}</p>
+                  {/* <p className=" font-normal text-sm">{t('startedAt')}</p> */}
+                  <p>{t('startedAt')}</p>
                   <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.register || "2024 Jan , 02"}</p>
                 </div>
 

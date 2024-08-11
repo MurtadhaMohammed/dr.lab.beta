@@ -1,4 +1,8 @@
+.settings-page {
+  max-width: 1200px;
+  margin: auto;
+}
+
 .settings-page .ant-form-item-label {
   padding-bottom: 4px !important;
-
 }

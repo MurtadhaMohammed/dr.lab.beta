@@ -125,7 +125,7 @@
     "Send": "Send",
     "EnterPhoneNumber": "Enter Phone Number",
     "supportPaymentReminder": "Please settle your support payment as soon as possible to avoid any interruption in your service.",
-    "registeredAt": "Registered At",
+    "startedAt": "Started At",
     "day": "day",
     "expiredAt": "Expired At",
     "daysLeft": "Days left",
@@ -149,6 +149,6 @@
     "clickHereToGetA": "click here to get a ",
     "FreeTrial": "Free Trial",
     "AddYourInfo": "Add your info",
-    "Drlab":"Dr.lab",
-    "Login":"Login"
+    "Drlab": "Dr.lab",
+    "Login": "Login"
 }
