@@ -215,7 +215,15 @@ const SettingsScreen = () => {
 
   const whatsAppStatus = useMemo(() => handleWhatsUpExpireation(), [remainingDays, lang]); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
-  console.log(lang);
+  const formatDate = (expireData) => {
+    const date = new Date(expireData);
+    const year = date.getFullYear();
+    const month = date.toLocaleString("en-US", { month: "short" });
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year} ${month}, ${day}`;
+  }
+
+  console.log(expireData.register, 'register', expireData.expire, 'expire');
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -388,14 +396,15 @@ const SettingsScreen = () => {
                 }
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  {/* <p className=" font-normal text-sm">{t('startedAt')}</p> */}
                   <p>{t('startedAt')}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.register || "2024 Jan , 02"}</p>
+                  <p className="text-[#A5A5A5] font-normal text-sm">
+                    {expireData.register ? formatDate(expireData.register) : "2024 Aug, 11"}
+                  </p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p className=" font-normal text-sm">{t("expiredAt")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.expire || "2025 Jan , 02"}</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">{expireData.expire ? formatDate(expireData.expire) : "2024 Aug, 11"}</p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
