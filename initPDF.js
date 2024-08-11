@@ -1,4 +1,5 @@
 const electron = require("electron");
+
 const isDev = require("electron-is-dev");
 var { jsPDF } = require("jspdf");
 var fs = require("fs");
@@ -220,13 +221,10 @@ async function createPDF(data, isView = true, cb) {
       });
     }
 
-    doc.save("a4.pdf");
-    isView &&
-      shell.openPath(path.join(__dirname, isDev ? "a4.pdf" : "../../a4.pdf"));
+    doc.save(app.getPath("userData") + "a4.pdf");
+    isView && shell.openPath(app.getPath("userData") + "a4.pdf");
 
-    let file = new LocalFileData(
-      path.join(__dirname, isDev ? "a4.pdf" : "../../a4.pdf")
-    );
+    let file = new LocalFileData(app.getPath("userData") + "a4.pdf");
 
     pdf = new jsPDF({
       orientation: "landscape",
