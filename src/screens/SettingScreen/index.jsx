@@ -314,7 +314,7 @@ const SettingsScreen = () => {
                 </Col>
 
                 <Col span={6}>
-                  <Form.Item label={t("LabName")} name="LabName">
+                  <Form.Item label={t("LabName")} name="labName">
                     <Input />
                   </Form.Item>
                 </Col>

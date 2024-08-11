@@ -48,13 +48,12 @@ const useLogin = () => {
       const createdDate = dayjs(labCreated);
       const today = dayjs();
       const dayPassed = today.diff(createdDate, "day");
-      
-      // Define the expiration period based on the user type
+
       const expirationPeriod = user?.type === "trial" ? 7 : 365;
       const remaining = expirationPeriod - dayPassed;
-      
-      console.log("tttesttt",expirationPeriod);
-      
+
+      console.log("remaining", remaining);
+      // console.log("expier:", expirationPeriod);
 
       if (remaining <= 0) {
         setIsLogin(false);
