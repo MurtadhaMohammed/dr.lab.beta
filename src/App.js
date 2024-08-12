@@ -14,6 +14,8 @@ import TitleBar from "./components/TitleBar/titleBar";
 import useLogin from "./hooks/useLogin";
 import { useAppStore } from "./libs/appStore";
 import useLang from "./hooks/useLang";
+import { send } from "./control/renderer";
+import useInitHeaderImage from "./hooks/useInitHeaderImage";
 
 const { ipcRenderer } = window.require("electron");
 
@@ -21,8 +23,17 @@ function App() {
   const { isLogin } = useAppStore();
   const { lang } = useLang();
   const [online, setOnline] = useState(navigator.onLine);
-
+  
+  useInitHeaderImage();
   useLogin();
+
+  useEffect(() => {
+    send({
+      query: "initHeadImage",
+    }).then(({ err, res }) => {
+      console.log(err, res);
+    });
+  }, []);
 
   useEffect(() => {
     ipcRenderer.on("hello", () => {

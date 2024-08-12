@@ -59,6 +59,7 @@ const SettingsScreen = () => {
       console.error("Failed to load image:", error);
     }
   }
+
   useEffect(() => {
     fetchImagePath();
   }, []);

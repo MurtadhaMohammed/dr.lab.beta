@@ -4,6 +4,8 @@ const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
 const { app } = require("electron");
 const fs = require("fs");
+const path = require('path');
+const image = path.join(__dirname, '../../defaultHeader.jpg');
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -284,6 +286,35 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    case "initHeadImage": {
+      try {
+        const destPath = path.join(app.getPath("userData"), "head.png");
+
+        fs.copyFile(image, destPath, (err) => {
+          if (err) {
+            event.reply("asynchronous-reply", { success: false, err });
+          } else {
+            event.reply("asynchronous-reply", { success: true });
+          }
+        });
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "checkInitHeadImage": {
+      const destPath = path.join(app.getPath("userData"), "head.png");
+
+      if (!destPath) {
+        event.reply("asynchronous-reply", { success: false, err });
+      }
+
+      return event.reply("asynchronous-reply", { success: true });
+    }
 
     case "insert": // { doc: "patients", data : {}, query: "insert" }
       db[arg.doc].insert(arg.data, (err, rows) => {
