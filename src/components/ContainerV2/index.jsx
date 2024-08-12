@@ -20,6 +20,7 @@ const { Sider, Content } = Layout;
 
 const MainContainerV2 = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
+  const [signoutLoading, setSignoutLoading] = useState(false);
   const [showTrialAlert, setShowTrialAlert] = useState(false);
   const [showExpAlert, setShowExpAlert] = useState(false);
   const [remainingDays, setRemainingDays] = useState(null);
