@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { ConfigProvider } from "antd";
+import React, { useEffect, useState } from "react";
+import { ConfigProvider, message } from "antd";
 import { Routes, Route } from "react-router-dom";
 import i18n from "./i18n";
 import MainContainerV2 from "./components/ContainerV2";
@@ -19,7 +19,7 @@ const { ipcRenderer } = window.require("electron");
 
 function App() {
   const { isLogin } = useAppStore();
-  const { lang } = useLang();
+  const [online, setOnline] = useState(navigator.onLine);
 
   useLogin();
 
@@ -36,7 +36,25 @@ function App() {
     ipcRenderer.on("update-err", (err) => {
       console.log("update-err ", err);
     });
+
+    // Handle online and offline events
+    const handleOnline = () => setOnline(true);
+    const handleOffline = () => setOnline(false);
+
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
   }, []);
+
+  useEffect(() => {
+    if (!online) {
+      message.error("No internet connection. Please check your connection.");
+    }
+  }, [online]);
 
   const direction = i18n.language === "ar" ? "rtl" : "ltr";
 
@@ -59,18 +77,16 @@ function App() {
       <TitleBar />
       {!isLogin && <LoginScreen />}
       {isLogin && (
-        <>
-          <MainContainerV2>
-            <Routes>
-              <Route exact path="/" element={<HomeScreen />} />
-              <Route path="/patients" element={<PatientsScreen />} />
-              <Route path="/tests" element={<TestsScreen />} />
-              <Route path="/groups" element={<GroupsScreen />} />
-              <Route path="/reports" element={<ReportsScreen />} />
-              <Route path="/settings" element={<SettingsScreen />} />
-            </Routes>
-          </MainContainerV2>
-        </>
+        <MainContainerV2>
+          <Routes>
+            <Route exact path="/" element={<HomeScreen />} />
+            <Route path="/patients" element={<PatientsScreen />} />
+            <Route path="/tests" element={<TestsScreen />} />
+            <Route path="/groups" element={<GroupsScreen />} />
+            <Route path="/reports" element={<ReportsScreen />} />
+            <Route path="/settings" element={<SettingsScreen />} />
+          </Routes>
+        </MainContainerV2>
       )}
     </ConfigProvider>
   );

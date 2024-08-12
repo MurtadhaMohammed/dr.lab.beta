@@ -27,29 +27,9 @@ const ReportsScreen = () => {
         endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
       },
     }).then(({ success, data }) => {
-      console.log("Loaded visits data:", data); // Log the visits data
       if (success) cb(data);
     });
   };
-  
-  const getSubTotalAmount = (filterDate, callback) => {
-    fetch(`/api/subtotal?startDate=${filterDate[0]}&endDate=${filterDate[1]}`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Fetched subtotal data:", data); // Log the subtotal data
-        callback(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching subtotal data:", error.message);
-        callback(undefined);
-      });
-  };
-  
   const handlePrint = () => {
     loadData((rows) => {
       let _data = {
@@ -87,93 +67,103 @@ const ReportsScreen = () => {
     });
   };
 
-  useEffect(() => {
-    setLoading(true);
-    getTotalVisits(filterDate, (visits) => {
-      getSubTotalAmount(filterDate, async (rows) => {
-        console.log("Rows fetched:", rows);
-  
-        let tests = rows?.map((el) => {
-          let subTotal = el?.tests
-            ?.map((test) => {
-              let price =
-                el?.testType === "CUSTOME"
-                  ? test?.price
-                  : test?.customePrice ||
-                    test?.tests
-                      ?.map((group) => group?.price)
-                      ?.reduce((a, b) => a + b, 0) || 0;
-  
-              return price;
-            })
-            .reduce((a, b) => a + b, 0) || 0;
-  
-          return {
-            gender: el?.patient?.gender,
-            name: el?.patient?.name,
-            discount: el?.discount || 0,
-            subTotal,
-            total: subTotal - (el?.discount || 0),
-          };
-        });
-  
-        console.log("Processed tests data:", tests);
-  
-        let totalAmount = {};
-        let subTotalAmount = {};
-        let totalDiscount = {};
-  
-        totalAmount.total = tests?.map((el) => el.total).reduce((a, b) => a + b, 0) || 0;
-        totalAmount.male = tests?.filter((el) => el?.gender === "male")
-          .map((el) => el.total)
+useEffect(() => {
+  setLoading(true);
+  getTotalVisits(filterDate, (visits) => {
+    getSubTotalAmount(filterDate, async (rows) => {
+      console.log("Rows fetched:", rows);
+
+      let tests = rows?.map((el) => {
+        let subTotal = el?.tests
+          ?.map((test) => {
+            let price =
+              el?.testType === "CUSTOME"
+                ? test?.price
+                : test?.customePrice ||
+                  test?.tests
+                    ?.map((group) => group?.price)
+                    ?.reduce((a, b) => a + b, 0) || 0;
+
+            console.log("Test price:", price);
+            return price;
+          })
           .reduce((a, b) => a + b, 0) || 0;
-        subTotalAmount.total = tests?.map((el) => el.subTotal)
-          .reduce((a, b) => a + b, 0) || 0;
-        subTotalAmount.male = tests?.filter((el) => el?.gender === "male")
-          .map((el) => el.subTotal)
-          .reduce((a, b) => a + b, 0) || 0;
-        totalDiscount.total = tests?.map((el) => el.discount)
-          .reduce((a, b) => a + b, 0) || 0;
-        totalDiscount.male = tests?.filter((el) => el?.gender === "male")
-          .map((el) => el.discount)
-          .reduce((a, b) => a + b, 0) || 0;
-  
-        console.log("Total Amount:", totalAmount);
-        console.log("Subtotal Amount:", subTotalAmount);
-        console.log("Total Discount:", totalDiscount);
-  
-        totalAmount.female = totalAmount.total - totalAmount.male;
-        subTotalAmount.female = subTotalAmount.total - subTotalAmount.male;
-        totalDiscount.female = totalDiscount.total - totalDiscount.male;
-  
-        subTotalAmount.male = Math.round((subTotalAmount.male / subTotalAmount.total) * 100);
-        subTotalAmount.female = Math.round((subTotalAmount.female / subTotalAmount.total) * 100);
-  
-        totalAmount.male = Math.round((totalAmount.male / totalAmount.total) * 100);
-        totalAmount.female = Math.round((totalAmount.female / totalAmount.total) * 100);
-  
-        totalDiscount.male = Math.round((totalDiscount.male / totalDiscount.total) * 100);
-        totalDiscount.female = Math.round((totalDiscount.female / totalDiscount.total) * 100);
-  
-        console.log("Percentage Calculations - Male:", {
-          subTotalAmount: subTotalAmount.male,
-          totalAmount: totalAmount.male,
-          totalDiscount: totalDiscount.male,
-        });
-        console.log("Percentage Calculations - Female:", {
-          subTotalAmount: subTotalAmount.female,
-          totalAmount: totalAmount.female,
-          totalDiscount: totalDiscount.female,
-        });
-  
-        setLoading(false);
-        setData({ visits, totalAmount, subTotalAmount, totalDiscount });
-        setIsReload(!isReload);
+
+        console.log("Subtotal for patient:", subTotal);
+
+        return {
+          gender: el?.patient?.gender,
+          name: el?.patient?.name,
+          discount: el?.discount || 0,
+          subTotal,
+          total: subTotal - (el?.discount || 0),
+        };
       });
+
+      console.log("Processed tests data:", tests);
+
+      let totalAmount = {};
+      let subTotalAmount = {};
+      let totalDiscount = {};
+
+      totalAmount.total = tests?.map((el) => el.total).reduce((a, b) => a + b, 0) || 0;
+      totalAmount.male = tests?.filter((el) => el?.gender === "male")
+        .map((el) => el.total)
+        .reduce((a, b) => a + b, 0) || 0;
+      subTotalAmount.total = tests?.map((el) => el.subTotal)
+        .reduce((a, b) => a + b, 0) || 0;
+      subTotalAmount.male = tests?.filter((el) => el?.gender === "male")
+        .map((el) => el.subTotal)
+        .reduce((a, b) => a + b, 0) || 0;
+      totalDiscount.total = tests?.map((el) => el.discount)
+        .reduce((a, b) => a + b, 0) || 0;
+      totalDiscount.male = tests?.filter((el) => el?.gender === "male")
+        .map((el) => el.discount)
+        .reduce((a, b) => a + b, 0) || 0;
+
+      // Log the calculated totals before moving on
+      console.log("Total Amount:", totalAmount);
+      console.log("Subtotal Amount:", subTotalAmount);
+      console.log("Total Discount:", totalDiscount);
+
+      // Calculate female data
+      totalAmount.female = totalAmount.total - totalAmount.male;
+      subTotalAmount.female = subTotalAmount.total - subTotalAmount.male;
+      totalDiscount.female = totalDiscount.total - totalDiscount.male;
+
+      // Log the female-specific calculations
+      console.log("Female Total Amount:", totalAmount.female);
+      console.log("Female Subtotal Amount:", subTotalAmount.female);
+      console.log("Female Total Discount:", totalDiscount.female);
+
+      // Percentage calculations
+      subTotalAmount.male = Math.round((subTotalAmount.male / subTotalAmount.total) * 100);
+      subTotalAmount.female = Math.round((subTotalAmount.female / subTotalAmount.total) * 100);
+
+      totalAmount.male = Math.round((totalAmount.male / totalAmount.total) * 100);
+      totalAmount.female = Math.round((totalAmount.female / totalAmount.total) * 100);
+
+      totalDiscount.male = Math.round((totalDiscount.male / totalDiscount.total) * 100);
+      totalDiscount.female = Math.round((totalDiscount.female / totalDiscount.total) * 100);
+
+      console.log("Percentage Calculations - Male:", {
+        subTotalAmount: subTotalAmount.male,
+        totalAmount: totalAmount.male,
+        totalDiscount: totalDiscount.male,
+      });
+      console.log("Percentage Calculations - Female:", {
+        subTotalAmount: subTotalAmount.female,
+        totalAmount: totalAmount.female,
+        totalDiscount: totalDiscount.female,
+      });
+
+      setLoading(false);
+      setData({ visits, totalAmount, subTotalAmount, totalDiscount });
+      setIsReload(!isReload);
     });
-  }, [filterDate]);
-  
-  
+  });
+}, [filterDate]);
+
 
   return (
     <div className="reports-screen page">
