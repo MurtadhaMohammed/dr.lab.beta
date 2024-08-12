@@ -6,3 +6,24 @@
   font-weight: 500;
   font-style: normal;
 }
+
+.handletext {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  margin-top: 12px;
+  font-family: "Inter", sans-serif;
+}
+
+.handleInputs {
+  gap: 10px;
+}
+
+.handleOr {
+  margin-top: 16px;
+}
+
+.switchBtn {
+  direction: ltr;
+}
