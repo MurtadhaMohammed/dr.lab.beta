@@ -32,6 +32,8 @@ import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
 import fileDialog from "file-dialog";
 import { apiCall } from "../../../libs/api";
+import jsPDF from 'jspdf';
+
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload } = useAppStore();
@@ -95,37 +97,56 @@ export const PureTable = ({ isReport = false }) => {
     }
   };
 
-  const handleSandWhatsap = async (record) => {
-    if (destPhone !== record?.phone) await updatePatient(record, destPhone);
-    let phone = destPhone;
-    if (!phoneValidate(phone)) {
-      message.error("رقم الهاتف غير صحيح!");
-      return;
-    } else if (phone[0] === "0") phone = phone.substr(1);
+ 
+const handleSandWhatsap = async (record) => {
+  if (destPhone !== record?.phone) await updatePatient(record, destPhone);
+  let phone = destPhone;
+  if (!phoneValidate(phone)) {
+    message.error("رقم الهاتف غير صحيح!");
+    return;
+  } else if (phone[0] === "0") phone = phone.substr(1);
 
-    fileDialog(async (files) => {
-      setMsgLoading(true);
-      const resp = await apiCall({
-        method: "POST",
-        pathname: "/send/whatsapp-message",
-        isFormData: true,
-        data: {
-          name: record?.patient?.name,
-          phone,
-          lab: JSON.parse(localStorage?.getItem("lab-user"))?.labName || "",
-          file: files[0],
-        },
-      });
-      const data = await resp.json();
-      if (data?.messages && data?.messages[0]?.message_status === "accepted") {
-        message.success("Send Succefully.");
-        setMsgLoading(false);
-      } else {
-        setMsgLoading(false);
-        message.error("Error!");
-      }
+  try {
+    // Generate PDF
+    const doc = new jsPDF();
+    doc.text(`Patient Name: ${record?.patient?.name}`, 10, 10);
+    doc.text(`Tests: ${record?.tests.map(test => test.title).join(", ")}`, 10, 20);
+    doc.text(`Price: ${getTotalPrice(record?.testType, record?.tests)}`, 10, 30);
+    doc.text(`End Price: ${getTotalPrice(record?.testType, record?.tests) - record?.discount} IQD`, 10, 40);
+    doc.text(`Discount: ${record?.discount ? `${record?.discount} IQD` : 'None'}`, 10, 50);
+    doc.text(`Created At: ${dayjs(record?.createdAt).format('DD/MM/YYYY hh:mm A')}`, 10, 60);
+
+    // Convert PDF to Blob
+    const pdfBlob = doc.output('blob');
+
+    // Send PDF to server
+    setMsgLoading(true);
+    const formData = new FormData();
+    formData.append('name', record?.patient?.name);
+    formData.append('phone', phone);
+    formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
+    formData.append('file', pdfBlob, 'report.pdf');
+
+    const resp = await apiCall({
+      method: 'POST',
+      pathname: '/send/whatsapp-message',
+      isFormData: true,
+      data: formData,
     });
-  };
+
+    const data = await resp.json();
+    if (data?.messages && data?.messages[0]?.message_status === 'accepted') {
+      message.success("Send Succefully.");
+    } else {
+      message.error("Error!");
+    }
+  } catch (error) {
+    console.error("Error generating PDF or sending data:", error);
+    message.error("An error occurred.");
+  } finally {
+    setMsgLoading(false);
+  }
+};
 
   const whatsapContnet = (record) => (
     <div className="whatsap-content">
