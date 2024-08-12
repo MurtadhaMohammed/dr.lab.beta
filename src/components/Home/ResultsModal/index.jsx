@@ -92,6 +92,8 @@ export const ResultsModal = () => {
       isHeader: true,
       fontSize: printFontSize,
     };
+
+    console.log(data.fontSize, "fontSize################");
     send({
       query: "print",
       data,

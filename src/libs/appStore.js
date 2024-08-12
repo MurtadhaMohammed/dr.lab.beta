@@ -8,7 +8,7 @@ export const useAppStore = create((set) => ({
   user: null,
   isReload: false,
   link: "home",
-  printFontSize: 14,
+  printFontSize: parseInt(localStorage.getItem("lab-print-size"), 10) || 14,
   setUser: (user) => set({ user }),
   setPrintFontSize: (printFontSize) => set({ printFontSize }),
   setLink: (link) => set({ link }),
