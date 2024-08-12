@@ -17,7 +17,6 @@ import {
   Switch,
 } from "antd";
 import { PhoneOutlined, UserOutlined } from "@ant-design/icons";
-// import headImage from "../../../image.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore, useLanguage } from "../../libs/appStore";
