@@ -13,7 +13,6 @@ import SettingsScreen from "./screens/SettingScreen";
 import TitleBar from "./components/TitleBar/titleBar";
 import useLogin from "./hooks/useLogin";
 import { useAppStore } from "./libs/appStore";
-import useLang from "./hooks/useLang";
 
 const { ipcRenderer } = window.require("electron");
 
