@@ -65,6 +65,7 @@ export const PureTable = ({ isReport = false }) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
   const limit = usePageLimit();
+  const { setTableData } = useHomeStore();
   const { t } = useTranslation();
 
   const phoneValidate = (phone) => {
