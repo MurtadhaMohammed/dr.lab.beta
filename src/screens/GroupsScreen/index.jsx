@@ -1,15 +1,15 @@
-import { Button, Card, Divider, Input, Space } from "antd";
+import { Button, Card, Input, Space } from "antd";
 import "./style.css";
 import { PureModal, PureTable } from "../../components/Groups";
 import { useGroupStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
+import useLang from "../../hooks/useLang";
 
 const { Search } = Input;
 
 const GroupsScreen = () => {
   const { t, i18n } = useTranslation();
   const { setIsModal, setQuerySearch, id, setReset } = useGroupStore();
-
   const direction = i18n.dir();
 
   return (

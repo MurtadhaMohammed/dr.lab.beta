@@ -125,12 +125,12 @@
     "EnterPhoneNumber": "ادخال رقم الهاتف",
     "supportPaymentReminder": "يرجى تسوية دفعة الدعم الخاصة بك في أقرب وقت ممكن لتجنب أي انقطاع في الخدمة.",
     "startedAt": "بداية الاشتراك",
-    "day": "ايام",
+    "day": "يوم",
     "expiredAt": "ينتهي في",
     "daysLeft": "الأيام المتبقية",
     "online": "متصل",
     "Disabled": "معطل",
-    "Subscrib": "مشترك",
+    "Subscrib": "اشتراك",
     "whatsappIntegration": "واتساب",
     "nearingEndDescription": "خطة الواتساب الخاصة بك تقترب من نهايتها",
     "disabledDescription": "يبدو أن خطة الواتساب الخاصة بك قد وصلت إلى حدها! للحفاظ على سير التواصل بسلاسة، نحن هنا لمساعدتك في تجديد اشتراكك.",
@@ -143,11 +143,11 @@
     "Try": "جرب",
     "businessplan": "لخطة العمل",
     "SerialNumber": "رقم الاشتراك",
-    
     "or": "أو",
     "clickHereToGetA": " انقر هنا للحصول على ",
     "FreeTrial": "تجربة مجانية",
     "AddYourInfo": "أضف معلوماتك",
     "Drlab":"دكتور لاب",
-    "Login":"تسجيل دخول"
+    "Login":"تسجيل دخول",
+    "contact_us_to_subscribe": "تواصل معنا للاشتراك"
 }

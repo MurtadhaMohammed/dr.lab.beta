@@ -92,6 +92,9 @@
         "nsis"
       ]
     },
+    "mac": {
+      "icon": "icon.icns"
+    },
     "directories": {
       "app": ".",
       "buildResources": "public",
