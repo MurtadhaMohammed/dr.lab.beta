@@ -3,13 +3,13 @@ import "./style.css";
 import { PureModal, PureTable } from "../../components/Tests";
 import { useTestStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
+import useLang from "../../hooks/useLang";
 
 const { Search } = Input;
 
 const TestsScreen = () => {
   const { setIsModal, setQuerySearch, id, setReset } = useTestStore();
   const { t, i18n } = useTranslation();
-
   const direction = i18n.dir();
 
   return (

@@ -245,10 +245,10 @@ const handleSandWhatsap = async (record) => {
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -317,19 +317,24 @@ const handleSandWhatsap = async (record) => {
               {t("PrintResults")}
             </Button>
             <Divider type="vertical" />
-            <Popover
-              onOpenChange={(isOpen) => {
-                if (isOpen) setDestPhone(record?.patient?.phone);
-                else setIsConfirm(false);
-              }}
-              content={whatsapContnet(record)}
-            >
-              <Button
-                size="small"
-                icon={<WhatsAppOutlined WhatsAppOutlined />}
-                loading={msgLoading && record?.patient?.phone === destPhone}
-              ></Button>
-            </Popover>
+            {
+              localStorage.getItem('lab-feature') ?
+                <Popover
+                  onOpenChange={(isOpen) => {
+                    if (isOpen) setDestPhone(record?.patient?.phone);
+                    else setIsConfirm(false);
+                  }}
+                  content={whatsapContnet(record)}
+                >
+                  <Button
+                    size="small"
+                    icon={<WhatsAppOutlined WhatsAppOutlined />}
+                    loading={msgLoading && record?.patient?.phone === destPhone}
+                  ></Button>
+                </Popover>
+                :
+                null
+            }
             <Button
               size="small"
               disabled={record?.status === t("COMPLETED")}

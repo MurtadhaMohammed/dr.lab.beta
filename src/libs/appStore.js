@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import { create } from "zustand";
+import { persist } from 'zustand/middleware';
 
 export const useAppStore = create((set) => ({
   isLogin: true,
@@ -174,3 +175,16 @@ export const useReportsStore = create((set) => ({
   setFilterDate: (date) => set({ filterDate: date }),
   setData: (data) => set({ data }),
 }));
+
+
+export const useLanguage = create(
+  persist(
+    (set) => ({
+      lang: 'en',
+      setLang: (lang) => set({ lang }),
+    }),
+    {
+      name: 'lang',
+    }
+  )
+);

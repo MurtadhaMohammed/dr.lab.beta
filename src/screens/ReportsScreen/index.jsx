@@ -10,6 +10,7 @@ import { getTotalPrice } from "../../helper/price";
 import Info from "../../components/Reports/Info";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import useLang from "../../hooks/useLang";
 
 const ReportsScreen = () => {
   const { filterDate, setFilterDate, data, setData, setLoading } =

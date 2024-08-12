@@ -1,12 +1,12 @@
 import { DownOutlined } from "@ant-design/icons";
-import { Button, Card, Divider, Input, Space, Dropdown, message } from "antd";
+import { Button, Input, Space, Dropdown } from "antd";
 import "./style.css";
 import { PureTable, PureModal, ResultsModal } from "../../components/Home";
-
 import { useHomeStore } from "../../libs/appStore";
 const { Search } = Input;
-
 import { useTranslation } from "react-i18next";
+
+
 const HomeScreen = () => {
   const {
     setIsModal,
@@ -19,7 +19,6 @@ const HomeScreen = () => {
     isToday,
   } = useHomeStore();
   const { t, i18n } = useTranslation();
-
   const direction = i18n.dir();
 
   const onClick = ({ key }) => {

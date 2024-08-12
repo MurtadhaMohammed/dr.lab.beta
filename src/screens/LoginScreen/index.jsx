@@ -76,6 +76,8 @@ const LoginScreen = () => {
           localStorage.setItem("lab-serial-id", updatedSerial?.id);
           localStorage.setItem("lab-exp", updatedSerial.exp);
           localStorage.setItem("lab-created", updatedSerial.startAt);
+          localStorage.setItem("lab-serial", updatedSerial.serial);
+          localStorage.setItem("lab-feature", updatedSerial.feature);
           setIsLogin(true);
         } else {
           throw new Error("Serial data is missing or incomplete");
@@ -91,50 +93,6 @@ const LoginScreen = () => {
       setLoading(false);
     }
   };
-
-
-  // const checkSerial = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const resp = await apiCall({
-  //       method: "POST",
-  //       pathname: "/app/check-client",
-  //       isFormData: false,
-  //       data: {
-  //         serial: key,
-  //         device: UUID,
-  //         platform: getPlatform(),
-  //       },
-  //     });
-
-  //     if (resp.ok) {
-  //       const data = await resp.json();
-  //       console.log("API Response:", data);
-
-  //       const { client, serial } = data;
-
-  //       if (serial && serial.exp) {
-  //         localStorage.setItem("lab-user", JSON.stringify(client));
-  //         localStorage.setItem("lab-serial-id", serial.id);
-  //         localStorage.setItem("lab-exp", serial.exp);
-  //         localStorage.setItem("lab-created", serial.startAt);
-  //         setIsLogin(true);
-  //       } else {
-  //         throw new Error("Serial data is missing or incomplete");
-  //       }
-  //     } else {
-  //       const data = await resp.json();
-  //       message.error(data.message || "Serial not found!");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error checking serial:", error);
-  //     message.error(error.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-
 
   const register = async () => {
     if (!UUID) {
@@ -169,6 +127,7 @@ const LoginScreen = () => {
           localStorage.setItem("lab-serial-id", serial.id);
           localStorage.setItem("lab-exp", serial.exp);
           localStorage.setItem("lab-created", serial.startAt);
+          localStorage.setItem("lab-serial", serial.serial);
           setIsLogin(true);
           setIsForm(false); // Hide the form if registration is successful
         } else {
@@ -198,7 +157,7 @@ const LoginScreen = () => {
       document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
     }
   }, []);
-  
+
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
     i18n.changeLanguage(newLanguage);
@@ -206,7 +165,6 @@ const LoginScreen = () => {
     document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
     localStorage.setItem("app-language", newLanguage);
   };
-  
 
 
   return (
