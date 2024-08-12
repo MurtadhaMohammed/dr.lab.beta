@@ -17,7 +17,6 @@ import {
   Switch,
 } from "antd";
 import { PhoneOutlined, UserOutlined } from "@ant-design/icons";
-// import headImage from "../../../image.png";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore, useLanguage } from "../../libs/appStore";
@@ -27,6 +26,7 @@ import dayjs from "dayjs";
 import Logo from "../../assets/logo2.png";
 import WorldWideIcon from "./WorldWideIcon";
 import EmailIcon from "./EmailIcon";
+import { useNavigate } from "react-router-dom";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -34,16 +34,17 @@ const SettingsScreen = () => {
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
   const [remainingDays, setRemainingDays] = useState(null);
-  // const [language, setLanguage] = useState("en");
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
     register: localStorage.getItem('lab-created'),
     expire: localStorage.getItem('lab-exp')
-  })
+  });
+  const navigate = useNavigate();
 
   const { t } = useTranslation();
+
 
   async function fetchImagePath() {
     setImagePath(null);
@@ -86,6 +87,7 @@ const SettingsScreen = () => {
         localStorage.removeItem("lab-serial-id");
         localStorage.removeItem("lab-user");
         setIsLogin(false);
+        navigate(-1, { replace: true });
       } else message.error("Serial not found!");
     } catch (error) {
       console.log(error);
