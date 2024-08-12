@@ -34,14 +34,13 @@ const SettingsScreen = () => {
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
   const [remainingDays, setRemainingDays] = useState(null);
-  // const [language, setLanguage] = useState("en");
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
     register: localStorage.getItem('lab-created'),
     expire: localStorage.getItem('lab-exp')
-  })
+  });
 
   const { t } = useTranslation();
 

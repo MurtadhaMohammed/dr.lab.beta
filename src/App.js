@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { ConfigProvider, message } from "antd";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import i18n from "./i18n";
 import MainContainerV2 from "./components/ContainerV2";
 import PatientsScreen from "./screens/PatientsScreen";
@@ -21,6 +21,7 @@ function App() {
   const { isLogin } = useAppStore();
   const { lang } = useLang();
   const [online, setOnline] = useState(navigator.onLine);
+  const navigate = useNavigate();
 
   useLogin();
 
@@ -62,6 +63,10 @@ function App() {
   useEffect(() => {
     document.documentElement.dir = direction;
   }, [direction]);
+
+  useEffect(() => {
+    navigate('/', { replace: true });
+  }, [isLogin]);
 
   return (
     <ConfigProvider
