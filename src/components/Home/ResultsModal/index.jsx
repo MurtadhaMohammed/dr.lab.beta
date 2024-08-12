@@ -92,6 +92,9 @@ export const ResultsModal = () => {
       isHeader: true,
       fontSize: printFontSize,
     };
+
+    console.log(data, 'dataaa');
+
     send({
       query: "print",
       data,
@@ -247,7 +250,7 @@ export const ResultsModal = () => {
               {t("Close")}
             </Button>
             <Button type="primary" onClick={handleSubmit}>
-             {t("SavePrint")}
+              {t("SavePrint")}
             </Button>
           </Space>
         </div>
