@@ -14,9 +14,7 @@ import { useTranslation } from "react-i18next";
 import logo1 from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
-import WorldWideIcon from "../../screens/SettingScreen/WorldWideIcon";
-import { PhoneOutlined } from "@ant-design/icons";
-import EmailIcon from "../../screens/SettingScreen/EmailIcon";
+import PopOverContent from "../../screens/SettingScreen/PopOverContent";
 
 const { Sider, Content } = Layout;
 
@@ -85,27 +83,6 @@ const MainContainerV2 = ({ children }) => {
   const handlePopoverCancel = () => {
     setIsPopoverVisible(false);
   };
-
-  const popoverContent = (
-    <div className="flex flex-col gap-4 pb-2">
-      <div className="w-full px-10 py-2">
-        <img src={logo2} alt="logo" className="w-full h-10" />
-      </div>
-      <h1 className="px-2 font-semibold">{t("contact_us_to_subscribe")}:</h1>
-      <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
-        <WorldWideIcon />
-        <a href="/" target="blank">https://google.com</a>
-      </div>
-      <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
-        <EmailIcon />
-        <a href="/" target="blank">dr.lab@lab.com</a>
-      </div>
-      <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
-        <PhoneOutlined rotate={-46} />
-        <a href="/" target="blank">0770000000</a>
-      </div>
-    </div>
-  );
 
   return (
     <Layout className="h-screen">
@@ -220,38 +197,34 @@ const MainContainerV2 = ({ children }) => {
         }}
       >
         {showTrialAlert && (
-          <>
-            <Alert
-              className="sticky top-0 z-10"
-              message={<span>{t("SerialKeyWilBeExpiredSoon")} <Popover
-                placement="bottom"
-                title={t("Upgrade to Paid Version")}
-                visible={isPopoverVisible}
-                onVisibleChange={(visible) => setIsPopoverVisible(visible)}
-                trigger="hover"
-                content={popoverContent}
-              ><a onMouseEnter={showPopover} style={{ textDecoration: 'underline', cursor: 'pointer' }}>{t("from us")}</a></Popover></span>}
-              banner
-              closable
-            />
-          </>
+          <Alert
+            className="sticky top-0 z-10"
+            message={<span>{t("SerialKeyWilBeExpiredSoon")} <Popover
+              placement="bottom"
+              title={t("Upgrade to Paid Version")}
+              visible={isPopoverVisible}
+              onVisibleChange={(visible) => setIsPopoverVisible(visible)}
+              trigger="hover"
+              content={<PopOverContent />}
+            ><a onMouseEnter={showPopover} style={{ textDecoration: 'underline', cursor: 'pointer' }}>{t("from us")}</a></Popover></span>}
+            banner
+            closable
+          />
         )}
         {showExpAlert && (
-          <>
-            <Alert
-              className="sticky top-0 z-10"
-              message={<span>{`${t("SerialKeyWillBeExpiredIn")} ${remainingDays} ${t("days")}`} <Popover
-                placement="bottom"
-                title={t("Upgrade to Paid Version")}
-                visible={isPopoverVisible}
-                onVisibleChange={(visible) => setIsPopoverVisible(visible)}
-                trigger="hover"
-                content={popoverContent}
-              ><a onMouseEnter={showPopover} style={{ textDecoration: 'underline', cursor: 'pointer' }}>{t("من هنا")}</a></Popover></span>}
-              banner
-              closable
-            />
-          </>
+          <Alert
+            className="sticky top-0 z-10"
+            message={<span>{`${t("SerialKeyWillBeExpiredIn")} ${remainingDays} ${t("days")}`} <Popover
+              placement="bottom"
+              title={t("")}
+              visible={isPopoverVisible}
+              onVisibleChange={(visible) => setIsPopoverVisible(visible)}
+              trigger="hover"
+              content={<PopOverContent />}
+            ><span>{t("upgrade") }</span> <a onMouseEnter={showPopover} style={{ textDecoration: 'underline', cursor: 'pointer' }}>{t("here" )}</a></Popover></span>}
+            banner
+            closable
+          />
         )}
         {children}
       </Content>

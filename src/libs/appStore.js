@@ -8,6 +8,8 @@ export const useAppStore = create((set) => ({
   user: null,
   isReload: false,
   link: "home",
+  isOnline: navigator.onLine,
+  setIsOnline: (isOnline) => set({ isOnline }),
   printFontSize: parseInt(localStorage.getItem("lab-print-size"), 10) || 14,
   setUser: (user) => set({ user }),
   setPrintFontSize: (printFontSize) => set({ printFontSize }),
