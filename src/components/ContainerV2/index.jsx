@@ -1,4 +1,5 @@
 import "./style.css";
+import { useEffect } from "react";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
 import { useState } from "react";
@@ -21,12 +22,29 @@ const { Sider, Content } = Layout;
 
 const MainContainerV2 = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
+  const [showTrialAlert, setShowTrialAlert] = useState(false);
+  const [showExpAlert, setShowExpAlert] = useState(false);
+  const [remainingDays, setRemainingDays] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage?.getItem('lab-user'));
+    const labExp = parseInt(localStorage?.getItem('lab-exp'), 10);
+
+    if (userData?.type === 'trial') {
+      setShowTrialAlert(true);
+    }
+
+    if (!isNaN(labExp) && labExp <= 3) {
+      setRemainingDays(labExp);
+      setShowExpAlert(true);
+    }
+  }, []);
 
   return (
     <Layout className="h-screen">
@@ -134,12 +152,22 @@ const MainContainerV2 = ({ children }) => {
           width: "100%",
         }}
       >
-        <Alert
-          className="sticky top-0 z-10"
-          message={t("SerialKeyWilBeExpiredSoon")}
-          banner
-          closable
-        />
+        {showTrialAlert && (
+          <Alert
+            className="sticky top-0 z-10"
+            message={t("SerialKeyWilBeExpiredSoon")}
+            banner
+            closable
+          />
+        )}
+        {showExpAlert && (
+          <Alert
+            className="sticky top-0 z-10"
+            message={`${t("SerialKeyWillBeExpiredIn")} ${remainingDays} ${t("days")}`}
+            banner
+            closable
+          />
+        )}
         {children}
       </Content>
     </Layout>

@@ -306,17 +306,17 @@ const LoginScreen = () => {
           }}
         >
           <Space direction="vertical" size={32} className="w-96 h-full">
-            <div className="w-full flex flex-col items-center gap-8">
+          <div className="w-full flex flex-col items-center">
               <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
 
-              <div className="w-full">
-                <h1 className=" text-[32px] text-center leading-[43.57px] !font-light mb-2 inter">
-                  {t("Try")} <span className=" font-bold">{t("Drlab")}</span> {t("businessplan")}
+              <div className="w-full handletext">
+                <h1 className="">
+                  {t("Inputs")}
                 </h1>
               </div>
             </div>
 
-            <div className="flex flex-col gap-7">
+            <div className="flex flex-col handleInputs">
               <Input
                 size="large"
                 style={{ width: "100%", textAlign: "center" }}
@@ -337,7 +337,7 @@ const LoginScreen = () => {
                 {t("Login")}
               </Button>
 
-              <div className="h-full flex flex-col gap-4">
+              <div className="h-full flex flex-col gap-4 handleOr">
                 <div className="w-full border-[0.5px] relative">
                   <p className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 font-semibold text-base text-[#0000009d]">
                     {t("or")}
