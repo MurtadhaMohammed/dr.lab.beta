@@ -54,6 +54,7 @@ export const PureTable = ({ isReport = false }) => {
     setRecord,
     isToday,
     setPatientID,
+    record
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 

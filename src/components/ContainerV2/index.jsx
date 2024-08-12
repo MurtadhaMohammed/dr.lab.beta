@@ -68,7 +68,7 @@ const MainContainerV2 = ({ children }) => {
     const userData = JSON.parse(localStorage?.getItem('lab-user'));
     const labExp = parseInt(localStorage?.getItem('lab-exp'), 10);
 
-    if (userData?.type === 'paid') {
+    if (userData?.type === 'trial') {
       setShowTrialAlert(true);
     }
 
