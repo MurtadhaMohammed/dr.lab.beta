@@ -22,7 +22,7 @@ const { ipcRenderer } = window.require("electron");
 function App() {
   const { isLogin } = useAppStore();
   const { lang } = useLang();
-  const [online, setOnline] = useState(navigator.onLine);
+  const {isOnline, setIsOnline} = useAppStore();
   
   useInitHeaderImage();
   useLogin();
@@ -50,8 +50,10 @@ function App() {
     });
 
     // Handle online and offline events
-    const handleOnline = () => setOnline(true);
-    const handleOffline = () => setOnline(false);
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    console.log(isOnline, "isOnline!!!!!!!!!!!!!!!!!!!!!");
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
@@ -63,10 +65,10 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!online) {
+    if (!isOnline) {
       message.error("No internet connection. Please check your connection.");
     }
-  }, [online]);
+  }, [isOnline]);
 
   const direction = i18n.language === "ar" ? "rtl" : "ltr";
 

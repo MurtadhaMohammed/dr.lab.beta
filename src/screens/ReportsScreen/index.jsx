@@ -31,6 +31,9 @@ const ReportsScreen = () => {
     });
   };
   const handlePrint = () => {
+    // Retrieve font size from localStorage or set a default value
+    const fontSize = localStorage.getItem("lab-print-size") || 14; // Default to 14
+  
     loadData((rows) => {
       let _data = {
         date: [
@@ -40,6 +43,7 @@ const ReportsScreen = () => {
         total: Number(data?.totalAmount?.total || 0).toLocaleString("en"),
         subTotal: Number(data?.subTotalAmount?.total || 0).toLocaleString("en"),
         discount: Number(data?.totalDiscount?.total || 0).toLocaleString("en"),
+        fontSize,  // Add the font size to the data object
         records: rows?.map((record) => {
           let list = record.tests;
           return {
@@ -66,6 +70,7 @@ const ReportsScreen = () => {
       });
     });
   };
+  
 
 useEffect(() => {
   setLoading(true);

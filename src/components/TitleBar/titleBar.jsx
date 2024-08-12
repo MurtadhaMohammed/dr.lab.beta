@@ -4,12 +4,15 @@ import { MdOutlineFullscreenExit } from "react-icons/md";
 import logo2 from "../../assets/logo2.png";
 const { ipcRenderer } = window.require("electron");
 import packageJson from "../../../package.json"
+import "./style.css";
+import { useAppStore } from "../../libs/appStore";
 
 const TiteBar = () => {
+  const {isOnline} = useAppStore()
   return (
     <header
       id="title-bar"
-      className="h-[40px] bg-[#fff] border-b border-b-[#eee] flex items-center justify-between px-[16px]"
+      className="h-[40px] bg-[#fff] border-b border-b-[#eee] flex items-center justify-between px-[16px] handlebar"
     >
       <Space>
         <img
@@ -20,7 +23,7 @@ const TiteBar = () => {
           src={logo2}
         />
         <Divider type="vertical" />
-        <span className="text-[14px] text-[#a5a5a5]">v{packageJson.version}-beta</span>
+        <span className="text-[14px] text-[#a5a5a5]">v{packageJson.version}-beta</span><div className={isOnline ? "online" : ""}></div>
       </Space>
       <div id="title-bar-buttons">
         <Space align="center">

@@ -117,6 +117,8 @@ const SettingsScreen = () => {
     setPrintFontSize(val);
   };
 
+  console.log(printFontSize, "fontSize***************");
+
   const handelCancel = () => {
     form.setFieldsValue(user);
     setIsUpdate(false);
@@ -365,6 +367,8 @@ const SettingsScreen = () => {
                   value={printFontSize}
                   variant="borderless"
                   onChange={handleSizeChange}
+                  popupMatchSelectWidth={false}
+                  style={{ width: 100, textAlign: "center" }}
                 >
                   <Select.Option value={12}>Small</Select.Option>
                   <Select.Option value={14}>Medium</Select.Option>
