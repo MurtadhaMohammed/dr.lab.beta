@@ -26,6 +26,7 @@ import dayjs from "dayjs";
 import Logo from "../../assets/logo2.png";
 import WorldWideIcon from "./WorldWideIcon";
 import EmailIcon from "./EmailIcon";
+import { useNavigate } from "react-router-dom";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -40,8 +41,10 @@ const SettingsScreen = () => {
     register: localStorage.getItem('lab-created'),
     expire: localStorage.getItem('lab-exp')
   });
+  const navigate = useNavigate();
 
   const { t } = useTranslation();
+
 
   async function fetchImagePath() {
     setImagePath(null);
@@ -84,6 +87,7 @@ const SettingsScreen = () => {
         localStorage.removeItem("lab-serial-id");
         localStorage.removeItem("lab-user");
         setIsLogin(false);
+        navigate(-1, { replace: true });
       } else message.error("Serial not found!");
     } catch (error) {
       console.log(error);
