@@ -365,9 +365,9 @@ const SettingsScreen = () => {
                   variant="borderless"
                   onChange={handleSizeChange}
                 >
-                  <Select.Option value={14}>{t("Medium")}</Select.Option>
-                  <Select.Option value={12}>{t("Small")}</Select.Option>
-                  <Select.Option value={16}>{t("Large")}</Select.Option>
+                  <Select.Option value={12}>Small</Select.Option>
+                  <Select.Option value={14}>Medium</Select.Option>
+                  <Select.Option value={16}>Large</Select.Option>
                 </Select>
               </div>
             </Card>
