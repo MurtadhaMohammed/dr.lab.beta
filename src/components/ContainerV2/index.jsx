@@ -139,19 +139,19 @@ const MainContainerV2 = ({ children }) => {
               items={[
                 {
                   key: "/",
-                  icon: <HiOutlineHome size={20} />,
+                  icon: <HiOutlineHome size={20} style={{ marginLeft: '2px' }}/>,
                   label: <p className="text-[15px]">{t("Home")}</p>,
                   onClick: () => navigate("/", { replace: true }),
                 },
                 {
                   key: "/patients",
-                  icon: <MdOutlinePersonalInjury size={20} />,
+                  icon: <MdOutlinePersonalInjury size={18} style={{ marginLeft: '1px' }}  />,
                   label: <p className="text-[15px]">{t("Patients")}</p>,
                   onClick: () => navigate("/patients", { replace: true }),
                 },
                 {
                   key: "/tests",
-                  icon: <GrDocumentTest size={16} />,
+                  icon: <GrDocumentTest size={16} style={{ marginRight: '2px' }} />,
                   label: <p className="text-[15px]">{t("Tests")}</p>,
                   onClick: () => navigate("/tests", { replace: true }),
                 },
@@ -163,7 +163,7 @@ const MainContainerV2 = ({ children }) => {
                 },
                 {
                   key: "/reports",
-                  icon: <TbReportSearch size={20} />,
+                  icon: <TbReportSearch size={18} />,
                   label: <p className="text-[15px]">{t("Reports")}</p>,
                   onClick: () => navigate("/reports", { replace: true }),
                 },
@@ -195,9 +195,9 @@ const MainContainerV2 = ({ children }) => {
               className="border-t border-t-[#eee] h-[48px] flex items-center justify-center text-[22px] transition-all active:opacity-40"
             >
               <RxDoubleArrowRight
-                className="transition-all "
+                className="transition-all"
                 style={{
-                  transform: collapsed ? "rotate(0deg)" : "rotate(180deg)",
+                  transform: collapsed ? "rotate(180deg)" : "rotate(0deg)",
                 }}
               />
             </button>

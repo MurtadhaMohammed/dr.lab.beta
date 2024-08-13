@@ -24,7 +24,6 @@ export const PatientHistory = () => {
       query: "getVisitByPatient",
       patientId: id,
     }).then(({ err, data }) => {
-      console.log("Patient history data111:", data);
       if (err) message.error("Error !");
       else setData(data);
     });
@@ -36,7 +35,7 @@ export const PatientHistory = () => {
       key: "tests",
       render: (_, record) => {
         let list = record?.tests;
-        let numOfView = 3;
+        let numOfView = 2;
         let restCount =
           list?.length > numOfView ? list?.length - numOfView : null;
         return (
@@ -75,6 +74,7 @@ export const PatientHistory = () => {
       title: t("EndPrice"),
       dataIndex: "id",
       key: "id",
+      width: 150,
       render: (_, record) => (
         <b style={{ whiteSpace: "nowrap" }}>
           {Number(
