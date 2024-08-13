@@ -6,3 +6,11 @@
 .settings-page .ant-form-item-label {
   padding-bottom: 4px !important;
 }
+
+.handleContent {
+  direction: rtl;
+}
+
+.modal{
+  direction: rtl;
+}

@@ -164,85 +164,82 @@ export const PureModal = () => {
       centered
     >
       <div className="create-item-modal">
-        <Row gutter={[16, 16]}>
-          <Col span={14}>
-            <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("TestName")}</Text>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: 	Vit D3"
-              />
-            </Space>
-          </Col>
-          <Col span={10}>
-            <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("Price")}</Text>
-              <InputNumber
-                value={price}
-                onChange={(val) => setPrice(val)}
-                placeholder="Ex: 10000"
-                style={{ width: "100%" }}
-              />
-            </Space>
-          </Col>
-          <Col span={24}>
-            <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("NormalValue")}</Text>
-              <Input.TextArea
-                value={normal}
-                onChange={(e) => setNormal(e.target.value)}
-                rows={2}
-                placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
-                style={{ width: "100%" }}
-              />
-            </Space>
-          </Col>
-          <Col span={24}>
-            <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Checkbox
-                checked={isSelecte}
-                onChange={(e) => setIsSelecte(e.target.checked)}
-              >
-               {t("IsSelect")}
-              </Checkbox>
-            </Space>
-          </Col>
-          {isSelecte ? (
-            <Col span={24}>
-              <Space size={[0, 6]} wrap>
-                {Array.isArray(options) && options.map((el, i) => (
-                  <Tag
-                    key={i}
-                    closable={true}
-                    color="red"
-                    onClose={() => handleClose(el)}
-                  >
-                    {el}
-                  </Tag>
-                ))}
-                {inputVisible ? (
-                  <Input
-                    ref={inputRef}
-                    type="text"
-                    size="small"
-                    style={tagInputStyle}
-                    value={inputValue}
-                    onChange={handleInputChange}
-                    onBlur={handleInputConfirm}
-                    onPressEnter={handleInputConfirm}
-                  />
-                ) : (
-                  <Tag style={tagPlusStyle} onClick={showInput}>
-                    <PlusOutlined /> {t("NewOption")}
-                  </Tag>
-                )}
-              </Space>
-              <br />
-            </Col>
-          ) : null}
-        </Row>
-      </div>
+  <Row gutter={[16, 16]}>
+    <Col span={14}>
+      <Space style={{ width: "100%" }} direction="vertical" size={4}>
+        <Text>{t("TestName")}</Text>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Ex: Vit D3"
+        />
+      </Space>
+    </Col>
+    <Col span={10}>
+      <Space style={{ width: "100%" }} direction="vertical" size={4}>
+        <Text>{t("Price")}</Text>
+        <InputNumber
+          value={price}
+          onChange={(val) => setPrice(val)}
+          placeholder="Ex: 10000"
+          style={{ width: "100%" }}
+        />
+      </Space>
+    </Col>
+    <Col span={24}>
+      <Space style={{ width: "100%" }} direction="vertical" size={4}>
+        <Text>{t("NormalValue")}</Text>
+        <Input.TextArea
+          value={normal}
+          onChange={(e) => setNormal(e.target.value)}
+          rows={2}
+          placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
+          style={{ width: "100%" }}
+        />
+      </Space>
+    </Col>
+    <Col span={24}>
+      <Space style={{ width: "100%" }} direction="vertical" size={4}>
+        <Checkbox
+          checked={isSelecte}
+          onChange={(e) => setIsSelecte(e.target.checked)}
+        >
+          {t("IsSelect")}
+        </Checkbox>
+      </Space>
+    </Col>
+    {isSelecte ? (
+      <Col span={24}>
+        <Space size={[0, 6]} wrap>
+          {Array.isArray(options) &&
+            options.map((el, i) => (
+              <Tag key={i} closable color="red" onClose={() => handleClose(el)}>
+                {el}
+              </Tag>
+            ))}
+          {inputVisible ? (
+            <Input
+              ref={inputRef}
+              type="text"
+              size="small"
+              style={tagInputStyle}
+              value={inputValue}
+              onChange={handleInputChange}
+              onBlur={handleInputConfirm}
+              onPressEnter={handleInputConfirm}
+            />
+          ) : (
+            <Tag style={tagPlusStyle} onClick={showInput}>
+              <PlusOutlined /> {t("NewOption")}
+            </Tag>
+          )}
+        </Space>
+        <br />
+      </Col>
+    ) : null}
+  </Row>
+</div>
+
     </Modal>
   );
 };

@@ -16,16 +16,16 @@ import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
-const testLabel = {
-  CUSTOME: "Custome",
-  PACKAGE: "Package",
-};
 
 const TestForm = () => {
   const { testType, isModal, setTests, tests, discount, setDiscount } = useHomeStore();
   const [testsList, setTestList] = useState([]);
   const [packageList, setPackageList] = useState([]);
   const { t } = useTranslation();
+  const testLabel = {
+    CUSTOME: t("Custom"),
+    PACKAGE: t("Package"),
+  };
 
   const getTests = (querySearch = "") => {
     send({
@@ -97,7 +97,7 @@ const TestForm = () => {
     <div className="test-form">
       <Select
         showSearch
-        placeholder={`Select ${testLabel[testType]} test`}
+        placeholder={t("SelectCustomTest", { custom: testLabel[testType] })}
         optionFilterProp="children"
         onSelect={handleSelect}
         style={{ width: "100%" }}
