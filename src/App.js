@@ -23,17 +23,9 @@ function App() {
   const { isLogin } = useAppStore();
   const { lang } = useLang();
   const [online, setOnline] = useState(navigator.onLine);
-  
+
   useInitHeaderImage();
   useLogin();
-
-  useEffect(() => {
-    send({
-      query: "initHeadImage",
-    }).then(({ err, res }) => {
-      console.log(err, res);
-    });
-  }, []);
 
   useEffect(() => {
     ipcRenderer.on("hello", () => {
