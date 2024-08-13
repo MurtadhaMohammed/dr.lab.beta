@@ -38,7 +38,7 @@ const MainContainerV2 = ({ children }) => {
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // Use useTranslation to get the current language
   const { setIsLogin } = useAppStore();
 
   const {
@@ -93,6 +93,17 @@ const MainContainerV2 = ({ children }) => {
 
   const handlePopoverCancel = () => {
     setIsPopoverVisible(false);
+  };
+
+  // Function to determine rotation based on language
+  const getRotationStyle = () => {
+    if (i18n.language === "ar") {
+      // Arabic language: rotate -90 degrees if collapsed
+      return collapsed ? "rotate(-180deg)" : "rotate(0deg)";
+    } else {
+      // Other languages: default rotation
+      return collapsed ? "rotate(0deg)" : "rotate(180deg)";
+    }
   };
 
   return (
@@ -197,7 +208,7 @@ const MainContainerV2 = ({ children }) => {
               <RxDoubleArrowRight
                 className="transition-all"
                 style={{
-                  transform: collapsed ? "rotate(180deg)" : "rotate(0deg)",
+                  transform: getRotationStyle(), // Apply the conditional rotation here
                 }}
               />
             </button>
