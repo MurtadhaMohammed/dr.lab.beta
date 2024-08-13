@@ -1,3 +1,12 @@
 /* .patients-screen{
     padding-bottom: 40px;
 } */
+
+input::placeholder,
+textarea::placeholder {
+  font-family: "Frutiger", sans-serif;
+}
+
+.ant-input-search input::placeholder {
+  font-family: "Frutiger", sans-serif !important;
+}
