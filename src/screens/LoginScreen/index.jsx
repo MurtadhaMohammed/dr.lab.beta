@@ -302,7 +302,7 @@ const LoginScreen = () => {
                   </p>
                 </div>
                 <p
-                  className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px] inter"
+                  className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px]"
                   onClick={() => setIsForm(true)}
                 >
                   {t("clickHereToGetA")}

@@ -54,6 +54,7 @@ export const PureTable = ({ isReport = false }) => {
     setRecord,
     isToday,
     setPatientID,
+    record
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 
@@ -67,6 +68,7 @@ export const PureTable = ({ isReport = false }) => {
     localStorage.getItem('lab-feature') === "null" ? null : localStorage.getItem('lab-feature')
   );
   const limit = usePageLimit();
+  const { setTableData } = useHomeStore();
   const { t } = useTranslation();
 
   const phoneValidate = (phone) => {

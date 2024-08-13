@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { useReportsStore } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
+import { useEffect } from "react";
 
 export const getTotalVisits = (filterDate = null, cb) => {
   send({
@@ -36,11 +37,17 @@ export const getSubTotalAmount = (filterDate, callback) => {
     });
 };
 
-
-
 export const PureTable = () => {
-  const { data, loading } = useReportsStore();
+  const { data, loading, setSubTotalPrice, setTotalDiscount, setTotalAmount } = useReportsStore();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (data) {
+      setSubTotalPrice(data?.subTotalAmount?.total || 0);
+      setTotalDiscount(data?.totalDiscount?.total || 0);
+      setTotalAmount(data?.totalAmount?.total || 0);
+    }
+  }, [data, setSubTotalPrice, setTotalDiscount, setTotalAmount]);
 
   const columns = [
     {
@@ -73,58 +80,56 @@ export const PureTable = () => {
   ];
 
   let records = [
-
-  {
-    id: 1,
+    {
+      id: 1,
       title: t("Totalvisits"),
-        total: <Tag color="geekblue">{data?.visits?.total || 0}</Tag>,
-          male: `${data?.visits?.male || 0}%`,
-            female: `${data?.visits?.female || 0}%`,
+      total: <Tag color="geekblue">{data?.visits?.total || 0}</Tag>,
+      male: `${data?.visits?.male || 0}%`,
+      female: `${data?.visits?.female || 0}%`,
     },
-
-  {
-    id: 2,
+    {
+      id: 2,
       title: t("SubTotalAmounts"),
-        total: (
-          <b style={{ fontSize: 14 }}>
-            {Number(data?.subTotalAmount?.total || 0).toLocaleString("en")} IQD
-          </b>
-        ),
-          male: `${data?.subTotalAmount?.male || 0}%`,
-            female: `${data?.subTotalAmount?.female || 0}%`,
+      total: (
+        <b style={{ fontSize: 14 }}>
+          {Number(data?.subTotalAmount?.total || 0).toLocaleString("en")} IQD
+        </b>
+      ),
+      male: `${data?.subTotalAmount?.male || 0}%`,
+      female: `${data?.subTotalAmount?.female || 0}%`,
     },
-  {
-    id: 3,
+    {
+      id: 3,
       title: t("TotalDiscount"),
-        total: (
-          <b style={{ fontSize: 14 }}>
-            {Number(data?.totalDiscount?.total || 0).toLocaleString("en")} IQD
-          </b>
-        ),
-          male: `${data?.totalDiscount?.male || 0}%`,
-            female: `${data?.totalDiscount?.female || 0}%`,
+      total: (
+        <b style={{ fontSize: 14 }}>
+          {Number(data?.totalDiscount?.total || 0).toLocaleString("en")} IQD
+        </b>
+      ),
+      male: `${data?.totalDiscount?.male || 0}%`,
+      female: `${data?.totalDiscount?.female || 0}%`,
     },
-  {
-    id: 4,
+    {
+      id: 4,
       title: <span style={{ fontSize: 18 }}>{t("TotalAmounts")}</span>,
-        total: (
-          <b style={{ fontSize: 18 }}>
-            {Number(data?.totalAmount?.total || 0).toLocaleString("en")} IQD
-          </b>
-        ),
-          male: `${data?.totalAmount?.male || 0}%`,
-            female: `${data?.totalAmount?.female || 0}%`,
+      total: (
+        <b style={{ fontSize: 18 }}>
+          {Number(data?.totalAmount?.total || 0).toLocaleString("en")} IQD
+        </b>
+      ),
+      male: `${data?.totalAmount?.male || 0}%`,
+      female: `${data?.totalAmount?.female || 0}%`,
     },
   ];
 
-return (
-  <Table
-    style={{ marginTop: "-16px" }}
-    columns={columns}
-    dataSource={data ? records : []}
-    pagination={false}
-    size="small"
-    loading={loading}
-  />
-);
+  return (
+    <Table
+      style={{ marginTop: "-16px" }}
+      columns={columns}
+      dataSource={data ? records : []}
+      pagination={false}
+      size="small"
+      loading={loading}
+    />
+  );
 };

@@ -8,7 +8,9 @@ export const useAppStore = create((set) => ({
   user: null,
   isReload: false,
   link: "home",
-  printFontSize: 14,
+  isOnline: navigator.onLine,
+  setIsOnline: (isOnline) => set({ isOnline }),
+  printFontSize: parseInt(localStorage.getItem("lab-print-size"), 10) || 14,
   setUser: (user) => set({ user }),
   setPrintFontSize: (printFontSize) => set({ printFontSize }),
   setLink: (link) => set({ link }),
@@ -170,11 +172,18 @@ export const useReportsStore = create((set) => ({
   data: null,
   loading: false,
   records: [],
+  subTotalPrice: 0, // Add state for subtotal price
+  totalDiscount: 0,  // Add state for total discount
+  totalAmount: 0,    // Add state for total amount
   setRecords: (records) => set({ records }),
   setLoading: (loading) => set({ loading }),
   setFilterDate: (date) => set({ filterDate: date }),
   setData: (data) => set({ data }),
+  setSubTotalPrice: (price) => set({ subTotalPrice: price }), // Add setter for subtotal price
+  setTotalDiscount: (discount) => set({ totalDiscount: discount }), // Add setter for total discount
+  setTotalAmount: (amount) => set({ totalAmount: amount }), // Add setter for total amount
 }));
+
 
 
 export const useLanguage = create(

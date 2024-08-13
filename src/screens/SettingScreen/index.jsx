@@ -23,10 +23,8 @@ import { useAppStore, useLanguage } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
-import Logo from "../../assets/logo2.png";
-import WorldWideIcon from "./WorldWideIcon";
-import EmailIcon from "./EmailIcon";
 import { useNavigate } from "react-router-dom";
+import PopOverContent from "./PopOverContent";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -118,6 +116,8 @@ const SettingsScreen = () => {
     localStorage.setItem("lab-print-size", val);
     setPrintFontSize(val);
   };
+
+  console.log(printFontSize, "fontSize***************");
 
   const handelCancel = () => {
     form.setFieldsValue(user);
@@ -367,6 +367,8 @@ const SettingsScreen = () => {
                   value={printFontSize}
                   variant="borderless"
                   onChange={handleSizeChange}
+                  popupMatchSelectWidth={false}
+                  style={{ width: 100, textAlign: "center" }}
                 >
                   <Select.Option value={12}>Small</Select.Option>
                   <Select.Option value={14}>Medium</Select.Option>
@@ -413,26 +415,7 @@ const SettingsScreen = () => {
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
                     <p className=" font-normal">{t('whatsappIntegration')}</p>
-                    <Popover trigger="hover" content={
-                      <div className=" flex flex-col gap-4 pb-2">
-                        <div className="w-full px-10 py-2">
-                          <img src={Logo} alt="logo" className="w-full h-10" />
-                        </div>
-                        <h1 className="px-2 font-semibold">{t("contact_us_to_subscribe")}:</h1>
-                        <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
-                          <WorldWideIcon />
-                          <a href="/" target="blank">https://google.com</a>
-                        </div>
-                        <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
-                          <EmailIcon />
-                          <a href="/" target="blank">dr.lab@lab.com</a>
-                        </div>
-                        <div className="w-full flex items-center gap-2 px-2 rtl:flex-row-reverse text-sm">
-                          <PhoneOutlined rotate={-46} />
-                          <a href="/" target="blank">0770000000</a>
-                        </div>
-                      </div>
-                    }>
+                    <Popover trigger="hover" content={<PopOverContent />}>
                       <p className={`${whatsAppStatus.textStyle} font-bold text-sm`}>{whatsAppStatus.status}</p>
                     </Popover>
                   </div>
