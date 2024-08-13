@@ -2,7 +2,18 @@ import "./style.css";
 import { useEffect, useState } from "react";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
-import { Alert, Button, message, Divider, Layout, Menu, Space, theme, Popconfirm, Popover } from "antd";
+import {
+  Alert,
+  Button,
+  message,
+  Divider,
+  Layout,
+  Menu,
+  Space,
+  theme,
+  Popconfirm,
+  Popover,
+} from "antd";
 import { TbReportSearch } from "react-icons/tb";
 import { GrDocumentTest } from "react-icons/gr";
 import { LuPackage2, LuSettings2 } from "react-icons/lu";
@@ -63,10 +74,10 @@ const MainContainerV2 = ({ children }) => {
   };
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage?.getItem('lab-user'));
-    const labExp = parseInt(localStorage?.getItem('lab-exp'), 10);
+    const userData = JSON.parse(localStorage?.getItem("lab-user"));
+    const labExp = parseInt(localStorage?.getItem("lab-exp"), 10);
 
-    if (userData?.type === 'trial') {
+    if (userData?.type === "trial") {
       setShowTrialAlert(true);
     }
 
@@ -115,7 +126,13 @@ const MainContainerV2 = ({ children }) => {
               </motion.div>
             </div>
             <Menu
-              style={{ border: "none" }}
+              style={{
+                border: "none",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: "100%",
+              }}
               className="bg-transparent p-[8px]"
               mode="inline"
               defaultSelectedKeys={[location?.pathname]}
@@ -199,14 +216,26 @@ const MainContainerV2 = ({ children }) => {
         {showTrialAlert && (
           <Alert
             className="sticky top-0 z-10"
-            message={<span>{t("SerialKeyWilBeExpiredSoon")} <Popover
-              placement="bottom"
-              title={t("Upgrade to Paid Version")}
-              visible={isPopoverVisible}
-              onVisibleChange={(visible) => setIsPopoverVisible(visible)}
-              trigger="hover"
-              content={<PopOverContent />}
-            ><a onMouseEnter={showPopover} style={{ textDecoration: 'underline', cursor: 'pointer' }}>{t("from us")}</a></Popover></span>}
+            message={
+              <span>
+                {t("SerialKeyWilBeExpiredSoon")}{" "}
+                <Popover
+                  placement="bottom"
+                  title={t("Upgrade to Paid Version")}
+                  visible={isPopoverVisible}
+                  onVisibleChange={(visible) => setIsPopoverVisible(visible)}
+                  trigger="hover"
+                  content={<PopOverContent />}
+                >
+                  <a
+                    onMouseEnter={showPopover}
+                    style={{ textDecoration: "underline", cursor: "pointer" }}
+                  >
+                    {t("from us")}
+                  </a>
+                </Popover>
+              </span>
+            }
             banner
             closable
           />
@@ -214,14 +243,29 @@ const MainContainerV2 = ({ children }) => {
         {showExpAlert && (
           <Alert
             className="sticky top-0 z-10"
-            message={<span>{`${t("SerialKeyWillBeExpiredIn")} ${remainingDays} ${t("days")}`} <Popover
-              placement="bottom"
-              title={t("")}
-              visible={isPopoverVisible}
-              onVisibleChange={(visible) => setIsPopoverVisible(visible)}
-              trigger="hover"
-              content={<PopOverContent />}
-            ><span>{t("upgrade") }</span> <a onMouseEnter={showPopover} style={{ textDecoration: 'underline', cursor: 'pointer' }}>{t("here" )}</a></Popover></span>}
+            message={
+              <span>
+                {`${t("SerialKeyWillBeExpiredIn")} ${remainingDays} ${t(
+                  "days"
+                )}`}{" "}
+                <Popover
+                  placement="bottom"
+                  title={t("")}
+                  visible={isPopoverVisible}
+                  onVisibleChange={(visible) => setIsPopoverVisible(visible)}
+                  trigger="hover"
+                  content={<PopOverContent />}
+                >
+                  <span>{t("upgrade")}</span>{" "}
+                  <a
+                    onMouseEnter={showPopover}
+                    style={{ textDecoration: "underline", cursor: "pointer" }}
+                  >
+                    {t("here")}
+                  </a>
+                </Popover>
+              </span>
+            }
             banner
             closable
           />

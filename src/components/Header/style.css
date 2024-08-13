@@ -2,12 +2,12 @@ header.main-header {
   padding-top: 40px;
   padding-bottom: 20px;
 }
-
+/* 
 header.main-header .menu {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-}
+} */
 
 header.main-header .nav {
   display: flex;

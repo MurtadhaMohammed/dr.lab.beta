@@ -1,5 +1,5 @@
 import { Modal, Space, Table, Tag, message } from "antd";
-import "./style.css";
+import "./style.css"; // Ensure this CSS file contains the styles shown below
 import { usePatientStore } from "../../../libs/appStore";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
@@ -7,17 +7,16 @@ import { getTotalPrice } from "../../../helper/price";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 
-
 export const PatientHistory = () => {
   const { id, isHistory, setIsHistory, setReset } = usePatientStore();
   const [data, setData] = useState([]);
   const { t } = useTranslation();
 
-
   const statusColor = {
     [t("PENDING")]: "orange",
     [t("COMPLETED")]: "green",
   };
+  
 
   useEffect(() => {
     if (!id) return;
@@ -25,11 +24,11 @@ export const PatientHistory = () => {
       query: "getVisitByPatient",
       patientId: id,
     }).then(({ err, data }) => {
+      console.log("Patient history data111:", data);
       if (err) message.error("Error !");
       else setData(data);
     });
   }, [id]);
-
   const columns = [
     {
       title: t("Tests"),
@@ -43,7 +42,7 @@ export const PatientHistory = () => {
         return (
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
-              <Tag>{el[record.testType === "CUSTOME" ? "name" : "title"]}</Tag>
+              <Tag key={el.id}>{el[record.testType === "CUSTOME" ? "name" : "title"]}</Tag>
             ))}
             {restCount && <Tag>+{restCount}</Tag>}
           </Space>
@@ -59,10 +58,10 @@ export const PatientHistory = () => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -77,7 +76,7 @@ export const PatientHistory = () => {
       dataIndex: "id",
       key: "id",
       render: (_, record) => (
-        <b style={{ whiteSpace: "nowarp" }}>
+        <b style={{ whiteSpace: "nowrap" }}>
           {Number(
             getTotalPrice(record?.testType, record?.tests) - record?.discount
           ).toLocaleString("en")}{" "}
@@ -114,7 +113,7 @@ export const PatientHistory = () => {
     <Modal
       title={
         data?.length > 0
-          ? `${("PatientHistoryFor")} ${data[0]?.patient?.name}`
+          ? `${t("PatientHistoryFor")} ${data[0]?.patient?.name}`
           : t("PatientHistory")
       }
       open={isHistory}
@@ -125,8 +124,9 @@ export const PatientHistory = () => {
       }}
       footer={null}
       centered
+      className="patient-history-modal" // Add a custom class for styling
     >
-      <div className="history">
+      <div className="history-table-container">
         <Table
           columns={columns}
           dataSource={data}

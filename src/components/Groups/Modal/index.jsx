@@ -43,19 +43,19 @@ export const PureModal = () => {
 
     send({
       query: "getTests",
-      data: {}
-    }).then(resp => {
-      if (resp.success) {
-        setTestsList(resp.data);
-        console.log("Tests fetched successfully:", resp.data);
-      } else {
-        console.error("Error fetching tests:", resp.error);
-      }
-    }).catch(err => {
-      console.error("Error in IPC communication:", err);
-    });
-
-
+      data: {},
+    })
+      .then((resp) => {
+        if (resp.success) {
+          setTestsList(resp.data);
+          console.log("Tests fetched successfully:", resp.data);
+        } else {
+          console.error("Error fetching tests:", resp.error);
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+      });
   };
 
   useEffect(() => {
@@ -74,53 +74,54 @@ export const PureModal = () => {
     setTests(tests?.filter((el) => el?.id !== testID));
   };
 
-
-
   const handleSubmit = () => {
     let data = {
       title,
       customePrice,
-      tests: tests.map(el => ({ id: el.id })),
+      tests: tests.map((el) => ({ id: el.id })),
       createdAt: Date.now(),
     };
     if (id) {
       send({
         query: "editPackage",
         data: { ...data },
-        id
-      }).then(resp => {
-        if (resp.success) {
-          console.log("Package updated successfully");
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error updating package:", resp.error);
-          message.error("Failed to update package.");
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-        message.error("Failed to communicate with server.");
-      });
-
+        id,
+      })
+        .then((resp) => {
+          if (resp.success) {
+            console.log("Package updated successfully");
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Error updating package:", resp.error);
+            message.error("Failed to update package.");
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     } else {
       send({
         query: "addPackage",
         data: { ...data },
-      }).then(resp => {
-        if (resp.success) {
-          console.log("Package added with ID:", resp.data);
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error adding package:", resp.error);
-          message.error("Failed to add package.");
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-        message.error("Failed to communicate with server.");
-      });
+      })
+        .then((resp) => {
+          if (resp.success) {
+            console.log("Package added with ID:", resp.data);
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Error adding package:", resp.error);
+            message.error("Failed to add package.");
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     }
   };
 
@@ -220,6 +221,7 @@ export const PureModal = () => {
                     placeholder="Ex: 5,000"
                     value={customePrice}
                     onChange={(val) => setCustomePrice(val)}
+                    min={0} // Prevent negative values
                   />
                 </Space>
               </Col>
@@ -233,11 +235,11 @@ export const PureModal = () => {
                   style={
                     customePrice
                       ? {
-                        textDecoration: "line-through",
-                        opacity: 0.3,
-                        fontStyle: "italic",
-                        fontWeight: "normal",
-                      }
+                          textDecoration: "line-through",
+                          opacity: 0.3,
+                          fontStyle: "italic",
+                          fontWeight: "normal",
+                        }
                       : { fontSize: 18, fontWeight: "bold" }
                   }
                 >
@@ -251,7 +253,9 @@ export const PureModal = () => {
                 <div className="app-flex-space">
                   <Text type="secondary">{t("FinalPrice")} </Text>
                   <Text style={{ fontSize: 18 }}>
-                    <b>{Number(customePrice).toLocaleString("en")}  {t("IQD")}</b>
+                    <b>
+                      {Number(customePrice).toLocaleString("en")} {t("IQD")}
+                    </b>
                   </Text>
                 </div>
               )}
