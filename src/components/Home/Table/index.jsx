@@ -131,6 +131,10 @@ export const PureTable = ({ isReport = false }) => {
       formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
       formData.append('file', pdfBlob, 'report.pdf');
 
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+      
       const resp = await apiCall({
         method: 'POST',
         pathname: '/send/whatsapp-message',
@@ -153,7 +157,7 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   const whatsapContnet = (record) => (
-    <div className="whatsap-content">
+    <div div className="whatsap-content" >
       <WhatsAppOutlined style={{ fontSize: 40 }} />
       <b>{t("SendResults")}</b>
       <p>{t("SendResulsOnWhatsaap")}</p>
@@ -358,9 +362,6 @@ export const PureTable = ({ isReport = false }) => {
     },
   ];
   //commit
-
-  console.log(labFeature);
-
 
   const handleResults = (record) => {
     setRecord(record);

@@ -24,7 +24,6 @@ const useInitHeaderImage = () => {
 
     useEffect(() => {
         if (!success) {
-            console.log("not sucess", success);
             send({
                 query: "initHeadImage",
             }).then(({ err, res }) => {
