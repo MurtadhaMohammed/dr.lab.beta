@@ -184,6 +184,7 @@ const LoginScreen = () => {
             onFinish={register}
             initialValues={{
               phone,
+              
             }}
             layout="vertical"
             autoComplete="off"
@@ -191,7 +192,7 @@ const LoginScreen = () => {
             <Form.Item
               label={t("FullName")}
               name="name"
-              className="h-16 mb-5"
+              className="h-16 mb-7"
               rules={[
                 {
                   required: true,
@@ -204,7 +205,7 @@ const LoginScreen = () => {
             <Form.Item
               label={t("LabName")}
               name="labName"
-              className="h-16 mb-5"
+              className="h-16 mb-7"
               rules={[
                 {
                   required: true,
@@ -218,7 +219,7 @@ const LoginScreen = () => {
             <Form.Item
               label={t("PhoneNumber")}
               name="phone"
-              className="h-16 mb-5"
+              className="h-16 mb-7"
               rules={[
                 {
                   required: true,
@@ -229,7 +230,7 @@ const LoginScreen = () => {
               <Input placeholder="07xxxxxxxx" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Form.Item label={t("Email")} name="email" className="h-16 mb-5">
+            <Form.Item label={t("Email")} name="email" className="h-16 mb-7">
               <Input
                 type="email"
                 placeholder="example@email.com"
@@ -240,7 +241,7 @@ const LoginScreen = () => {
             <Form.Item
               label={t("Address")}
               name="address"
-              className="h-16 mb-8"
+              className="h-16 mb-7"
             >
               <Input placeholder="Iraq - Baghdad" className=" h-[40px] p-2" />
             </Form.Item>

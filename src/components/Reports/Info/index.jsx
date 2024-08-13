@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 const Info = () => {
   const { data, loading } = useReportsStore();
   const { t } = useTranslation();
-
   return (
     <Row gutter={16}>
       <Col span={6}>

@@ -98,73 +98,74 @@ const PatientForm = () => {
         })}
       />
       <Divider />
-      <Row gutter={[16, 16]}>
-        <Col span={24}>
-          <Space style={{ width: "100%" }} direction="vertical" size={4}>
+      <Row gutter={[16, 16]} className="frutiger-font">
+    <Col span={24}>
+        <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>{t("PatientName")}</Text>
             <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("ExName")}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t("ExName")}
             />
-          </Space>
-        </Col>
-        <Col span={10}>
-          <Space style={{ width: "100%" }} direction="vertical" size={4}>
+        </Space>
+    </Col>
+    <Col span={10}>
+        <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>{t("BirthDate")}</Text>
             <DatePicker
-              picker={t("year")}
-              value={birth}
-              onChange={(val) => setBirth(val)}
-              style={{ width: "100%" }}
+                picker={t("year")}
+                value={birth}
+                onChange={(val) => setBirth(val)}
+                style={{ width: "100%" }}
             />
-          </Space>
-        </Col>
-        <Col span={14}>
-          <Space style={{ width: "100%" }} direction="vertical" size={4}>
+        </Space>
+    </Col>
+    <Col span={14}>
+        <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>
-              {t("PhoneNumber")} <Text type="secondary">{t("Optional")}</Text>
+                {t("PhoneNumber")} <Text type="secondary">{t("Optional")}</Text>
             </Text>
             <Input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="07xxxxxxxxx"
-              style={{ width: "100%" }}
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="07xxxxxxxxx"
+                style={{ width: "100%" }}
             />
-          </Space>
-        </Col>
-        <Col span={16}>
-          <Space style={{ width: "100%" }} direction="vertical" size={4}>
+        </Space>
+    </Col>
+    <Col span={16}>
+        <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>
-              {t("Email")} <Text type="secondary">{t("Optional")}</Text>
+                {t("Email")} <Text type="secondary">{t("Optional")}</Text>
             </Text>
             <Input
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Ex: mail@example.com"
-              style={{ width: "100%" }}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Ex: mail@example.com"
+                style={{ width: "100%" }}
             />
-          </Space>
-        </Col>
-        <Col span={24}>
-          <Space style={{ width: "100%" }} direction="vertical" size={0}>
+        </Space>
+    </Col>
+    <Col span={24}>
+        <Space style={{ width: "100%" }} direction="vertical" size={0}>
             <Text>{t("Gender")}</Text>
             <Radio.Group
-              value={gender}
-              onChange={(e) => setGender(e.target.value)}
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
             >
-              <Space>
-                <Card hoverable bodyStyle={{ padding: 8 }}>
-                  <Radio value={"male"}>{t("Male")}</Radio>
-                </Card>
-                <Card hoverable bodyStyle={{ padding: 8 }}>
-                  <Radio value={"female"}>{t("Female")}</Radio>
-                </Card>
-              </Space>
+                <Space>
+                    <Card hoverable bodyStyle={{ padding: 8 }}>
+                        <Radio value={"male"}>{t("Male")}</Radio>
+                    </Card>
+                    <Card hoverable bodyStyle={{ padding: 8 }}>
+                        <Radio value={"female"}>{t("Female")}</Radio>
+                    </Card>
+                </Space>
             </Radio.Group>
-          </Space>
-        </Col>
-      </Row>
+        </Space>
+    </Col>
+</Row>
+
     </div>
   );
 };

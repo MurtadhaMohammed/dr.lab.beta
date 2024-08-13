@@ -53,7 +53,6 @@ const useLogin = () => {
       const expirationPeriod = user?.type === "trial" ? 7 : 365;
       const remaining = expirationPeriod - dayPassed;
 
-      console.log("tttesttt", expirationPeriod);
 
 
       if (remaining <= 0) {
