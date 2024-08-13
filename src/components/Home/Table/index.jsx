@@ -62,9 +62,11 @@ export const PureTable = ({ isReport = false }) => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [msgLoading, setMsgLoading] = useState(false);
-  const [tempLoading, setTempLoading] = useState(false);
   const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
+  const [labFeature, setLabFeature] = useState(
+    localStorage.getItem('lab-feature') === "null" ? null : localStorage.getItem('lab-feature')
+  );
   const limit = usePageLimit();
   const { setTableData } = useHomeStore();
   const { t } = useTranslation();
@@ -129,6 +131,10 @@ export const PureTable = ({ isReport = false }) => {
       formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
       formData.append('file', pdfBlob, 'report.pdf');
 
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+      
       const resp = await apiCall({
         method: 'POST',
         pathname: '/send/whatsapp-message',
@@ -151,7 +157,7 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   const whatsapContnet = (record) => (
-    <div className="whatsap-content">
+    <div div className="whatsap-content" >
       <WhatsAppOutlined style={{ fontSize: 40 }} />
       <b>{t("SendResults")}</b>
       <p>{t("SendResulsOnWhatsaap")}</p>
@@ -319,22 +325,21 @@ export const PureTable = ({ isReport = false }) => {
               {t("PrintResults")}
             </Button>
             <Divider type="vertical" />
-            {
-              localStorage.getItem('lab-feature') != null ??
-              <Popover
-                onOpenChange={(isOpen) => {
-                  if (isOpen) setDestPhone(record?.patient?.phone);
-                  else setIsConfirm(false);
-                }}
-                content={whatsapContnet(record)}
-              >
-                <Button
-                  size="small"
-                  icon={<WhatsAppOutlined WhatsAppOutlined />}
-                  loading={msgLoading && record?.patient?.phone === destPhone}
-                ></Button>
-              </Popover>
-            }
+            <Popover
+              onOpenChange={(isOpen) => {
+                if (isOpen) setDestPhone(record?.patient?.phone);
+                else setIsConfirm(false);
+              }}
+              content={whatsapContnet(record)}
+              open={labFeature === null ? false : undefined}
+            >
+              <Button
+                size="small"
+                icon={<WhatsAppOutlined />}
+                loading={msgLoading && record?.patient?.phone === destPhone}
+                disabled={labFeature === null}
+              />
+            </Popover>
             <Button
               size="small"
               disabled={record?.status === t("COMPLETED")}
