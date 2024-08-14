@@ -83,7 +83,7 @@ const LoginScreen = () => {
                     if (v.name === "whatsapp") return v.name;
                   })
                   .filter(Boolean) // Remove undefined values from the array
-              : []
+              : ["null"]
           );
           
           setIsLogin(true);
