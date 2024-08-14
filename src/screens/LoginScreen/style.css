@@ -20,3 +20,11 @@
 .switchBtn {
   direction: ltr;
 }
+
+.input[type="text"],
+.input[type="password"],
+.input[type="number"],
+.textarea {
+    font-family: "Frutiger", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-weight: normal;
+}

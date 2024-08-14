@@ -2,7 +2,18 @@ import "./style.css";
 import { useEffect, useState } from "react";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
-import { Alert, Button, message, Divider, Layout, Menu, Space, theme, Popconfirm, Popover } from "antd";
+import {
+  Alert,
+  Button,
+  message,
+  Divider,
+  Layout,
+  Menu,
+  Space,
+  theme,
+  Popconfirm,
+  Popover,
+} from "antd";
 import { TbReportSearch } from "react-icons/tb";
 import { GrDocumentTest } from "react-icons/gr";
 import { LuPackage2, LuSettings2 } from "react-icons/lu";
@@ -27,7 +38,7 @@ const MainContainerV2 = ({ children }) => {
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(); // Use useTranslation to get the current language
   const { setIsLogin } = useAppStore();
 
   const {
@@ -63,10 +74,10 @@ const MainContainerV2 = ({ children }) => {
   };
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage?.getItem('lab-user'));
-    const labExp = parseInt(localStorage?.getItem('lab-exp'), 10);
+    const userData = JSON.parse(localStorage?.getItem("lab-user"));
+    const labExp = parseInt(localStorage?.getItem("lab-exp"), 10);
 
-    if (userData?.type === 'trial') {
+    if (userData?.type === "trial") {
       setShowTrialAlert(true);
     }
 
@@ -82,6 +93,17 @@ const MainContainerV2 = ({ children }) => {
 
   const handlePopoverCancel = () => {
     setIsPopoverVisible(false);
+  };
+
+  // Function to determine rotation based on language
+  const getRotationStyle = () => {
+    if (i18n.language === "ar") {
+      // Arabic language: rotate -90 degrees if collapsed
+      return collapsed ? "rotate(-180deg)" : "rotate(0deg)";
+    } else {
+      // Other languages: default rotation
+      return collapsed ? "rotate(0deg)" : "rotate(180deg)";
+    }
   };
 
   return (
@@ -115,26 +137,32 @@ const MainContainerV2 = ({ children }) => {
               </motion.div>
             </div>
             <Menu
-              style={{ border: "none" }}
+              style={{
+                border: "none",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                width: "100%",
+              }}
               className="bg-transparent p-[8px]"
               mode="inline"
               defaultSelectedKeys={[location?.pathname]}
               items={[
                 {
                   key: "/",
-                  icon: <HiOutlineHome size={20} />,
+                  icon: <HiOutlineHome size={20} style={{ marginLeft: '2px' }}/>,
                   label: <p className="text-[15px]">{t("Home")}</p>,
                   onClick: () => navigate("/", { replace: true }),
                 },
                 {
                   key: "/patients",
-                  icon: <MdOutlinePersonalInjury size={20} />,
+                  icon: <MdOutlinePersonalInjury size={18} style={{ marginLeft: '1px' }}  />,
                   label: <p className="text-[15px]">{t("Patients")}</p>,
                   onClick: () => navigate("/patients", { replace: true }),
                 },
                 {
                   key: "/tests",
-                  icon: <GrDocumentTest size={16} />,
+                  icon: <GrDocumentTest size={16} style={{ marginRight: '2px' }} />,
                   label: <p className="text-[15px]">{t("Tests")}</p>,
                   onClick: () => navigate("/tests", { replace: true }),
                 },
@@ -146,7 +174,7 @@ const MainContainerV2 = ({ children }) => {
                 },
                 {
                   key: "/reports",
-                  icon: <TbReportSearch size={20} />,
+                  icon: <TbReportSearch size={18} />,
                   label: <p className="text-[15px]">{t("Reports")}</p>,
                   onClick: () => navigate("/reports", { replace: true }),
                 },
@@ -178,9 +206,9 @@ const MainContainerV2 = ({ children }) => {
               className="border-t border-t-[#eee] h-[48px] flex items-center justify-center text-[22px] transition-all active:opacity-40"
             >
               <RxDoubleArrowRight
-                className="transition-all "
+                className="transition-all"
                 style={{
-                  transform: collapsed ? "rotate(0deg)" : "rotate(180deg)",
+                  transform: getRotationStyle(), // Apply the conditional rotation here
                 }}
               />
             </button>
@@ -199,14 +227,25 @@ const MainContainerV2 = ({ children }) => {
         {showTrialAlert && (
           <Alert
             className="sticky top-0 z-10"
-            message={<span>{t("SerialKeyWilBeExpiredSoon")} <Popover
-              placement="bottom"
-              title={t("Upgrade to Paid Version")}
-              visible={isPopoverVisible}
-              onVisibleChange={(visible) => setIsPopoverVisible(visible)}
-              trigger="hover"
-              content={<PopOverContent />}
-            ><a onMouseEnter={showPopover} style={{ textDecoration: 'underline', cursor: 'pointer' }}>{t("from us")}</a></Popover></span>}
+            message={
+              <span>
+                {t("SerialKeyWilBeExpiredSoon")}{t("")}
+                <Popover
+                  placement="bottom"
+                  visible={isPopoverVisible}
+                  onVisibleChange={(visible) => setIsPopoverVisible(visible)}
+                  trigger="hover"
+                  content={<PopOverContent />}
+                >
+                  <a
+                    onMouseEnter={showPopover}
+                    style={{ textDecoration: "underline", cursor: "pointer" }}
+                  >
+                    {t("here")}
+                  </a>
+                </Popover>
+              </span>
+            }
             banner
             closable
           />
@@ -214,14 +253,29 @@ const MainContainerV2 = ({ children }) => {
         {showExpAlert && (
           <Alert
             className="sticky top-0 z-10"
-            message={<span>{`${t("SerialKeyWillBeExpiredIn")} ${remainingDays} ${t("days")}`} <Popover
-              placement="bottom"
-              title={t("")}
-              visible={isPopoverVisible}
-              onVisibleChange={(visible) => setIsPopoverVisible(visible)}
-              trigger="hover"
-              content={<PopOverContent />}
-            ><span>{t("upgrade") }</span> <a onMouseEnter={showPopover} style={{ textDecoration: 'underline', cursor: 'pointer' }}>{t("here" )}</a></Popover></span>}
+            message={
+              <span>
+                {`${t("SerialKeyWillBeExpiredIn")} ${remainingDays} ${t(
+                  "days"
+                )}`}{" "}
+                <Popover
+                  placement="bottom"
+                  title={t("")}
+                  visible={isPopoverVisible}
+                  onVisibleChange={(visible) => setIsPopoverVisible(visible)}
+                  trigger="hover"
+                  content={<PopOverContent />}
+                >
+                  <span>{t("upgrade")}</span>{" "}
+                  <a
+                    onMouseEnter={showPopover}
+                    style={{ textDecoration: "underline", cursor: "pointer" }}
+                  >
+                    {t("here")}
+                  </a>
+                </Popover>
+              </span>
+            }
             banner
             closable
           />

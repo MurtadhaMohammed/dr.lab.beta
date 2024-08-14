@@ -49,6 +49,7 @@
     "Today": "Today",
     "All": "All",
     "PackageTest": "Package Test",
+      "SelectCustomTest": "Select Custom Test",
     "CustomeTest": "Custome Test",
     "SearchPatient": "Search patient",
     "ViewHistory": "View History",
