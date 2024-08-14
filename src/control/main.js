@@ -6,10 +6,30 @@ const { app } = require("electron");
 const fs = require("fs");
 const path = require('path');
 const image = path.join(__dirname, '../../defaultHeader.jpg');
+const { broadcast, getPort } = require("../../websocket");
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
   switch (arg.query) {
+    case "getWSPort": {
+      try {
+        const wsPort = getPort(); // Retrieve the WebSocket port
+        event.reply("asynchronous-reply", { success: true, wsPort });
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: "Could not retrieve WebSocket port",
+        });
+      }
+      break;
+    }
+    case "someOtherCase": {
+      // Example: Broadcast a message
+      broadcast({ type: "UPDATE", data: "Some update data" });
+      event.reply("asynchronous-reply", { success: true });
+      break;
+    }
+    
     case "getPatients": {
       try {
         const resp = await labDB.getPatients({
