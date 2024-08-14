@@ -414,7 +414,7 @@ const SettingsScreen = () => {
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
                     <p className=" font-normal">{t('whatsappIntegration')}</p>
-                    <Popover trigger="hover" content={<PopOverContent />}>
+                    <Popover trigger="hover" content={<PopOverContent website={"https://www.puretik.com/ar"} email={"puretik@gmail.com"} phone={"07710553120"} />}>
                       <p className={`${whatsAppStatus.textStyle} font-bold text-sm`}>{whatsAppStatus.status}</p>
                     </Popover>
                   </div>

@@ -157,7 +157,7 @@ const MainContainerV2 = ({ children }) => {
                 },
                 {
                   key: "/patients",
-                  icon: <MdOutlinePersonalInjury size={18} style={{ marginLeft: '1px' }}  />,
+                  icon: <MdOutlinePersonalInjury size={18} style={{ marginLeft: '1px' }} />,
                   label: <p className="text-[15px]">{t("Patients")}</p>,
                   onClick: () => navigate("/patients", { replace: true }),
                 },
@@ -265,7 +265,7 @@ const MainContainerV2 = ({ children }) => {
                   visible={isPopoverVisible}
                   onVisibleChange={(visible) => setIsPopoverVisible(visible)}
                   trigger="hover"
-                  content={<PopOverContent />}
+                  content={<PopOverContent website={"https://www.puretik.com/ar"} email={"https://www.puretik.com/ar"} phone={"07710553120"} />}
                 >
                   <span>{t("upgrade")}</span>{" "}
                   <a
