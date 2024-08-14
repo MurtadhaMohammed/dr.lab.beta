@@ -69,7 +69,8 @@ const SettingsScreen = () => {
   const signout = async () => {
     setSignoutLoading(true);
     try {
-      let serialId = parseInt(localStorage.getItem("lab-serial-id"));
+      let serial = localStorage.getItem.stringify("lab-serial");
+      console.log("Serial:", serial);
       const resp = await fetch(
         `https://dr-lab-apiv2.onrender.com/api/app/logout`,
         {
@@ -77,14 +78,12 @@ const SettingsScreen = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ serialId }),
+          body: serial,
         }
       );
       if (resp.status === 200) {
         setSignoutLoading(false);
-        localStorage.removeItem("lab-exp");
-        localStorage.removeItem("lab-serial-id");
-        localStorage.removeItem("lab-user");
+        localStorage.clear()
         setIsLogin(false);
         navigate(-1, { replace: true });
       } else message.error("Serial not found!");
