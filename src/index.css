@@ -1,15 +1,15 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; 
 
 @font-face {
-  font-family: "Frutiger";
+  font-family: "Frutiger" !important;
   src: url("./fonts/Frutiger LT Arabic 55 Roman.ttf");
   font-weight: normal;
 }
 
 @font-face {
-  font-family: "Frutiger";
+  font-family: "Frutiger" !important;
   src: url("./fonts/Frutiger LT Arabic 65 Bold.ttf");
   font-weight: bold;
 }

@@ -96,6 +96,7 @@
     "PatientName": "Patient Name",
     "BirthDate": "Birth Date",
     "year": "year",
+    "age": "years",
     "Optional": "Optional",
     "Gender": "Gender",
     "Previous": "Previous",

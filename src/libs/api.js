@@ -34,6 +34,7 @@ export const apiCall = async ({
     const myHeaders = new Headers();
 
     if (auth) myHeaders.append("Authorization", `Bearer ${token}`);
+
     if (data && isFormData) {
       const formdata = new FormData();
       Object.entries(data).forEach(([key, value]) => {
@@ -44,6 +45,10 @@ export const apiCall = async ({
       myHeaders.append("Content-Type", "application/json");
       body = JSON.stringify(data);
     }
+
+    Object.entries(body).forEach(([key, value]) => {
+      console.log(key, value);
+    });
 
     const res = await fetch(`${URL}${pathname}`, {
       method,
