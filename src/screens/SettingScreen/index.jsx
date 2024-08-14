@@ -69,7 +69,7 @@ const SettingsScreen = () => {
   const signout = async () => {
     setSignoutLoading(true);
     try {
-      let serial = localStorage.getItem.stringify("lab-serial");
+      let serial = localStorage.getItem("lab-serial");
       console.log("Serial:", serial);
       const resp = await fetch(
         `https://dr-lab-apiv2.onrender.com/api/app/logout`,

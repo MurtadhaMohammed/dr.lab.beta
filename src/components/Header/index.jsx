@@ -30,15 +30,15 @@ const MainHeader = () => {
   const signout = async () => {
     setLoading(true);
     try {
-      let serialId = parseInt(localStorage.getItem("lab-serial-id"));
+      let serialid = localStorage.getItem("lab-serial-id"); // Keep it as a string
       const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/a/logout`,
+        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ serialId }),
+          body: JSON.stringify({ serialid }), // Sent as a string
         }
       );
       if (resp.status === 200) {
@@ -54,6 +54,7 @@ const MainHeader = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <header className="main-header" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
