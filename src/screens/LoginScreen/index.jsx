@@ -75,9 +75,17 @@ const LoginScreen = () => {
           localStorage.setItem("lab-exp", updatedSerial.exp);
           localStorage.setItem("lab-created", updatedSerial.startAt);
           localStorage.setItem("lab-serial", updatedSerial.serial);
-          localStorage.setItem("lab-feature", updatedSerial.feature.map((v) => {
-            if (v.name === "whatsapp") return v.name
-          }));
+          localStorage.setItem(
+            "lab-feature",
+            updatedSerial.feature
+              ? updatedSerial.feature
+                  .map((v) => {
+                    if (v.name === "whatsapp") return v.name;
+                  })
+                  .filter(Boolean) // Remove undefined values from the array
+              : []
+          );
+          
           setIsLogin(true);
         } else {
           throw new Error("Serial data is missing or incomplete");
