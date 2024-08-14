@@ -45,22 +45,24 @@
   border-radius: 8px;
   padding: 8px 16px;
 }
+:where(.css-dev-only-do-not-override-1kh9vnz).ant-typography{
 
-.frutiger-font {
-  font-family: "Frutiger", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-family: "Frutiger", 'Segoe UI', Roboto !important;
+}
+/* .frutiger-font {
 }
 
 :where(.css-dev-only-do-not-override-pgtbg4).ant-input {
-  font-family: "Frutiger", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'!important;
+  font-family: "Frutiger", 'Segoe UI', Roboto;
 }
 
 :where(.css-dev-only-do-not-override-pgtbg4).ant-picker .ant-picker-input > input {
-  font-family: "Frutiger", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+  font-family: "Frutiger", 'Segoe UI', Roboto;
 }
 
 :where(.css-dev-only-do-not-override-pgtbg4).ant-modal .ant-modal-title {
-  font-family: "Frutiger", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
-}
+  font-family: "Frutiger", 'Segoe UI', Roboto;
+} */
 
 .pure-steps span{
   margin-left:8px;
