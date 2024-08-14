@@ -31,6 +31,7 @@ const LoginScreen = () => {
   const [language, setLanguage] = useState("en");
   const [form] = Form.useForm();
   const { t } = useTranslation();
+  const direction = i18n.dir();
 
   const getUUID = () => {
     send({ query: "getUUID" }).then((resp) => {
@@ -178,7 +179,7 @@ const LoginScreen = () => {
       }}
     >
       {isForm ? (
-        <Card className="w-[400px]" title={<BackIcon onClose={handleClose} />}>
+        <Card className="w-[400px]" title={<BackIcon className="cursor-pointer" onClose={handleClose} />}>
           <Form
             form={form}
             onFinish={register}

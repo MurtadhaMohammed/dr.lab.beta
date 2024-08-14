@@ -229,10 +229,9 @@ const MainContainerV2 = ({ children }) => {
             className="sticky top-0 z-10"
             message={
               <span>
-                {t("SerialKeyWilBeExpiredSoon")}{" "}
+                {t("SerialKeyWilBeExpiredSoon")}{t("")}
                 <Popover
                   placement="bottom"
-                  title={t("Upgrade to Paid Version")}
                   visible={isPopoverVisible}
                   onVisibleChange={(visible) => setIsPopoverVisible(visible)}
                   trigger="hover"
@@ -242,7 +241,7 @@ const MainContainerV2 = ({ children }) => {
                     onMouseEnter={showPopover}
                     style={{ textDecoration: "underline", cursor: "pointer" }}
                   >
-                    {t("from us")}
+                    {t("here")}
                   </a>
                 </Popover>
               </span>
