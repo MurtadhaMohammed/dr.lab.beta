@@ -30,17 +30,17 @@ export const apiCall = async ({
       throw new Error("refresh token expired");
     }
 
-    let body = undefined;
+    let body;
     const myHeaders = new Headers();
 
     if (auth) myHeaders.append("Authorization", `Bearer ${token}`);
 
     if (data && isFormData) {
-      const formdata = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        formdata.append(key, value);
-      });
-      body = formdata;
+      // const formdata = new FormData();
+      // Object.entries(data).forEach(([key, value]) => {
+      //   formdata.append(key, value);
+      // });
+      body = data;
     } else if (data) {
       myHeaders.append("Content-Type", "application/json");
       body = JSON.stringify(data);
