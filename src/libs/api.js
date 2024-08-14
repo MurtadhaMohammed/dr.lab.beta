@@ -2,7 +2,8 @@ import { jwtDecode } from "jwt-decode";
 import { useAppStore } from "./appStore";
 
 // export const URL = "http://localhost:3000/api";
-  
+export const URL = "https://dr-lab-apiv2.onrender.com/api";
+
 export const isTokenValid = (token) => {
   try {
     let { exp } = jwtDecode(token);
@@ -29,25 +30,17 @@ export const apiCall = async ({
       throw new Error("refresh token expired");
     }
 
-    let body = undefined;
+    let body;
     const myHeaders = new Headers();
 
     if (auth) myHeaders.append("Authorization", `Bearer ${token}`);
 
     if (data && isFormData) {
-      const formdata = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        formdata.append(key, value);
-      });
-      body = formdata;
+      body = data;
     } else if (data) {
       myHeaders.append("Content-Type", "application/json");
       body = JSON.stringify(data);
     }
-
-    Object.entries(body).forEach(([key, value]) => {
-      console.log(key, value);
-    });
 
     const res = await fetch(`${URL}${pathname}`, {
       method,

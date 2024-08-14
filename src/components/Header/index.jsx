@@ -6,6 +6,7 @@ import { useAppStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import MainContainer from "../Container";
 import "./style.css";
+import { stringify } from "postcss";
 
 const items = [
   {
@@ -23,14 +24,14 @@ const MainHeader = () => {
   const { setIsLogin, user } = useAppStore();
 
   useEffect(() => {
-    const dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.setAttribute('dir', dir);
+    const dir = i18n.language === "ar" ? "rtl" : "ltr";
+    document.documentElement.setAttribute("dir", dir);
   }, [i18n.language]);
 
   const signout = async () => {
     setLoading(true);
     try {
-      let serialid = localStorage.getItem("lab-serial-id"); // Keep it as a string
+      let serial = localStorage.getItem("lab-serial"); 
       const resp = await fetch(
         `https://dr-lab-apiv2.onrender.com/api/app/logout`,
         {
@@ -38,7 +39,7 @@ const MainHeader = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ serialid }), // Sent as a string
+          body: JSON.stringify({ serial }),
         }
       );
       if (resp.status === 200) {
@@ -54,10 +55,12 @@ const MainHeader = () => {
       setLoading(false);
     }
   };
-  
 
   return (
-    <header className="main-header" dir={i18n.language === 'ar' ? 'rtl' : 'ltr'}>
+    <header
+      className="main-header"
+      dir={i18n.language === "ar" ? "rtl" : "ltr"}
+    >
       <div className="shadow"></div>
       <MainContainer>
         <div className="menu">
@@ -120,7 +123,9 @@ const MainHeader = () => {
                 ) : (
                   <DownOutlined style={{ fontSize: 14 }} />
                 )}
-                <span style={{ color: loading ? "#ccc" : "#000" }}>{user?.name || "Admin"}</span>
+                <span style={{ color: loading ? "#ccc" : "#000" }}>
+                  {user?.name || "Admin"}
+                </span>
                 <Avatar size={"small"} icon={<UserOutlined />} />
               </Space>
             </a>

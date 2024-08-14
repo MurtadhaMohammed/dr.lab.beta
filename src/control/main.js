@@ -1,5 +1,5 @@
 const { ipcMain } = require("electron");
-var { createPDF, printReport } = require("../../initPDF");
+var { createPDF, printReport, createPDFBlob } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
 const { app } = require("electron");
@@ -358,6 +358,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { err, res, file });
       });
       break;
+
     case "printReport": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
       printReport(arg.data, (err, res) => {
         event.reply("asynchronous-reply", { err, res });
