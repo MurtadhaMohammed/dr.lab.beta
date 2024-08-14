@@ -54,7 +54,9 @@
   },
   "devDependencies": {
     "@electron/rebuild": "^3.6.0",
+    "assert": "^2.1.0",
     "autoprefixer": "^10.4.19",
+    "browserify-zlib": "^0.2.0",
     "buffer": "^5.5.0",
     "concurrently": "^8.0.1",
     "crypto-browserify": "^3.12.0",
@@ -66,9 +68,12 @@
     "path-browserify": "^1.0.1",
     "postcss": "^8.4.39",
     "process": "^0.11.10",
+    "querystring-es3": "^0.2.1",
     "stream-browserify": "^3.0.0",
+    "stream-http": "^3.2.0",
     "tailwindcss": "^3.4.6",
     "tailwindcss-bg-patterns": "^0.3.0",
+    "url": "^0.11.4",
     "util": "^0.12.5",
     "vm-browserify": "^1.1.2",
     "wait-on": "^7.0.1"

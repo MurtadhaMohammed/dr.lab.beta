@@ -1,5 +1,4 @@
 const path = require("path");
-import { shell } from "electron";
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const express = require("express");
@@ -75,12 +74,6 @@ function createWindow() {
   //     ? `file://${path.join(__dirname, "./splash.html")}`
   //     : `file://${path.join(__dirname, "../dist/splash.html")}`
   // );
-
-
-  mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url);
-    return { action: "deny" };
-  })
 
   ipcMain.on("minimize-window", () => {
     if (win) win.minimize();
