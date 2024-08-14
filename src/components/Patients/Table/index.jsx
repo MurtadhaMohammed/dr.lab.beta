@@ -68,7 +68,7 @@ export const PureTable = () => {
       render: (birth) => (
         <p>
           {dayjs().diff(dayjs(birth), "y")}{" "}
-          <span style={{ color: "#666" }}>year</span>
+          <span style={{ color: "#666" }}>{t("age")}</span>
         </p>
       ),
     },

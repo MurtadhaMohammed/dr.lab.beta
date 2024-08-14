@@ -28,14 +28,6 @@ function App() {
   useLogin();
 
   useEffect(() => {
-    send({
-      query: "initHeadImage",
-    }).then(({ err, res }) => {
-      console.log(err, res);
-    });
-  }, []);
-
-  useEffect(() => {
     ipcRenderer.on("hello", () => {
       console.log("HEEELLLL");
     });
