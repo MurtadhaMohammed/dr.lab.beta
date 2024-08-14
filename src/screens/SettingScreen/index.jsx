@@ -78,7 +78,7 @@ const SettingsScreen = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: serial,
+          body: JSON.stringify({serial}),
         }
       );
       if (resp.status === 200) {

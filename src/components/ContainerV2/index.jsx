@@ -26,6 +26,7 @@ import logo1 from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
+import { stringify } from "postcss";
 
 const { Sider, Content } = Layout;
 
@@ -56,7 +57,7 @@ const MainContainerV2 = ({ children }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body:  JSON.stringify({serial}) ,
+          body: JSON.stringify({ serial }),
         }
       );
       if (resp.status === 200) {
