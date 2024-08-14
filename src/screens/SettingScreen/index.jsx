@@ -43,6 +43,9 @@ const SettingsScreen = () => {
 
   const { t } = useTranslation();
 
+  const labUser = JSON.parse(localStorage.getItem("lab-user"));
+  const userType = labUser?.type;
+
 
   async function fetchImagePath() {
     setImagePath(null);
@@ -386,12 +389,11 @@ const SettingsScreen = () => {
                   <p className=" font-bold">{localStorage.getItem('lab-serial') || "10992909"}</p>
                 </div>
 
-                {
-                  remainingDays < 7 ?
-                    <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">{t("supportPaymentReminder")}</p>
-                    :
-                    null
-                }
+                {userType === "paid" && remainingDays < 7 ? (
+                  <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">
+                    {t("supportPaymentReminder")}
+                  </p>
+                ) : null}
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p>{t('startedAt')}</p>

@@ -159,6 +159,7 @@ const TestForm = () => {
             onChange={setDiscount}
             style={{ width: 100 }}
             placeholder="Ex: 5,000"
+            min={0}
           />
         </div>
         <Divider />

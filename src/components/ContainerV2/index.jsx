@@ -150,7 +150,7 @@ const MainContainerV2 = ({ children }) => {
               items={[
                 {
                   key: "/",
-                  icon: <HiOutlineHome size={20} style={{ marginLeft: '2px' }}/>,
+                  icon: <HiOutlineHome size={20} />,
                   label: <p className="text-[15px]">{t("Home")}</p>,
                   onClick: () => navigate("/", { replace: true }),
                 },
