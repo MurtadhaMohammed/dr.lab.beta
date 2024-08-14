@@ -1,5 +1,5 @@
 const path = require("path");
-
+import { shell } from "electron";
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const express = require("express");
@@ -76,6 +76,12 @@ function createWindow() {
   //     : `file://${path.join(__dirname, "../dist/splash.html")}`
   // );
 
+
+  mainWindow.webContents.setWindowOpenHandler((details) => {
+    shell.openExternal(details.url);
+    return { action: "deny" };
+  })
+
   ipcMain.on("minimize-window", () => {
     if (win) win.minimize();
   });
@@ -104,9 +110,8 @@ function createWindow() {
       const isMac = os.platform() === "darwin";
       autoUpdater.setFeedURL({
         provider: "generic",
-        url: `https://drlab.us-east-1.linodeobjects.com/release/${
-          isMac ? "mac" : "win"
-        }`,
+        url: `https://drlab.us-east-1.linodeobjects.com/release/${isMac ? "mac" : "win"
+          }`,
         // url: "https://github.com/MurtadhaMohammed/dr.lab.beta/releases/latest",
         // provider: "github",
         // repo: "dr.lab.beta",
