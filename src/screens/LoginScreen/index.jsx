@@ -1,18 +1,15 @@
 import {
-  Avatar,
   Button,
   Card,
-  Divider,
   Form,
   Input,
   Space,
-  Typography,
   message,
   Switch,
 } from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
-import { useAppStore } from "../../libs/appStore";
+import { useAppStore, useLanguage } from "../../libs/appStore";
 import Logo from "../../assets/logo2.png";
 import { send } from "../../control/renderer";
 import background from "../../assets/login.svg";
@@ -28,7 +25,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
   const [isForm, setIsForm] = useState(false);
-  const [language, setLanguage] = useState("en");
+  const { lang, setLang } = useLanguage();
   const [form] = Form.useForm();
   const { t } = useTranslation();
   const direction = i18n.dir();
@@ -78,7 +75,9 @@ const LoginScreen = () => {
           localStorage.setItem("lab-exp", updatedSerial.exp);
           localStorage.setItem("lab-created", updatedSerial.startAt);
           localStorage.setItem("lab-serial", updatedSerial.serial);
-          localStorage.setItem("lab-feature", updatedSerial.feature);
+          localStorage.setItem("lab-feature", updatedSerial.feature.map((v) => {
+            if (v.name === "whatsapp") return v.name
+          }));
           setIsLogin(true);
         } else {
           throw new Error("Serial data is missing or incomplete");
@@ -130,7 +129,7 @@ const LoginScreen = () => {
           localStorage.setItem("lab-created", serial.startAt);
           localStorage.setItem("lab-serial", serial.serial);
           setIsLogin(true);
-          setIsForm(false); // Hide the form if registration is successful
+          setIsForm(false);
         } else {
           throw new Error("Serial data is missing or incomplete");
         }
@@ -150,21 +149,25 @@ const LoginScreen = () => {
     setIsForm(false);
   };
 
-  useEffect(() => {
-    const savedLanguage = localStorage.getItem("app-language");
-    if (savedLanguage) {
-      i18n.changeLanguage(savedLanguage);
-      setLanguage(savedLanguage);
-      document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedLanguage = localStorage.getItem("app-language");
+  //   if (savedLanguage) {
+  //     i18n.changeLanguage(savedLanguage);
+  //     setLanguage(savedLanguage);
+  //     document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
+  //   }
+  // }, []);
 
   const handleLang = (checked) => {
-    const newLanguage = checked ? "ar" : "en";
-    i18n.changeLanguage(newLanguage);
-    setLanguage(newLanguage);
-    document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
-    localStorage.setItem("app-language", newLanguage);
+    if (checked != undefined) {
+      const newLanguage = checked ? "ar" : "en";
+      i18n.changeLanguage(newLanguage);
+      setLang(newLanguage);
+      document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
+    } else {
+      i18n.changeLanguage(lang);
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    }
   };
 
 
@@ -266,7 +269,7 @@ const LoginScreen = () => {
           }}
         >
           <Space direction="vertical" size={32} className="w-96 h-full">
-          <div className="w-full flex flex-col items-center">
+            <div className="w-full flex flex-col items-center">
               <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
 
               <div className="w-full handletext">
@@ -317,7 +320,7 @@ const LoginScreen = () => {
                     className="switchBtn"
                     checkedChildren="عربي"
                     unCheckedChildren="en"
-                    checked={language === "ar"}
+                    checked={lang === "ar"}
                     onChange={handleLang}
                     style={{ width: 60 }}
                   />
