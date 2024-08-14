@@ -82,7 +82,7 @@ const MainContainerV2 = ({ children }) => {
       setShowTrialAlert(true);
     }
 
-    if (!isNaN(labExp) && labExp <= 3) {
+    if (userData?.type === "paid" && !isNaN(labExp) && labExp <= 3) {
       setRemainingDays(labExp);
       setShowExpAlert(true);
     }
@@ -209,7 +209,7 @@ const MainContainerV2 = ({ children }) => {
               <RxDoubleArrowRight
                 className="transition-all"
                 style={{
-                  transform: getRotationStyle(), // Apply the conditional rotation here
+                  transform: getRotationStyle(),
                 }}
               />
             </button>
@@ -236,7 +236,7 @@ const MainContainerV2 = ({ children }) => {
                   visible={isPopoverVisible}
                   onVisibleChange={(visible) => setIsPopoverVisible(visible)}
                   trigger="hover"
-                  content={<PopOverContent />}
+                  content={<PopOverContent website={"https://www.puretik.com/ar"} email={"https://www.puretik.com/ar"} phone={"07710553120"}/>}
                 >
                   <a
                     onMouseEnter={showPopover}
@@ -251,7 +251,7 @@ const MainContainerV2 = ({ children }) => {
             closable
           />
         )}
-        {showExpAlert && (
+        { showExpAlert && (
           <Alert
             className="sticky top-0 z-10"
             message={
