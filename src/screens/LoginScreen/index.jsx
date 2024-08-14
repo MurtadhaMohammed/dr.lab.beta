@@ -148,15 +148,6 @@ const LoginScreen = () => {
     setIsForm(false);
   };
 
-  // useEffect(() => {
-  //   const savedLanguage = localStorage.getItem("app-language");
-  //   if (savedLanguage) {
-  //     i18n.changeLanguage(savedLanguage);
-  //     setLanguage(savedLanguage);
-  //     document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
-  //   }
-  // }, []);
-
   const handleLang = (checked) => {
     if (checked != undefined) {
       const newLanguage = checked ? "ar" : "en";
