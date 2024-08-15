@@ -26,6 +26,7 @@ function App() {
   
   useInitHeaderImage();
   useLogin();
+  ipcRenderer.send("asynchronous-message", { query: "addMultiplePatients" });
 
   useEffect(() => {
     ipcRenderer.on("hello", () => {

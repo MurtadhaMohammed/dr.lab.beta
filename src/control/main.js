@@ -26,6 +26,38 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+    case "addMultiplePatients": {
+      try {
+        // Function to generate dummy patient data
+        function generatePatient(index) {
+          return {
+            name: `Patient ${index}`,
+            gender: index % 2 === 0 ? 'Male' : 'Female',
+            email: `patient${index}@example.com`,
+            phone: `123-456-789${index % 10}`,
+            birth: `1990-01-${String(index % 28 + 1).padStart(2, '0')}`, // Random day in January
+          };
+        }
+
+        // Function to add multiple patients
+        async function addMultiplePatients() {
+          for (let i = 0; i < 100000; i++) {
+            const patient = generatePatient(i);
+            await labDB.addPatient(patient); // You can handle individual errors here if needed
+          }
+        }
+
+        await addMultiplePatients();
+        event.reply("asynchronous-reply", { success: true, message: "100,000 patients added successfully" });
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
 
     case "addPatient": {
       try {

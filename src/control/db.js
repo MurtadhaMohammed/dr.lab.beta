@@ -20,6 +20,7 @@ class LabDB {
       console.error("Error opening database", err);
     }
   }
+  
 
   initializeDatabase() {
     this.db.exec(`
