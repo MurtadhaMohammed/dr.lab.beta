@@ -1,0 +1,55 @@
+.results-modal {
+  height: 500px;
+  margin-top: 16px;
+  overflow: auto;
+}
+
+.results-modal thead{
+    display: none;
+}
+
+.results-modal .test-section{
+ margin-top: -1px;
+}
+.results-modal .test-section .title{
+   background-color: #eee;
+   padding: 4px 8px;
+
+}
+
+
+.results-modal .test-section tbody td{
+   padding: 14px 8px;
+}
+
+.results-modal .test-section tr:hover{
+   background-color: transparent;
+}
+
+
+.results-modal .custom-actions{
+  width: 100%;
+  display: flex;
+  justify-content: end;
+}
+
+.results-modal .test-list{
+   margin: 16px 0;
+   display: grid;
+   grid-template-columns: 1fr 1fr 1fr;
+   gap: 16px;
+}
+
+.results-modal .test-list .test-item p{
+   padding-bottom: 2px;
+}
+
+.results-modal .test-list input{
+  width: 100%;
+}
+
+.results-modal-footer{
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+}

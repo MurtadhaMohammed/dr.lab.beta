@@ -1,0 +1,49 @@
+header.main-header {
+  padding-top: 40px;
+  padding-bottom: 20px;
+}
+/* 
+header.main-header .menu {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+} */
+
+header.main-header .nav {
+  display: flex;
+  align-items: baseline;
+}
+
+header.main-header .nav .logo {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+header.main-header .nav ul {
+  margin-left: 50px;
+  list-style-type: none;
+  display: flex;
+}
+
+header.main-header[dir="rtl"] .nav ul {
+  margin-left: 0;
+  margin-right: 50px;
+}
+
+header.main-header .nav ul a {
+  text-decoration: none;
+  cursor: pointer;
+}
+
+header.main-header .nav ul li {
+  padding: 0px 10px;
+  color: #666;
+}
+
+header.main-header .nav ul li.active {
+  color: #1677ff;
+}
+
+header.main-header[dir="rtl"] .nav ul li {
+  padding: 0px 10px;
+}
