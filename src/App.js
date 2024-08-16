@@ -16,7 +16,7 @@ import { useAppStore } from "./libs/appStore";
 import useLang from "./hooks/useLang";
 import { send } from "./control/renderer";
 import useInitHeaderImage from "./hooks/useInitHeaderImage";
-
+//testtt push 
 const { ipcRenderer } = window.require("electron");
 
 function App() {
