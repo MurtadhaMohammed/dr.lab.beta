@@ -28,9 +28,9 @@ function App() {
   useLogin();
 
   useEffect(() => {
-    ipcRenderer.on("hello", () => {
-      console.log("HEEELLLL");
-    });
+    // ipcRenderer.on("hello", () => {
+    //   console.log("HEEELLLL");
+    // });
     ipcRenderer.on("update-available", () => {
       console.log("update-available");
     });
