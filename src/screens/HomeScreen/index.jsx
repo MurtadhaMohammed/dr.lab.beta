@@ -56,7 +56,7 @@ const HomeScreen = () => {
               placeholder={t("SearchPatient")}
               onSearch={(val) => setQuerySearch(val)}
               style={{
-                width: 280,
+                width: 270,
               }}
             />
             <span>

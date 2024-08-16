@@ -182,7 +182,7 @@ const SettingsScreen = () => {
       }
     });
   };
-//test push
+  //test push
 
   const handleLang = (checked) => {
     const newLanguage = checked ? "ar" : "en";
@@ -256,7 +256,7 @@ const SettingsScreen = () => {
               autoComplete="off"
             >
               <Row gutter={[20, 0]}>
-                <Col span={8}>
+                <Col span={6}>
                   <Form.Item
                     label={t("FullName")}
                     name="name"
@@ -282,16 +282,27 @@ const SettingsScreen = () => {
                       },
                     ]}
                   >
+
                     <Input />
                   </Form.Item>
                 </Col>
+
                 <Col span={6}>
                   <Form.Item label={t("Email")} name="email">
                     <Input type="email" />
                   </Form.Item>
                 </Col>
-                <Col span={7}>
+              </Row>
+
+              <Row gutter={[20, 0]}>
+                <Col span={6}>
                   <Form.Item label={t("Address")} name="address">
+                    <Input />
+                  </Form.Item>
+                </Col>
+
+                <Col span={6}>
+                  <Form.Item label={t("LabName")} name="LabName">
                     <Input />
                   </Form.Item>
                 </Col>
