@@ -1,6 +1,6 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; 
 
 @font-face {
   font-family: "Frutiger";
@@ -9,7 +9,7 @@
 }
 
 @font-face {
-  font-family: "Frutiger";
+  font-family: "Frutiger" ;
   src: url("./fonts/Frutiger LT Arabic 65 Bold.ttf");
   font-weight: bold;
 }

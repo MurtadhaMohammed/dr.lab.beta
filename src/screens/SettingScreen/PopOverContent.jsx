@@ -20,19 +20,19 @@ const PopOverContent = ({ website, email, phone }) => {
       <div className={`handleContact ${direction === 'rtl' ? 'rtl' : 'ltr'}`}>
         <div className="w-full flex items-center gap-2 px-2  text-sm">
           <WorldWideIcon />
-          <a href="/" target="blank">
-            {website || "https://google.com"}
+          <a href={website || "https://google.com"} target="_blank" rel="noopener noreferrer">
+            {website.substring(8) || "https://google.com"}
           </a>
         </div>
         <div className="w-full flex items-center gap-2 px-2  text-sm mt-3">
           <EmailIcon />
-          <a href="/" target="blank">
+          <p href={email || "dr.lab@lab.com"} onClick={() => window.location = `mailto:${email}`} className=" hover:cursor-pointer hover:text-blue-700">
             {email || "dr.lab@lab.com"}
-          </a>
+          </p>
         </div>
         <div className="w-full flex items-center gap-2 px-2  text-sm mt-3">
           <PhoneOutlined rotate={-46} />
-          <a href="/" target="blank">
+          <a href={phone || "0770000000"} target="_blank" rel="noopener noreferrer">
             {phone || "0770000000"}
           </a>
         </div>
