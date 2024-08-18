@@ -198,6 +198,7 @@ export const PureModal = () => {
           onChange={(val) => setPrice(val)}
           placeholder="Ex: 10000"
           style={{ width: "100%" }}
+          min={0}
         />
       </Space>
     </Col>
