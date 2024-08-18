@@ -35,6 +35,7 @@ export const PureModal = () => {
     isSelecte,
     setIsSelecte,
     id,
+    createdAt,
     setReset,
     options,
     setOptions,
@@ -46,7 +47,7 @@ export const PureModal = () => {
   const { t } = useTranslation();
 
   const inputRef = useRef(null);
-
+  const editInputRef = useRef(null);
   useEffect(() => {
     if (inputVisible) {
       inputRef.current?.focus();
@@ -56,12 +57,55 @@ export const PureModal = () => {
   const handleIsSelecteChange = (e) => {
     setIsSelecte(e.target.checked);
     if (e.target.checked) {
-      setNormal("");
+      setNormal(""); // Clear the normal value
     }
   };
 
+  useEffect(() => {
+    editInputRef.current?.focus();
+  }, [inputValue]);
+
+  const handleClose = (removedTag) => {
+    let newOptions = options.filter((option) => option !== removedTag);
+    setIsSelecte(false);
+    setTimeout(() => {
+      setOptions(newOptions);
+      setIsSelecte(true);
+    }, 10);
+  };
+  const showInput = () => {
+    setInputVisible(true);
+  };
+  const handleInputChange = (e) => {
+    setInputValue(e.target.value);
+  };
+  const handleInputConfirm = () => {
+    console.log("Input Value:", inputValue);
+    console.log("Current Options:", options);
+  
+    if (!Array.isArray(options)) {
+      console.error("Options is not an array. Resetting to an empty array.");
+      setOptions([]);
+    }
+  
+    if (inputValue && options.indexOf(inputValue) === -1) {
+      setOptions([...options, inputValue]);
+    }
+    setInputVisible(false);
+    setInputValue("");
+  };
+
+  const tagInputStyle = {
+    width: 78,
+    verticalAlign: "top",
+  };
+  const tagPlusStyle = {
+    background: token.colorBgContainer,
+    borderStyle: "dashed",
+  };
+
   const handleSubmit = () => {
-    const data = {
+    let data = {
       name,
       price,
       normal: isSelecte ? "" : normal,
@@ -70,22 +114,40 @@ export const PureModal = () => {
       updatedAt: Date.now(),
     };
 
-    const query = id ? "editTest" : "addTest";
-    const requestData = id ? { query, data, id } : { query, data };
-
-    send(requestData)
-      .then((resp) => {
+    if (!id) {
+      send({
+        query: "addTest",
+        data: { ...data },
+      }).then(resp => {
         if (resp.success) {
+          console.log("Test added with ID:", resp.id);
           setReset();
           setIsModal(false);
           setIsReload(!isReload);
         } else {
-          console.error(`Error ${id ? 'updating' : 'adding'} test:`, resp.error);
+          console.error("Error adding test:", resp.error);
         }
-      })
-      .catch((err) => {
+      }).catch(err => {
         console.error("Error in IPC communication:", err);
       });
+    } else {
+      send({
+        query: "editTest",
+        data: { ...data },
+        id,
+      }).then(resp => {
+        if (resp.success) {
+          console.log("Test updated successfully");
+          setReset();
+          setIsModal(false);
+          setIsReload(!isReload);
+        } else {
+          console.error("Error updating test:", resp.error);
+        }
+      }).catch(err => {
+        console.error("Error in IPC communication:", err);
+      });
+    }
   };
 
   return (
@@ -93,10 +155,18 @@ export const PureModal = () => {
       title={`${id ? t("Edit") : t("Create")} ${t("TestItem")}`}
       open={isModal}
       width={400}
-      onCancel={() => setIsModal(false)}
+      onCancel={() => {
+        setIsModal(false);
+      }}
       footer={
         <Space>
-          <Button onClick={() => setIsModal(false)}>{t("Close")}</Button>
+          <Button
+            onClick={() => {
+              setIsModal(false);
+            }}
+          >
+            {t("Close")}
+          </Button>
           <Button
             disabled={!name || price === "" || price === null}
             type="primary"
@@ -128,35 +198,33 @@ export const PureModal = () => {
           onChange={(val) => setPrice(val)}
           placeholder="Ex: 10000"
           style={{ width: "100%" }}
-          min={0}
         />
       </Space>
     </Col>
     <Col span={24}>
-      <Space style={{ width: "100%" }} direction="vertical" size={4}>
-        <Text>{t("NormalValue")}</Text>
-        <Input.TextArea
-          value={normal}
-          onChange={(e) => setNormal(e.target.value)}
-          rows={2}
-          placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
-          style={{ width: "100%" }}
-          disabled={isSelecte} // Disable when isSelecte is true
-
-        />
-      </Space>
-    </Col>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Text>{t("NormalValue")}</Text>
+              <Input.TextArea
+                value={normal}
+                onChange={(e) => setNormal(e.target.value)}
+                rows={2}
+                placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
+                style={{ width: "100%" }}
+                disabled={isSelecte}
+              />
+            </Space>
+          </Col>
     <Col span={24}>
-      <Space style={{ width: "100%" }} direction="vertical" size={4}>
-        <Checkbox
-          checked={isSelecte}
-          onChange={(e) => setIsSelecte(e.target.checked)}
-        >
-          {t("IsSelect")}
-        </Checkbox>
-      </Space>
-    </Col>
-    {isSelecte && (
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Checkbox
+                checked={isSelecte}
+                onChange={handleIsSelecteChange}
+              >
+                {t("IsSelect")}
+              </Checkbox>
+            </Space>
+          </Col>
+    {isSelecte ? (
       <Col span={24}>
         <Space size={[0, 6]} wrap>
           {Array.isArray(options) &&
@@ -167,24 +235,24 @@ export const PureModal = () => {
             ))}
           {inputVisible ? (
             <Input
-            ref={inputRef}
-            type="text"
-            size="small"
-            style={{ width: 78, verticalAlign: "top" }}
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onBlur={handleInputConfirm}
-            onPressEnter={handleInputConfirm}
-          />
+              ref={inputRef}
+              type="text"
+              size="small"
+              style={tagInputStyle}
+              value={inputValue}
+              onChange={handleInputChange}
+              onBlur={handleInputConfirm}
+              onPressEnter={handleInputConfirm}
+            />
           ) : (
-            <Tag style={{ background: token.colorBgContainer, borderStyle: "dashed" }} onClick={() => setInputVisible(true)}>
+            <Tag style={tagPlusStyle} onClick={showInput}>
               <PlusOutlined /> {t("NewOption")}
             </Tag>
           )}
         </Space>
         <br />
       </Col>
-    ) }
+    ) : null}
   </Row>
 </div>
 
