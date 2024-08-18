@@ -184,7 +184,7 @@ export const PureModal = () => {
         </Space>
         <br />
       </Col>
-    ) : null}
+    ) }
   </Row>
 </div>
 
