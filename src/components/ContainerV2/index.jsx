@@ -26,6 +26,7 @@ import logo1 from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
+import { stringify } from "postcss";
 
 const { Sider, Content } = Layout;
 
@@ -48,7 +49,7 @@ const MainContainerV2 = ({ children }) => {
   const signout = async () => {
     setSignoutLoading(true);
     try {
-      let serialId = parseInt(localStorage.getItem("lab-serial-id"));
+      let serial = localStorage.getItem("lab-serial");
       const resp = await fetch(
         `https://dr-lab-apiv2.onrender.com/api/app/logout`,
         {
@@ -56,7 +57,7 @@ const MainContainerV2 = ({ children }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ serialId }),
+          body: JSON.stringify({ serial }),
         }
       );
       if (resp.status === 200) {
@@ -81,7 +82,7 @@ const MainContainerV2 = ({ children }) => {
       setShowTrialAlert(true);
     }
 
-    if (!isNaN(labExp) && labExp <= 3) {
+    if (userData?.type === "paid" && !isNaN(labExp) && labExp <= 3) {
       setRemainingDays(labExp);
       setShowExpAlert(true);
     }
@@ -156,7 +157,7 @@ const MainContainerV2 = ({ children }) => {
                 },
                 {
                   key: "/patients",
-                  icon: <MdOutlinePersonalInjury size={18} style={{ marginLeft: '1px' }}  />,
+                  icon: <MdOutlinePersonalInjury size={18} style={{ marginLeft: '1px' }} />,
                   label: <p className="text-[15px]">{t("Patients")}</p>,
                   onClick: () => navigate("/patients", { replace: true }),
                 },
@@ -208,7 +209,7 @@ const MainContainerV2 = ({ children }) => {
               <RxDoubleArrowRight
                 className="transition-all"
                 style={{
-                  transform: getRotationStyle(), // Apply the conditional rotation here
+                  transform: getRotationStyle(),
                 }}
               />
             </button>
@@ -235,7 +236,7 @@ const MainContainerV2 = ({ children }) => {
                   visible={isPopoverVisible}
                   onVisibleChange={(visible) => setIsPopoverVisible(visible)}
                   trigger="hover"
-                  content={<PopOverContent />}
+                  content={<PopOverContent website={"https://www.puretik.com/ar"} email={"https://www.puretik.com/ar"} phone={"07710553120"}/>}
                 >
                   <a
                     onMouseEnter={showPopover}
@@ -250,7 +251,7 @@ const MainContainerV2 = ({ children }) => {
             closable
           />
         )}
-        {showExpAlert && (
+        { showExpAlert && (
           <Alert
             className="sticky top-0 z-10"
             message={
@@ -264,7 +265,7 @@ const MainContainerV2 = ({ children }) => {
                   visible={isPopoverVisible}
                   onVisibleChange={(visible) => setIsPopoverVisible(visible)}
                   trigger="hover"
-                  content={<PopOverContent />}
+                  content={<PopOverContent website={"https://www.puretik.com/ar"} email={"https://www.puretik.com/ar"} phone={"07710553120"} />}
                 >
                   <span>{t("upgrade")}</span>{" "}
                   <a

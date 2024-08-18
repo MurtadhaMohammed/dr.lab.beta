@@ -34,7 +34,6 @@ import fileDialog from "file-dialog";
 import { apiCall } from "../../../libs/api";
 import jsPDF from 'jspdf';
 
-
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload } = useAppStore();
   const {
@@ -131,10 +130,6 @@ export const PureTable = ({ isReport = false }) => {
       formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
       formData.append('file', pdfBlob, 'report.pdf');
 
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
-      }
-      
       const resp = await apiCall({
         method: 'POST',
         pathname: '/send/whatsapp-message',

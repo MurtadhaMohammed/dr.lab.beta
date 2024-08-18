@@ -43,6 +43,9 @@ const SettingsScreen = () => {
 
   const { t } = useTranslation();
 
+    const labUser = JSON.parse(localStorage.getItem("lab-user"));
+  const userType = labUser?.type;
+
 
   async function fetchImagePath() {
     setImagePath(null);
@@ -69,7 +72,7 @@ const SettingsScreen = () => {
   const signout = async () => {
     setSignoutLoading(true);
     try {
-      let serial = localStorage.getItem.stringify("lab-serial");
+      let serial = localStorage.getItem("lab-serial");
       console.log("Serial:", serial);
       const resp = await fetch(
         `https://dr-lab-apiv2.onrender.com/api/app/logout`,
@@ -78,7 +81,7 @@ const SettingsScreen = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: serial,
+          body: JSON.stringify({serial}),
         }
       );
       if (resp.status === 200) {
@@ -386,13 +389,11 @@ const SettingsScreen = () => {
                   <p className=" font-bold">{localStorage.getItem('lab-serial') || "10992909"}</p>
                 </div>
 
-                {
-                  remainingDays < 7 ?
-                    <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">{t("supportPaymentReminder")}</p>
-                    :
-                    null
-                }
-
+                {userType === "paid" && remainingDays < 4 ? (
+                  <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">
+                    {t("supportPaymentReminder")}
+                  </p>
+                ) : null}
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p>{t('startedAt')}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
@@ -414,7 +415,7 @@ const SettingsScreen = () => {
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
                     <p className=" font-normal">{t('whatsappIntegration')}</p>
-                    <Popover trigger="hover" content={<PopOverContent />}>
+                    <Popover trigger="hover" content={<PopOverContent website={"https://www.puretik.com/ar"} email={"puretik@gmail.com"} phone={"07710553120"} />}>
                       <p className={`${whatsAppStatus.textStyle} font-bold text-sm`}>{whatsAppStatus.status}</p>
                     </Popover>
                   </div>
