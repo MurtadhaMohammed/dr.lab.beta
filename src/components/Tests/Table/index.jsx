@@ -127,6 +127,27 @@ export const PureTable = () => {
     isSelecte,
     createdAt,
   }) => {
+    console.log("Edit Test Data:::::::::::::::::", {
+      id,
+      name,
+      normal,
+      price,
+      options,
+      isSelecte,
+      createdAt,
+    });
+  
+    let parsedOptions = options;
+  
+    if (typeof options === 'string') {
+      try {
+        parsedOptions = JSON.parse(options);
+      } catch (error) {
+        console.error("Error parsing options:", error);
+        parsedOptions = [];
+      }
+    }
+  
     setId(id);
     setName(name);
     setPrice(price);
@@ -134,7 +155,7 @@ export const PureTable = () => {
     setIsModal(true);
     setCreatedAt(createdAt);
     setIsSelecte(isSelecte);
-    setOptions(options || []);
+    setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
 
   useEffect(() => {
