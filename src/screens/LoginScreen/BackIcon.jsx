@@ -7,15 +7,23 @@ const BackIcon = ({ onClose }) => {
     const [flag, setFlag] = useState(false);
     const { t } = useTranslation();
 
-
     const handleButton = () => {
-        return flag ? <LeftCircleFilled className="text-black hover:cursor-pointer" onMouseLeave={() => setFlag(false)} onClick={() => onClose()} /> : <LeftCircleOutlined className="text-black hover:cursor-pointer" onMouseEnter={() => setFlag(true)} />
+        const IconComponent = flag ? LeftCircleFilled : LeftCircleOutlined;
+
+        return (
+            <IconComponent
+                className={`text-black hover:cursor-pointer rtl:transform rtl:rotate-180 `}
+                onMouseEnter={() => !flag && setFlag(true)}
+                onMouseLeave={() => flag && setFlag(false)}
+                onClick={() => onClose()}
+            />
+        );
     }
 
     return (
         <div className="flex gap-2 h-full justify-start items-center">
             <Avatar
-                className="bg-white justify-start items-center max-w-7"
+                className="bg-white flex justify-start items-center max-w-7"
                 size={48}
                 icon={handleButton()}
             />

@@ -83,7 +83,7 @@ const LoginScreen = () => {
                     if (v.name === "whatsapp") return v.name;
                   })
                   .filter(Boolean) // Remove undefined values from the array
-              : []
+              : ["null"]
           );
           
           setIsLogin(true);
@@ -156,15 +156,6 @@ const LoginScreen = () => {
   const handleClose = () => {
     setIsForm(false);
   };
-
-  // useEffect(() => {
-  //   const savedLanguage = localStorage.getItem("app-language");
-  //   if (savedLanguage) {
-  //     i18n.changeLanguage(savedLanguage);
-  //     setLanguage(savedLanguage);
-  //     document.documentElement.dir = savedLanguage === "ar" ? "rtl" : "ltr";
-  //   }
-  // }, []);
 
   const handleLang = (checked) => {
     if (checked != undefined) {

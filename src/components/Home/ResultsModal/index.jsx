@@ -93,8 +93,6 @@ export const ResultsModal = () => {
       fontSize: printFontSize,
     };
 
-    console.log(data, 'dataaa');
-
     send({
       query: "print",
       data,

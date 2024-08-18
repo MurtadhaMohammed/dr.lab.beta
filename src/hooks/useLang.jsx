@@ -5,8 +5,6 @@ import { useLanguage } from '../libs/appStore';
 const useLang = () => {
     const { lang } = useLanguage();
 
-    console.log(lang);
-
     useEffect(() => {
         i18n.changeLanguage(lang);
 
