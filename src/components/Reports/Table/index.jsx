@@ -40,8 +40,10 @@ export const getSubTotalAmount = (filterDate, callback) => {
 export const PureTable = () => {
   const { data, loading, setSubTotalPrice, setTotalDiscount, setTotalAmount } = useReportsStore();
   const { t } = useTranslation();
+  const [isLoading, setIsloading] = useState(false);
 
   useEffect(() => {
+    setIsloading(true);
     if (data) {
       setSubTotalPrice(data?.subTotalAmount?.total || 0);
       setTotalDiscount(data?.totalDiscount?.total || 0);

@@ -157,6 +157,7 @@ export const PureTable = () => {
     setIsSelecte(isSelecte);
     setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
+  
 
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
