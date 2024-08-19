@@ -113,7 +113,7 @@
     "VisitDate": "Visit Date",
     "TotalAmounts": "Total Amounts",
     "TestItem": "Test Item",
-    "IsSelect": "Is Select ?",
+    "IsSelect": "Custom result:",
     "NewOption": "New Option",
     "Print": "Print",
     "days": "days",
@@ -159,5 +159,9 @@
     "AddYourInfo": "Add your info",
     "Drlab": "Dr.lab",
     "Login": "Login",
-    "contact_us_to_subscribe": "Contact Us to Subscribe"
+    "contact_us_to_subscribe": "Contact Us to Subscribe",
+    "WriteResult":"Write Result",
+    "ChooseResult":"Choose Result",
+    "CustomTest":"# Custom Test",
+    "TestResultTitle":"Test Result For"
 }

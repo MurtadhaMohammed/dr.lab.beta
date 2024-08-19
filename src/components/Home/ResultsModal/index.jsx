@@ -144,7 +144,7 @@ export const ResultsModal = () => {
       <div className="test-section">
         <Space direction="vertical" size={0} style={{ width: "100%" }}>
           <div className="title">
-            <Typography.Text type="secondary"># Custome Tests</Typography.Text>
+            <Typography.Text type="secondary">{t("CustomTest")}</Typography.Text>
           </div>
           <div className="test-list">
             {record?.tests?.map((row) => {
@@ -170,7 +170,7 @@ export const ResultsModal = () => {
                       style={{ width: "100%" }}
                       value={row?.result}
                       onChange={(selctedVal) => handleChange(selctedVal, row)}
-                      placeholder="Choose result."
+                      placeholder={t("ChooseResult")}
                     >
                       {Array.isArray(row?.options) && row.options.length > 0
                         ? row.options.map((option, i) => (
@@ -185,7 +185,7 @@ export const ResultsModal = () => {
                       value={row?.result}
                       onChange={(e) => handleChange(e.target.value, row)}
                       style={{ width: "100%" }}
-                      placeholder="Write result."
+                      placeholder={t("WriteResult")}
                     />
                   )}
                 </div>
@@ -226,7 +226,7 @@ export const ResultsModal = () => {
                       style={{ width: "100%" }}
                       value={row?.result}
                       onChange={(selctedVal) => handleChange(selctedVal, row)}
-                      placeholder="Choose result."
+                      placeholder={t("ChooseResult")}
                     >
                       {Array.isArray(row?.options) && row.options.length > 0
                         ? row.options.map((option, i) => (
@@ -241,7 +241,7 @@ export const ResultsModal = () => {
                       value={row?.result}
                       onChange={(e) => handleChange(e.target.value, row)}
                       style={{ width: "100%" }}
-                      placeholder="Write result."
+                      placeholder={t("WriteResult")}
                     />
                   )}
                 </div>
@@ -257,7 +257,7 @@ export const ResultsModal = () => {
     <Modal
       title={
         <Typography.Text type="secondary">
-          {`Test results for`}{" "}
+          {t("TestResultTitle")}{" "}
           <b style={{ color: "#000" }}>{record?.patient?.name}</b>
         </Typography.Text>
       }
