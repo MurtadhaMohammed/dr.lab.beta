@@ -34,6 +34,7 @@ export const PureTable = () => {
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const limit = usePageLimit(60, 35);
   const { t } = useTranslation();
 
@@ -162,6 +163,8 @@ export const PureTable = () => {
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
 
+    setLoading(true);
+
     send({
       query: "getTests",
       data: { q: queryKey, skip: (page - 1) * limit, limit },
@@ -174,6 +177,7 @@ export const PureTable = () => {
         } else {
           console.error("Error get tests:", resp.error);
         }
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
@@ -188,6 +192,7 @@ export const PureTable = () => {
         borderRadius: 10,
         overflow: "hidden",
       }}
+      loading={loading}
       columns={columns}
       dataSource={data}
       pagination={false}
