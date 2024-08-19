@@ -155,6 +155,7 @@ export const PureTable = () => {
           message.success(`Removed Patient successfully.`);
           setIsReload(!isReload);
         } else {
+          console.log(resp);
           console.error("Error deleting patient:", resp.error);
           message.error("Error removing patient.");
         }
