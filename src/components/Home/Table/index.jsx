@@ -173,9 +173,12 @@ export const PureTable = ({ isReport = false }) => {
                   isFormData: true,
                   data: formData,
                 });
-                const d = await resp.json();
-                if (d?.messages && d?.messages[0]?.message_status === 'accepted') {
-                  message.success("Send Successfully.");
+                const response = await resp.json();
+
+                console.log(response);
+
+                if (response?.message === 'Message sent successfully') {
+                  message.success("Send Successfully");
                 } else {
                   message.error("Error!");
                 }
@@ -189,31 +192,6 @@ export const PureTable = ({ isReport = false }) => {
       };
 
       await handleSubmit()
-
-      // Send PDF to server
-      // setMsgLoading(true);
-      // const formData = new FormData();
-      // formData.append('name', record?.patient?.name);
-      // formData.append('phone', phone);
-      // formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
-      // console.log(pdf, 'pdf');
-      // formData.append('file', pdf, 'report.pdf');
-
-      // const resp = await apiCall({
-      //   method: 'POST',
-      //   pathname: '/send/whatsapp-message',
-      //   isFormData: true,
-      //   data: formData,
-      // });
-
-      // const d = await resp.json();
-      // console.log(d);
-
-      // if (d?.messages && d?.messages[0]?.message_status === 'accepted') {
-      //   message.success("Send Succefully.");
-      // } else {
-      //   message.error("Error!");
-      // }
     } catch (error) {
       console.error("Error generating PDF or sending data:", error);
       message.error("An error occurred.");
