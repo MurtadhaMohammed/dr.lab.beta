@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react'
 import { send } from '../control/renderer';
 
 const useInitHeaderImage = () => {
-    const [success, setSuccess] = useState(null);
+    const [success, setSuccess] = useState(true);
 
     const fetchData = async () => {
         try {
             const response = await fetch("http://localhost:3009/head.png");
             if (response.status === 200) {
                 setSuccess(true)
+                console.log(response, 'init iamge');
             } else {
                 setSuccess(false);
             }
