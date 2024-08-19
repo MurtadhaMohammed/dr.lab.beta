@@ -362,9 +362,11 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "printReport": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
       printReport(arg.data, (err, res) => {
-        event.reply("asynchronous-reply", { err, res });
+        console.log(res, 'this is the response');
+        return event.reply("asynchronous-reply", { err, res });
       });
       break;
+
     // case "getUUID":
     //   try {
     //     const UUID = machineIdSync(true);
@@ -382,6 +384,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
 
     default:
+      event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
   }
 });

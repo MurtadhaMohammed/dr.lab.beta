@@ -26,6 +26,7 @@ const imgWidth = 210; // 793.7007874 px
 const imgUrl = app.getPath("userData") + "/head.png";
 
 function printReport(data, cb) {
+
   try {
     const doc = new jsPDF({
       orientation: "p",
@@ -103,15 +104,16 @@ function printReport(data, cb) {
       });
     }
 
-    // doc.save("a4.pdf");
-    // shell.openPath(path.join(__dirname, isDev ? "a4.pdf" : "../../a4.pdf"));
     doc.save(app.getPath("userData") + "a4.pdf");
     shell.openPath(app.getPath("userData") + "a4.pdf");
 
     pdf = new jsPDF({
       orientation: "landscape",
     });
-    cb(null, true);
+
+    const pdfBlob = doc.output("blob");
+
+    cb(null, JSON.parse(pdfBlob));
   } catch (error) {
     cb(error, true);
   }

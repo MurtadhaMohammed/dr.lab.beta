@@ -4,7 +4,6 @@ const { autoUpdater } = require("electron-updater");
 const express = require("express");
 const Cors = require("cors");
 const os = require("os");
-
 const isDev = require("electron-is-dev");
 const log = require("electron-log");
 
@@ -58,7 +57,7 @@ function createWindow() {
   const server = express();
   server.use(Cors());
   server.use(express.static(path.join(app.getPath("userData"))));
-  server.listen(3001); // Different port for serving static files
+  server.listen(3009); // Different port for serving static files
 
   // win.loadFile("./dist/index.html");
   // splash.loadFile("./dist/splash.html");
