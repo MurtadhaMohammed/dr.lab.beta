@@ -47,12 +47,12 @@ function App() {
 
     console.log(isOnline, "isOnline!!!!!!!!!!!!!!!!!!!!!");
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    const online = window.addEventListener("online", handleOnline);
+    const offline =  window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      online,
+      offline
     };
   }, []);
 

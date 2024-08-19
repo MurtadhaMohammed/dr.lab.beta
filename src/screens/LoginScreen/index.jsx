@@ -65,8 +65,11 @@ const LoginScreen = () => {
         },
       });
 
+      console.log(resp, 'resp');
+
       if (resp.ok) {
         const data = await resp.json();
+
         const { client, updatedSerial } = data;
 
         if (updatedSerial && updatedSerial.exp) {
@@ -79,23 +82,24 @@ const LoginScreen = () => {
             "lab-feature",
             updatedSerial.feature
               ? updatedSerial.feature
-                  .map((v) => {
-                    if (v.name === "whatsapp") return v.name;
-                  })
-                  .filter(Boolean) // Remove undefined values from the array
+                .map((v) => {
+                  if (v.name === "whatsapp") return v.name;
+                })
+                .filter(Boolean)
               : ["null"]
           );
-          
+
           setIsLogin(true);
         } else {
           throw new Error("Serial data is missing or incomplete");
         }
       } else {
         const data = await resp.json();
+        console.log(data, 'data');
         message.error(data.message || "Serial not found!");
       }
     } catch (error) {
-      console.log(error);
+      console.log(error, 'error');
       message.error(error.message);
     } finally {
       setLoading(false);
@@ -187,7 +191,7 @@ const LoginScreen = () => {
             onFinish={register}
             initialValues={{
               phone,
-              
+
             }}
             layout="vertical"
             autoComplete="off"
@@ -216,7 +220,7 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input placeholder={t("AliSalim")} className=" h-[40px] p-2" />
+              <Input placeholder={t("labNameexample")} className=" h-[40px] p-2" />
             </Form.Item>
 
             <Form.Item

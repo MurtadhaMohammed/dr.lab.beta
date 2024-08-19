@@ -6,7 +6,7 @@ const useInitHeaderImage = () => {
 
     const fetchData = async () => {
         try {
-            const response = await fetch("http://localhost:3001/head.png");
+            const response = await fetch("http://localhost:3009/head.png");
             if (response.status === 200) {
                 setSuccess(true)
             } else {

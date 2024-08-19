@@ -127,6 +127,27 @@ export const PureTable = () => {
     isSelecte,
     createdAt,
   }) => {
+    console.log("Edit Test Data:::::::::::::::::", {
+      id,
+      name,
+      normal,
+      price,
+      options,
+      isSelecte,
+      createdAt,
+    });
+  
+    let parsedOptions = options;
+  
+    if (typeof options === 'string') {
+      try {
+        parsedOptions = JSON.parse(options);
+      } catch (error) {
+        console.error("Error parsing options:", error);
+        parsedOptions = [];
+      }
+    }
+  
     setId(id);
     setName(name);
     setPrice(price);
@@ -134,8 +155,9 @@ export const PureTable = () => {
     setIsModal(true);
     setCreatedAt(createdAt);
     setIsSelecte(isSelecte);
-    setOptions(options || []);
+    setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
+  
 
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
@@ -171,15 +193,16 @@ export const PureTable = () => {
       pagination={false}
       size="small"
       footer={() => (
-        <div className="table-footer app-flex-space">
+        <div className="table-footer app-flex-space ">
             <div
             class="pattern-isometric pattern-indigo-400 pattern-bg-white 
-  pattern-size-6 pattern-opacity-5 absolute inset-0"
+  pattern-size-6 pattern-opacity-5 absolute inset-0 "
           ></div>
           <p>
             <b>{total}</b> {t("results")}
           </p>
           <Pagination
+          className="flex flex-row justify-center items-center"
             simple
             current={page}
             onChange={(_page) => {
@@ -187,6 +210,7 @@ export const PureTable = () => {
             }}
             total={total}
             pageSize={limit}
+            showSizeChanger={false}
           />
         </div>
       )}
