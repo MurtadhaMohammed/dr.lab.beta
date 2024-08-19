@@ -192,6 +192,7 @@ export const PureTable = () => {
         } else {
           console.error("Error fetching patients:", resp.error);
         }
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
