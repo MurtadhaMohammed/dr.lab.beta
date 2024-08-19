@@ -128,7 +128,7 @@ export const ResultsModal = () => {
     }).then(({ err }) => {
       if (err) message.error("Error !");
       else {
-        message.success("Save Succefful.");
+        message.success(t("savedSuccessfully"));
         setRecord(null);
         setIsResultsModal(false);
         setIsReload(!isReload);
