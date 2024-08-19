@@ -216,7 +216,7 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input placeholder={t("AliSalim")} className=" h-[40px] p-2" />
+              <Input placeholder={t("labNameexample")} className=" h-[40px] p-2" />
             </Form.Item>
 
             <Form.Item

@@ -224,6 +224,7 @@ export const PureTable = () => {
             }}
             total={total}
             pageSize={limit}
+            showSizeChanger={false}
           />
         </div>
       )}

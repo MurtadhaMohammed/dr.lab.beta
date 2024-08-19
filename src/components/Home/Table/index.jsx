@@ -206,7 +206,7 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-        let testType = record.testType.replace(/^"|"$/g, ""); // Remove surrounding quotes
+        let testType = record.testType.replace(/^"|"$/g, "");
         let list = record.tests;
         let numOfView = 2;
         let restCount =
@@ -293,7 +293,7 @@ export const PureTable = ({ isReport = false }) => {
       key: "createdAt",
       render: (createdAt) => (
         <span style={{ color: "#666" }}>
-          <span style={{ fontSize: 12 }}>
+          <span style={{ fontSize: 14 }}>
             {dayjs(createdAt).format("DD/MM/YYYY")}
           </span>{" "}
           {dayjs(createdAt).add(3, "hours").format("hh:mm A")}
@@ -467,6 +467,7 @@ export const PureTable = ({ isReport = false }) => {
             }}
             total={total}
             pageSize={limit}
+            showSizeChanger={false}
           />
         </div>
       )}

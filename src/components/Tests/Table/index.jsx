@@ -192,15 +192,16 @@ export const PureTable = () => {
       pagination={false}
       size="small"
       footer={() => (
-        <div className="table-footer app-flex-space">
+        <div className="table-footer app-flex-space ">
             <div
             class="pattern-isometric pattern-indigo-400 pattern-bg-white 
-  pattern-size-6 pattern-opacity-5 absolute inset-0"
+  pattern-size-6 pattern-opacity-5 absolute inset-0 "
           ></div>
           <p>
             <b>{total}</b> {t("results")}
           </p>
           <Pagination
+          className="flex flex-row justify-center items-center"
             simple
             current={page}
             onChange={(_page) => {
@@ -208,6 +209,7 @@ export const PureTable = () => {
             }}
             total={total}
             pageSize={limit}
+            showSizeChanger={false}
           />
         </div>
       )}

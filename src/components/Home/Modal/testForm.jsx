@@ -27,23 +27,35 @@ const TestForm = () => {
     PACKAGE: t("Package"),
   };
 
+  let skip = 0;  // Initialize skip (offset)
+  const limit = 10;  // Set the limit for the number of tests per batch
+  
   const getTests = (querySearch = "") => {
     send({
       query: "getTests",
-      data: { querySearch },
+      data: { q: querySearch, skip, limit },  // Send skip and limit to backend
     })
       .then((resp) => {
         if (resp.success) {
-          setTestList(resp.data);
-          console.log("Tests get successfully:", resp.data);
+          if (skip === 0) {
+            setTestList(resp.data);
+          } else {
+            setTestList((prev) => [...prev, ...resp.data]);
+          }
+  
+          console.log("Tests fetched successfully:", resp.data);
+            if (resp.data.length === limit) {
+            skip += limit;
+          }
         } else {
-          console.error("Error get tests:", resp.error);
+          console.error("Error fetching tests:", resp.error);
         }
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
       });
   };
+  
 
   const getPackages = (querySearch = "") => {
     send({

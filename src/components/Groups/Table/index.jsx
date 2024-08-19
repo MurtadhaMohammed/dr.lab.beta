@@ -7,6 +7,7 @@ import {
   Space,
   Table,
   Tag,
+  Popover,
   message,
 } from "antd";
 import "./style.css";
@@ -47,7 +48,7 @@ export const PureTable = () => {
       dataIndex: "tests",
       key: "tests",
       render: (tests) => {
-        let numOfView = 4;
+        let numOfView = 3;
         let restCount =
           tests.length > numOfView ? tests.length - numOfView : null;
         return (
@@ -55,7 +56,23 @@ export const PureTable = () => {
             {tests.slice(0, numOfView).map((el) => (
               <Tag>{el.name}</Tag>
             ))}
-            {restCount && <Tag>+{restCount}</Tag>}
+            {restCount && (
+              <Popover
+                content={
+                  <div style={{ maxWidth: "300" }}>
+                    <Space wrap>
+                      {tests?.map((el) => (
+                        <Tag key={el.id}>
+                          {el.name}
+                        </Tag>
+                      ))}
+                    </Space>
+                  </div>
+                }
+              >
+                <Tag>+{restCount}</Tag>
+              </Popover>
+            )}{" "}
           </Space>
         );
       },
@@ -193,7 +210,7 @@ export const PureTable = () => {
       size="small"
       footer={() => (
         <div className="table-footer app-flex-space">
-            <div
+          <div
             class="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
           ></div>
@@ -208,6 +225,7 @@ export const PureTable = () => {
             }}
             total={total}
             pageSize={limit}
+            showSizeChanger={false}
           />
         </div>
       )}
