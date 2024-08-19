@@ -198,6 +198,7 @@ export const PureModal = () => {
           onChange={(val) => setPrice(val)}
           placeholder="Ex: 10000"
           style={{ width: "100%" }}
+          min={0}
         />
       </Space>
     </Col>
@@ -218,7 +219,7 @@ export const PureModal = () => {
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Checkbox
                 checked={isSelecte}
-                onChange={handleIsSelecteChange} // Handle the change
+                onChange={handleIsSelecteChange}
               >
                 {t("IsSelect")}
               </Checkbox>
