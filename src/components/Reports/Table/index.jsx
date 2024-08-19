@@ -40,14 +40,14 @@ export const getSubTotalAmount = (filterDate, callback) => {
 export const PureTable = () => {
   const { data, loading, setSubTotalPrice, setTotalDiscount, setTotalAmount } = useReportsStore();
   const { t } = useTranslation();
-  const [isLoading, setIsloading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setIsloading(true);
     if (data) {
       setSubTotalPrice(data?.subTotalAmount?.total || 0);
       setTotalDiscount(data?.totalDiscount?.total || 0);
       setTotalAmount(data?.totalAmount?.total || 0);
+      setIsLoading(false);
     }
   }, [data, setSubTotalPrice, setTotalDiscount, setTotalAmount]);
 
@@ -131,7 +131,7 @@ export const PureTable = () => {
       dataSource={data ? records : []}
       pagination={false}
       size="small"
-      loading={loading}
+      loading={isLoading}
     />
   );
 };

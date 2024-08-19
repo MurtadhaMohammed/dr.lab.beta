@@ -95,11 +95,9 @@ const LoginScreen = () => {
         }
       } else {
         const data = await resp.json();
-        console.log(data, 'data');
         message.error(data.message || "Serial not found!");
       }
     } catch (error) {
-      console.log(error, 'error');
       message.error(error.message);
     } finally {
       setLoading(false);
@@ -150,7 +148,6 @@ const LoginScreen = () => {
         message.error(errorData.message || "Serial not found!");
       }
     } catch (error) {
-      console.log(error);
       message.error(error.message);
     } finally {
       setLoading(false);
