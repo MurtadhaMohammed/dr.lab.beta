@@ -64,6 +64,7 @@ export const PureTable = ({ isReport = false }) => {
   const [msgLoading, setMsgLoading] = useState(false);
   const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [labFeature, setLabFeature] = useState(
     localStorage.getItem('lab-feature') === "null" ? null : localStorage.getItem('lab-feature')
   );
@@ -453,6 +454,7 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   useEffect(() => {
+    setLoading(true);
     let startDate = filterDate
       ? dayjs(filterDate[0]).startOf("day").toISOString()
       : "";
@@ -484,6 +486,7 @@ export const PureTable = ({ isReport = false }) => {
       } else {
         console.error("Error retrieving visits:", resp.error);
       }
+      setLoading(false);
     });
   }, [page, isReload, querySearch, isToday, filterDate, limit]);
 
@@ -495,8 +498,10 @@ export const PureTable = ({ isReport = false }) => {
         borderRadius: 10,
         overflow: "hidden",
       }}
+      
       columns={columns}
       dataSource={data}
+      loading={loading}
       pagination={false}
       size="small"
       footer={() => (
