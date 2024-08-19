@@ -33,7 +33,7 @@ const ReportsScreen = () => {
   const handlePrint = () => {
     // Retrieve font size from localStorage or set a default value
     const fontSize = localStorage.getItem("lab-print-size") || 14; // Default to 14
-  
+
     loadData((rows) => {
       let _data = {
         date: [
@@ -62,6 +62,7 @@ const ReportsScreen = () => {
           };
         }),
       };
+
       send({
         query: "printReport",
         data: _data,
@@ -70,86 +71,86 @@ const ReportsScreen = () => {
       });
     });
   };
-  
 
-useEffect(() => {
-  setLoading(true);
-  loadData((rows) => {
-  getTotalVisits(filterDate, (visits) => {
-      getSubTotalAmount(filterDate, async () => {
-        
-        let tests = rows?.map((el) => {
-        let subTotal = el?.tests
-        ?.map((test) => {
-            let price =
-              el?.testType === "CUSTOME"
-                ? test?.price
-                : test?.customePrice ||
-                test?.tests
-                    ?.map((group) => group?.price)
-                    ?.reduce((a, b) => a + b, 0) || 0;
 
-            return price;
-          })
-          .reduce((a, b) => a + b, 0) || 0;
+  useEffect(() => {
+    setLoading(true);
+    loadData((rows) => {
+      getTotalVisits(filterDate, (visits) => {
+        getSubTotalAmount(filterDate, async () => {
 
-          
-          return {
-          gender: el?.patient?.gender,
-          name: el?.patient?.name,
-          discount: el?.discount || 0,
-          subTotal,
-          total: subTotal - (el?.discount || 0),
-        };
+          let tests = rows?.map((el) => {
+            let subTotal = el?.tests
+              ?.map((test) => {
+                let price =
+                  el?.testType === "CUSTOME"
+                    ? test?.price
+                    : test?.customePrice ||
+                    test?.tests
+                      ?.map((group) => group?.price)
+                      ?.reduce((a, b) => a + b, 0) || 0;
+
+                return price;
+              })
+              .reduce((a, b) => a + b, 0) || 0;
+
+
+            return {
+              gender: el?.patient?.gender,
+              name: el?.patient?.name,
+              discount: el?.discount || 0,
+              subTotal,
+              total: subTotal - (el?.discount || 0),
+            };
+          });
+
+
+          let totalAmount = {};
+          let subTotalAmount = {};
+          let totalDiscount = {};
+
+          totalAmount.total = tests?.map((el) => el.total).reduce((a, b) => a + b, 0) || 0;
+          totalAmount.male = tests?.filter((el) => el?.gender === "male")
+            .map((el) => el.total)
+            .reduce((a, b) => a + b, 0) || 0;
+          subTotalAmount.total = tests?.map((el) => el.subTotal)
+            .reduce((a, b) => a + b, 0) || 0;
+          subTotalAmount.male = tests?.filter((el) => el?.gender === "male")
+            .map((el) => el.subTotal)
+            .reduce((a, b) => a + b, 0) || 0;
+          totalDiscount.total = tests?.map((el) => el.discount)
+            .reduce((a, b) => a + b, 0) || 0;
+          totalDiscount.male = tests?.filter((el) => el?.gender === "male")
+            .map((el) => el.discount)
+            .reduce((a, b) => a + b, 0) || 0;
+
+          totalAmount.female = totalAmount.total - totalAmount.male;
+          subTotalAmount.female = subTotalAmount.total - subTotalAmount.male;
+          totalDiscount.female = totalDiscount.total - totalDiscount.male;
+
+
+          // Percentage calculations
+          subTotalAmount.male = Math.round((subTotalAmount.male / subTotalAmount.total) * 100);
+          subTotalAmount.female = Math.round((subTotalAmount.female / subTotalAmount.total) * 100);
+
+          totalAmount.male = Math.round((totalAmount.male / totalAmount.total) * 100);
+          totalAmount.female = Math.round((totalAmount.female / totalAmount.total) * 100);
+
+          totalDiscount.male = Math.round((totalDiscount.male / totalDiscount.total) * 100);
+          totalDiscount.female = Math.round((totalDiscount.female / totalDiscount.total) * 100);
+
+
+          setLoading(false);
+          setData({ visits, totalAmount, subTotalAmount, totalDiscount });
+          setIsReload(!isReload);
+        });
       });
-
-
-      let totalAmount = {};
-      let subTotalAmount = {};
-      let totalDiscount = {};
-      
-      totalAmount.total = tests?.map((el) => el.total).reduce((a, b) => a + b, 0) || 0;
-      totalAmount.male = tests?.filter((el) => el?.gender === "male")
-      .map((el) => el.total)
-      .reduce((a, b) => a + b, 0) || 0;
-      subTotalAmount.total = tests?.map((el) => el.subTotal)
-        .reduce((a, b) => a + b, 0) || 0;
-      subTotalAmount.male = tests?.filter((el) => el?.gender === "male")
-      .map((el) => el.subTotal)
-      .reduce((a, b) => a + b, 0) || 0;
-      totalDiscount.total = tests?.map((el) => el.discount)
-      .reduce((a, b) => a + b, 0) || 0;
-      totalDiscount.male = tests?.filter((el) => el?.gender === "male")
-        .map((el) => el.discount)
-        .reduce((a, b) => a + b, 0) || 0;
-
-        totalAmount.female = totalAmount.total - totalAmount.male;
-      subTotalAmount.female = subTotalAmount.total - subTotalAmount.male;
-      totalDiscount.female = totalDiscount.total - totalDiscount.male;
-
-
-      // Percentage calculations
-      subTotalAmount.male = Math.round((subTotalAmount.male / subTotalAmount.total) * 100);
-      subTotalAmount.female = Math.round((subTotalAmount.female / subTotalAmount.total) * 100);
-      
-      totalAmount.male = Math.round((totalAmount.male / totalAmount.total) * 100);
-      totalAmount.female = Math.round((totalAmount.female / totalAmount.total) * 100);
-      
-      totalDiscount.male = Math.round((totalDiscount.male / totalDiscount.total) * 100);
-      totalDiscount.female = Math.round((totalDiscount.female / totalDiscount.total) * 100);
-      
-      
-      setLoading(false);
-      setData({ visits, totalAmount, subTotalAmount, totalDiscount });
-      setIsReload(!isReload);
     });
-  });
-});
-}, [filterDate]);
+  }, [filterDate]);
 
 
-return (
-  <div className="reports-screen page">
+  return (
+    <div className="reports-screen page">
       <div className="border-none  p-[2%]">
 
         <section className="header app-flex-space mb-[18px]">

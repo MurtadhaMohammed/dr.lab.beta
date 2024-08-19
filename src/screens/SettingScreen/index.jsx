@@ -43,14 +43,14 @@ const SettingsScreen = () => {
 
   const { t } = useTranslation();
 
-    const labUser = JSON.parse(localStorage.getItem("lab-user"));
+  const labUser = JSON.parse(localStorage.getItem("lab-user"));
   const userType = labUser?.type;
 
 
   async function fetchImagePath() {
     setImagePath(null);
     try {
-      const response = await fetch("http://localhost:3001/head.png");
+      const response = await fetch("http://localhost:3009/head.png");
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -81,7 +81,7 @@ const SettingsScreen = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({serial}),
+          body: JSON.stringify({ serial }),
         }
       );
       if (resp.status === 200) {
