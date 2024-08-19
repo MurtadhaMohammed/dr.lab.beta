@@ -1,4 +1,4 @@
-import { Modal, Space, Table, Tag, message } from "antd";
+import { Modal, Space, Table, Tag, message,Popover } from "antd";
 import "./style.css"; // Ensure this CSS file contains the styles shown below
 import { usePatientStore } from "../../../libs/appStore";
 import { useEffect, useState } from "react";
@@ -16,7 +16,6 @@ export const PatientHistory = () => {
     [t("PENDING")]: "orange",
     [t("COMPLETED")]: "green",
   };
-  
 
   useEffect(() => {
     if (!id) return;
@@ -41,9 +40,27 @@ export const PatientHistory = () => {
         return (
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
-              <Tag key={el.id}>{el[record.testType === "CUSTOME" ? "name" : "title"]}</Tag>
+              <Tag key={el.id}>
+                {el[record.testType === "CUSTOME" ? "name" : "title"]}
+              </Tag>
             ))}
-            {restCount && <Tag>+{restCount}</Tag>}
+            {restCount && (
+              <Popover
+                content={
+                  <div style={{ maxWidth: "300" }}>
+                    <Space wrap>
+                      {list?.map((el) => (
+                        <Tag key={el.id}>
+                          {el[record.testType === "CUSTOME" ? "name" : "title"]}
+                        </Tag>
+                      ))}
+                    </Space>
+                  </div>
+                }
+              >
+                <Tag>+{restCount}</Tag>
+              </Popover>
+            )}{" "}
           </Space>
         );
       },

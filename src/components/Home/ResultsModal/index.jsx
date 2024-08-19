@@ -5,7 +5,6 @@ import {
   Radio,
   Select,
   Space,
-  Table,
   Tooltip,
   Typography,
   message,
@@ -15,7 +14,7 @@ import { useAppStore, useHomeStore } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
-
+import { useEffect } from "react";
 
 export const parseTests = (record) => {
   let tests = [];
@@ -55,6 +54,23 @@ export const ResultsModal = () => {
   const { setIsResultsModal, isResultsModal, record, setRecord } =
     useHomeStore();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    if (isResultsModal && record) {
+      console.log("Modal opened with the following options:");
+      if (record?.testType === "CUSTOME") {
+        record?.tests?.forEach((row) => {
+          console.log(`Options for ${row?.name}:`, row?.options);
+        });
+      } else if (record?.testType === "PACKAGE") {
+        record?.tests?.forEach((group) => {
+          group?.tests?.forEach((row) => {
+            console.log(`Options for ${row?.name}:`, row?.options);
+          });
+        });
+      }
+    }
+  }, [isResultsModal, record]);
 
   const handleChange = (val, row) => {
     let newRecord = [];
@@ -108,11 +124,11 @@ export const ResultsModal = () => {
       doc: "visits",
       query: "updateVisit",
       data: { ...data },
-      id: record?.id
+      id: record?.id,
     }).then(({ err }) => {
       if (err) message.error("Error !");
       else {
-        message.success("Save Succefful.");
+        message.success(t("savedSuccessfully"));
         setRecord(null);
         setIsResultsModal(false);
         setIsReload(!isReload);
@@ -131,34 +147,50 @@ export const ResultsModal = () => {
             <Typography.Text type="secondary"># Custome Tests</Typography.Text>
           </div>
           <div className="test-list">
-            {record?.tests?.map((row) => (
-              <div className="test-item">
-                <p>
-                  <b>{row?.name}</b>
-                </p>
-                {row?.isSelecte ? (
-                  <Select
-                    style={{ width: "100%" }}
-                    value={row?.result}
-                    onChange={(selctedVal) => handleChange(selctedVal, row)}
-                    placeholder="Chose result ."
-                  >
-                    {row?.options?.map((option, i) => (
-                      <Select.Option key={i} value={option}>
-                        {option}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                ) : (
-                  <Input
-                    value={row?.result}
-                    onChange={(e) => handleChange(e.target.value, row)}
-                    style={{ width: "100%" }}
-                    placeholder="Write result ."
-                  />
-                )}
-              </div>
-            ))}
+            {record?.tests?.map((row) => {
+              // Check and parse options if necessary
+              if (typeof row.options === 'string') {
+                try {
+                  row.options = JSON.parse(row.options);
+                } catch (error) {
+                  console.error("Error parsing options:", error);
+                  row.options = [];
+                }
+              }
+  
+              console.log(`Rendering options for ${row?.name}:`, row?.options);
+  
+              return (
+                <div className="test-item" key={row?.id}>
+                  <p>
+                    <b>{row?.name}</b>
+                  </p>
+                  {row?.isSelecte ? (
+                    <Select
+                      style={{ width: "100%" }}
+                      value={row?.result}
+                      onChange={(selctedVal) => handleChange(selctedVal, row)}
+                      placeholder="Choose result."
+                    >
+                      {Array.isArray(row?.options) && row.options.length > 0
+                        ? row.options.map((option, i) => (
+                            <Select.Option key={i} value={option}>
+                              {option}
+                            </Select.Option>
+                          ))
+                        : null}
+                    </Select>
+                  ) : (
+                    <Input
+                      value={row?.result}
+                      onChange={(e) => handleChange(e.target.value, row)}
+                      style={{ width: "100%" }}
+                      placeholder="Write result."
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </Space>
       </div>
@@ -171,34 +203,50 @@ export const ResultsModal = () => {
             <Typography.Text type="secondary"># {group.title}</Typography.Text>
           </div>
           <div className="test-list">
-            {group?.tests?.map((row) => (
-              <div className="test-item">
-                <p>
-                  <b>{row?.name}</b>
-                </p>
-                {row?.isSelecte ? (
-                  <Select
-                    style={{ width: "100%" }}
-                    value={row?.result}
-                    onChange={(selctedVal) => handleChange(selctedVal, row)}
-                    placeholder="Chose result ."
-                  >
-                    {row?.options?.map((option, i) => (
-                      <Select.Option key={i} value={option}>
-                        {option}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                ) : (
-                  <Input
-                    value={row?.result}
-                    onChange={(e) => handleChange(e.target.value, row)}
-                    style={{ width: "100%" }}
-                    placeholder="Write result ."
-                  />
-                )}
-              </div>
-            ))}
+            {group?.tests?.map((row) => {
+              // Check and parse options if necessary
+              if (typeof row.options === 'string') {
+                try {
+                  row.options = JSON.parse(row.options);
+                } catch (error) {
+                  console.error("Error parsing options:", error);
+                  row.options = [];
+                }
+              }
+  
+              console.log(`Rendering options for ${row?.name}:`, row?.options);
+  
+              return (
+                <div className="test-item" key={row?.id}>
+                  <p>
+                    <b>{row?.name}</b>
+                  </p>
+                  {row?.isSelecte ? (
+                    <Select
+                      style={{ width: "100%" }}
+                      value={row?.result}
+                      onChange={(selctedVal) => handleChange(selctedVal, row)}
+                      placeholder="Choose result."
+                    >
+                      {Array.isArray(row?.options) && row.options.length > 0
+                        ? row.options.map((option, i) => (
+                            <Select.Option key={i} value={option}>
+                              {option}
+                            </Select.Option>
+                          ))
+                        : null}
+                    </Select>
+                  ) : (
+                    <Input
+                      value={row?.result}
+                      onChange={(e) => handleChange(e.target.value, row)}
+                      style={{ width: "100%" }}
+                      placeholder="Write result."
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </Space>
       </div>

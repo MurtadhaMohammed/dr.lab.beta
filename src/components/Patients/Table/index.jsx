@@ -40,7 +40,9 @@ export const PureTable = () => {
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
-  const limit = usePageLimit()
+  const [loading, setLoading] = useState(false);
+  const limit = usePageLimit();
+
   const { t } = useTranslation();
 
   const columns = [
@@ -175,6 +177,7 @@ export const PureTable = () => {
   };
 
   useEffect(() => {
+    setLoading(true);
     send({
       query: "getPatients",
       q: querySearch,
@@ -189,9 +192,11 @@ export const PureTable = () => {
         } else {
           console.error("Error fetching patients:", resp.error);
         }
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
+        setLoading(false);
       });
   }, [page, isReload, querySearch, limit]);
 
@@ -205,6 +210,7 @@ export const PureTable = () => {
       }}
       columns={columns}
       dataSource={data}
+      loading={loading}
       pagination={false}
       size="small"
       footer={() => (
@@ -224,6 +230,7 @@ export const PureTable = () => {
             }}
             total={total}
             pageSize={limit}
+            showSizeChanger={false}
           />
         </div>
       )}

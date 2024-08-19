@@ -50,7 +50,8 @@ export const apiCall = async ({
 
     // Handle non-2xx responses
     if (!res.ok) {
-      throw new Error(`HTTP error! status: ${res.status}`);
+      const extractErrorMessage = await res.json();
+      throw new Error(extractErrorMessage.message);
     }
 
     // Assuming the response is JSON
