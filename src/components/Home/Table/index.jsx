@@ -168,6 +168,7 @@ export const PureTable = ({ isReport = false }) => {
                 formData.append('phone', phone);
                 formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
                 formData.append('file', pdf, 'report.pdf');
+                formData.append('senderPhone', JSON.parse(localStorage?.getItem("lab-user"))?.phone || "");
                 const resp = await apiCall({
                   method: 'POST',
                   pathname: '/send/whatsapp-message',
