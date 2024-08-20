@@ -119,7 +119,6 @@ const SettingsScreen = () => {
     setPrintFontSize(val);
   };
 
-  console.log(printFontSize, "fontSize***************");
 
   const handelCancel = () => {
     form.setFieldsValue(user);
@@ -176,7 +175,7 @@ const SettingsScreen = () => {
         if (resp.ok) {
           let data = await resp.json();
           console.log("Response data:", data);
-          localStorage.setItem("lab-user", JSON.stringify(data));
+          localStorage.setItem("lab-user", JSON.stringify(data.updatedClient));
           message.success("Update Successfully.");
           setIsUpdate(false);
         } else {
@@ -192,7 +191,6 @@ const SettingsScreen = () => {
       }
     });
   };
-  //test push
 
   const handleLang = (checked) => {
     if (checked != undefined) {
