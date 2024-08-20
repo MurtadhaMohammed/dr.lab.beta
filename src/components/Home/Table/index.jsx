@@ -53,7 +53,7 @@ export const PureTable = ({ isReport = false }) => {
     setRecord,
     isToday,
     setPatientID,
-    record
+    record,
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 
@@ -65,12 +65,14 @@ export const PureTable = ({ isReport = false }) => {
   const [destPhone, setDestPhone] = useState(null);
   const [loading, setLoading] = useState(false);
   const [labFeature, setLabFeature] = useState(
-    localStorage.getItem('lab-feature') === "null" ? null : localStorage.getItem('lab-feature')
+    localStorage.getItem("lab-feature") === "null"
+      ? null
+      : localStorage.getItem("lab-feature")
   );
-  const [userType, setUserType] = useState(JSON.parse(localStorage.getItem('lab-user')).type);
+  const userType = useState(JSON.parse(localStorage.getItem("lab-user"))?.type);
 
   const limit = usePageLimit();
-  const { setTableData } = useHomeStore();
+  // const { setTableData } = useHomeStore();
   const { t, i18n } = useTranslation();
 
   const direction = i18n.dir();
@@ -86,8 +88,7 @@ export const PureTable = ({ isReport = false }) => {
     COMPLETED: "green",
   };
 
-  console.log(data, 'data');
-
+  console.log(data, "data");
 
   const updatePatient = async (record, phone) => {
     let data = { ...record, phone };
@@ -107,7 +108,6 @@ export const PureTable = ({ isReport = false }) => {
       console.error("Error in IPC communication:", error);
     }
   };
-
 
   const handleSandWhatsap = async (record) => {
     if (destPhone !== record?.phone) await updatePatient(record, destPhone);
@@ -142,9 +142,9 @@ export const PureTable = ({ isReport = false }) => {
               resolve(file);
             }
             console.log(err, res, file);
-          })
+          });
         });
-      }
+      };
 
       let handleSubmit = async () => {
         let data = { ...record, status: "COMPLETED", updatedAt: Date.now() };
@@ -153,7 +153,7 @@ export const PureTable = ({ isReport = false }) => {
           doc: "visits",
           query: "updateVisit",
           data: { ...data },
-          id: record?.id
+          id: record?.id,
         }).then(({ err }) => {
           if (err) message.error("Error !");
           else {
@@ -165,19 +165,25 @@ export const PureTable = ({ isReport = false }) => {
               try {
                 const res = await printResults();
                 pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
-                console.log(res, 'ressss');
+                console.log(res, "ressss");
 
                 // Continue with sending the PDF to the server...
 
                 const formData = new FormData();
-                formData.append('name', record?.patient?.name);
-                formData.append('phone', phone);
-                formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
-                formData.append('file', pdf, 'report.pdf');
-                formData.append('senderPhone', JSON.parse(localStorage?.getItem("lab-user"))?.phone || "");
+                formData.append("name", record?.patient?.name);
+                formData.append("phone", phone);
+                formData.append(
+                  "lab",
+                  JSON.parse(localStorage?.getItem("lab-user"))?.labName || ""
+                );
+                formData.append("file", pdf, "report.pdf");
+                formData.append(
+                  "senderPhone",
+                  JSON.parse(localStorage?.getItem("lab-user"))?.phone || ""
+                );
                 const resp = await apiCall({
-                  method: 'POST',
-                  pathname: '/send/whatsapp-message',
+                  method: "POST",
+                  pathname: "/send/whatsapp-message",
                   isFormData: true,
                   data: formData,
                 });
@@ -199,7 +205,7 @@ export const PureTable = ({ isReport = false }) => {
         });
       };
 
-      await handleSubmit()
+      await handleSubmit();
     } catch (error) {
       console.error("Error generating PDF or sending data:", error);
       message.error(t("erroroccurred"));
@@ -209,7 +215,7 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   const whatsapContnet = (record) => (
-    <div div className="whatsap-content" >
+    <div div className="whatsap-content">
       <WhatsAppOutlined style={{ fontSize: 40 }} />
       <b>{t("SendResults")}</b>
       <p>{t("SendResulsOnWhatsaap")}</p>
@@ -305,10 +311,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -368,7 +374,7 @@ export const PureTable = ({ isReport = false }) => {
         title: "",
         key: "action",
         render: (_, record) => (
-          <Space Space size="small" className="custom-actions" >
+          <Space Space size="small" className="custom-actions">
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
@@ -395,14 +401,24 @@ export const PureTable = ({ isReport = false }) => {
                     whatsapContnet(record)
                   )
                 }
-                open={userType === "trial" ? undefined : (record?.status == "PENDING") ? false : undefined}
+                open={
+                  userType === "trial"
+                    ? undefined
+                    : record?.status == "PENDING"
+                    ? false
+                    : undefined
+                }
               >
                 <Button
                   size="small"
                   className=" sticky"
                   icon={<WhatsAppOutlined />}
                   loading={msgLoading && record?.patient?.phone === destPhone}
-                  disabled={labFeature === null || record?.status == "PENDING" || userType === "trial"}
+                  disabled={
+                    labFeature === null ||
+                    record?.status == "PENDING" ||
+                    userType === "trial"
+                  }
                 />
               </Popover>
             }
@@ -508,7 +524,6 @@ export const PureTable = ({ isReport = false }) => {
         // message.success(t("Visitsretrievedsuccessfully"));
       } else {
         console.error("Error retrieving visits:", resp.error);
-
       }
       setLoading(false);
     });
@@ -522,7 +537,6 @@ export const PureTable = ({ isReport = false }) => {
         borderRadius: 10,
         overflow: "hidden",
       }}
-
       columns={columns}
       dataSource={data}
       loading={loading}
