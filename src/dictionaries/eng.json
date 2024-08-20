@@ -113,14 +113,14 @@
     "VisitDate": "Visit Date",
     "TotalAmounts": "Total Amounts",
     "TestItem": "Test Item",
-    "IsSelect": "Is Select ?",
+    "IsSelect": "Custom result:",
     "NewOption": "New Option",
     "Print": "Print",
     "days": "days",
     "here": "here",
     "upgrade": "reactive the serial ",
     "SerialKeyWillBeExpiredIn": "Your serial key will be expired in",
-    "SerialKeyWilBeExpiredSoon": "You are currently on the trial version. You can upgrade to the paid version",
+    "SerialKeyWilBeExpiredSoon": "You are currently on the trial version. You can upgrade to the paid version ",
   "SerialKeyWillExpireIn": "Your serial key will expire in",
     "HasNoEmail": "Has no email!.",
     "HasNoPhone": "Has no phone",
@@ -159,5 +159,9 @@
     "AddYourInfo": "Add your info",
     "Drlab": "Dr.lab",
     "Login": "Login",
-    "contact_us_to_subscribe": "Contact Us to Subscribe"
+    "contact_us_to_subscribe": "Contact Us to Subscribe",
+    "WriteResult":"Write Result",
+    "ChooseResult":"Choose Result",
+    "CustomTest":"# Custom Test",
+    "TestResultTitle":"Test Result For"
 }

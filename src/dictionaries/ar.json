@@ -113,7 +113,7 @@
   "VisitDate": "تاريخ الزيارة",
   "TotalAmounts": "إجمالي المبالغ",
   "TestItem": "عنصر الاختبار",
-  "IsSelect": "هل تم التحديد؟",
+  "IsSelect": "تخصيص نتيجة :",
   "NewOption": "خيار جديد",
   "Print": "طباعة",
   "days": "ايام",
@@ -158,5 +158,9 @@
   "AddYourInfo": "أضف معلوماتك",
   "Drlab": "دكتور لاب",
   "Login": "تسجيل دخول",
-  "contact_us_to_subscribe": "تواصل معنا للاشتراك"
+  "contact_us_to_subscribe": "تواصل معنا للاشتراك",
+  "WriteResult":"اكتب النتيجة",
+  "ChooseResult":"اختر النتيجة",
+  "CustomTest":"# الاختبار المخصص",
+  "TestResultTitle":"نتيجة الاختبار لـ"
 }

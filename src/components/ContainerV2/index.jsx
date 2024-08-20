@@ -62,9 +62,7 @@ const MainContainerV2 = ({ children }) => {
       );
       if (resp.status === 200) {
         setSignoutLoading(false);
-        localStorage.removeItem("lab-exp");
-        localStorage.removeItem("lab-serial-id");
-        localStorage.removeItem("lab-user");
+        localStorage.clear()
         setIsLogin(false);
       } else message.error("Serial not found!");
     } catch (error) {

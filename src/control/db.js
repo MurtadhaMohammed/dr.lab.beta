@@ -166,34 +166,29 @@ class LabDB {
   //     DELETE FROM visits WHERE patientID = ?
   //   `);
   //   await deleteVisitsStmt.run(id);
-  
+
   //   const deletePatientStmt = await this.db.prepare(`
   //     DELETE FROM patients WHERE id = ?
   //   `);
   //   const info = await deletePatientStmt.run(id);
-  
+
   //   return { success: info.changes > 0, rowsDeleted: info.changes };
   // }
 
   async deletePatient(id) {
     const checkVisitsStmt = await this.db.prepare(`
-      SELECT COUNT(*) AS count FROM visits WHERE patientID = ?
+      DELETE FROM visits WHERE patientID = ?
     `);
-    const visits = await checkVisitsStmt.get(id);
-  
-    if (visits.count > 0) {
-      return { success: false, error: "Patient has associated visits." };
-    }
-  
+    const visits = await checkVisitsStmt.run(id);
+
     const deletePatientStmt = await this.db.prepare(`
       DELETE FROM patients WHERE id = ?
     `);
+
     const info = await deletePatientStmt.run(id);
-  
+
     return { success: info.changes > 0, rowsDeleted: info.changes };
   }
-  
-  
 
   async updatePatient(id, updates) {
     const { name, gender, email, phone, birth } = updates;
@@ -491,14 +486,12 @@ class LabDB {
     const whereClauses = [
       `p.name LIKE ?`,
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
+        }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
+        }'`
         : "",
     ]
       .filter(Boolean)
@@ -548,14 +541,12 @@ class LabDB {
   async getTotalVisits({ startDate, endDate }) {
     const whereClauses = [
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
+        }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
+        }'`
         : "",
     ]
       .filter(Boolean)

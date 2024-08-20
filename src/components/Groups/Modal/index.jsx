@@ -38,17 +38,27 @@ export const PureModal = () => {
   const [testsList, setTestsList] = useState([]);
   const { t } = useTranslation();
 
-  const getTests = (querySearch) => {
-    let queryKey = new RegExp(querySearch, "gi");
 
+  let skip = 0;  // Initialize skip (offset)
+  const limit = 10;  // Set the limit for the number of tests per batch
+  
+  const getTests = (querySearch = "") => {
     send({
       query: "getTests",
-      data: {},
+      data: { q: querySearch, skip, limit },  // Send skip and limit to backend
     })
       .then((resp) => {
         if (resp.success) {
-          setTestsList(resp.data);
+          if (skip === 0) {
+            setTestsList(resp.data);
+          } else {
+            setTestsList((prev) => [...prev, ...resp.data]);
+          }
+  
           console.log("Tests fetched successfully:", resp.data);
+            if (resp.data.length === limit) {
+            skip += limit;
+          }
         } else {
           console.error("Error fetching tests:", resp.error);
         }
