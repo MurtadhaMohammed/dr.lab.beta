@@ -23,7 +23,7 @@ export const PatientHistory = () => {
       query: "getVisitByPatient",
       patientId: id,
     }).then(({ err, data }) => {
-      if (err) message.error("Error !");
+      if (err) message.error(t("Error"));
       else setData(data);
     });
   }, [id]);

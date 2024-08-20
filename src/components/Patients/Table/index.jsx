@@ -152,12 +152,12 @@ export const PureTable = () => {
       .then((resp) => {
         if (resp.data.success) {
           console.log("Number of deleted rows:", resp.data.rowsDeleted);
-          message.success(`Removed Patient successfully.`);
+          message.success(t("RemovePatientsuccess"));
           setIsReload(!isReload);
         } else {
           console.log(resp);
           console.error("Error deleting patient:", resp.error);
-          message.error("Error removing patient.");
+          message.error(t("RemovePatientError"));
         }
       })
       .catch((err) => {

@@ -46,7 +46,7 @@ const MainHeader = () => {
         setLoading(false);
         localStorage.clear()
         setIsLogin(false);
-      } else message.error("Serial not found!");
+      } else message.error(t(Serialnotfound));
     } catch (error) {
       console.log(error);
       message.error(error.message);

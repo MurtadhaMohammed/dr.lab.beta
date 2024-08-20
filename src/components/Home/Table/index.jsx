@@ -159,7 +159,7 @@ export const PureTable = ({ isReport = false }) => {
         }).then(({ err }) => {
           if (err) message.error("Error !");
           else {
-            message.success("Save Succefful.");
+            message.success(t("savesuccess"));
             setRecord(null);
             setIsResultsModal(false);
             setIsReload(!isReload);
@@ -186,14 +186,14 @@ export const PureTable = ({ isReport = false }) => {
 
                 console.log(response);
 
-                if (response?.message === 'Message sent successfully') {
-                  message.success("Send Successfully");
+                if (response?.message === t("Messagesentsuccess")) {
+                  message.success(t("SendSuccess"));
                 } else {
-                  message.error("Error!");
+                  message.error(t("Error"));
                 }
               } catch (error) {
                 console.error("Error generating PDF:", error);
-                message.error("An error occurred while generating the PDF.");
+                message.error(t("ErrorGenerate"));
               }
             }, 1000);
           }
@@ -203,7 +203,7 @@ export const PureTable = ({ isReport = false }) => {
       await handleSubmit()
     } catch (error) {
       console.error("Error generating PDF or sending data:", error);
-      message.error("An error occurred.");
+      message.error(t("erroroccurred"));
     } finally {
       setMsgLoading(false);
     }
