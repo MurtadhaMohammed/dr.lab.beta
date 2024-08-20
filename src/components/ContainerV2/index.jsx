@@ -62,7 +62,7 @@ const MainContainerV2 = ({ children }) => {
       );
       if (resp.status === 200) {
         setSignoutLoading(false);
-        localStorage.clear()
+        localStorage.clear();
         setIsLogin(false);
       } else message.error("Serial not found!");
     } catch (error) {
@@ -71,6 +71,7 @@ const MainContainerV2 = ({ children }) => {
       setSignoutLoading(false);
     }
   };
+  const userType = JSON.parse(localStorage.getItem("lab-user"))?.type;
 
   useEffect(() => {
     const userData = JSON.parse(localStorage?.getItem("lab-user"));
@@ -207,10 +208,14 @@ const MainContainerV2 = ({ children }) => {
               onConfirm={signout}
               title={t("SignoutConfirm")}
               description={t("SignOutFormThisApp")}
+              disabled={userType === "trial"} // Disable Popconfirm if the user is a trial user
             >
               <button
                 onClick={() => signoutLoading}
-                className="border-t border-t-[#eee] h-[48px] flex items-center gap-2 text-[#eb2f96] justify-center text-[22px] transition-all active:opacity-40"
+                className={`border-t border-t-[#eee] h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 ${
+                  userType === "trial" ? "text-[#ccc]" : "text-[#eb2f96]"
+                }`}
+                disabled={userType === "trial"} // Disable button if the user is a trial user
               >
                 <IoMdLogOut
                   style={{
