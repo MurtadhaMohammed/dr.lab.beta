@@ -463,7 +463,7 @@ const SettingsScreen = () => {
                       content={
                         <PopOverContent
                           website={"https://www.puretik.com/ar"}
-                          email={"puretik@gmail.com"}
+                          email={"info@puretik.com"}
                           phone={"07710553120"}
                         />
                       }
