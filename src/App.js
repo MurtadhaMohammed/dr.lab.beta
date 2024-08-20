@@ -14,7 +14,6 @@ import TitleBar from "./components/TitleBar/titleBar";
 import useLogin from "./hooks/useLogin";
 import { useAppStore } from "./libs/appStore";
 import useLang from "./hooks/useLang";
-import { send } from "./control/renderer";
 import useInitHeaderImage from "./hooks/useInitHeaderImage";
 
 const { ipcRenderer } = window.require("electron");
@@ -22,8 +21,8 @@ const { ipcRenderer } = window.require("electron");
 function App() {
   const { isLogin } = useAppStore();
   const { lang } = useLang();
-  const {isOnline, setIsOnline} = useAppStore();
-  
+  const { isOnline, setIsOnline } = useAppStore();
+
   useInitHeaderImage();
   useLogin();
 
@@ -47,12 +46,12 @@ function App() {
 
     console.log(isOnline, "isOnline!!!!!!!!!!!!!!!!!!!!!");
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
+    const online = window.addEventListener("online", handleOnline);
+    const offline = window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      online,
+        offline
     };
   }, []);
 

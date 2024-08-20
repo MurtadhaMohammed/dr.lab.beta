@@ -32,9 +32,9 @@ const PopOverContent = ({ website, email, phone }) => {
         </div>
         <div className="w-full flex items-center gap-2 px-2  text-sm mt-3">
           <PhoneOutlined rotate={-46} />
-          <a href={phone || "0770000000"} target="_blank" rel="noopener noreferrer">
+          <p href={phone || "0770000000"}>
             {phone || "0770000000"}
-          </a>
+          </p>
         </div>
       </div>
     </div>

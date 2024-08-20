@@ -30,9 +30,9 @@ import {
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
-import fileDialog from "file-dialog";
 import { apiCall } from "../../../libs/api";
-import jsPDF from 'jspdf';
+import { parseTests } from "../ResultsModal";
+import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload } = useAppStore();
@@ -63,12 +63,17 @@ export const PureTable = ({ isReport = false }) => {
   const [msgLoading, setMsgLoading] = useState(false);
   const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [labFeature, setLabFeature] = useState(
     localStorage.getItem('lab-feature') === "null" ? null : localStorage.getItem('lab-feature')
   );
+  const [userType, setUserType] = useState(JSON.parse(localStorage.getItem('lab-user')).type);
+
   const limit = usePageLimit();
   const { setTableData } = useHomeStore();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const direction = i18n.dir();
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -80,6 +85,9 @@ export const PureTable = ({ isReport = false }) => {
     PENDING: "orange",
     COMPLETED: "green",
   };
+
+  console.log(data, 'data');
+
 
   const updatePatient = async (record, phone) => {
     let data = { ...record, phone };
@@ -110,42 +118,91 @@ export const PureTable = ({ isReport = false }) => {
     } else if (phone[0] === "0") phone = phone.substr(1);
 
     try {
-      // Generate PDF
-      const doc = new jsPDF();
-      doc.text(`Patient Name: ${record?.patient?.name}`, 10, 10);
-      doc.text(`Tests: ${record?.tests.map(test => test.title).join(", ")}`, 10, 20);
-      doc.text(`Price: ${getTotalPrice(record?.testType, record?.tests)}`, 10, 30);
-      doc.text(`End Price: ${getTotalPrice(record?.testType, record?.tests) - record?.discount} IQD`, 10, 40);
-      doc.text(`Discount: ${record?.discount ? `${record?.discount} IQD` : 'None'}`, 10, 50);
-      doc.text(`Created At: ${dayjs(record?.createdAt).format('DD/MM/YYYY hh:mm A')}`, 10, 60);
+      let pdf;
 
-      // Convert PDF to Blob
-      const pdfBlob = doc.output('blob');
-
-      // Send PDF to server
-      setMsgLoading(true);
-      const formData = new FormData();
-      formData.append('name', record?.patient?.name);
-      formData.append('phone', phone);
-      formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
-      formData.append('file', pdfBlob, 'report.pdf');
-
-      const resp = await apiCall({
-        method: 'POST',
-        pathname: '/send/whatsapp-message',
-        isFormData: true,
-        data: formData,
-      });
-
-      const data = await resp.json();
-      if (data?.messages && data?.messages[0]?.message_status === 'accepted') {
-        message.success("Send Succefully.");
-      } else {
-        message.error("Error!");
+      let printResults = () => {
+        return new Promise((resolve, reject) => {
+          let data = {
+            patient: record.patient.name,
+            age: dayjs().diff(dayjs(record.patient.birth), "y"),
+            date: dayjs(record.createdAt).format("YYYY-MM-DD"),
+            tests: parseTests(record),
+            isHeader: true,
+            fontSize: 12,
+          };
+          send({
+            query: "print",
+            data,
+            isView: false,
+          }).then(({ err, res, file }) => {
+            if (err) {
+              reject(err);
+            }
+            if (file) {
+              resolve(file);
+            }
+            console.log(err, res, file);
+          })
+        });
       }
+
+      let handleSubmit = async () => {
+        let data = { ...record, status: "COMPLETED", updatedAt: Date.now() };
+
+        send({
+          doc: "visits",
+          query: "updateVisit",
+          data: { ...data },
+          id: record?.id
+        }).then(({ err }) => {
+          if (err) message.error("Error !");
+          else {
+            message.success(t("savesuccess"));
+            setRecord(null);
+            setIsResultsModal(false);
+            setIsReload(!isReload);
+            setTimeout(async () => {
+              try {
+                const res = await printResults();
+                pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
+                console.log(res, 'ressss');
+
+                // Continue with sending the PDF to the server...
+
+                const formData = new FormData();
+                formData.append('name', record?.patient?.name);
+                formData.append('phone', phone);
+                formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
+                formData.append('file', pdf, 'report.pdf');
+                formData.append('senderPhone', JSON.parse(localStorage?.getItem("lab-user"))?.phone || "");
+                const resp = await apiCall({
+                  method: 'POST',
+                  pathname: '/send/whatsapp-message',
+                  isFormData: true,
+                  data: formData,
+                });
+                const response = await resp.json();
+
+                console.log(response);
+
+                if (response?.message === t("Messagesentsuccess")) {
+                  message.success(t("SendSuccess"));
+                } else {
+                  message.error(t("Error"));
+                }
+              } catch (error) {
+                console.error("Error generating PDF:", error);
+                message.error(t("ErrorGenerate"));
+              }
+            }, 1000);
+          }
+        });
+      };
+
+      await handleSubmit()
     } catch (error) {
       console.error("Error generating PDF or sending data:", error);
-      message.error("An error occurred.");
+      message.error(t("erroroccurred"));
     } finally {
       setMsgLoading(false);
     }
@@ -206,7 +263,7 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-        let testType = record.testType.replace(/^"|"$/g, ""); // Remove surrounding quotes
+        let testType = record.testType.replace(/^"|"$/g, "");
         let list = record.tests;
         let numOfView = 2;
         let restCount =
@@ -293,7 +350,7 @@ export const PureTable = ({ isReport = false }) => {
       key: "createdAt",
       render: (createdAt) => (
         <span style={{ color: "#666" }}>
-          <span style={{ fontSize: 12 }}>
+          <span style={{ fontSize: 14 }}>
             {dayjs(createdAt).format("DD/MM/YYYY")}
           </span>{" "}
           {dayjs(createdAt).add(3, "hours").format("hh:mm A")}
@@ -311,7 +368,7 @@ export const PureTable = ({ isReport = false }) => {
         title: "",
         key: "action",
         render: (_, record) => (
-          <Space size="small" className="custom-actions">
+          <Space Space size="small" className="custom-actions" >
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
@@ -320,21 +377,35 @@ export const PureTable = ({ isReport = false }) => {
               {t("PrintResults")}
             </Button>
             <Divider type="vertical" />
-            <Popover
-              onOpenChange={(isOpen) => {
-                if (isOpen) setDestPhone(record?.patient?.phone);
-                else setIsConfirm(false);
-              }}
-              content={whatsapContnet(record)}
-              open={labFeature === null ? false : undefined}
-            >
-              <Button
-                size="small"
-                icon={<WhatsAppOutlined />}
-                loading={msgLoading && record?.patient?.phone === destPhone}
-                disabled={labFeature === null}
-              />
-            </Popover>
+            {
+              <Popover
+                onOpenChange={(isOpen) => {
+                  if (isOpen) setDestPhone(record?.patient?.phone);
+                  else setIsConfirm(false);
+                }}
+                placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
+                content={
+                  userType === "trial" || labFeature === null ? (
+                    <PopOverContent
+                      website={"https://www.puretik.com/ar"}
+                      email={"puretik@gmail.com"}
+                      phone={"07710553120"}
+                    />
+                  ) : (
+                    whatsapContnet(record)
+                  )
+                }
+                open={userType === "trial" ? undefined : (record?.status == "PENDING") ? false : undefined}
+              >
+                <Button
+                  size="small"
+                  className=" sticky"
+                  icon={<WhatsAppOutlined />}
+                  loading={msgLoading && record?.patient?.phone === destPhone}
+                  disabled={labFeature === null || record?.status == "PENDING" || userType === "trial"}
+                />
+              </Popover>
+            }
             <Button
               size="small"
               disabled={record?.status === t("COMPLETED")}
@@ -371,6 +442,7 @@ export const PureTable = ({ isReport = false }) => {
       .then((resp) => {
         if (resp.success) {
           console.log("Success deleteVisit");
+          message.success(t("Visitdeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
           console.error("Error deleteVisit:", resp.error);
@@ -404,6 +476,7 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   useEffect(() => {
+    setLoading(true);
     let startDate = filterDate
       ? dayjs(filterDate[0]).startOf("day").toISOString()
       : "";
@@ -432,9 +505,12 @@ export const PureTable = ({ isReport = false }) => {
       if (resp.success) {
         setData(resp.data);
         setTotal(resp.total);
+        // message.success(t("Visitsretrievedsuccessfully"));
       } else {
         console.error("Error retrieving visits:", resp.error);
+
       }
+      setLoading(false);
     });
   }, [page, isReload, querySearch, isToday, filterDate, limit]);
 
@@ -446,8 +522,10 @@ export const PureTable = ({ isReport = false }) => {
         borderRadius: 10,
         overflow: "hidden",
       }}
+
       columns={columns}
       dataSource={data}
+      loading={loading}
       pagination={false}
       size="small"
       footer={() => (
@@ -467,6 +545,7 @@ export const PureTable = ({ isReport = false }) => {
             }}
             total={total}
             pageSize={limit}
+            showSizeChanger={false}
           />
         </div>
       )}

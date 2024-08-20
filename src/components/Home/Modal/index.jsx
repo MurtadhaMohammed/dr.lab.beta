@@ -64,7 +64,7 @@ export const PureModal = () => {
       })
         .then((resp) => {
           if (resp.success) {
-            message.success("Visit updated successfully");
+            message.success(t("Visitupdatedsuccessfully"));
             console.log("updateVisit response:", resp);
             send({
               query: "updatePatient",
@@ -72,18 +72,18 @@ export const PureModal = () => {
               data: { ...data.patient },
             }).then((resp) => {
               if (resp.success) {
-                message.success("Patient updated successfully");
+                message.success(t("Patientupdatedsuccess"));
                 console.log("updatePatient response:", resp);
                 setReset();
                 setIsModal(false);
                 setIsReload(!isReload);
                 setStep(0);
               } else {
-                message.error("Error updating patient");
+                message.error(t(Errorupdatingpatient));
               }
             });
           } else {
-            message.error("Error updating visit");
+            message.error(t(Errorupdatingvisit));
           }
         })
         .catch((err) => {
@@ -108,20 +108,20 @@ export const PureModal = () => {
               .then((resp) => {
                 if (resp.success) {
                   console.log("addVisit response:", resp);
-                  message.success("Visit added successfully");
+                  message.success(t("Visitaddedsuccessfully"));
                   setReset();
                   setIsModal(false);
                   setIsReload(!isReload);
                   setStep(0);
                 } else {
-                  message.error("Error adding visit");
+                  message.error(t("Erroraddingvisit"));
                 }
               })
               .catch((err) => {
                 console.error("Error in IPC communication:", err);
               });
           } else {
-            message.error("Error updating patient");
+            message.error(t("Errorupdatingpatient"));
           }
         });
       } else {
@@ -139,20 +139,20 @@ export const PureModal = () => {
                 .then((resp) => {
                   console.log("addVisit response:", resp);
                   if (resp.success) {
-                    message.success("Visit added successfully");
+                    message.success(t("Visitaddedsuccess"));
                     setReset();
                     setIsModal(false);
                     setIsReload(!isReload);
                     setStep(0);
                   } else {
-                    message.error("Error adding visit");
+                    message.error(t("Erroraddingvisit"));
                   }
                 })
                 .catch((err) => {
                   console.error("Error in IPC communication:", err);
                 });
             } else {
-              message.error("Error adding patient");
+              message.error(t("Erroraddingpatient"));
             }
           })
           .catch((err) => {

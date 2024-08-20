@@ -44,11 +44,9 @@ const MainHeader = () => {
       );
       if (resp.status === 200) {
         setLoading(false);
-        localStorage.removeItem("lab-exp");
-        localStorage.removeItem("lab-serial-id");
-        localStorage.removeItem("lab-user");
+        localStorage.clear()
         setIsLogin(false);
-      } else message.error("Serial not found!");
+      } else message.error(t(Serialnotfound));
     } catch (error) {
       console.log(error);
       message.error(error.message);

@@ -65,8 +65,11 @@ const LoginScreen = () => {
         },
       });
 
+      console.log(resp, 'resp');
+
       if (resp.ok) {
         const data = await resp.json();
+
         const { client, updatedSerial } = data;
 
         if (updatedSerial && updatedSerial.exp) {
@@ -79,23 +82,22 @@ const LoginScreen = () => {
             "lab-feature",
             updatedSerial.feature
               ? updatedSerial.feature
-                  .map((v) => {
-                    if (v.name === "whatsapp") return v.name;
-                  })
-                  .filter(Boolean) // Remove undefined values from the array
+                .map((v) => {
+                  if (v.name === "whatsapp") return v.name;
+                })
+                .filter(Boolean)
               : ["null"]
           );
-          
+
           setIsLogin(true);
         } else {
           throw new Error("Serial data is missing or incomplete");
         }
       } else {
         const data = await resp.json();
-        message.error(data.message || "Serial not found!");
+        message.error(data.message || t("Serialnotfound"));
       }
     } catch (error) {
-      console.log(error);
       message.error(error.message);
     } finally {
       setLoading(false);
@@ -104,7 +106,7 @@ const LoginScreen = () => {
 
   const register = async () => {
     if (!UUID) {
-      message.error("Error!");
+      message.error(t("Error"));
       return;
     }
 
@@ -143,10 +145,9 @@ const LoginScreen = () => {
         }
       } else {
         const errorData = await resp.json();
-        message.error(errorData.message || "Serial not found!");
+        message.error(errorData.message || t("Serialnotfound"));
       }
     } catch (error) {
-      console.log(error);
       message.error(error.message);
     } finally {
       setLoading(false);
@@ -187,7 +188,7 @@ const LoginScreen = () => {
             onFinish={register}
             initialValues={{
               phone,
-              
+
             }}
             layout="vertical"
             autoComplete="off"
@@ -216,7 +217,7 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input placeholder={t("AliSalim")} className=" h-[40px] p-2" />
+              <Input placeholder={t("labNameexample")} className=" h-[40px] p-2" />
             </Form.Item>
 
             <Form.Item
@@ -228,19 +229,34 @@ const LoginScreen = () => {
                   required: true,
                   message: t("PleaseInputYourPhone"),
                 },
+                {
+                  pattern: /^07\d{9}$/,
+                  message: t("InvalidPhoneNumber"),
+                },
               ]}
             >
-              <Input placeholder="07xxxxxxxx" className=" h-[40px] p-2" />
+              <Input placeholder="07xxxxxxxxx" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Form.Item label={t("Email")} name="email" className="h-16 mb-7">
+            <Form.Item
+              label={t("Email")}
+              name="email"
+              className="h-16 mb-7"
+              rules={[
+                {
+                  required: false,
+                },
+                {
+                  pattern: /^[a-zA-Z0-9._%+-]+@\.com$/,
+                  message: t("EmailMustBeGmail"),
+                },
+              ]}
+            >
               <Input
-                type="email"
-                placeholder="example@email.com"
+                placeholder="example@gmail.com"
                 className=" h-[40px] p-2"
               />
             </Form.Item>
-
             <Form.Item
               label={t("Address")}
               name="address"
