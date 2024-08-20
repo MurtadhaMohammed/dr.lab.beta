@@ -442,6 +442,7 @@ export const PureTable = ({ isReport = false }) => {
       .then((resp) => {
         if (resp.success) {
           console.log("Success deleteVisit");
+          message.success(t("Visitdeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
           console.error("Error deleteVisit:", resp.error);
@@ -504,8 +505,10 @@ export const PureTable = ({ isReport = false }) => {
       if (resp.success) {
         setData(resp.data);
         setTotal(resp.total);
+        // message.success(t("Visitsretrievedsuccessfully"));
       } else {
         console.error("Error retrieving visits:", resp.error);
+        
       }
       setLoading(false);
     });

@@ -64,7 +64,7 @@ export const PureModal = () => {
       })
         .then((resp) => {
           if (resp.success) {
-            message.success(t("visitupdatesucess"));
+            message.success(t("Visitupdatedsuccessfully"));
             console.log("updateVisit response:", resp);
             send({
               query: "updatePatient",
@@ -108,7 +108,7 @@ export const PureModal = () => {
               .then((resp) => {
                 if (resp.success) {
                   console.log("addVisit response:", resp);
-                  message.success(t("Visitaddedsuccess"));
+                  message.success(t("Visitaddedsuccessfully"));
                   setReset();
                   setIsModal(false);
                   setIsReload(!isReload);
