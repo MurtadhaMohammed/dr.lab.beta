@@ -88,7 +88,7 @@ const SettingsScreen = () => {
         localStorage.clear();
         setIsLogin(false);
         navigate(-1, { replace: true });
-      } else message.error("Serial not found!");
+      } else message.error(t("Serialnotfound"));
     } catch (error) {
       console.log(error);
       message.error(error.message);
@@ -176,7 +176,7 @@ const SettingsScreen = () => {
           let data = await resp.json();
           console.log("Response data:", data);
           localStorage.setItem("lab-user", JSON.stringify(data.updatedClient));
-          message.success("Update Successfully.");
+          message.success(t("UpdateSuccess"));
           setIsUpdate(false);
         } else {
           let errorData = await resp.json();
