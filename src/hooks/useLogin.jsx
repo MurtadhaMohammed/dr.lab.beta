@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { message } from "antd";
 import dayjs from "dayjs";
 import { useAppStore } from "../libs/appStore";
+import { useTranslation } from "react-i18next";
 
 const useLogin = () => {
   const { isLogin, setIsLogin, setUser } = useAppStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const userString = localStorage.getItem("lab-user");
@@ -25,7 +27,7 @@ const useLogin = () => {
       } catch (error) {
         console.error("Failed to parse user data:", error);
         setIsLogin(false);
-        message.error("Invalid user data found. Please log in again.");
+        message.error(t("InvalidUserData"));
       }
     } else {
       setIsLogin(false);
@@ -49,7 +51,6 @@ const useLogin = () => {
       const today = dayjs();
       const dayPassed = today.diff(createdDate, "day");
 
-      // Define the expiration period based on the user type
       const expirationPeriod = user?.type === "trial" ? 7 : 365;
       const remaining = expirationPeriod - dayPassed;
 
@@ -58,7 +59,7 @@ const useLogin = () => {
       if (remaining <= 0) {
         setIsLogin(false);
         setUser(null);
-        message.error("Subscription has expired.");
+        message.error(t("Subscriptionexpired"));
         return;
       }
 
@@ -97,7 +98,7 @@ const useLogin = () => {
         "Error checking serial expiration:",
         error.message || error
       );
-      message.error("Failed to check serial expiration");
+      message.error(t("Failedserialexpiration"));
       setIsLogin(false);
       setUser(null);
     }

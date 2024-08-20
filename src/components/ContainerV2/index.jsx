@@ -62,17 +62,16 @@ const MainContainerV2 = ({ children }) => {
       );
       if (resp.status === 200) {
         setSignoutLoading(false);
-        localStorage.removeItem("lab-exp");
-        localStorage.removeItem("lab-serial-id");
-        localStorage.removeItem("lab-user");
+        localStorage.clear();
         setIsLogin(false);
-      } else message.error("Serial not found!");
+      } else message.error(t("Serialnotfound"));
     } catch (error) {
       console.log(error);
       message.error(error.message);
       setSignoutLoading(false);
     }
   };
+  const userType = JSON.parse(localStorage.getItem("lab-user"))?.type;
 
   useEffect(() => {
     const userData = JSON.parse(localStorage?.getItem("lab-user"));
@@ -104,6 +103,15 @@ const MainContainerV2 = ({ children }) => {
     } else {
       // Other languages: default rotation
       return collapsed ? "rotate(0deg)" : "rotate(180deg)";
+    }
+  };
+  const getRotationStyle2 = () => {
+    if (i18n.language === "ar") {
+      // Arabic language: rotate -90 degrees if collapsed
+      return "rotate(0deg)";
+    } else {
+      // Other languages: default rotation
+      return "rotate(180deg)";
     }
   };
 
@@ -157,13 +165,20 @@ const MainContainerV2 = ({ children }) => {
                 },
                 {
                   key: "/patients",
-                  icon: <MdOutlinePersonalInjury size={18} style={{ marginLeft: '1px' }} />,
+                  icon: (
+                    <MdOutlinePersonalInjury
+                      size={18}
+                      style={{ marginLeft: "1px" }}
+                    />
+                  ),
                   label: <p className="text-[15px]">{t("Patients")}</p>,
                   onClick: () => navigate("/patients", { replace: true }),
                 },
                 {
                   key: "/tests",
-                  icon: <GrDocumentTest size={16} style={{ marginRight: '2px' }} />,
+                  icon: (
+                    <GrDocumentTest size={16} style={{ marginRight: "2px" }} />
+                  ),
                   label: <p className="text-[15px]">{t("Tests")}</p>,
                   onClick: () => navigate("/tests", { replace: true }),
                 },
@@ -193,12 +208,20 @@ const MainContainerV2 = ({ children }) => {
               onConfirm={signout}
               title={t("SignoutConfirm")}
               description={t("SignOutFormThisApp")}
+              disabled={userType === "trial"} // Disable Popconfirm if the user is a trial user
             >
               <button
                 onClick={() => signoutLoading}
-                className="border-t border-t-[#eee] h-[48px] flex items-center gap-2 text-[#eb2f96] justify-center text-[22px] transition-all active:opacity-40"
+                className={`border-t border-t-[#eee] h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 ${
+                  userType === "trial" ? "text-[#ccc]" : "text-[#eb2f96]"
+                }`}
+                disabled={userType === "trial"} // Disable button if the user is a trial user
               >
-                <IoMdLogOut />
+                <IoMdLogOut
+                  style={{
+                    transform: getRotationStyle2(),
+                  }}
+                />
                 {!collapsed && <p className="text-[15px]">{t("SignOut")}</p>}
               </button>
             </Popconfirm>
@@ -230,13 +253,20 @@ const MainContainerV2 = ({ children }) => {
             className="sticky top-0 z-10"
             message={
               <span>
-                {t("SerialKeyWilBeExpiredSoon")}{t("")}
+                {t("SerialKeyWilBeExpiredSoon")}
+                {t("")}
                 <Popover
                   placement="bottom"
                   visible={isPopoverVisible}
                   onVisibleChange={(visible) => setIsPopoverVisible(visible)}
                   trigger="hover"
-                  content={<PopOverContent website={"https://www.puretik.com/ar"} email={"https://www.puretik.com/ar"} phone={"07710553120"}/>}
+                  content={
+                    <PopOverContent
+                      website={"https://www.puretik.com/ar"}
+                      email={"info@puretik.com"}
+                      phone={"07710553120"}
+                    />
+                  }
                 >
                   <a
                     onMouseEnter={showPopover}
@@ -251,7 +281,7 @@ const MainContainerV2 = ({ children }) => {
             closable
           />
         )}
-        { showExpAlert && (
+        {showExpAlert && (
           <Alert
             className="sticky top-0 z-10"
             message={
@@ -265,7 +295,13 @@ const MainContainerV2 = ({ children }) => {
                   visible={isPopoverVisible}
                   onVisibleChange={(visible) => setIsPopoverVisible(visible)}
                   trigger="hover"
-                  content={<PopOverContent website={"https://www.puretik.com/ar"} email={"https://www.puretik.com/ar"} phone={"07710553120"} />}
+                  content={
+                    <PopOverContent
+                      website={"https://www.puretik.com/ar"}
+                      email={"info@puretik.com"}
+                      phone={"07710553120"}
+                    />
+                  }
                 >
                   <span>{t("upgrade")}</span>{" "}
                   <a

@@ -54,6 +54,13 @@ export const PureModal = () => {
     }
   }, [inputVisible]);
 
+  const handleIsSelecteChange = (e) => {
+    setIsSelecte(e.target.checked);
+    if (e.target.checked) {
+      setNormal(""); // Clear the normal value
+    }
+  };
+
   useEffect(() => {
     editInputRef.current?.focus();
   }, [inputValue]);
@@ -73,6 +80,14 @@ export const PureModal = () => {
     setInputValue(e.target.value);
   };
   const handleInputConfirm = () => {
+    console.log("Input Value:", inputValue);
+    console.log("Current Options:", options);
+  
+    if (!Array.isArray(options)) {
+      console.error("Options is not an array. Resetting to an empty array.");
+      setOptions([]);
+    }
+  
     if (inputValue && options.indexOf(inputValue) === -1) {
       setOptions([...options, inputValue]);
     }
@@ -93,47 +108,58 @@ export const PureModal = () => {
     let data = {
       name,
       price,
-      normal,
+      normal: isSelecte ? "" : normal,
       isSelecte,
       options: isSelecte ? options : [],
       updatedAt: Date.now(),
     };
-
+  
     if (!id) {
       send({
         query: "addTest",
         data: { ...data },
-      }).then(resp => {
-        if (resp.success) {
-          console.log("Test added with ID:", resp.id);
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error adding test:", resp.error);
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-      });
+      })
+        .then((resp) => {
+          if (resp.success) {
+            console.log("Test added with ID:", resp.id);
+            message.success(t("Testaddedsuccessfully"));
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Erroraddingtest:", resp.error);
+            message.error(t("Erroraddingtest:"));
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     } else {
       send({
         query: "editTest",
         data: { ...data },
         id,
-      }).then(resp => {
-        if (resp.success) {
-          console.log("Test updated successfully");
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error updating test:", resp.error);
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-      });
+      })
+        .then((resp) => {
+          if (resp.success) {
+            console.log("Test updated successfully");
+            message.success(t("Testupdatedsuccessfully"));
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Error updating test:", resp.error);
+            message.error("Failed to update test.");
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     }
   };
+  
 
   return (
     <Modal
@@ -183,31 +209,33 @@ export const PureModal = () => {
           onChange={(val) => setPrice(val)}
           placeholder="Ex: 10000"
           style={{ width: "100%" }}
+          min={0}
         />
       </Space>
     </Col>
     <Col span={24}>
-      <Space style={{ width: "100%" }} direction="vertical" size={4}>
-        <Text>{t("NormalValue")}</Text>
-        <Input.TextArea
-          value={normal}
-          onChange={(e) => setNormal(e.target.value)}
-          rows={2}
-          placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
-          style={{ width: "100%" }}
-        />
-      </Space>
-    </Col>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Text>{t("NormalValue")}</Text>
+              <Input.TextArea
+                value={normal}
+                onChange={(e) => setNormal(e.target.value)}
+                rows={2}
+                placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
+                style={{ width: "100%" }}
+                disabled={isSelecte}
+              />
+            </Space>
+          </Col>
     <Col span={24}>
-      <Space style={{ width: "100%" }} direction="vertical" size={4}>
-        <Checkbox
-          checked={isSelecte}
-          onChange={(e) => setIsSelecte(e.target.checked)}
-        >
-          {t("IsSelect")}
-        </Checkbox>
-      </Space>
-    </Col>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Checkbox
+                checked={isSelecte}
+                onChange={handleIsSelecteChange}
+              >
+                {t("IsSelect")}
+              </Checkbox>
+            </Space>
+          </Col>
     {isSelecte ? (
       <Col span={24}>
         <Space size={[0, 6]} wrap>

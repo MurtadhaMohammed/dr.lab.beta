@@ -38,17 +38,27 @@ export const PureModal = () => {
   const [testsList, setTestsList] = useState([]);
   const { t } = useTranslation();
 
-  const getTests = (querySearch) => {
-    let queryKey = new RegExp(querySearch, "gi");
 
+  let skip = 0;  // Initialize skip (offset)
+  const limit = 10;  // Set the limit for the number of tests per batch
+  
+  const getTests = (querySearch = "") => {
     send({
       query: "getTests",
-      data: {},
+      data: { q: querySearch, skip, limit },  // Send skip and limit to backend
     })
       .then((resp) => {
         if (resp.success) {
-          setTestsList(resp.data);
+          if (skip === 0) {
+            setTestsList(resp.data);
+          } else {
+            setTestsList((prev) => [...prev, ...resp.data]);
+          }
+  
           console.log("Tests fetched successfully:", resp.data);
+            if (resp.data.length === limit) {
+            skip += limit;
+          }
         } else {
           console.error("Error fetching tests:", resp.error);
         }
@@ -89,18 +99,19 @@ export const PureModal = () => {
       })
         .then((resp) => {
           if (resp.success) {
-            console.log("Package updated successfully");
+            console.log(t("Packageupdatedsuccessfully"));
             setReset();
             setIsModal(false);
             setIsReload(!isReload);
+            message.success(t("Packageupdatedsuccessfully"));
           } else {
             console.error("Error updating package:", resp.error);
-            message.error("Failed to update package.");
+            message.error(t("Failed to update package."));
           }
         })
         .catch((err) => {
           console.error("Error in IPC communication:", err);
-          message.error("Failed to communicate with server.");
+          message.error(t("Failed to communicate with server."));
         });
     } else {
       send({
@@ -113,17 +124,19 @@ export const PureModal = () => {
             setReset();
             setIsModal(false);
             setIsReload(!isReload);
+            message.success(t("Packageaddedsuccessfully"));
           } else {
             console.error("Error adding package:", resp.error);
-            message.error("Failed to add package.");
+            message.error(t("Failedtoaddpackage"));
           }
         })
         .catch((err) => {
           console.error("Error in IPC communication:", err);
-          message.error("Failed to communicate with server.");
+          message.error(t("Failed to communicate with server."));
         });
     }
   };
+  
 
   return (
     <Modal

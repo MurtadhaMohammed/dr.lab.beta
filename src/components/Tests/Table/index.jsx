@@ -34,6 +34,7 @@ export const PureTable = () => {
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
   const limit = usePageLimit(60, 35);
   const { t } = useTranslation();
 
@@ -70,7 +71,7 @@ export const PureTable = () => {
       key: "updatedAt",
       render: (updatedAt) => (
         <span style={{ color: "#666" }}>
-          {dayjs(updatedAt).format("DD/MM/YYYY hh:mm A")}
+          {dayjs(updatedAt).add(3, 'hour').format("DD/MM/YYYY hh:mm A")}
         </span>
       ),
     },
@@ -108,15 +109,19 @@ export const PureTable = () => {
       .then((resp) => {
         if (resp.success) {
           console.log("Success deleting test");
+          message.success(t("Testdeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
           console.error("Error deleting Test:", resp.error);
+          message.error(t("Failedtodeletetest"));
         }
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
+        message.error("Failed to communicate with server.");
       });
   };
+  
 
   const handleEdit = ({
     id,
@@ -127,6 +132,27 @@ export const PureTable = () => {
     isSelecte,
     createdAt,
   }) => {
+    console.log("Edit Test Data:::::::::::::::::", {
+      id,
+      name,
+      normal,
+      price,
+      options,
+      isSelecte,
+      createdAt,
+    });
+  
+    let parsedOptions = options;
+  
+    if (typeof options === 'string') {
+      try {
+        parsedOptions = JSON.parse(options);
+      } catch (error) {
+        console.error("Error parsing options:", error);
+        parsedOptions = [];
+      }
+    }
+  
     setId(id);
     setName(name);
     setPrice(price);
@@ -134,11 +160,14 @@ export const PureTable = () => {
     setIsModal(true);
     setCreatedAt(createdAt);
     setIsSelecte(isSelecte);
-    setOptions(options || []);
+    setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
+  
 
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
+
+    setLoading(true);
 
     send({
       query: "getTests",
@@ -152,6 +181,7 @@ export const PureTable = () => {
         } else {
           console.error("Error get tests:", resp.error);
         }
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
@@ -166,20 +196,22 @@ export const PureTable = () => {
         borderRadius: 10,
         overflow: "hidden",
       }}
+      loading={loading}
       columns={columns}
       dataSource={data}
       pagination={false}
       size="small"
       footer={() => (
-        <div className="table-footer app-flex-space">
+        <div className="table-footer app-flex-space ">
             <div
             class="pattern-isometric pattern-indigo-400 pattern-bg-white 
-  pattern-size-6 pattern-opacity-5 absolute inset-0"
+  pattern-size-6 pattern-opacity-5 absolute inset-0 "
           ></div>
           <p>
             <b>{total}</b> {t("results")}
           </p>
           <Pagination
+          className="flex flex-row justify-center items-center"
             simple
             current={page}
             onChange={(_page) => {
@@ -187,6 +219,7 @@ export const PureTable = () => {
             }}
             total={total}
             pageSize={limit}
+            showSizeChanger={false}
           />
         </div>
       )}

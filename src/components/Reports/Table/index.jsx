@@ -14,7 +14,7 @@ export const getTotalVisits = (filterDate = null, cb) => {
       endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
     },
   }).then(({ success, total }) => {
-    if (!success) message.error("Error !");
+    if (!success) message.error(t("Error"));
     else cb({ total });
   });
 };
@@ -40,12 +40,14 @@ export const getSubTotalAmount = (filterDate, callback) => {
 export const PureTable = () => {
   const { data, loading, setSubTotalPrice, setTotalDiscount, setTotalAmount } = useReportsStore();
   const { t } = useTranslation();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (data) {
       setSubTotalPrice(data?.subTotalAmount?.total || 0);
       setTotalDiscount(data?.totalDiscount?.total || 0);
       setTotalAmount(data?.totalAmount?.total || 0);
+      setIsLoading(false);
     }
   }, [data, setSubTotalPrice, setTotalDiscount, setTotalAmount]);
 
@@ -129,7 +131,7 @@ export const PureTable = () => {
       dataSource={data ? records : []}
       pagination={false}
       size="small"
-      loading={loading}
+      loading={isLoading}
     />
   );
 };
