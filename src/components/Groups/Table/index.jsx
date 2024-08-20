@@ -35,7 +35,7 @@ export const PureTable = () => {
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
   const limit = usePageLimit();
-
+console.log(total, "totallllllllllllllllllll");
   const columns = [
     {
       title: t("PackageTitle"),
@@ -119,7 +119,7 @@ export const PureTable = () => {
       key: "updatedAt",
       render: (updatedAt) => (
         <span style={{ color: "#666" }}>
-          {dayjs(updatedAt).format("DD/MM/YYYY hh:mm A")}
+          {dayjs(updatedAt).add(3, 'hour').format("DD/MM/YYYY hh:mm A")}
         </span>
       ),
     },
@@ -157,16 +157,19 @@ export const PureTable = () => {
       .then((resp) => {
         if (resp.success) {
           console.log("Success deletePackage");
+          message.success(t("Packagedeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
           console.error("Error deletePackage:", resp.error);
+          message.error(t("Failedtodeletepackage"));
         }
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
+        message.error("Failed to communicate with server.");
       });
   };
-
+  
   const handleEdit = ({ id, title, tests, customePrice, createdAt }) => {
     setId(id);
     setTitle(title);
@@ -186,6 +189,7 @@ export const PureTable = () => {
       .then((resp) => {
         if (resp.success) {
           setData(resp.data);
+          setTotal(resp.total);
           console.log("Packages retrieved successfully:", resp.data);
         } else {
           console.error("Error retrieving packages:", resp.error);

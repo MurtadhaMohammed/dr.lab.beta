@@ -71,7 +71,7 @@ export const PureTable = () => {
       key: "updatedAt",
       render: (updatedAt) => (
         <span style={{ color: "#666" }}>
-          {dayjs(updatedAt).format("DD/MM/YYYY hh:mm A")}
+          {dayjs(updatedAt).add(3, 'hour').format("DD/MM/YYYY hh:mm A")}
         </span>
       ),
     },
@@ -109,15 +109,19 @@ export const PureTable = () => {
       .then((resp) => {
         if (resp.success) {
           console.log("Success deleting test");
+          message.success(t("Testdeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
           console.error("Error deleting Test:", resp.error);
+          message.error(t("Failedtodeletetest"));
         }
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
+        message.error("Failed to communicate with server.");
       });
   };
+  
 
   const handleEdit = ({
     id,

@@ -113,42 +113,53 @@ export const PureModal = () => {
       options: isSelecte ? options : [],
       updatedAt: Date.now(),
     };
-
+  
     if (!id) {
       send({
         query: "addTest",
         data: { ...data },
-      }).then(resp => {
-        if (resp.success) {
-          console.log("Test added with ID:", resp.id);
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error adding test:", resp.error);
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-      });
+      })
+        .then((resp) => {
+          if (resp.success) {
+            console.log("Test added with ID:", resp.id);
+            message.success(t("Testaddedsuccessfully"));
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Erroraddingtest:", resp.error);
+            message.error(t("Erroraddingtest:"));
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     } else {
       send({
         query: "editTest",
         data: { ...data },
         id,
-      }).then(resp => {
-        if (resp.success) {
-          console.log("Test updated successfully");
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error updating test:", resp.error);
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-      });
+      })
+        .then((resp) => {
+          if (resp.success) {
+            console.log("Test updated successfully");
+            message.success(t("Testupdatedsuccessfully"));
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Error updating test:", resp.error);
+            message.error("Failed to update test.");
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     }
   };
+  
 
   return (
     <Modal
