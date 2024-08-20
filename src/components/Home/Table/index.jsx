@@ -34,6 +34,7 @@ import fileDialog from "file-dialog";
 import { apiCall } from "../../../libs/api";
 import jsPDF from 'jspdf';
 import { parseTests } from "../ResultsModal";
+import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload } = useAppStore();
@@ -68,9 +69,13 @@ export const PureTable = ({ isReport = false }) => {
   const [labFeature, setLabFeature] = useState(
     localStorage.getItem('lab-feature') === "null" ? null : localStorage.getItem('lab-feature')
   );
+  const [userType, setUserType] = useState(JSON.parse(localStorage.getItem('lab-user')).type);
+
   const limit = usePageLimit();
   const { setTableData } = useHomeStore();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const direction = i18n.dir();
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -374,24 +379,33 @@ export const PureTable = ({ isReport = false }) => {
             </Button>
             <Divider type="vertical" />
             {
-              JSON.parse(localStorage.getItem('lab-user')).type !== "trial" &&
-              (
-                <Popover
-                  onOpenChange={(isOpen) => {
-                    if (isOpen) setDestPhone(record?.patient?.phone);
-                    else setIsConfirm(false);
-                  }}
-                  content={whatsapContnet(record)}
-                  open={(labFeature === null || record?.status == "PENDING") ? false : undefined}
-                >
-                  <Button
-                    size="small"
-                    icon={<WhatsAppOutlined />}
-                    loading={msgLoading && record?.patient?.phone === destPhone}
-                    disabled={labFeature === null || record?.status == "PENDING"}
-                  />
-                </Popover>
-              )
+              <Popover
+                onOpenChange={(isOpen) => {
+                  if (isOpen) setDestPhone(record?.patient?.phone);
+                  else setIsConfirm(false);
+                }}
+                placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
+                content={
+                  userType === "trial" ? (
+                    <PopOverContent
+                      website={"https://www.puretik.com/ar"}
+                      email={"puretik@gmail.com"}
+                      phone={"07710553120"}
+                    />
+                  ) : (
+                    whatsapContnet(record)
+                  )
+                }
+                open={userType === "trial" ? undefined : (labFeature === null || record?.status == "PENDING" || userType === "trial") ? false : undefined}
+              >
+                <Button
+                  size="small"
+                  className=" sticky"
+                  icon={<WhatsAppOutlined />}
+                  loading={msgLoading && record?.patient?.phone === destPhone}
+                  disabled={labFeature === null || record?.status == "PENDING" || userType === "trial"}
+                />
+              </Popover>
             }
             <Button
               size="small"
