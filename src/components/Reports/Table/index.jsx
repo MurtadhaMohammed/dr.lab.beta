@@ -14,7 +14,7 @@ export const getTotalVisits = (filterDate = null, cb) => {
       endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
     },
   }).then(({ success, total }) => {
-    if (!success) message.error("Error !");
+    if (!success) message.error(t("Error"));
     else cb({ total });
   });
 };

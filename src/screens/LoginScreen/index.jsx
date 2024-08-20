@@ -95,7 +95,7 @@ const LoginScreen = () => {
         }
       } else {
         const data = await resp.json();
-        message.error(data.message || "Serial not found!");
+        message.error(data.message || t("Serialnotfound"));
       }
     } catch (error) {
       message.error(error.message);
@@ -106,7 +106,7 @@ const LoginScreen = () => {
 
   const register = async () => {
     if (!UUID) {
-      message.error("Error!");
+      message.error(t("Error"));
       return;
     }
 
@@ -145,7 +145,7 @@ const LoginScreen = () => {
         }
       } else {
         const errorData = await resp.json();
-        message.error(errorData.message || "Serial not found!");
+        message.error(errorData.message || t("Serialnotfound"));
       }
     } catch (error) {
       message.error(error.message);
