@@ -99,18 +99,19 @@ export const PureModal = () => {
       })
         .then((resp) => {
           if (resp.success) {
-            console.log("Package updated successfully");
+            console.log(t("Packageupdatedsuccessfully"));
             setReset();
             setIsModal(false);
             setIsReload(!isReload);
+            message.success(t("Packageupdatedsuccessfully"));
           } else {
             console.error("Error updating package:", resp.error);
-            message.error(t("Failedupdatepackage"));
+            message.error(t("Failed to update package."));
           }
         })
         .catch((err) => {
           console.error("Error in IPC communication:", err);
-          message.error("Failed to communicate with server.");
+          message.error(t("Failed to communicate with server."));
         });
     } else {
       send({
@@ -123,17 +124,19 @@ export const PureModal = () => {
             setReset();
             setIsModal(false);
             setIsReload(!isReload);
+            message.success(t("Packageaddedsuccessfully"));
           } else {
             console.error("Error adding package:", resp.error);
-            message.error(t("Failedaddpackage"));
+            message.error(t("Failedtoaddpackage"));
           }
         })
         .catch((err) => {
           console.error("Error in IPC communication:", err);
-          message.error(t("Failedcommunicateserver"));
+          message.error(t("Failed to communicate with server."));
         });
     }
   };
+  
 
   return (
     <Modal
