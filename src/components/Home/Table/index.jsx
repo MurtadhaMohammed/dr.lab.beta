@@ -30,9 +30,7 @@ import {
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
-import fileDialog from "file-dialog";
 import { apiCall } from "../../../libs/api";
-import jsPDF from 'jspdf';
 import { parseTests } from "../ResultsModal";
 import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 
