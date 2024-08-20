@@ -20,7 +20,7 @@ function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
       devTools: true,
-      // devTools: isDev,
+      devTools: isDev,
       allowRendererProcessReuse: false,
     },
     autoHideMenuBar: true,
