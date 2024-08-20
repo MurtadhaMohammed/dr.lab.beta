@@ -60,7 +60,10 @@ const useLogin = () => {
         return;
       }
   
-      if (user?.type !== "trial" && isOnline) {  // Use isOnline from the store
+      const { isOnline } = useAppStore.getState(); // Get the latest online status
+  
+      if (user?.type !== "trial" && isOnline) {
+        // User is online, proceed with serial expiration check
         const response = await fetch(
           "https://dr-lab-apiv2.onrender.com/api/app/check-serial-expiration",
           {
@@ -91,7 +94,19 @@ const useLogin = () => {
           setUser(null);
         }
       } else if (!isOnline) {
-        console.log("Skipping serial check due to offline status.");
+        // User is offline, wait for online status to retry
+        console.log("User is offline. Will retry when connection is restored.");
+  
+        const handleOnline = async () => {
+          const { isOnline: newIsOnline } = useAppStore.getState(); // Get the latest online status
+          if (newIsOnline) {
+            console.log("Connection restored. Retrying serial expiration check...");
+            window.removeEventListener("online", handleOnline); // Remove the listener after successful check
+            await checkExpire(user); // Retry the expiration check
+          }
+        };
+  
+        window.addEventListener("online", handleOnline); // Attach the event listener
       }
     } catch (error) {
       console.error("Error checking serial expiration:", error.message || error);
@@ -100,6 +115,7 @@ const useLogin = () => {
       setUser(null);
     }
   };
+  
   
 
   return null;
