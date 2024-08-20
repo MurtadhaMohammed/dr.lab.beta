@@ -385,7 +385,7 @@ export const PureTable = ({ isReport = false }) => {
                 }}
                 placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
                 content={
-                  userType === "trial" ? (
+                  userType === "trial" || labFeature === null ? (
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
                       email={"puretik@gmail.com"}
@@ -395,7 +395,7 @@ export const PureTable = ({ isReport = false }) => {
                     whatsapContnet(record)
                   )
                 }
-                open={userType === "trial" ? undefined : (labFeature === null || record?.status == "PENDING" || userType === "trial") ? false : undefined}
+                open={userType === "trial" ? undefined : (record?.status == "PENDING") ? false : undefined}
               >
                 <Button
                   size="small"
@@ -508,7 +508,7 @@ export const PureTable = ({ isReport = false }) => {
         // message.success(t("Visitsretrievedsuccessfully"));
       } else {
         console.error("Error retrieving visits:", resp.error);
-        
+
       }
       setLoading(false);
     });
