@@ -174,7 +174,6 @@ const SettingsScreen = () => {
 
         if (resp.ok) {
           let data = await resp.json();
-          console.log("Response data:", data);
           localStorage.setItem("lab-user", JSON.stringify(data.updatedClient));
           message.success(t("UpdateSuccess"));
           setIsUpdate(false);
