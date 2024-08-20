@@ -48,9 +48,8 @@ export const PureModal = () => {
       email,
       phone,
       birth: birth.toString(),
-      // updatedAt: Date.now(),
     };
-
+  
     if (id) {
       console.log("Updating patient with ID:", id);
       send({
@@ -60,16 +59,19 @@ export const PureModal = () => {
       }).then(resp => {
         if (resp.success) {
           console.log("Patient updated:", resp.data);
+          message.success(t("Patientupdatedsuccessfully"));
           setReset();
           setIsModal(false);
           setIsReload(!isReload);
         } else {
           console.error("Error updating patient:", resp.error);
+          message.error(t("Failedtoupdatepatient"));
         }
       }).catch(err => {
         console.error("Error in IPC communication:", err);
+        message.error("Failed to communicate with server.");
       });
-
+  
     } else {
       send({
         query: "addPatient",
@@ -77,17 +79,21 @@ export const PureModal = () => {
       }).then(resp => {
         if (resp.success) {
           console.log("Patient added with ID:", resp.id);
+          message.success(t("Patientaddedsuccessfully"));
           setReset();
           setIsModal(false);
           setIsReload(!isReload);
         } else {
           console.error("Error adding patient:", resp.error);
+          message.error(t("Failedtoaddpatient"));
         }
       }).catch(err => {
         console.error("Error in IPC communication:", err);
+        message.error("Failed to communicate with server.");
       });
     }
   };
+  
 
 
   return (

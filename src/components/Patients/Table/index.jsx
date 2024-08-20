@@ -103,7 +103,7 @@ export const PureTable = () => {
       key: "createdAt",
       render: (createdAt) => (
         <span style={{ color: "#666" }}>
-          {dayjs(createdAt).format("DD/MM/YYYY hh:mm A")}
+          {dayjs(createdAt).add(3, 'hour').format("DD/MM/YYYY hh:mm A")}
         </span>
       ),
     },
@@ -150,21 +150,21 @@ export const PureTable = () => {
       id,
     })
       .then((resp) => {
-        if (resp.data.success) {
+        if (resp.data?.success) {
           console.log("Number of deleted rows:", resp.data.rowsDeleted);
-          message.success(`Removed Patient successfully.`);
+          message.success(t("Patientremovedsuccessfully"));
           setIsReload(!isReload);
         } else {
-          console.log(resp);
           console.error("Error deleting patient:", resp.error);
-          message.error("Error removing patient.");
+          message.error(t("Failedtoremovepatient"));
         }
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
-        message.error("Error in IPC communication.");
+        message.error("Failed to communicate with the server.");
       });
   };
+  
 
   const handleEdit = ({ id, name, birth, phone, email, gender, createdAt }) => {
     setId(id);
