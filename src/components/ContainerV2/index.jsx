@@ -66,7 +66,7 @@ const MainContainerV2 = ({ children }) => {
         localStorage.removeItem("lab-serial-id");
         localStorage.removeItem("lab-user");
         setIsLogin(false);
-      } else message.error("Serial not found!");
+      } else message.error(t("Serialnotfound"));
     } catch (error) {
       console.log(error);
       message.error(error.message);

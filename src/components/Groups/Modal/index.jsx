@@ -105,7 +105,7 @@ export const PureModal = () => {
             setIsReload(!isReload);
           } else {
             console.error("Error updating package:", resp.error);
-            message.error("Failed to update package.");
+            message.error(t("Failedupdatepackage"));
           }
         })
         .catch((err) => {
@@ -125,12 +125,12 @@ export const PureModal = () => {
             setIsReload(!isReload);
           } else {
             console.error("Error adding package:", resp.error);
-            message.error("Failed to add package.");
+            message.error(t("Failedaddpackage"));
           }
         })
         .catch((err) => {
           console.error("Error in IPC communication:", err);
-          message.error("Failed to communicate with server.");
+          message.error(t("Failedcommunicateserver"));
         });
     }
   };
