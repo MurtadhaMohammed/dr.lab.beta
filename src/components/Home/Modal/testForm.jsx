@@ -1,8 +1,15 @@
-import { DeleteOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  CloseOutlined,
+  CheckOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Divider,
+  Input,
   InputNumber,
+  message,
   Select,
   Space,
   Typography,
@@ -16,24 +23,25 @@ import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
-
 const TestForm = () => {
-  const { testType, isModal, setTests, tests, discount, setDiscount } = useHomeStore();
+  const { testType, isModal, setTests, tests, discount, setDiscount } =
+    useHomeStore();
   const [testsList, setTestList] = useState([]);
   const [packageList, setPackageList] = useState([]);
+  const [editTest, setEditTest] = useState(null);
   const { t } = useTranslation();
   const testLabel = {
     CUSTOME: t("Custom"),
     PACKAGE: t("Package"),
   };
 
-  let skip = 0;  // Initialize skip (offset)
-  const limit = 10;  // Set the limit for the number of tests per batch
-  
+  let skip = 0; // Initialize skip (offset)
+  const limit = 10; // Set the limit for the number of tests per batch
+
   const getTests = (querySearch = "") => {
     send({
       query: "getTests",
-      data: { q: querySearch, skip, limit },  // Send skip and limit to backend
+      data: { q: querySearch, skip, limit }, // Send skip and limit to backend
     })
       .then((resp) => {
         if (resp.success) {
@@ -42,9 +50,9 @@ const TestForm = () => {
           } else {
             setTestList((prev) => [...prev, ...resp.data]);
           }
-  
+
           console.log("Tests fetched successfully:", resp.data);
-            if (resp.data.length === limit) {
+          if (resp.data.length === limit) {
             skip += limit;
           }
         } else {
@@ -55,7 +63,6 @@ const TestForm = () => {
         console.error("Error in IPC communication:", err);
       });
   };
-  
 
   const getPackages = (querySearch = "") => {
     send({
@@ -101,8 +108,46 @@ const TestForm = () => {
 
   // Function to get total price with condition to handle negative total
   const getTotalPriceWithCondition = (type, items) => {
+    if (editTest)
+      items = items?.map((el) => {
+        if (el?.id === editTest?.id) return editTest;
+        else return el;
+      });
     const totalPrice = getTotalPrice(type, items);
     return totalPrice > 0 ? totalPrice : 0;
+  };
+
+  const handleEditChange = (name, value) => {
+    editTest[name] = value;
+    setEditTest({ ...editTest });
+  };
+
+  const handleSaveEdit = () => {
+    send({
+      query: "editTest",
+      data: { ...editTest },
+      id: editTest?.id,
+    })
+      .then((resp) => {
+        if (resp.success) {
+          message.success(t("Test updated successfully"));
+          getTests();
+          setTests(
+            tests?.map((el) => {
+              if (el?.id === editTest?.id) return editTest;
+              else return el;
+            })
+          );
+          setEditTest(null);
+        } else {
+          console.error("Error updating test:", resp.error);
+          message.error("Failed to update test.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error in IPC communication:", err);
+        message.error("Failed to communicate with server.");
+      });
   };
 
   return (
@@ -140,25 +185,75 @@ const TestForm = () => {
       />
 
       <div className="test-list">
-        {tests?.map((el, i) => (
-          <div key={i} className="test-item app-flex-space">
-            <Space>
-              <Button
-                onClick={() => handleDelete(el?.id)}
-                size="small"
-                type="text"
-                icon={<DeleteOutlined />}
-              />
-              <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
-            </Space>
-            <Text type="secondary">
-              {Number(getPriceWithCondition(testType, el)).toLocaleString(
-                "en"
-              )}{" "}
-              IQD
-            </Text>
-          </div>
-        ))}
+        {tests?.map((el, i) =>
+          editTest && editTest?.id === el?.id && testType === "CUSTOME" ? (
+            <div key={i} className="test-item app-flex-space">
+              <Space>
+                <Space size={4}>
+                  <Button
+                    onClick={() => setEditTest(null)}
+                    size="small"
+                    type="text"
+                    className="text-[#a5a5a5]"
+                    icon={<CloseOutlined />}
+                  />
+                  <Button
+                    onClick={() => handleSaveEdit()}
+                    size="small"
+                    type="text"
+                    icon={<CheckOutlined className="text-[#33a733]" />}
+                  />
+                </Space>
+                <Divider type="vertical" style={{ margin: 0 }} />
+                <Input
+                  size="small"
+                  className="w-[170]"
+                  value={editTest?.name}
+                  onChange={(e) => handleEditChange("name", e.target.value)}
+                />
+              </Space>
+              <Space>
+                <InputNumber
+                  size="small"
+                  className="w-[80px]"
+                  value={editTest?.price}
+                  onChange={(value) => handleEditChange("price", value)}
+                />
+                <Text type="secondary">IQD</Text>
+              </Space>
+            </div>
+          ) : (
+            <div key={i} className="test-item app-flex-space">
+              <Space>
+                <Space size={4}>
+                  <Button
+                    onClick={() => handleDelete(el?.id)}
+                    size="small"
+                    type="text"
+                    className="text-[#a5a5a5]"
+                    icon={<DeleteOutlined />}
+                  />
+                  {testType === "CUSTOME" && (
+                    <Button
+                      onClick={() => setEditTest(el)}
+                      size="small"
+                      type="text"
+                      icon={<EditOutlined />}
+                    />
+                  )}
+                </Space>
+                <Divider type="vertical" style={{ margin: 0 }} />
+                <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
+              </Space>
+              <Text type="secondary">
+                {Number(getPriceWithCondition(testType, el)).toLocaleString(
+                  "en"
+                )}{" "}
+                IQD
+              </Text>
+            </div>
+          )
+        )}
       </div>
       <div className="test-form-footer">
         <div className="overlay-top"></div>
