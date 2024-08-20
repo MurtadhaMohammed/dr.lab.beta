@@ -25,7 +25,7 @@ const useLogin = () => {
       } catch (error) {
         console.error("Failed to parse user data:", error);
         setIsLogin(false);
-        message.error("Invalid user data found. Please log in again.");
+        message.error(t("InvalidUserData"));
       }
     } else {
       setIsLogin(false);
@@ -57,7 +57,7 @@ const useLogin = () => {
       if (remaining <= 0) {
         setIsLogin(false);
         setUser(null);
-        message.error("Subscription has expired.");
+        message.error(t("Subscriptionexpired"));
         return;
       }
 
@@ -96,7 +96,7 @@ const useLogin = () => {
         "Error checking serial expiration:",
         error.message || error
       );
-      message.error("Failed to check serial expiration");
+      message.error(t("Failedserialexpiration"));
       setIsLogin(false);
       setUser(null);
     }
