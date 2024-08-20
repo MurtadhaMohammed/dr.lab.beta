@@ -263,7 +263,7 @@ const MainContainerV2 = ({ children }) => {
                   content={
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
-                      email={"https://www.puretik.com/ar"}
+                      email={"info@puretik.com"}
                       phone={"07710553120"}
                     />
                   }
@@ -298,7 +298,7 @@ const MainContainerV2 = ({ children }) => {
                   content={
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
-                      email={"https://www.puretik.com/ar"}
+                      email={"info@puretik.com"}
                       phone={"07710553120"}
                     />
                   }
