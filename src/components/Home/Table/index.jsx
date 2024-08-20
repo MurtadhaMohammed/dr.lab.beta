@@ -83,6 +83,9 @@ export const PureTable = ({ isReport = false }) => {
     COMPLETED: "green",
   };
 
+  console.log(data, 'data');
+
+
   const updatePatient = async (record, phone) => {
     let data = { ...record, phone };
     try {
@@ -361,7 +364,7 @@ export const PureTable = ({ isReport = false }) => {
         title: "",
         key: "action",
         render: (_, record) => (
-          <Space size="small" className="custom-actions">
+          <Space Space size="small" className="custom-actions" >
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
@@ -370,21 +373,26 @@ export const PureTable = ({ isReport = false }) => {
               {t("PrintResults")}
             </Button>
             <Divider type="vertical" />
-            <Popover
-              onOpenChange={(isOpen) => {
-                if (isOpen) setDestPhone(record?.patient?.phone);
-                else setIsConfirm(false);
-              }}
-              content={whatsapContnet(record)}
-              open={labFeature === null ? false : undefined}
-            >
-              <Button
-                size="small"
-                icon={<WhatsAppOutlined />}
-                loading={msgLoading && record?.patient?.phone === destPhone}
-                disabled={labFeature === null}
-              />
-            </Popover>
+            {
+              JSON.parse(localStorage.getItem('lab-user')).type !== "trial" &&
+              (
+                <Popover
+                  onOpenChange={(isOpen) => {
+                    if (isOpen) setDestPhone(record?.patient?.phone);
+                    else setIsConfirm(false);
+                  }}
+                  content={whatsapContnet(record)}
+                  open={(labFeature === null || record?.status == "PENDING") ? false : undefined}
+                >
+                  <Button
+                    size="small"
+                    icon={<WhatsAppOutlined />}
+                    loading={msgLoading && record?.patient?.phone === destPhone}
+                    disabled={labFeature === null || record?.status == "PENDING"}
+                  />
+                </Popover>
+              )
+            }
             <Button
               size="small"
               disabled={record?.status === t("COMPLETED")}
@@ -498,7 +506,7 @@ export const PureTable = ({ isReport = false }) => {
         borderRadius: 10,
         overflow: "hidden",
       }}
-      
+
       columns={columns}
       dataSource={data}
       loading={loading}
