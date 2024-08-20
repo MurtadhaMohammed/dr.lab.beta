@@ -229,19 +229,34 @@ const LoginScreen = () => {
                   required: true,
                   message: t("PleaseInputYourPhone"),
                 },
+                {
+                  pattern: /^07\d{9}$/,
+                  message: t("InvalidPhoneNumber"),
+                },
               ]}
             >
-              <Input placeholder="07xxxxxxxx" className=" h-[40px] p-2" />
+              <Input placeholder="07xxxxxxxxx" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Form.Item label={t("Email")} name="email" className="h-16 mb-7">
+            <Form.Item
+              label={t("Email")}
+              name="email"
+              className="h-16 mb-7"
+              rules={[
+                {
+                  required: false,
+                },
+                {
+                  pattern: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+                  message: t("EmailMustBeGmail"),
+                },
+              ]}
+            >
               <Input
-                type="email"
-                placeholder="example@email.com"
+                placeholder="example@gmail.com"
                 className=" h-[40px] p-2"
               />
             </Form.Item>
-
             <Form.Item
               label={t("Address")}
               name="address"
