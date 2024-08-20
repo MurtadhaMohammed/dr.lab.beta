@@ -140,7 +140,7 @@
   "Packageupdatedsuccessfully": "تم تحديث الباقة بنجاح",
   "InvalidPhoneNumber": "رقم الهاتف غير صحيح",
   "InvalidEmailFormat": "صيغة البريد الالكتروني غير صحيحة",
-  "EmailMustBeGmail": "البريد الالكتروني يجب أن يكون Gmail",
+  "EmailMustBeGmail": "البريد الالكتروني يجب أن يحتوي على خادم",
   "upgrade": " جدد رمز التفعيل",
   "SerialKeyWilBeExpiredSoon": " أنت حاليًا على النسخة التجريبية. يمكنك الترقية إلى النسخة المدفوعة من ",
   "SerialKeyWillBeExpiredIn": " الأيام المتبقية في النسخة التجريبية هي",

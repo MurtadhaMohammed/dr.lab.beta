@@ -181,7 +181,7 @@
     "Packageaddedsuccessfully": "Package added successfully",
     "Packagedeletedsuccessfully": "Package deleted successfully",
     "Packageupdatedsuccessfully": "Package updated successfully",
-    "EmailMustBeGmail": "Email Must Be Gmail",
+    "EmailMustBeGmail": "Email Must have a domain",
     "InvalidEmailFormat": "Invalid Email Format",
     "contact_us_to_subscribe": "Contact Us to Subscribe",
     "WriteResult":"Write Result",

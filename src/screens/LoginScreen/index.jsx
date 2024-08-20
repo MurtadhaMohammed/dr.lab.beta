@@ -247,7 +247,7 @@ const LoginScreen = () => {
                   required: false,
                 },
                 {
-                  pattern: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
+                  pattern: /^[a-zA-Z0-9._%+-]+@\.com$/,
                   message: t("EmailMustBeGmail"),
                 },
               ]}
