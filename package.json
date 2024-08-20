@@ -90,7 +90,8 @@
       "./initPDF.js",
       "./node_modules/**/*",
       "./Frutiger-normal.js",
-      "./splash.html"
+      "./splash.html",
+      "./defaultHeader.jpg"
     ],
     "win": {
       "icon": "logo.png",
