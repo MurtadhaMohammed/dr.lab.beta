@@ -57,9 +57,15 @@ export const PureModal = () => {
   const handleIsSelecteChange = (e) => {
     setIsSelecte(e.target.checked);
     if (e.target.checked) {
-      setNormal(""); // Clear the normal value
+      setNormal("");
+      if (options.length === 0) {
+        setOptions(["positive", "negative"]);
+      }
+    } else {
+      setOptions([]);
     }
   };
+  
 
   useEffect(() => {
     editInputRef.current?.focus();
