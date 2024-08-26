@@ -441,7 +441,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                         console.error(err);
                         event.reply("asynchronous-reply", { success: false });
                       } else {
-                        shell.openPath("barcode.png");
+                        shell.openPath(app.getPath("userData") + "barcode.png");
                         event.reply("asynchronous-reply", { success: true });
                       }
                     }
