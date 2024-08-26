@@ -19,22 +19,17 @@ export const getTotalVisits = (filterDate = null, cb) => {
   });
 };
 
-export const getSubTotalAmount = (filterDate, callback) => {
-  fetch(`/api/subtotal?startDate=${filterDate[0]}&endDate=${filterDate[1]}`)
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.json();
-    })
-    .then((data) => {
-      console.log("Fetched subtotal data:", data); // Log the subtotal data
-      callback(data);
-    })
-    .catch((error) => {
-      console.error("Error fetching subtotal data:", error.message);
-      callback(undefined);
-    });
+export const getSubTotalAmount = (filterDate = null, cb) => {
+  send({
+    query: "getVisits",
+    data: {
+      startDate: dayjs(filterDate[0]).startOf("day").toISOString(),
+      endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
+    },
+  }).then(({ success, data }) => {
+    if (!success) message.error("Error !");
+    else cb(data);
+  });
 };
 
 export const PureTable = () => {

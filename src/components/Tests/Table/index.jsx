@@ -153,6 +153,10 @@ export const PureTable = () => {
       }
     }
   
+    if (isSelecte && parsedOptions.length === 0) {
+      parsedOptions = ["positive", "negative"];
+    }
+  
     setId(id);
     setName(name);
     setPrice(price);
@@ -162,6 +166,7 @@ export const PureTable = () => {
     setIsSelecte(isSelecte);
     setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
+  
   
 
   useEffect(() => {

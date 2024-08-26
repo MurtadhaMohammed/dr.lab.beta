@@ -167,8 +167,6 @@ export const PureTable = ({ isReport = false }) => {
                 pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
                 console.log(res, "ressss");
 
-                // Continue with sending the PDF to the server...
-
                 const formData = new FormData();
                 formData.append("name", record?.patient?.name);
                 formData.append("phone", phone);
@@ -311,10 +309,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -405,8 +403,8 @@ export const PureTable = ({ isReport = false }) => {
                   userType === "trial"
                     ? undefined
                     : record?.status == "PENDING"
-                    ? false
-                    : undefined
+                      ? false
+                      : undefined
                 }
               >
                 <Button

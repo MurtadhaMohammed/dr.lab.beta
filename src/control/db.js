@@ -15,7 +15,7 @@ class LabDB {
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
       this.initializeDatabase();
-      this.initTestsFromCSV();
+      this.initTestsFromJSON();
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -76,45 +76,48 @@ class LabDB {
 
     `);
   }
-  async initTestsFromCSV() {
+
+  
+  async initTestsFromJSON() {
     try {
       const testCountStet = this.db.prepare(`
-      SELECT COUNT(*) as total FROM tests
+        SELECT COUNT(*) as total FROM tests
       `);
       const { total } = testCountStet.get();
+  
       if (total === 0) {
-        const csvPath = path.join(__dirname, "tests.csv");
-        const csvData = fs.readFileSync(csvPath, "utf-8").trim().split("\n");
-
+        const jsonPath = path.join(__dirname, "tests.json");
+        const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+  
         const insertStmt = this.db.prepare(`
           INSERT INTO tests (name, price, normal, options, isSelecte)
           VALUES (?, ?, ?, ?, ?)
         `);
-
-        const insertTransaction = this.db.transaction((lines) => {
-          for (const line of lines) {
-            const [name, price, normal, options, isSelecte] = line.split(",");
+  
+        const insertTransaction = this.db.transaction((data) => {
+          for (const item of data) {
+            const normalValue = item.normal ? item.normal.replace(/\\n/g, '\n') : null;
             insertStmt.run(
-              name,
-              Number(price),
-              normal,
-              options,
-              Number(isSelecte)
+              item.name,
+              Number(item.price),
+              normalValue,
+              item.options,
+              Number(item.isSelected)
             );
           }
         });
-
-        insertTransaction(csvData);
-
-        console.log("Tests imported from tests.csv");
+  
+        insertTransaction(jsonData);
+  
+        console.log("Tests imported from tests.json");
       } else {
         console.log("Tests table is not empty, skipping import");
       }
     } catch (error) {
-      console.error("Error importing tests from CSV:", error);
+      console.error("Error importing tests from JSON:", error);
     }
   }
-
+  
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
     const countStmt = await this.db.prepare(`
