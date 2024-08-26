@@ -6,7 +6,6 @@ import { useHomeStore } from "../../libs/appStore";
 const { Search } = Input;
 import { useTranslation } from "react-i18next";
 
-
 const HomeScreen = () => {
   const {
     setIsModal,
@@ -54,6 +53,7 @@ const HomeScreen = () => {
         <section className="header app-flex-space mb-[22px]">
           <Space size={16}>
             <Search
+              name="search"
               placeholder={t("SearchPatient")}
               onSearch={(val) => setQuerySearch(val)}
               style={{

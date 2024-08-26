@@ -388,11 +388,16 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "printParcode":
       const padding = 20;
 
+      let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
+      if (!visitNumber) {
+        event.reply("asynchronous-reply", { success: false });
+        return;
+      }
       bwipjs.toBuffer(
         {
           bcid: "code128",
-          text: String(arg?.data?.id),
-          scale: 3,
+          text: String(visitNumber),
+          scale: 4,
           height: 5,
           includetext: false,
         },

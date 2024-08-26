@@ -1,4 +1,10 @@
-import { DeleteOutlined, EditOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  InfoCircleOutlined,
+  CloseOutlined,
+  CheckOutlined,
+} from "@ant-design/icons";
 import {
   Button,
   Col,
@@ -229,13 +235,14 @@ export const PureModal = () => {
                       onClick={() => setEditTest(null)}
                       size="small"
                       type="text"
-                      icon={<DeleteOutlined />}
+                      className="text-[#a5a5a5]"
+                      icon={<CloseOutlined />}
                     />
                     <Button
                       onClick={handleSaveEdit}
                       size="small"
                       type="text"
-                      icon={<EditOutlined />}
+                      icon={<CheckOutlined className="text-[#33a733]" />}
                     />
                   </Space>
                   <Space>
@@ -261,6 +268,7 @@ export const PureModal = () => {
                       onClick={() => handleDelete(el?.id)}
                       size="small"
                       type="text"
+                      className="text-[#a5a5a5]"
                       icon={<DeleteOutlined />}
                     />
                     <Button

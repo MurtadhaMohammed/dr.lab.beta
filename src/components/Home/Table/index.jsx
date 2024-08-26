@@ -55,7 +55,6 @@ export const PureTable = ({ isReport = false }) => {
     setRecord,
     isToday,
     setPatientID,
-    record,
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 
@@ -99,7 +98,9 @@ export const PureTable = ({ isReport = false }) => {
       },
     });
 
-    console.log({ resp });
+    if (resp.success) {
+      setIsReload(!isReload);
+    }
   };
 
   const updatePatient = async (record, phone) => {
@@ -509,6 +510,15 @@ export const PureTable = ({ isReport = false }) => {
     setCreatedAt(createdAt);
   };
 
+  const handelOpenModal = (data) => {
+    const numberValue = Number(querySearch);
+    let isBarcode = !isNaN(numberValue) && querySearch.length === 6;
+    if (isBarcode && data.length === 1) {
+      setRecord(data[0]);
+      setIsResultsModal(true);
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
     let startDate = filterDate
@@ -539,6 +549,7 @@ export const PureTable = ({ isReport = false }) => {
       if (resp.success) {
         setData(resp.data);
         setTotal(resp.total);
+        handelOpenModal(resp.data);
         // message.success(t("Visitsretrievedsuccessfully"));
       } else {
         console.error("Error retrieving visits:", resp.error);
