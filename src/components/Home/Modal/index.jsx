@@ -80,11 +80,11 @@ export const PureModal = () => {
                 setIsReload(!isReload);
                 setStep(0);
               } else {
-                message.error(t(Errorupdatingpatient));
+                message.error(t("Errorupdatingpatient"));
               }
             });
           } else {
-            message.error(t(Errorupdatingvisit));
+            message.error(t("Errorupdatingvisit"));
           }
         })
         .catch((err) => {
@@ -104,7 +104,7 @@ export const PureModal = () => {
               data: {
                 ...data,
                 patientID,
-                visitNumber, // Ensure this is included here
+                visitNumber,
 
               },
             })
@@ -140,7 +140,7 @@ export const PureModal = () => {
                 data: {
                   ...data,
                   patientID: resp.id,
-                  visitNumber, // Ensure this is included here
+                  visitNumber,
                 },
               })
                 .then((resp) => {

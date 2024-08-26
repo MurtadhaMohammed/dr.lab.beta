@@ -4,6 +4,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   WhatsAppOutlined,
+  BarcodeOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,6 +18,7 @@ import {
   Popover,
   Input,
   Checkbox,
+  Tooltip,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
@@ -88,7 +90,17 @@ export const PureTable = ({ isReport = false }) => {
     COMPLETED: "green",
   };
 
-  console.log(data, "data");
+  const handlePrintBarcode = async (record) => {
+    const resp = await send({
+      query: "printParcode",
+      data: {
+        name: record.patient.name,
+        id: record.id,
+      },
+    });
+
+    console.log({ resp });
+  };
 
   const updatePatient = async (record, phone) => {
     let data = { ...record, phone };
@@ -309,10 +321,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -380,6 +392,14 @@ export const PureTable = ({ isReport = false }) => {
             >
               {t("PrintResults")}
             </Button>
+            <Tooltip title={t("PrintBarcode")}>
+              <Button
+                onClick={() => handlePrintBarcode(record)}
+                style={{ fontSize: 12 }}
+                size="small"
+                icon={<BarcodeOutlined />}
+              />
+            </Tooltip>
             <Divider type="vertical" />
             {
               <Popover
@@ -403,8 +423,8 @@ export const PureTable = ({ isReport = false }) => {
                   userType === "trial"
                     ? undefined
                     : record?.status == "PENDING"
-                      ? false
-                      : undefined
+                    ? false
+                    : undefined
                 }
               >
                 <Button
@@ -543,7 +563,7 @@ export const PureTable = ({ isReport = false }) => {
       footer={() => (
         <div className="table-footer app-flex-space">
           <div
-            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+            className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
           ></div>
           <p>

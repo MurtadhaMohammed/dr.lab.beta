@@ -1,11 +1,13 @@
-const { ipcMain } = require("electron");
+const { ipcMain, shell } = require("electron");
 var { createPDF, printReport, createPDFBlob } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
 const { app } = require("electron");
 const fs = require("fs");
-const path = require('path');
-const image = path.join(__dirname, '../../defaultHeader.jpg');
+const path = require("path");
+const image = path.join(__dirname, "../../defaultHeader.jpg");
+const bwipjs = require("bwip-js");
+const sharp = require("sharp");
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -176,20 +178,6 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
-
-    // case "addVisit": {
-    //   try {
-    //     const resp = await labDB.addVisit(arg.data);
-    //     event.reply("asynchronous-reply", { success: true, id: resp.id });
-    //   } catch (error) {
-    //     console.error("Error adding visit:", error.message);
-    //     event.reply("asynchronous-reply", {
-    //       success: false,
-    //       error: error.message,
-    //     });
-    //   }
-    //   break;
-    // }
 
     case "addVisit": {
       try {
@@ -377,7 +365,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "printReport": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
       printReport(arg.data, (err, res) => {
-        console.log(res, 'this is the response');
+        console.log(res, "this is the response");
         return event.reply("asynchronous-reply", { err, res });
       });
       break;
@@ -396,6 +384,75 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getUUID":
       let UUID = await machineIdSync(true);
       event.reply("asynchronous-reply", { UUID });
+      break;
+
+    case "printParcode":
+      const padding = 20;
+
+      bwipjs.toBuffer(
+        {
+          bcid: "code128",
+          text: String(arg?.data?.id),
+          scale: 3,
+          height: 5,
+          includetext: false,
+        },
+        function (err, png) {
+          if (err) {
+            console.error(err);
+            event.reply("asynchronous-reply", { success: false });
+          } else {
+            sharp(png)
+              .metadata()
+              .then((metadata) => {
+                const barcodeWidth = metadata.width;
+                const barcodeHeight = metadata.height;
+
+                // Create Arabic text as an SVG with matching width
+                const textSvg = Buffer.from(`
+                <svg width="${barcodeWidth}" height="60">
+                  <text x="50%" y="50%" font-size="20" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
+                </svg>
+              `);
+
+                const totalWidth = barcodeWidth + 2 * padding;
+                const totalHeight = barcodeHeight + 30 + padding + padding;
+
+                // Composite the barcode with the Arabic text
+                sharp({
+                  create: {
+                    width: totalWidth,
+                    height: totalHeight,
+                    channels: 4,
+                    background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background
+                  },
+                })
+                  .composite([
+                    { input: png, top: padding, left: padding }, // Barcode with padding
+                    {
+                      input: textSvg,
+                      top: barcodeHeight + padding,
+                      left: padding,
+                    },
+                  ])
+                  .toFile(
+                    app.getPath("userData") + "barcode.png",
+                    (err, info) => {
+                      if (err) {
+                        console.error(err);
+                        event.reply("asynchronous-reply", { success: false });
+                      } else {
+                        shell.openPath("barcode.png");
+                        event.reply("asynchronous-reply", { success: true });
+                      }
+                    }
+                  );
+              });
+            // fs.writeFileSync("barcode.png", png);
+          }
+        }
+      );
+
       break;
 
     default:
