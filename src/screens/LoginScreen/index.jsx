@@ -116,7 +116,11 @@ const LoginScreen = () => {
         message.error(data.message || t("Serialnotfound"));
       }
     } catch (error) {
-      message.error(error.message);
+      if (error && error.message) {
+        message.error(error.message);
+      } else {
+        message.error('An unexpected error occurred.');
+      }
     } finally {
       setLoading(false);
     }
@@ -166,10 +170,6 @@ const LoginScreen = () => {
         message.error(errorData.message || t("Serialnotfound"));
       }
     } catch (error) {
-      if (!error.message) {
-        message.error(t("error"));
-      }
-
       message.error(error.message);
     } finally {
       setLoading(false);
