@@ -54,6 +54,7 @@ export const PureModal = () => {
       testType,
       tests,
       discount,
+      visitNumber,
     };
 
     if (id) {
@@ -103,6 +104,8 @@ export const PureModal = () => {
               data: {
                 ...data,
                 patientID,
+                visitNumber, // Ensure this is included here
+
               },
             })
               .then((resp) => {
@@ -134,7 +137,11 @@ export const PureModal = () => {
               console.log("addPatient response:", resp);
               send({
                 query: "addVisit",
-                data: { ...data, patientID: resp.id },
+                data: {
+                  ...data,
+                  patientID: resp.id,
+                  visitNumber, // Ensure this is included here
+                },
               })
                 .then((resp) => {
                   console.log("addVisit response:", resp);
@@ -198,8 +205,8 @@ export const PureModal = () => {
         id
           ? t("Edit")
           : i18n.language === "ar"
-          ? `${t("Add")} ${t("Test")} ${testLabel[testType]} ${t("forPatient")}`
-          : `${t("Add")} ${testLabel[testType]} ${t("Test For Patient")}`
+            ? `${t("Add")} ${t("Test")} ${testLabel[testType]} ${t("forPatient")}`
+            : `${t("Add")} ${testLabel[testType]} ${t("Test For Patient")}`
       }
       open={isModal}
       width={420}

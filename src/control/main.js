@@ -177,6 +177,20 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    // case "addVisit": {
+    //   try {
+    //     const resp = await labDB.addVisit(arg.data);
+    //     event.reply("asynchronous-reply", { success: true, id: resp.id });
+    //   } catch (error) {
+    //     console.error("Error adding visit:", error.message);
+    //     event.reply("asynchronous-reply", {
+    //       success: false,
+    //       error: error.message,
+    //     });
+    //   }
+    //   break;
+    // }
+
     case "addVisit": {
       try {
         const resp = await labDB.addVisit(arg.data);
@@ -190,6 +204,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+    
     case "deleteVisit": {
       try {
         const resp = await labDB.deleteVisit(arg.id);

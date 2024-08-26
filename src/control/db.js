@@ -16,6 +16,7 @@ class LabDB {
       console.log("Database opened successfully");
       this.initializeDatabase();
       this.initTestsFromJSON();
+      // this.generateUniqueVisitNumber();
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -41,13 +42,11 @@ class LabDB {
         testType VARCHAR(50),
         tests TEXT,
         discount INTEGER,
+        visitNumber VARCHAR(6),
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(patientID) REFERENCES patients(id)
-);
-
-
-
+      );
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50),
@@ -77,23 +76,23 @@ class LabDB {
     `);
   }
 
-  
+
   async initTestsFromJSON() {
     try {
       const testCountStet = this.db.prepare(`
         SELECT COUNT(*) as total FROM tests
       `);
       const { total } = testCountStet.get();
-  
+
       if (total === 0) {
         const jsonPath = path.join(__dirname, "tests.json");
         const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-  
+
         const insertStmt = this.db.prepare(`
           INSERT INTO tests (name, price, normal, options, isSelecte)
           VALUES (?, ?, ?, ?, ?)
         `);
-  
+
         const insertTransaction = this.db.transaction((data) => {
           for (const item of data) {
             const normalValue = item.normal ? item.normal.replace(/\\n/g, '\n') : null;
@@ -106,9 +105,9 @@ class LabDB {
             );
           }
         });
-  
+
         insertTransaction(jsonData);
-  
+
         console.log("Tests imported from tests.json");
       } else {
         console.log("Tests table is not empty, skipping import");
@@ -117,7 +116,37 @@ class LabDB {
       console.error("Error importing tests from JSON:", error);
     }
   }
-  
+
+  async generateUniqueVisitNumber() {
+    let visitNumber;
+    let isUnique = false;
+
+    console.log("generateUniqueVisitNumber called");
+
+    while (!isUnique) {
+      visitNumber = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log(`Generated visit number: ${visitNumber}`);
+
+      try {
+        const stmt = this.db.prepare(`SELECT COUNT(*) as count FROM visits WHERE visitNumber = ?`);
+        const result = stmt.get(visitNumber);
+
+        console.log(`Visit number ${visitNumber} exists: ${result.count > 0}`);
+
+        if (result.count === 0) {
+          isUnique = true;
+        }
+      } catch (error) {
+        console.error("Error checking visit number uniqueness:", error);
+      }
+    }
+
+    console.log(`Unique visit number generated: ${visitNumber}`);
+    return visitNumber;
+  }
+
+
+
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
     const countStmt = await this.db.prepare(`
@@ -155,28 +184,6 @@ class LabDB {
     );
     return { id: info.lastInsertRowid };
   }
-
-  // async deletePatient(id) {
-  //   const stmt = await this.db.prepare(`
-  //     DELETE FROM patients WHERE id = ?
-  //   `);
-  //   const info = stmt.run(id);
-  //   return { success: info.changes > 0, rowsDeleted: info.changes };
-  // }
-
-  // async deletePatient(id) {
-  //   const deleteVisitsStmt = await this.db.prepare(`
-  //     DELETE FROM visits WHERE patientID = ?
-  //   `);
-  //   await deleteVisitsStmt.run(id);
-
-  //   const deletePatientStmt = await this.db.prepare(`
-  //     DELETE FROM patients WHERE id = ?
-  //   `);
-  //   const info = await deletePatientStmt.run(id);
-
-  //   return { success: info.changes > 0, rowsDeleted: info.changes };
-  // }
 
   async deletePatient(id) {
     const checkVisitsStmt = await this.db.prepare(`
@@ -446,6 +453,7 @@ class LabDB {
     const { patientID, status, testType, tests, discount } = data;
     const testTypeStr = testType;
     const testsStr = JSON.stringify(tests);
+    const visitNumber = await this.generateUniqueVisitNumber();
 
     try {
       const patientCheckStmt = this.db.prepare(`
@@ -458,18 +466,20 @@ class LabDB {
       }
 
       const insertStmt = this.db.prepare(`
-        INSERT INTO visits (patientID, status, testType, tests, discount)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO visits (patientID, status, testType, tests, discount, visitNumber)
+        VALUES (?, ?, ?, ?, ?, ?)
       `);
       const info = insertStmt.run(
         patientID,
         status,
         testTypeStr,
         testsStr,
-        discount
+        discount,
+        visitNumber
       );
+      console.log(`Visit added with ID: ${info.lastInsertRowid} and visitNumber: ${visitNumber}`);
 
-      return { id: info.lastInsertRowid };
+      return { id: info.lastInsertRowid, visitNumber };
     } catch (error) {
       console.error("Error in addVisit:", error);
       throw new Error("Error adding visit");
