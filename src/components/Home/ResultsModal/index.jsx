@@ -124,7 +124,6 @@ export const ResultsModal = () => {
       doc: "visits",
       query: "updateVisit",
       data: { ...data },
-      id: record?.id,
     }).then(({ err }) => {
       if (err) message.error("Error !");
       else {
@@ -157,9 +156,9 @@ export const ResultsModal = () => {
                   row.options = [];
                 }
               }
-  
+
               console.log(`Rendering options for ${row?.name}:`, row?.options);
-  
+
               return (
                 <div className="test-item" key={row?.id}>
                   <p>
@@ -174,10 +173,10 @@ export const ResultsModal = () => {
                     >
                       {Array.isArray(row?.options) && row.options.length > 0
                         ? row.options.map((option, i) => (
-                            <Select.Option key={i} value={option}>
-                              {option}
-                            </Select.Option>
-                          ))
+                          <Select.Option key={i} value={option}>
+                            {option}
+                          </Select.Option>
+                        ))
                         : null}
                     </Select>
                   ) : (
@@ -213,9 +212,9 @@ export const ResultsModal = () => {
                   row.options = [];
                 }
               }
-  
+
               console.log(`Rendering options for ${row?.name}:`, row?.options);
-  
+
               return (
                 <div className="test-item" key={row?.id}>
                   <p>
@@ -230,10 +229,10 @@ export const ResultsModal = () => {
                     >
                       {Array.isArray(row?.options) && row.options.length > 0
                         ? row.options.map((option, i) => (
-                            <Select.Option key={i} value={option}>
-                              {option}
-                            </Select.Option>
-                          ))
+                          <Select.Option key={i} value={option}>
+                            {option}
+                          </Select.Option>
+                        ))
                         : null}
                     </Select>
                   ) : (

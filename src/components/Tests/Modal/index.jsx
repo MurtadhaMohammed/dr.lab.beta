@@ -13,7 +13,7 @@ import {
   message,
   theme,
 } from "antd";
-import { useAppStore, useTestStore } from "../../../libs/appStore";
+import { useAppStore, useTestStore, useTrigger } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
 import "./style.css";
 import { useEffect, useRef, useState } from "react";
@@ -45,7 +45,7 @@ export const PureModal = () => {
   const [inputValue, setInputValue] = useState("");
   const { token } = theme.useToken();
   const { t } = useTranslation();
-
+  const { setFlag } = useTrigger();
   const inputRef = useRef(null);
   const editInputRef = useRef(null);
   useEffect(() => {
@@ -65,7 +65,7 @@ export const PureModal = () => {
       setOptions([]);
     }
   };
-  
+
 
   useEffect(() => {
     editInputRef.current?.focus();
@@ -88,12 +88,12 @@ export const PureModal = () => {
   const handleInputConfirm = () => {
     console.log("Input Value:", inputValue);
     console.log("Current Options:", options);
-  
+
     if (!Array.isArray(options)) {
       console.error("Options is not an array. Resetting to an empty array.");
       setOptions([]);
     }
-  
+
     if (inputValue && options.indexOf(inputValue) === -1) {
       setOptions([...options, inputValue]);
     }
@@ -119,7 +119,7 @@ export const PureModal = () => {
       options: isSelecte ? options : [],
       updatedAt: Date.now(),
     };
-  
+
     if (!id) {
       send({
         query: "addTest",
@@ -154,6 +154,7 @@ export const PureModal = () => {
             setReset();
             setIsModal(false);
             setIsReload(!isReload);
+            setFlag(true);
           } else {
             console.error("Error updating test:", resp.error);
             message.error("Failed to update test.");
@@ -165,7 +166,7 @@ export const PureModal = () => {
         });
     }
   };
-  
+
 
   return (
     <Modal
@@ -196,30 +197,30 @@ export const PureModal = () => {
       centered
     >
       <div className="create-item-modal">
-  <Row gutter={[16, 16]}>
-    <Col span={14}>
-      <Space style={{ width: "100%" }} direction="vertical" size={4}>
-        <Text>{t("TestName")}</Text>
-        <Input
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Ex: Vit D3"
-        />
-      </Space>
-    </Col>
-    <Col span={10}>
-      <Space style={{ width: "100%" }} direction="vertical" size={4}>
-        <Text>{t("Price")}</Text>
-        <InputNumber
-          value={price}
-          onChange={(val) => setPrice(val)}
-          placeholder="Ex: 10000"
-          style={{ width: "100%" }}
-          min={0}
-        />
-      </Space>
-    </Col>
-    <Col span={24}>
+        <Row gutter={[16, 16]}>
+          <Col span={14}>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Text>{t("TestName")}</Text>
+              <Input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ex: Vit D3"
+              />
+            </Space>
+          </Col>
+          <Col span={10}>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Text>{t("Price")}</Text>
+              <InputNumber
+                value={price}
+                onChange={(val) => setPrice(val)}
+                placeholder="Ex: 10000"
+                style={{ width: "100%" }}
+                min={0}
+              />
+            </Space>
+          </Col>
+          <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>{t("NormalValue")}</Text>
               <Input.TextArea
@@ -232,7 +233,7 @@ export const PureModal = () => {
               />
             </Space>
           </Col>
-    <Col span={24}>
+          <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Checkbox
                 checked={isSelecte}
@@ -242,37 +243,37 @@ export const PureModal = () => {
               </Checkbox>
             </Space>
           </Col>
-    {isSelecte ? (
-      <Col span={24}>
-        <Space size={[0, 6]} wrap>
-          {Array.isArray(options) &&
-            options.map((el, i) => (
-              <Tag key={i} closable color="red" onClose={() => handleClose(el)}>
-                {el}
-              </Tag>
-            ))}
-          {inputVisible ? (
-            <Input
-              ref={inputRef}
-              type="text"
-              size="small"
-              style={tagInputStyle}
-              value={inputValue}
-              onChange={handleInputChange}
-              onBlur={handleInputConfirm}
-              onPressEnter={handleInputConfirm}
-            />
-          ) : (
-            <Tag style={tagPlusStyle} onClick={showInput}>
-              <PlusOutlined /> {t("NewOption")}
-            </Tag>
-          )}
-        </Space>
-        <br />
-      </Col>
-    ) : null}
-  </Row>
-</div>
+          {isSelecte ? (
+            <Col span={24}>
+              <Space size={[0, 6]} wrap>
+                {Array.isArray(options) &&
+                  options.map((el, i) => (
+                    <Tag key={i} closable color="red" onClose={() => handleClose(el)}>
+                      {el}
+                    </Tag>
+                  ))}
+                {inputVisible ? (
+                  <Input
+                    ref={inputRef}
+                    type="text"
+                    size="small"
+                    style={tagInputStyle}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onBlur={handleInputConfirm}
+                    onPressEnter={handleInputConfirm}
+                  />
+                ) : (
+                  <Tag style={tagPlusStyle} onClick={showInput}>
+                    <PlusOutlined /> {t("NewOption")}
+                  </Tag>
+                )}
+              </Space>
+              <br />
+            </Col>
+          ) : null}
+        </Row>
+      </div>
 
     </Modal>
   );
