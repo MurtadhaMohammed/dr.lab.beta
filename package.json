@@ -50,7 +50,7 @@
     "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "build-mac": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=darwin --arch=arm64 --ignore=.parcel-cache --out=build",
     "react-build": "parcel --no-cache  splash.html index.html  --public-url ./",
-    "rebuild": "npx electron-rebuild -f -w better-sqlite3 sharp",
+    "rebuild": "npx electron-rebuild -f -w better-sqlite3",
     "package": "electron-builder",
     "package:win": "electron-builder --win",
     "postinstall": "electron-builder install-app-deps"
