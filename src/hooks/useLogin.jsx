@@ -64,7 +64,7 @@ const useLogin = () => {
   
       const { isOnline } = useAppStore.getState(); // Get the latest online status
   
-      if (user?.type !== "trial" && isOnline) {
+      if (isOnline) {
         // User is online, proceed with serial expiration check
         const response = await fetch(
           "https://dr-lab-apiv2.onrender.com/api/app/check-serial-expiration",
