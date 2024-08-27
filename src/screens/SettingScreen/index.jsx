@@ -66,7 +66,7 @@ const SettingsScreen = () => {
 
   useEffect(() => {
     form.setFieldsValue(user);
-  }, [user]);
+  }, [labUser]);
 
   const signout = async () => {
     setSignoutLoading(true);
@@ -246,6 +246,9 @@ const SettingsScreen = () => {
     [remainingDays, lang]
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
+  console.log(labUser);
+
+
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -409,11 +412,10 @@ const SettingsScreen = () => {
             <Card className="mt-[6px] min-h-[212px]">
               <div className="flex flex-col w-full gap-[10px]">
                 <div
-                  className={`${
-                    remainingDays < 7
-                      ? "bg-[#F187060A] border-[#BF6A0224]"
-                      : "bg-[#C8E6C942] border-[#4CAF50]"
-                  }  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}
+                  className={`${remainingDays < 7
+                    ? "bg-[#F187060A] border-[#BF6A0224]"
+                    : "bg-[#C8E6C942] border-[#4CAF50]"
+                    }  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}
                 >
                   <p className=" font-normal">{t("SerialNumber")}</p>
                   <p className=" font-bold">
@@ -440,17 +442,16 @@ const SettingsScreen = () => {
                   <p className=" text-[#A5A5A5] font-normal text-sm">
                     {expireData.expire
                       ? dayjs()
-                          .add(expireData.expire, "day")
-                          .format("YYYY MMM, DD")
+                        .add(expireData.expire, "day")
+                        .format("YYYY MMM, DD")
                       : "2024 Aug, 11"}
                   </p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p className=" font-normal text-sm">{t("daysLeft")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{`${
-                    remainingDays || 120
-                  } ${t("day")}`}</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">{`${remainingDays || 120
+                    } ${t("day")}`}</p>
                 </div>
 
                 <div className="px-1 h-full flex flex-col gap-2">
