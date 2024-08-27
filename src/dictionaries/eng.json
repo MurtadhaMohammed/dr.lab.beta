@@ -36,6 +36,7 @@
   "savedSuccessfully": "Saved Successfully",
   "RequestListFor": "Request list for",
   "PrintResults": "Print Results",
+  "PrintBarcode": "Create Barcode",
   "COMPLETED": "COMPLETED",
   "Status": "Status",
   "CreatedAt": "Created At",
@@ -210,6 +211,5 @@
   "Subscriptionexpired": "Subscription has expired.",
   "Failedserialexpiration": "Failed to check serial expiration.",
   "UpdateSuccess": "Update Successfully.",
-  "Failedcommunicateserver": "Failed to communicate with server.",
-  "error": "Error, Try Agine Later"
+  "Failedcommunicateserver": "Failed to communicate with server."
 }
