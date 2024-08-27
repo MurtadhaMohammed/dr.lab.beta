@@ -1,6 +1,6 @@
 {
   "name": "lab-beta",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "homepage": "./",
   "main": "index.js",
   "dependencies": {
@@ -49,8 +49,8 @@
     "start": "concurrently \"npx parcel --no-cache --port=3001 ./index.html\" \"wait-on http://localhost:3001 && electron index.js .\"",
     "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
     "build-mac": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=darwin --arch=arm64 --ignore=.parcel-cache --out=build",
-    "react-build": "parcel  splash.html index.html  --public-url ./",
-    "rebuild": "npx electron-rebuild -f -w better-sqlite3",
+    "react-build": "parcel --no-cache  splash.html index.html  --public-url ./",
+    "rebuild": "npx electron-rebuild -f -w better-sqlite3 sharp",
     "package": "electron-builder",
     "package:win": "electron-builder --win",
     "postinstall": "electron-builder install-app-deps"
