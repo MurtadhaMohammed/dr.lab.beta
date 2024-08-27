@@ -32,7 +32,7 @@ const useLogin = () => {
     } else {
       setIsLogin(false);
     }
-  }, []);
+  }, [isLogin]);
 
   const checkExpire = async (user) => {
     try {

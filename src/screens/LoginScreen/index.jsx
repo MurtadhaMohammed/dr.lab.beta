@@ -1,12 +1,4 @@
-import {
-  Button,
-  Card,
-  Form,
-  Input,
-  Space,
-  message,
-  Switch,
-} from "antd";
+import { Button, Card, Form, Input, Space, message, Switch } from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useAppStore, useLanguage } from "../../libs/appStore";
@@ -43,7 +35,6 @@ const LoginScreen = () => {
     }, 500);
   }, []);
 
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -56,7 +47,7 @@ const LoginScreen = () => {
       } catch (e) {
         console.log(e);
       }
-    }
+    };
 
     fetchData();
   }, []);
@@ -83,7 +74,7 @@ const LoginScreen = () => {
         },
       });
 
-      console.log(resp, 'resp');
+      console.log(resp, "resp");
 
       if (resp.ok) {
         const data = await resp.json();
@@ -100,10 +91,10 @@ const LoginScreen = () => {
             "lab-feature",
             updatedSerial.feature
               ? updatedSerial.feature
-                .map((v) => {
-                  if (v.name === "whatsapp") return v.name;
-                })
-                .filter(Boolean)
+                  .map((v) => {
+                    if (v.name === "whatsapp") return v.name;
+                  })
+                  .filter(Boolean)
               : ["null"]
           );
 
@@ -119,7 +110,7 @@ const LoginScreen = () => {
       if (error && error.message) {
         message.error(error.message);
       } else {
-        message.error('An unexpected error occurred.');
+        message.error("An unexpected error occurred.");
       }
     } finally {
       setLoading(false);
@@ -192,7 +183,6 @@ const LoginScreen = () => {
     }
   };
 
-
   return (
     <div
       className="h-screen flex items-center justify-center bg-gradient-to-r from-violet-600 to-[#0000ff]"
@@ -204,13 +194,15 @@ const LoginScreen = () => {
       }}
     >
       {isForm ? (
-        <Card className="w-[400px]" title={<BackIcon className="cursor-pointer" onClose={handleClose} />}>
+        <Card
+          className="w-[400px]"
+          title={<BackIcon className="cursor-pointer" onClose={handleClose} />}
+        >
           <Form
             form={form}
             onFinish={register}
             initialValues={{
               phone,
-
             }}
             layout="vertical"
             autoComplete="off"
@@ -239,7 +231,10 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input placeholder={t("labNameexample")} className=" h-[40px] p-2" />
+              <Input
+                placeholder={t("labNameexample")}
+                className=" h-[40px] p-2"
+              />
             </Form.Item>
 
             <Form.Item
@@ -287,7 +282,12 @@ const LoginScreen = () => {
               <Input placeholder="Iraq - Baghdad" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Button loading={loading} disabled={disable} type="primary" htmlType="submit">
+            <Button
+              loading={loading}
+              disabled={disable}
+              type="primary"
+              htmlType="submit"
+            >
               {t("Continue")}
             </Button>
           </Form>
@@ -310,9 +310,7 @@ const LoginScreen = () => {
               <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
 
               <div className="w-full handletext">
-                <h1 className="">
-                  {t("Inputs")}
-                </h1>
+                <h1 className="">{t("Inputs")}</h1>
               </div>
             </div>
 
@@ -355,8 +353,8 @@ const LoginScreen = () => {
                 <Space>
                   <Switch
                     className="switchBtn"
-                    checkedChildren="عربي"
-                    unCheckedChildren="en"
+                    checkedChildren="En"
+                    unCheckedChildren="عربي"
                     checked={lang === "ar"}
                     onChange={handleLang}
                     style={{ width: 60 }}
