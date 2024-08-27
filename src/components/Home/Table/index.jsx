@@ -400,6 +400,7 @@ export const PureTable = ({ isReport = false }) => {
                 size="small"
                 icon={<BarcodeOutlined />}
                 disabled
+                hidden
               />
             </Tooltip>
             <Divider type="vertical" />
