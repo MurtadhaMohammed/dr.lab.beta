@@ -48,8 +48,6 @@ class LabDB {
         FOREIGN KEY(patientID) REFERENCES patients(id)
       );
 
-
-
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50),
