@@ -101,9 +101,8 @@ function createWindow() {
       const isMac = os.platform() === "darwin";
       autoUpdater.setFeedURL({
         provider: "generic",
-        url: `https://drlab.us-east-1.linodeobjects.com/release/${
-          isMac ? "mac" : "win"
-        }`,
+        url: `https://drlab.us-east-1.linodeobjects.com/release/${isMac ? "mac" : "win"
+          }`,
         // url: "https://github.com/MurtadhaMohammed/dr.lab.beta/releases/latest",
         // provider: "github",
         // repo: "dr.lab.beta",

@@ -28,6 +28,7 @@ const LoginScreen = () => {
   const { lang, setLang } = useLanguage();
   const [form] = Form.useForm();
   const { t } = useTranslation();
+  const [disable, setDisable] = useState(false);
   const direction = i18n.dir();
 
   const getUUID = () => {
@@ -42,6 +43,23 @@ const LoginScreen = () => {
     }, 500);
   }, []);
 
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setDisable(true);
+        const resp = await fetch("https://dr-lab-apiv2.onrender.com/");
+
+        if (resp.ok) {
+          setDisable(false);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   const getPlatform = () => {
     const { userAgent } = navigator;
@@ -148,6 +166,10 @@ const LoginScreen = () => {
         message.error(errorData.message || t("Serialnotfound"));
       }
     } catch (error) {
+      if (!error.message) {
+        message.error(t("error"));
+      }
+
       message.error(error.message);
     } finally {
       setLoading(false);
@@ -265,7 +287,7 @@ const LoginScreen = () => {
               <Input placeholder="Iraq - Baghdad" className=" h-[40px] p-2" />
             </Form.Item>
 
-            <Button loading={loading} type="primary" htmlType="submit">
+            <Button loading={loading} disabled={disable} type="primary" htmlType="submit">
               {t("Continue")}
             </Button>
           </Form>
@@ -305,7 +327,7 @@ const LoginScreen = () => {
               />
 
               <Button
-                disabled={!key || key.length < 8}
+                disabled={!key || key.length < 8 || disable}
                 loading={loading}
                 type="primary"
                 block

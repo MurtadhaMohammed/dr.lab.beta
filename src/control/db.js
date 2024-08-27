@@ -16,7 +16,7 @@ class LabDB {
       console.log("Database opened successfully");
       this.initializeDatabase();
       this.initTestsFromJSON();
-      // this.generateUniqueVisitNumber();
+      this.checkAndAddVisitNumberColumn();
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -38,6 +38,7 @@ class LabDB {
         CREATE TABLE IF NOT EXISTS visits (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         patientID INTEGER,
+        visitNumber VARCHAR(6),
         status TEXT DEFAULT "PENDING" NOT NULL,
         testType VARCHAR(50),
         tests TEXT,
@@ -47,6 +48,12 @@ class LabDB {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(patientID) REFERENCES patients(id)
       );
+<<<<<<< HEAD
+=======
+
+
+
+>>>>>>> b93ca0069cd1b63ccca5b2ac46ec1f2982dbae91
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50),
@@ -76,6 +83,31 @@ class LabDB {
     `);
   }
 
+  async checkAndAddVisitNumberColumn() {
+    try {
+      // Check if the visits table has the visitNumber column
+      const columnCheckStmt = this.db.prepare(`
+        PRAGMA table_info(visits)
+      `);
+      const columns = columnCheckStmt.all();
+
+      const hasVisitNumberColumn = columns.some(
+        (column) => column.name === "visitNumber"
+      );
+
+      if (!hasVisitNumberColumn) {
+        // Alter the table to add the visitNumber column if it doesn't exist
+        this.db.exec(`
+          ALTER TABLE visits ADD COLUMN visitNumber VARCHAR(6)
+        `);
+        console.log("visitNumber column added successfully");
+      } else {
+        console.log("visitNumber column already exists");
+      }
+    } catch (error) {
+      console.error("Error checking or adding visitNumber column:", error);
+    }
+  }
 
   async initTestsFromJSON() {
     try {
@@ -95,7 +127,9 @@ class LabDB {
 
         const insertTransaction = this.db.transaction((data) => {
           for (const item of data) {
-            const normalValue = item.normal ? item.normal.replace(/\\n/g, '\n') : null;
+            const normalValue = item.normal
+              ? item.normal.replace(/\\n/g, "\n")
+              : null;
             insertStmt.run(
               item.name,
               Number(item.price),
@@ -117,35 +151,38 @@ class LabDB {
     }
   }
 
-  async generateUniqueVisitNumber() {
-    let visitNumber;
-    let isUnique = false;
+  async addUniqueVisitNumber(visitId) {
+    try {
+      // First, check if the visitNumber already exists for the given visitId
+      const selectStmt = this.db.prepare(`
+        SELECT visitNumber FROM visits WHERE id = ?
+      `);
+      const result = selectStmt.get(visitId);
 
-    console.log("generateUniqueVisitNumber called");
-
-    while (!isUnique) {
-      visitNumber = Math.floor(100000 + Math.random() * 900000).toString();
-      console.log(`Generated visit number: ${visitNumber}`);
-
-      try {
-        const stmt = this.db.prepare(`SELECT COUNT(*) as count FROM visits WHERE visitNumber = ?`);
-        const result = stmt.get(visitNumber);
-
-        console.log(`Visit number ${visitNumber} exists: ${result.count > 0}`);
-
-        if (result.count === 0) {
-          isUnique = true;
-        }
-      } catch (error) {
-        console.error("Error checking visit number uniqueness:", error);
+      // If visitNumber exists, return it
+      if (result && result.visitNumber) {
+        return result.visitNumber;
       }
+
+      // If visitNumber doesn't exist, generate a unique 6-digit number
+      const visitNumber = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+
+      // Update the visit record with the generated visitNumber
+      const updateStmt = this.db.prepare(`
+        UPDATE visits
+        SET visitNumber = ?
+        WHERE id = ?
+      `);
+      updateStmt.run(visitNumber, visitId);
+
+      return visitNumber;
+    } catch (error) {
+      console.error("Error updating visit with visitNumber:", error);
+      return null;
     }
-
-    console.log(`Unique visit number generated: ${visitNumber}`);
-    return visitNumber;
   }
-
-
 
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
@@ -497,18 +534,20 @@ class LabDB {
 
   async getVisits({ q = "", skip = 0, limit = 10, startDate, endDate }) {
     const whereClauses = [
-      `p.name LIKE ?`,
+      `(p.name LIKE ? OR v.visitNumber LIKE ?)`,
       startDate
-        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) >= '${
+            new Date(startDate).toISOString().split("T")[0]
+          }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) <= '${
+            new Date(endDate).toISOString().split("T")[0]
+          }'`
         : "",
     ]
       .filter(Boolean)
-      .join(" AND ");
+      .join(" AND "); //"976209"
 
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
@@ -517,7 +556,7 @@ class LabDB {
       WHERE ${whereClauses}
     `);
 
-    const countResult = countStmt.get(`%${q}%`);
+    const countResult = countStmt.get(`%${q}%`, `%${q}%`);
     const total = countResult?.total || 0;
 
     const stmt = await this.db.prepare(`
@@ -526,10 +565,10 @@ class LabDB {
       JOIN patients p ON v.patientID = p.id
       WHERE ${whereClauses}
       ORDER BY createdAt DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${skip}
     `);
 
-    const visits = stmt.all(`%${q}%`, limit, skip);
+    const visits = stmt.all(`%${q}%`, `%${q}%`);
     const results = visits?.map((el) => ({
       id: el?.id,
       tests: JSON.parse(el?.tests) || [],
@@ -538,6 +577,7 @@ class LabDB {
       discount: el?.discount,
       createdAt: el?.createdAt,
       updatedAt: el?.updatedAt,
+      visitNumber: el?.visitNumber,
       patient: {
         id: el?.patientID,
         name: el?.patientName,
@@ -554,12 +594,14 @@ class LabDB {
   async getTotalVisits({ startDate, endDate }) {
     const whereClauses = [
       startDate
-        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) >= '${
+            new Date(startDate).toISOString().split("T")[0]
+          }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) <= '${
+            new Date(endDate).toISOString().split("T")[0]
+          }'`
         : "",
     ]
       .filter(Boolean)
