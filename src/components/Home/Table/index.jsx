@@ -476,7 +476,6 @@ export const PureTable = ({ isReport = false }) => {
           try {
             if (v.id === test[0].id && test.length > 0) {
               const pID = record.patient.id;
-
               const data = {
                 patientID: pID,
                 status: record.status,
@@ -484,7 +483,6 @@ export const PureTable = ({ isReport = false }) => {
                 discount: record.discount,
                 tests: test
               }
-
               send({
                 query: "updateVisit",
                 update: { ...data },
