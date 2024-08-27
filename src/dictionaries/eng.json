@@ -211,5 +211,6 @@
   "Subscriptionexpired": "Subscription has expired.",
   "Failedserialexpiration": "Failed to check serial expiration.",
   "UpdateSuccess": "Update Successfully.",
-  "Failedcommunicateserver": "Failed to communicate with server."
+  "Failedcommunicateserver": "Failed to communicate with server.",
+  "error": "Error, Try Again Later"
 }
