@@ -29,6 +29,7 @@ import {
   useAppStore,
   useHomeStore,
   useReportsStore,
+  useTrigger,
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
@@ -71,6 +72,8 @@ export const PureTable = ({ isReport = false }) => {
       : localStorage.getItem("lab-feature")
   );
   const userType = useState(JSON.parse(localStorage.getItem("lab-user"))?.type);
+  const { flag, setFlag, test } = useTrigger();
+  console.log(data);
 
   const limit = usePageLimit();
   // const { setTableData } = useHomeStore();
@@ -322,10 +325,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -385,7 +388,7 @@ export const PureTable = ({ isReport = false }) => {
         title: "",
         key: "action",
         render: (_, record) => (
-          <Space Space size="small" className="custom-actions">
+          < Space Space size="small" className="custom-actions" >
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
@@ -400,11 +403,12 @@ export const PureTable = ({ isReport = false }) => {
                 size="small"
                 icon={<BarcodeOutlined />}
                 disabled
+                hidden
               />
             </Tooltip>
             <Divider type="vertical" />
             {
-              <Popover
+              < Popover
                 onOpenChange={(isOpen) => {
                   if (isOpen) setDestPhone(record?.patient?.phone);
                   else setIsConfirm(false);
@@ -425,8 +429,8 @@ export const PureTable = ({ isReport = false }) => {
                   userType === "trial"
                     ? undefined
                     : record?.status == "PENDING"
-                    ? false
-                    : undefined
+                      ? false
+                      : undefined
                 }
               >
                 <Button
@@ -440,7 +444,7 @@ export const PureTable = ({ isReport = false }) => {
                     userType === "trial"
                   }
                 />
-              </Popover>
+              </Popover >
             }
             <Button
               size="small"
@@ -458,7 +462,7 @@ export const PureTable = ({ isReport = false }) => {
             >
               <Button danger size="small" icon={<DeleteOutlined />}></Button>
             </Popconfirm>
-          </Space>
+          </Space >
         ),
       }),
     },
@@ -466,8 +470,47 @@ export const PureTable = ({ isReport = false }) => {
   //commit
 
   const handleResults = (record) => {
-    setRecord(record);
-    setIsResultsModal(true);
+    if (test.length !== 0) {
+      const res = new Promise((resolve, reject) => {
+        record.tests.map((v) => {
+          try {
+            if (v.id === test[0].id && test.length > 0) {
+              const pID = record.patient.id;
+              const data = {
+                patientID: pID,
+                status: record.status,
+                testType: record.testType,
+                discount: record.discount,
+                tests: test
+              }
+              send({
+                query: "updateVisit",
+                update: { ...data },
+                id: pID
+              }).then(({ success }) => {
+                console.log(success, "success");
+                resolve(success);
+              })
+            }
+          } catch (e) {
+            reject(e);
+          }
+        })
+      }).then(res => {
+        if (res) {
+          const newRecord = {
+            ...record,
+            tests: test
+          }
+
+          setRecord(newRecord);
+          setIsResultsModal(true);
+        }
+      })
+    } else {
+      setRecord(record);
+      setIsResultsModal(true);
+    }
   };
 
   const handleRemove = (id) => {
@@ -547,7 +590,10 @@ export const PureTable = ({ isReport = false }) => {
         endDate,
       },
     }).then((resp) => {
+      console.log(resp, 'respspspspspspsps', flag);
       if (resp.success) {
+        console.log(resp.data, 'data fetched');
+
         setData(resp.data);
         setTotal(resp.total);
         handelOpenModal(resp.data);
@@ -556,8 +602,9 @@ export const PureTable = ({ isReport = false }) => {
         console.error("Error retrieving visits:", resp.error);
       }
       setLoading(false);
+      setFlag(false);
     });
-  }, [page, isReload, querySearch, isToday, filterDate, limit]);
+  }, [page, isReload, querySearch, isToday, filterDate, limit, flag]);
 
   return (
     <Table

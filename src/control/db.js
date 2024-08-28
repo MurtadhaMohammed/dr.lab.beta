@@ -48,8 +48,6 @@ class LabDB {
         FOREIGN KEY(patientID) REFERENCES patients(id)
       );
 
-
-
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50),
@@ -550,14 +548,12 @@ class LabDB {
     const whereClauses = [
       `(p.name LIKE ? OR v.visitNumber LIKE ?)`,
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
+        }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
+        }'`
         : "",
     ]
       .filter(Boolean)
@@ -608,14 +604,12 @@ class LabDB {
   async getTotalVisits({ startDate, endDate }) {
     const whereClauses = [
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
+        }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
+        }'`
         : "",
     ]
       .filter(Boolean)
@@ -681,6 +675,9 @@ class LabDB {
       WHERE id = ?
     `);
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
+
+    console.log(info);
+
     return { success: info.changes > 0 };
   }
 }

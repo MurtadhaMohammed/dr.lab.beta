@@ -46,7 +46,7 @@ function createWindow() {
   });
 
   if (isDev) {
-    win.loadURL("http://localhost:1234");
+    win.loadURL("http://localhost:3001");
     splash.loadFile("./splash.html");
   } else {
     win.loadFile("./dist/index.html");

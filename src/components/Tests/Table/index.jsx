@@ -14,7 +14,7 @@ import "./style.css";
 import dayjs from "dayjs";
 import { send } from "../../../control/renderer";
 import { useEffect, useState } from "react";
-import { useAppStore, useTestStore } from "../../../libs/appStore";
+import { useAppStore, useTestStore, useTrigger } from "../../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
 
@@ -37,7 +37,7 @@ export const PureTable = () => {
   const [loading, setLoading] = useState(false);
   const limit = usePageLimit(60, 35);
   const { t } = useTranslation();
-
+  const { setFlag, setTest } = useTrigger();
   const columns = [
     {
       title: t("TestName"),
@@ -121,7 +121,7 @@ export const PureTable = () => {
         message.error("Failed to communicate with server.");
       });
   };
-  
+
 
   const handleEdit = ({
     id,
@@ -141,9 +141,9 @@ export const PureTable = () => {
       isSelecte,
       createdAt,
     });
-  
+
     let parsedOptions = options;
-  
+
     if (typeof options === 'string') {
       try {
         parsedOptions = JSON.parse(options);
@@ -152,11 +152,11 @@ export const PureTable = () => {
         parsedOptions = [];
       }
     }
-  
+
     if (isSelecte && parsedOptions.length === 0) {
       parsedOptions = ["positive", "negative"];
     }
-  
+
     setId(id);
     setName(name);
     setPrice(price);
@@ -166,8 +166,8 @@ export const PureTable = () => {
     setIsSelecte(isSelecte);
     setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
-  
-  
+
+
 
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
@@ -182,6 +182,8 @@ export const PureTable = () => {
         if (resp.success) {
           setData(resp.data);
           setTotal(resp.total);
+          setTest(resp.data);
+          setFlag(true);
           console.log("Tests get successfully:", resp.data);
         } else {
           console.error("Error get tests:", resp.error);
@@ -208,7 +210,7 @@ export const PureTable = () => {
       size="small"
       footer={() => (
         <div className="table-footer app-flex-space ">
-            <div
+          <div
             class="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0 "
           ></div>
@@ -216,7 +218,7 @@ export const PureTable = () => {
             <b>{total}</b> {t("results")}
           </p>
           <Pagination
-          className="flex flex-row justify-center items-center"
+            className="flex flex-row justify-center items-center"
             simple
             current={page}
             onChange={(_page) => {
