@@ -659,8 +659,8 @@ class LabDB {
     return { success: true, data: results };
   }
 
-  async updateVisit(id, update) {
-    const { patientID, status, testType, tests, discount } = update;
+  async updateVisit(id, data) {
+    const { patientID, status, testType, tests, discount } = data;
     const testsStr = JSON.stringify(tests);
 
     const stmt = this.db.prepare(`
@@ -676,7 +676,7 @@ class LabDB {
     `);
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
 
-    console.log(info);
+    //console.log(info);
 
     return { success: info.changes > 0 };
   }

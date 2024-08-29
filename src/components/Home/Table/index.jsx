@@ -486,9 +486,8 @@ export const PureTable = ({ isReport = false }) => {
               send({
                 query: "updateVisit",
                 update: { ...data },
-                id: pID
+                id: v.id
               }).then(({ success }) => {
-                console.log(success, "success");
                 resolve(success);
               })
             }
