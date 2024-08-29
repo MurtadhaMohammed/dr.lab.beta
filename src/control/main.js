@@ -242,14 +242,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     }
 
     case "updateVisit": {
-      const a = arg.data;
-
       try {
-        console.log(a, 'aaa');
-
-        console.log(arg.id, arg.update, 'arg.id, arg.update');
-        const resp = await labDB.updateVisit(arg.id, arg.update);
-        console.log(resp);
+        console.log(arg.id, arg.data, 'arg.id, arg.update');
+        const resp = await labDB.updateVisit(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
         event.reply("asynchronous-reply", {

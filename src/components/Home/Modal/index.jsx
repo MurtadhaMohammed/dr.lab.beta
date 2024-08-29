@@ -65,7 +65,6 @@ export const PureModal = () => {
         .then((resp) => {
           if (resp.success) {
             message.success(t("Visitupdatedsuccessfully"));
-            console.log("updateVisit response:", resp);
             send({
               query: "updatePatient",
               id: patientID,
