@@ -66,7 +66,6 @@ export const PureModal = () => {
     }
   };
 
-
   useEffect(() => {
     editInputRef.current?.focus();
   }, [inputValue]);
@@ -167,7 +166,6 @@ export const PureModal = () => {
     }
   };
 
-
   return (
     <Modal
       title={`${id ? t("Edit") : t("Create")} ${t("TestItem")}`}
@@ -235,10 +233,7 @@ export const PureModal = () => {
           </Col>
           <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Checkbox
-                checked={isSelecte}
-                onChange={handleIsSelecteChange}
-              >
+              <Checkbox checked={isSelecte} onChange={handleIsSelecteChange}>
                 {t("IsSelect")}
               </Checkbox>
             </Space>
@@ -248,7 +243,12 @@ export const PureModal = () => {
               <Space size={[0, 6]} wrap>
                 {Array.isArray(options) &&
                   options.map((el, i) => (
-                    <Tag key={i} closable color="red" onClose={() => handleClose(el)}>
+                    <Tag
+                      key={i}
+                      closable
+                      color="red"
+                      onClose={() => handleClose(el)}
+                    >
                       {el}
                     </Tag>
                   ))}
@@ -274,7 +274,6 @@ export const PureModal = () => {
           ) : null}
         </Row>
       </div>
-
     </Modal>
   );
 };
