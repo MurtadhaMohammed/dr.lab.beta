@@ -603,6 +603,28 @@ class LabDB {
     return { success: true, total, data: results };
   }
 
+  async updateTestsVisitById(visitId) {
+    if (!visitId) {
+      return { success: false, message: "Visit ID is required" };
+    }
+
+    const stmt = await this.db.prepare(`
+      SELECT v.*
+      FROM visits v
+      WHERE v.id = ?
+    `);
+
+    const visit = stmt.get(visitId);
+    let tests = JSON.parse(visit?.tests) || [];
+    console.log(tests)
+
+    if (!visit) {
+      return { success: false, message: "Visit not found" };
+    }
+
+    return { success: true, data: tests };
+  }
+
   async getTotalVisits({ startDate, endDate }) {
     const whereClauses = [
       startDate
@@ -666,6 +688,8 @@ class LabDB {
   async updateVisit(id, data) {
     const { patientID, status, testType, tests, discount } = data;
     const testsStr = JSON.stringify(tests);
+
+    this.getVisitByPatient(id)
 
     const stmt = this.db.prepare(`
       UPDATE visits
