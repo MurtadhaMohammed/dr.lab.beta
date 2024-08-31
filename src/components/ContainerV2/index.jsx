@@ -27,6 +27,7 @@ import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
 import { stringify } from "postcss";
+import { URL } from "../../libs/api";
 
 const { Sider, Content } = Layout;
 
@@ -51,7 +52,7 @@ const MainContainerV2 = ({ children }) => {
     try {
       let serial = localStorage.getItem("lab-serial");
       const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
+        `${URL}/app/logout`,
         {
           method: "POST",
           headers: {
@@ -81,7 +82,7 @@ const MainContainerV2 = ({ children }) => {
       setShowTrialAlert(true);
     }
 
-    if (userData?.type === "paid" && !isNaN(labExp) && labExp <= 3) {
+    if (userData?.type !== "trial" && !isNaN(labExp) && labExp <= 3) {
       setRemainingDays(labExp);
       setShowExpAlert(true);
     }

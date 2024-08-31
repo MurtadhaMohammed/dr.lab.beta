@@ -25,6 +25,7 @@ import i18n from "../../i18n";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import PopOverContent from "./PopOverContent";
+import { URL } from "../../libs/api";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -73,16 +74,13 @@ const SettingsScreen = () => {
     try {
       let serial = localStorage.getItem("lab-serial");
       console.log("Serial:", serial);
-      const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ serial }),
-        }
-      );
+      const resp = await fetch(`${URL}/app/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ serial }),
+      });
       if (resp.status === 200) {
         setSignoutLoading(false);
         localStorage.clear();
