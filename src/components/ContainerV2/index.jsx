@@ -51,16 +51,13 @@ const MainContainerV2 = ({ children }) => {
     setSignoutLoading(true);
     try {
       let serial = localStorage.getItem("lab-serial");
-      const resp = await fetch(
-        `${URL}/app/logout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ serial }),
-        }
-      );
+      const resp = await fetch(`${URL}/app/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ serial }),
+      });
       if (resp.status === 200) {
         setSignoutLoading(false);
         localStorage.clear();
@@ -209,14 +206,10 @@ const MainContainerV2 = ({ children }) => {
               onConfirm={signout}
               title={t("SignoutConfirm")}
               description={t("SignOutFormThisApp")}
-              disabled={userType === "trial"} // Disable Popconfirm if the user is a trial user
             >
               <button
                 onClick={() => signoutLoading}
-                className={`border-t border-t-[#eee] h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 ${
-                  userType === "trial" ? "text-[#ccc]" : "text-[#eb2f96]"
-                }`}
-                disabled={userType === "trial"} // Disable button if the user is a trial user
+                className={`border-t border-t-[#eee] h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 text-[#eb2f96]`}
               >
                 <IoMdLogOut
                   style={{
