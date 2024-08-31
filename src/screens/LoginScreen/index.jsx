@@ -312,7 +312,7 @@ const LoginScreen = () => {
                 className="h-12"
                 onClick={checkSerial}
               >
-                Login
+                {t("Login")}
               </Button>
 
               <div className="h-full flex flex-col gap-4 handleOr">

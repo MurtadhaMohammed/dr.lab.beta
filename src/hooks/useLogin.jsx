@@ -2,9 +2,11 @@ import { useEffect } from "react";
 import { message } from "antd";
 import dayjs from "dayjs";
 import { useAppStore } from "../libs/appStore";
+import { useTranslation } from "react-i18next";
 
 const useLogin = () => {
   const { isLogin, setIsLogin, setUser } = useAppStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const userString = localStorage.getItem("lab-user");
