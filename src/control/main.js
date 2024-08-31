@@ -7,7 +7,8 @@ const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
-const sharp = require("sharp");
+const Jimp = require('jimp');
+const { createCanvas, loadImage } = require('canvas');
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -399,6 +400,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { success: false });
         return;
       }
+
       bwipjs.toBuffer(
         {
           bcid: "code128",
@@ -407,63 +409,137 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           height: 5,
           includetext: false,
         },
-        function (err, png) {
+        async function (err, png) {
           if (err) {
             console.error(err);
             event.reply("asynchronous-reply", { success: false });
           } else {
-            sharp(png)
-              .metadata()
-              .then((metadata) => {
-                const barcodeWidth = metadata.width;
-                const barcodeHeight = metadata.height;
+            try {
+              // Load the barcode image from buffer
+              const barcode = await Jimp.read(png);
+              const barcodeWidth = barcode.bitmap.width;
+              const barcodeHeight = barcode.bitmap.height;
 
-                // Create Arabic text as an SVG with matching width
-                const textSvg = Buffer.from(`
-                <svg width="${barcodeWidth}" height="60">
-                  <text x="50%" y="50%" font-size="20" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
-                </svg>
-              `);
+              // Create a canvas to render the Arabic text
+              const canvas = createCanvas(barcodeWidth, 60);
+              const ctx = canvas.getContext('2d');
 
-                const totalWidth = barcodeWidth + 2 * padding;
-                const totalHeight = barcodeHeight + 30 + padding + padding;
+              // Set up Arabic text rendering
+              ctx.font = '20px Arial';
+              ctx.fillStyle = 'black';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.direction = 'rtl'; // Set direction to RTL for Arabic text
 
-                // Composite the barcode with the Arabic text
-                sharp({
-                  create: {
-                    width: totalWidth,
-                    height: totalHeight,
-                    channels: 4,
-                    background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background
-                  },
-                })
-                  .composite([
-                    { input: png, top: padding, left: padding }, // Barcode with padding
-                    {
-                      input: textSvg,
-                      top: barcodeHeight + padding,
-                      left: padding,
-                    },
-                  ])
-                  .toFile(
-                    app.getPath("userData") + "barcode.png",
-                    (err, info) => {
-                      if (err) {
-                        console.error(err);
-                        event.reply("asynchronous-reply", { success: false });
-                      } else {
-                        shell.openPath(app.getPath("userData") + "barcode.png");
-                        event.reply("asynchronous-reply", { success: true });
-                      }
-                    }
-                  );
-              });
-            // fs.writeFileSync("barcode.png", png);
+              // Render the Arabic text onto the canvas
+              ctx.fillText(arg.data.name, barcodeWidth / 2, 30);
+
+              // Convert the canvas to a buffer
+              const textImageBuffer = canvas.toBuffer();
+
+              // Load the text image buffer into Jimp
+              const textImage = await Jimp.read(textImageBuffer);
+
+              // Create the final image with padding
+              const totalWidth = barcodeWidth + 2 * padding;
+              const totalHeight = barcodeHeight + 60 + padding + padding;
+
+              const finalImage = new Jimp(totalWidth, totalHeight, 0xFFFFFFFF);
+
+              // Composite the barcode and text onto the final image
+              finalImage.composite(barcode, padding, padding);
+              finalImage.composite(textImage, padding, barcodeHeight + padding);
+
+              // Save the final image
+              const outputPath = app.getPath("userData") + "/barcode.png";
+              await finalImage.writeAsync(outputPath);
+
+              // Open the saved image
+              shell.openPath(outputPath);
+              event.reply("asynchronous-reply", { success: true });
+            } catch (err) {
+              console.error(err);
+              event.reply("asynchronous-reply", { success: false });
+            }
           }
         }
       );
 
       break;
+
+    // case "printParcode":
+    //   const padding = 20;
+
+    //   let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
+    //   if (!visitNumber) {
+    //     event.reply("asynchronous-reply", { success: false });
+    //     return;
+    //   }
+    //   bwipjs.toBuffer(
+    //     {
+    //       bcid: "code128",
+    //       text: String(visitNumber),
+    //       scale: 4,
+    //       height: 5,
+    //       includetext: false,
+    //     },
+    //     function (err, png) {
+    //       if (err) {
+    //         console.error(err);
+    //         event.reply("asynchronous-reply", { success: false });
+    //       } else {
+    //         sharp(png)
+    //           .metadata()
+    //           .then((metadata) => {
+    //             const barcodeWidth = metadata.width;
+    //             const barcodeHeight = metadata.height;
+
+    //             // Create Arabic text as an SVG with matching width
+    //             const textSvg = Buffer.from(`
+    //             <svg width="${barcodeWidth}" height="60">
+    //               <text x="50%" y="50%" font-size="20" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
+    //             </svg>
+    //           `);
+
+    //             const totalWidth = barcodeWidth + 2 * padding;
+    //             const totalHeight = barcodeHeight + 30 + padding + padding;
+
+    //             // Composite the barcode with the Arabic text
+    //             sharp({
+    //               create: {
+    //                 width: totalWidth,
+    //                 height: totalHeight,
+    //                 channels: 4,
+    //                 background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background
+    //               },
+    //             })
+    //               .composite([
+    //                 { input: png, top: padding, left: padding }, // Barcode with padding
+    //                 {
+    //                   input: textSvg,
+    //                   top: barcodeHeight + padding,
+    //                   left: padding,
+    //                 },
+    //               ])
+    //               .toFile(
+    //                 app.getPath("userData") + "barcode.png",
+    //                 (err, info) => {
+    //                   if (err) {
+    //                     console.error(err);
+    //                     event.reply("asynchronous-reply", { success: false });
+    //                   } else {
+    //                     shell.openPath(app.getPath("userData") + "barcode.png");
+    //                     event.reply("asynchronous-reply", { success: true });
+    //                   }
+    //                 }
+    //               );
+    //           });
+    //         // fs.writeFileSync("barcode.png", png);
+    //       }
+    //     }
+    //   );
+
+    //   break;
 
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
