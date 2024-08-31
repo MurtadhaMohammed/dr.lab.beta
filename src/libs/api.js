@@ -1,8 +1,8 @@
 import { jwtDecode } from "jwt-decode";
 import { useAppStore } from "./appStore";
 
-export const URL = "http://localhost:3000/api";
-// export const URL = "https://dr-lab-apiv2.onrender.com/api";
+// export const URL = "http://localhost:3000/api";
+export const URL = "https://dr-lab-apiv2.onrender.com/api";
 
 export const isTokenValid = (token) => {
   try {
