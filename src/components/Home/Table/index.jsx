@@ -67,7 +67,7 @@ export const PureTable = ({ isReport = false }) => {
   const [destPhone, setDestPhone] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const userType = useState(JSON.parse(localStorage.getItem("lab-user"))?.type);
+  const [userType] = useState(JSON.parse(localStorage.getItem("lab-user"))?.type);
   const { flag, setFlag } = useTrigger();
 
   const limit = usePageLimit();
@@ -426,10 +426,7 @@ export const PureTable = ({ isReport = false }) => {
                   className=" sticky"
                   icon={<WhatsAppOutlined />}
                   loading={msgLoading && record?.patient?.phone === destPhone}
-                  disabled={
-                    // labFeature === null ||
-                    record?.status == "PENDING" || userType === "trial"
-                  }
+                  disabled={record?.status == "PENDING" || userType === "trial"}
                 />
               </Popover>
             }
