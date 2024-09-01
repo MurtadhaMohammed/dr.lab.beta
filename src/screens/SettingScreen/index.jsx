@@ -156,7 +156,7 @@ const SettingsScreen = () => {
 
       try {
         const resp = await fetch(
-          "https://dr-lab-apiv2.onrender.com/api/app/update-client",
+          `${URL}/app/update-client`,
           {
             method: "PUT",
             headers: {
