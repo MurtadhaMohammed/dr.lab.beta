@@ -15,6 +15,7 @@ import {
   Select,
   Space,
   Switch,
+  Tag,
 } from "antd";
 import { PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import fileDialog from "file-dialog";
@@ -25,6 +26,7 @@ import i18n from "../../i18n";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import PopOverContent from "./PopOverContent";
+import { URL } from "../../libs/api";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -73,16 +75,13 @@ const SettingsScreen = () => {
     try {
       let serial = localStorage.getItem("lab-serial");
       console.log("Serial:", serial);
-      const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ serial }),
-        }
-      );
+      const resp = await fetch(`${URL}/app/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ serial }),
+      });
       if (resp.status === 200) {
         setSignoutLoading(false);
         localStorage.clear();
@@ -279,11 +278,7 @@ const SettingsScreen = () => {
               title={t("SignoutConfirm")}
               description={t("SignOutFormThisApp")}
             >
-              <Button
-                loading={signoutLoading}
-                danger
-                disabled={userType === "trial"} // Disable button if user type is trial
-              >
+              <Button loading={signoutLoading} danger>
                 {t("SignOut")}
               </Button>
             </Popconfirm>
@@ -421,11 +416,11 @@ const SettingsScreen = () => {
                   </p>
                 </div>
 
-                {userType === "paid" && remainingDays < 4 ? (
+                {/* {userType === "paid" && remainingDays < 4 ? (
                   <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">
                     {t("supportPaymentReminder")}
                   </p>
-                ) : null}
+                ) : null} */}
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p>{t("startedAt")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
@@ -452,8 +447,14 @@ const SettingsScreen = () => {
                     remainingDays || 120
                   } ${t("day")}`}</p>
                 </div>
+                <div className="w-full flex justify-between inter px-1">
+                  <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
+        
+                    <Tag color="magenta-inverse" className="m-0">{String(userType).toLocaleUpperCase()}</Tag>
+             
+                </div>
 
-                <div className="px-1 h-full flex flex-col gap-2">
+                {/* <div className="px-1 h-full flex flex-col gap-2">
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
                     <p className=" font-normal">{t("whatsappIntegration")}</p>
@@ -480,7 +481,7 @@ const SettingsScreen = () => {
                   >
                     {whatsAppStatus.description}
                   </p>
-                </div>
+                </div> */}
               </div>
             </Card>
           </div>

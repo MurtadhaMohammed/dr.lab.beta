@@ -245,7 +245,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       try {
         // console.log(arg.id, arg.data, 'arg.id, arg.update');
         const resp = await labDB.updateVisit(arg.id, arg.data);
-        event.reply("asynchronous-reply", { success: resp.success });
+        event.reply("asynchronous-reply", {
+          success: resp.success,
+          newTests: resp?.newTests,
+        });
       } catch (error) {
         event.reply("asynchronous-reply", {
           success: false,
