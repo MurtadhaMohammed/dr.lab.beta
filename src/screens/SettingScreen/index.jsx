@@ -16,7 +16,7 @@ import {
   Space,
   Switch,
 } from "antd";
-import { PhoneOutlined, UserOutlined } from "@ant-design/icons";
+import { UserOutlined } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore, useLanguage } from "../../libs/appStore";
@@ -117,8 +117,6 @@ const SettingsScreen = () => {
     localStorage.setItem("lab-print-size", val);
     setPrintFontSize(val);
   };
-
-  console.log(printFontSize, "fontSize***************");
 
   const handelCancel = () => {
     form.setFieldsValue(user);
@@ -233,7 +231,7 @@ const SettingsScreen = () => {
       };
     } else {
       return {
-        status: t("Subscribe"),
+        status: t("UPGRADE"),
         textStyle: "text-[#0000FF] text-sm font-bold inter leading-[16.94px]",
         descStyle: "bg-[#F6F6F6] border-[#EEEEEE] text-black",
         description: t("subscribeDescription"),
