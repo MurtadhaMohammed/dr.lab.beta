@@ -54,6 +54,7 @@ export const ResultsModal = () => {
   const { setIsResultsModal, isResultsModal, record, setRecord } =
     useHomeStore();
   const { t } = useTranslation();
+  const { isOnline } = useAppStore();
 
   useEffect(() => {
     if (isResultsModal && record) {
@@ -127,7 +128,20 @@ export const ResultsModal = () => {
     }).then(({ err }) => {
       if (err) message.error("Error !");
       else {
-        message.success(t("savedSuccessfully"));
+        message.success(t("Saved Successfully"));
+
+        try {
+          if (isOnline && window.gtag) {
+            window.gtag('event', 'click', {
+              event_category: 'button',
+              event_label: 'print-result-button',
+              value: 1,
+            });
+          }
+        } catch (e) {
+          throw new Error(e.message);
+        }
+
         setRecord(null);
         setIsResultsModal(false);
         setIsReload(!isReload);

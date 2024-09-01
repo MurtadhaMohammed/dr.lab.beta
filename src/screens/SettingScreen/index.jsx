@@ -167,8 +167,6 @@ const SettingsScreen = () => {
           }
         );
 
-        console.log("Response status:", resp.status);
-
         if (resp.ok) {
           let data = await resp.json();
           localStorage.setItem("lab-user", JSON.stringify(data.updatedClient));
@@ -182,7 +180,6 @@ const SettingsScreen = () => {
           );
         }
       } catch (error) {
-        console.log("Network error:", error);
         message.error(error.message);
       } finally {
         setLoading(false);
@@ -448,9 +445,9 @@ const SettingsScreen = () => {
                 </div>
                 <div className="w-full flex justify-between inter px-1">
                   <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
-        
-                    <Tag color="magenta-inverse" className="m-0">{String(userType).toLocaleUpperCase()}</Tag>
-             
+
+                  <Tag color="magenta-inverse" className="m-0">{String(userType).toLocaleUpperCase()}</Tag>
+
                 </div>
 
                 {/* <div className="px-1 h-full flex flex-col gap-2">

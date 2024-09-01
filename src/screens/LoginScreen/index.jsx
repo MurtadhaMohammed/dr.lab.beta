@@ -43,9 +43,11 @@ const LoginScreen = () => {
 
         if (resp.ok) {
           setDisable(false);
+        } else {
+          throw new Error("Request failed");
         }
       } catch (e) {
-        console.log(e);
+        setDisable(false);
       }
     };
 
@@ -91,10 +93,10 @@ const LoginScreen = () => {
             "lab-feature",
             updatedSerial.feature
               ? updatedSerial.feature
-                  .map((v) => {
-                    if (v.name === "whatsapp") return v.name;
-                  })
-                  .filter(Boolean)
+                .map((v) => {
+                  if (v.name === "whatsapp") return v.name;
+                })
+                .filter(Boolean)
               : ["null"]
           );
 
