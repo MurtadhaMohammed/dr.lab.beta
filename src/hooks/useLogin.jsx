@@ -3,6 +3,7 @@ import { message } from "antd";
 import dayjs from "dayjs";
 import { useAppStore } from "../libs/appStore";
 import { useTranslation } from "react-i18next";
+import { URL } from "../libs/api";
 
 const useLogin = () => {
   const { isLogin, setIsLogin, setUser } = useAppStore();
@@ -67,7 +68,7 @@ const useLogin = () => {
       if (isOnline) {
         // User is online, proceed with serial expiration check
         const response = await fetch(
-          "https://dr-lab-apiv2.onrender.com/api/app/check-serial-expiration",
+          `${URL}/app/check-serial-expiration`,
           {
             method: "POST",
             headers: {

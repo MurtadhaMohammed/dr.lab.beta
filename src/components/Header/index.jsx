@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import MainContainer from "../Container";
 import "./style.css";
 import { stringify } from "postcss";
+import { URL } from "../../libs/api";
 
 const items = [
   {
@@ -33,7 +34,7 @@ const MainHeader = () => {
     try {
       let serial = localStorage.getItem("lab-serial"); 
       const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
+        `${URL}/app/logout`,
         {
           method: "POST",
           headers: {

@@ -226,7 +226,7 @@ async function createPDF(data, isView = true, cb) {
       });
     }
 
-    doc.save(app.getPath("userData") + "a4.pdf");
+    await doc.save(app.getPath("userData") + "a4.pdf");
     isView && shell.openPath(app.getPath("userData") + "a4.pdf");
 
     let file = new LocalFileData(app.getPath("userData") + "a4.pdf");

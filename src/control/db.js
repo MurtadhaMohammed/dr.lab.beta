@@ -603,6 +603,35 @@ class LabDB {
     return { success: true, total, data: results };
   }
 
+  async getTestNormalValues(testType, testsFromVisit) {
+    let testIds =
+      testType === "PACKAGE"
+        ? testsFromVisit.map((pkg) => pkg.tests.map((test) => test.id)).flat()
+        : testsFromVisit.map((el) => el.id);
+
+    const placeholders = testIds.map(() => "?").join(",");
+    const stmtTests = await this.db.prepare(`
+          SELECT t.*
+          FROM tests t
+          WHERE t.id IN (${placeholders})
+        `);
+
+    const tests = stmtTests.all(...testIds);
+    let newTests = testsFromVisit.map((el) => {
+      if (testType === "PACKAGE") {
+        el.tests = el.tests.map((pkg) => {
+          pkg.normal = tests.find((t) => t.id === pkg.id)?.normal;
+          return pkg;
+        });
+      } else {
+        el.normal = tests.find((t) => t.id === el.id)?.normal;
+      }
+      return el;
+    });
+
+    return newTests;
+  }
+
   async getTotalVisits({ startDate, endDate }) {
     const whereClauses = [
       startDate
@@ -665,7 +694,10 @@ class LabDB {
 
   async updateVisit(id, data) {
     const { patientID, status, testType, tests, discount } = data;
-    const testsStr = JSON.stringify(tests);
+
+    let newTests = await this.getTestNormalValues(testType, tests);
+
+    const testsStr = JSON.stringify(newTests);
 
     const stmt = this.db.prepare(`
       UPDATE visits
@@ -680,9 +712,7 @@ class LabDB {
     `);
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
 
-    //console.log(info);
-
-    return { success: info.changes > 0 };
+    return { success: info.changes > 0, newTests };
   }
 }
 

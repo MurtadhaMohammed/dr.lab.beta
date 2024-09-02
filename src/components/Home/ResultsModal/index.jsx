@@ -99,7 +99,8 @@ export const ResultsModal = () => {
     setRecord(newRecord);
   };
 
-  let printResults = () => {
+  let printResults = (newTests) => {
+    record.tests = newTests;
     let data = {
       patient: record.patient.name,
       age: dayjs().diff(dayjs(record.patient.birth), "y"),
@@ -108,7 +109,6 @@ export const ResultsModal = () => {
       isHeader: true,
       fontSize: printFontSize,
     };
-
     send({
       query: "print",
       data,
@@ -123,8 +123,8 @@ export const ResultsModal = () => {
       doc: "visits",
       query: "updateVisit",
       data: { ...data },
-      id: record.id
-    }).then(({ err }) => {
+      id: record.id,
+    }).then(({ err, newTests }) => {
       if (err) message.error("Error !");
       else {
         message.success(t("savedSuccessfully"));
@@ -132,7 +132,7 @@ export const ResultsModal = () => {
         setIsResultsModal(false);
         setIsReload(!isReload);
         setTimeout(() => {
-          printResults();
+          printResults(newTests);
         }, 1000);
       }
     });
@@ -143,12 +143,14 @@ export const ResultsModal = () => {
       <div className="test-section">
         <Space direction="vertical" size={0} style={{ width: "100%" }}>
           <div className="title">
-            <Typography.Text type="secondary">{t("CustomTest")}</Typography.Text>
+            <Typography.Text type="secondary">
+              {t("CustomTest")}
+            </Typography.Text>
           </div>
           <div className="test-list">
             {record?.tests?.map((row) => {
               // Check and parse options if necessary
-              if (typeof row.options === 'string') {
+              if (typeof row.options === "string") {
                 try {
                   row.options = JSON.parse(row.options);
                 } catch (error) {
@@ -173,10 +175,10 @@ export const ResultsModal = () => {
                     >
                       {Array.isArray(row?.options) && row.options.length > 0
                         ? row.options.map((option, i) => (
-                          <Select.Option key={i} value={option}>
-                            {option}
-                          </Select.Option>
-                        ))
+                            <Select.Option key={i} value={option}>
+                              {option}
+                            </Select.Option>
+                          ))
                         : null}
                     </Select>
                   ) : (
@@ -204,7 +206,7 @@ export const ResultsModal = () => {
           <div className="test-list">
             {group?.tests?.map((row) => {
               // Check and parse options if necessary
-              if (typeof row.options === 'string') {
+              if (typeof row.options === "string") {
                 try {
                   row.options = JSON.parse(row.options);
                 } catch (error) {
@@ -229,10 +231,10 @@ export const ResultsModal = () => {
                     >
                       {Array.isArray(row?.options) && row.options.length > 0
                         ? row.options.map((option, i) => (
-                          <Select.Option key={i} value={option}>
-                            {option}
-                          </Select.Option>
-                        ))
+                            <Select.Option key={i} value={option}>
+                              {option}
+                            </Select.Option>
+                          ))
                         : null}
                     </Select>
                   ) : (
