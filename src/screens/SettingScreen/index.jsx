@@ -155,19 +155,16 @@ const SettingsScreen = () => {
       console.log("UUID:", UUID);
 
       try {
-        const resp = await fetch(
-          `${URL}/app/update-client`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              ...values,
-              device: UUID,
-            }),
-          }
-        );
+        const resp = await fetch(`${URL}/app/update-client`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...values,
+            device: UUID,
+          }),
+        });
 
         console.log("Response status:", resp.status);
 
@@ -448,10 +445,15 @@ const SettingsScreen = () => {
                   } ${t("day")}`}</p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
+                  <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">10/50</p>
+                </div>
+                <div className="w-full flex justify-between inter px-1">
                   <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
-        
-                    <Tag color="magenta-inverse" className="m-0">{String(userType).toLocaleUpperCase()}</Tag>
-             
+
+                  <Tag color="magenta-inverse" className="m-0">
+                    {String(userType).toLocaleUpperCase()}
+                  </Tag>
                 </div>
 
                 {/* <div className="px-1 h-full flex flex-col gap-2">

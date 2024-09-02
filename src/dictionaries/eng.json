@@ -144,6 +144,7 @@
   "day": "day",
   "expiredAt": "Expired At",
   "daysLeft": "Days left",
+  "whatsappLimit": "Watsapp Messages",
   "accountTypeLeft": "Account Type",
   "online": "online",
   "Disabled": "Disabled",
