@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import { send } from "../../control/renderer";
 import { getTotalPrice } from "../../helper/price";
 import Info from "../../components/Reports/Info";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import useLang from "../../hooks/useLang";
 
@@ -148,6 +148,7 @@ const ReportsScreen = () => {
     });
   }, [filterDate]);
 
+  const homeTable = useMemo(() => <HomeTable isReport />, [data]);
 
   return (
     <div className="reports-screen page">
@@ -177,11 +178,10 @@ const ReportsScreen = () => {
         <Divider />
         {/* <PureTable /> */}
         <Info />
-        {data && (
-          <div className="mt-6">
-            <HomeTable isReport />
-          </div>
-        )}
+
+        <div className="mt-6">
+          {homeTable}
+        </div>
       </div>
     </div>
   );

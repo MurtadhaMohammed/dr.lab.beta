@@ -197,3 +197,12 @@ export const useLanguage = create(
     }
   )
 );
+
+import create from 'zustand';
+
+export const useTrigger = create((set) => ({
+  flag: false,
+  test: [],
+  setFlag: (flag) => set({ flag }),
+  setTest: (test) => set({ test })
+}));

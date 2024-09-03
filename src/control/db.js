@@ -15,7 +15,8 @@ class LabDB {
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
       this.initializeDatabase();
-      this.initTestsFromCSV();
+      this.initTestsFromJSON();
+      this.checkAndAddVisitNumberColumn();
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -37,6 +38,7 @@ class LabDB {
         CREATE TABLE IF NOT EXISTS visits (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         patientID INTEGER,
+        visitNumber VARCHAR(6),
         status TEXT DEFAULT "PENDING" NOT NULL,
         testType VARCHAR(50),
         tests TEXT,
@@ -44,9 +46,7 @@ class LabDB {
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(patientID) REFERENCES patients(id)
-);
-
-
+      );
 
       CREATE TABLE IF NOT EXISTS tests(
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -76,42 +76,104 @@ class LabDB {
 
     `);
   }
-  async initTestsFromCSV() {
+
+  async checkAndAddVisitNumberColumn() {
+    try {
+      // Check if the visits table has the visitNumber column
+      const columnCheckStmt = this.db.prepare(`
+        PRAGMA table_info(visits)
+      `);
+      const columns = columnCheckStmt.all();
+
+      const hasVisitNumberColumn = columns.some(
+        (column) => column.name === "visitNumber"
+      );
+
+      if (!hasVisitNumberColumn) {
+        // Alter the table to add the visitNumber column if it doesn't exist
+        this.db.exec(`
+          ALTER TABLE visits ADD COLUMN visitNumber VARCHAR(6)
+        `);
+        console.log("visitNumber column added successfully");
+      } else {
+        console.log("visitNumber column already exists");
+      }
+    } catch (error) {
+      console.error("Error checking or adding visitNumber column:", error);
+    }
+  }
+
+  async initTestsFromJSON() {
     try {
       const testCountStet = this.db.prepare(`
-      SELECT COUNT(*) as total FROM tests
+        SELECT COUNT(*) as total FROM tests
       `);
       const { total } = testCountStet.get();
+
       if (total === 0) {
-        const csvPath = path.join(__dirname, "tests.csv");
-        const csvData = fs.readFileSync(csvPath, "utf-8").trim().split("\n");
+        const jsonPath = path.join(__dirname, "tests.json");
+        const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
 
         const insertStmt = this.db.prepare(`
           INSERT INTO tests (name, price, normal, options, isSelecte)
           VALUES (?, ?, ?, ?, ?)
         `);
 
-        const insertTransaction = this.db.transaction((lines) => {
-          for (const line of lines) {
-            const [name, price, normal, options, isSelecte] = line.split(",");
+        const insertTransaction = this.db.transaction((data) => {
+          for (const item of data) {
+            const normalValue = item.normal
+              ? item.normal.replace(/\\n/g, "\n")
+              : null;
             insertStmt.run(
-              name,
-              Number(price),
-              normal,
-              options,
-              Number(isSelecte)
+              item.name,
+              Number(item.price),
+              normalValue,
+              item.options,
+              Number(item.isSelected)
             );
           }
         });
 
-        insertTransaction(csvData);
+        insertTransaction(jsonData);
 
-        console.log("Tests imported from tests.csv");
+        console.log("Tests imported from tests.json");
       } else {
         console.log("Tests table is not empty, skipping import");
       }
     } catch (error) {
-      console.error("Error importing tests from CSV:", error);
+      console.error("Error importing tests from JSON:", error);
+    }
+  }
+  async addUniqueVisitNumber(visitId) {
+    try {
+      // First, check if the visitNumber already exists for the given visitId
+      const selectStmt = this.db.prepare(`
+        SELECT visitNumber FROM visits WHERE id = ?
+      `);
+      const result = selectStmt.get(visitId);
+
+      // If visitNumber exists, return it
+      if (result && result.visitNumber) {
+        return result.visitNumber;
+      }
+
+      // If visitNumber doesn't exist, generate a unique 6-digit number
+      const visitNumber = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+
+      // Update the visit record with the generated visitNumber
+      const updateStmt = this.db.prepare(`
+        UPDATE visits
+        SET visitNumber = ?
+        WHERE id = ?
+      `);
+      updateStmt.run(visitNumber, visitId);
+
+      return visitNumber;
+    } catch (error) {
+      console.error("Error updating visit with visitNumber:", error);
+      return null;
     }
   }
 
@@ -484,18 +546,20 @@ class LabDB {
 
   async getVisits({ q = "", skip = 0, limit = 10, startDate, endDate }) {
     const whereClauses = [
-      `p.name LIKE ?`,
+      `(p.name LIKE ? OR v.visitNumber LIKE ?)`,
       startDate
-        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) >= '${
+            new Date(startDate).toISOString().split("T")[0]
+          }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) <= '${
+            new Date(endDate).toISOString().split("T")[0]
+          }'`
         : "",
     ]
       .filter(Boolean)
-      .join(" AND ");
+      .join(" AND "); //"976209"
 
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
@@ -504,7 +568,7 @@ class LabDB {
       WHERE ${whereClauses}
     `);
 
-    const countResult = countStmt.get(`%${q}%`);
+    const countResult = countStmt.get(`%${q}%`, `%${q}%`);
     const total = countResult?.total || 0;
 
     const stmt = await this.db.prepare(`
@@ -513,10 +577,10 @@ class LabDB {
       JOIN patients p ON v.patientID = p.id
       WHERE ${whereClauses}
       ORDER BY createdAt DESC
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${skip}
     `);
 
-    const visits = stmt.all(`%${q}%`, limit, skip);
+    const visits = stmt.all(`%${q}%`, `%${q}%`);
     const results = visits?.map((el) => ({
       id: el?.id,
       tests: JSON.parse(el?.tests) || [],
@@ -525,6 +589,7 @@ class LabDB {
       discount: el?.discount,
       createdAt: el?.createdAt,
       updatedAt: el?.updatedAt,
+      visitNumber: el?.visitNumber,
       patient: {
         id: el?.patientID,
         name: el?.patientName,
@@ -538,15 +603,46 @@ class LabDB {
     return { success: true, total, data: results };
   }
 
+  async getTestNormalValues(testType, testsFromVisit) {
+    let testIds =
+      testType === "PACKAGE"
+        ? testsFromVisit.map((pkg) => pkg.tests.map((test) => test.id)).flat()
+        : testsFromVisit.map((el) => el.id);
+
+    const placeholders = testIds.map(() => "?").join(",");
+    const stmtTests = await this.db.prepare(`
+          SELECT t.*
+          FROM tests t
+          WHERE t.id IN (${placeholders})
+        `);
+
+    const tests = stmtTests.all(...testIds);
+    let newTests = testsFromVisit.map((el) => {
+      if (testType === "PACKAGE") {
+        el.tests = el.tests.map((pkg) => {
+          pkg.normal = tests.find((t) => t.id === pkg.id)?.normal;
+          return pkg;
+        });
+      } else {
+        el.normal = tests.find((t) => t.id === el.id)?.normal;
+      }
+      return el;
+    });
+
+    return newTests;
+  }
+
   async getTotalVisits({ startDate, endDate }) {
     const whereClauses = [
       startDate
-        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) >= '${
+            new Date(startDate).toISOString().split("T")[0]
+          }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
-        }'`
+        ? `DATE(v.createdAt) <= '${
+            new Date(endDate).toISOString().split("T")[0]
+          }'`
         : "",
     ]
       .filter(Boolean)
@@ -596,9 +692,12 @@ class LabDB {
     return { success: true, data: results };
   }
 
-  async updateVisit(id, update) {
-    const { patientID, status, testType, tests, discount } = update;
-    const testsStr = JSON.stringify(tests);
+  async updateVisit(id, data) {
+    const { patientID, status, testType, tests, discount } = data;
+
+    let newTests = await this.getTestNormalValues(testType, tests);
+
+    const testsStr = JSON.stringify(newTests);
 
     const stmt = this.db.prepare(`
       UPDATE visits
@@ -612,7 +711,8 @@ class LabDB {
       WHERE id = ?
     `);
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
-    return { success: info.changes > 0 };
+
+    return { success: info.changes > 0, newTests };
   }
 }
 

@@ -4,6 +4,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   WhatsAppOutlined,
+  BarcodeOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -17,6 +18,7 @@ import {
   Popover,
   Input,
   Checkbox,
+  Tooltip,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
@@ -27,13 +29,13 @@ import {
   useAppStore,
   useHomeStore,
   useReportsStore,
+  useTrigger,
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
-import fileDialog from "file-dialog";
 import { apiCall } from "../../../libs/api";
-import jsPDF from 'jspdf';
 import { parseTests } from "../ResultsModal";
+import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload } = useAppStore();
@@ -54,7 +56,6 @@ export const PureTable = ({ isReport = false }) => {
     setRecord,
     isToday,
     setPatientID,
-    record
   } = useHomeStore();
   const { filterDate } = useReportsStore();
 
@@ -65,12 +66,15 @@ export const PureTable = ({ isReport = false }) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [labFeature, setLabFeature] = useState(
-    localStorage.getItem('lab-feature') === "null" ? null : localStorage.getItem('lab-feature')
-  );
+
+  const [userType] = useState(JSON.parse(localStorage.getItem("lab-user"))?.type);
+  const { flag, setFlag } = useTrigger();
+
   const limit = usePageLimit();
-  const { setTableData } = useHomeStore();
-  const { t } = useTranslation();
+  // const { setTableData } = useHomeStore();
+  const { t, i18n } = useTranslation();
+
+  const direction = i18n.dir();
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -81,6 +85,20 @@ export const PureTable = ({ isReport = false }) => {
   const statusColor = {
     PENDING: "orange",
     COMPLETED: "green",
+  };
+
+  const handlePrintBarcode = async (record) => {
+    const resp = await send({
+      query: "printParcode",
+      data: {
+        name: record.patient.name,
+        id: record.id,
+      },
+    });
+
+    if (resp.success) {
+      setIsReload(!isReload);
+    }
   };
 
   const updatePatient = async (record, phone) => {
@@ -102,8 +120,8 @@ export const PureTable = ({ isReport = false }) => {
     }
   };
 
-
   const handleSandWhatsap = async (record) => {
+    setMsgLoading(true);
     if (destPhone !== record?.phone) await updatePatient(record, destPhone);
     let phone = destPhone;
     if (!phoneValidate(phone)) {
@@ -136,9 +154,9 @@ export const PureTable = ({ isReport = false }) => {
               resolve(file);
             }
             console.log(err, res, file);
-          })
+          });
         });
-      }
+      };
 
       let handleSubmit = async () => {
         let data = { ...record, status: "COMPLETED", updatedAt: Date.now() };
@@ -147,11 +165,10 @@ export const PureTable = ({ isReport = false }) => {
           doc: "visits",
           query: "updateVisit",
           data: { ...data },
-          id: record?.id
+          id: record?.id,
         }).then(({ err }) => {
           if (err) message.error("Error !");
           else {
-            message.success(t("savesuccess"));
             setRecord(null);
             setIsResultsModal(false);
             setIsReload(!isReload);
@@ -159,25 +176,22 @@ export const PureTable = ({ isReport = false }) => {
               try {
                 const res = await printResults();
                 pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
-                console.log(res, 'ressss');
-
-                // Continue with sending the PDF to the server...
-
+                const user = JSON.parse(localStorage?.getItem("lab-user"));
                 const formData = new FormData();
-                formData.append('name', record?.patient?.name);
-                formData.append('phone', phone);
-                formData.append('lab', JSON.parse(localStorage?.getItem("lab-user"))?.labName || "");
-                formData.append('file', pdf, 'report.pdf');
-                formData.append('senderPhone', JSON.parse(localStorage?.getItem("lab-user"))?.phone || "");
+                formData.append("clientId", user?.id);
+                formData.append("name", record?.patient?.name);
+                formData.append("phone", phone);
+                formData.append("lab", user?.labName || "");
+                formData.append("file", pdf, "report.pdf");
+                formData.append("senderPhone", user?.phone || "");
                 const resp = await apiCall({
-                  method: 'POST',
-                  pathname: '/send/whatsapp-message',
+                  method: "POST",
+                  pathname: "/send/whatsapp-message",
                   isFormData: true,
                   data: formData,
                 });
                 const response = await resp.json();
-
-                console.log(response);
+                setMsgLoading(false);
 
                 if (response?.message === t("Messagesentsuccess")) {
                   message.success(t("SendSuccess"));
@@ -187,23 +201,23 @@ export const PureTable = ({ isReport = false }) => {
               } catch (error) {
                 console.error("Error generating PDF:", error);
                 message.error(t("ErrorGenerate"));
+                setMsgLoading(false);
               }
-            }, 1000);
+            }, 100);
           }
         });
       };
 
-      await handleSubmit()
+      await handleSubmit();
     } catch (error) {
       console.error("Error generating PDF or sending data:", error);
       message.error(t("erroroccurred"));
-    } finally {
       setMsgLoading(false);
     }
   };
 
   const whatsapContnet = (record) => (
-    <div div className="whatsap-content" >
+    <div div className="whatsap-content">
       <WhatsAppOutlined style={{ fontSize: 40 }} />
       <b>{t("SendResults")}</b>
       <p>{t("SendResulsOnWhatsaap")}</p>
@@ -299,10 +313,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -362,7 +376,7 @@ export const PureTable = ({ isReport = false }) => {
         title: "",
         key: "action",
         render: (_, record) => (
-          <Space size="small" className="custom-actions">
+          <Space Space size="small" className="custom-actions">
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
@@ -370,22 +384,52 @@ export const PureTable = ({ isReport = false }) => {
             >
               {t("PrintResults")}
             </Button>
-            <Divider type="vertical" />
-            <Popover
-              onOpenChange={(isOpen) => {
-                if (isOpen) setDestPhone(record?.patient?.phone);
-                else setIsConfirm(false);
-              }}
-              content={whatsapContnet(record)}
-              open={labFeature === null ? false : undefined}
-            >
+            <Tooltip title={t("PrintBarcode")}>
               <Button
+                onClick={() => handlePrintBarcode(record)}
+                style={{ fontSize: 12 }}
                 size="small"
-                icon={<WhatsAppOutlined />}
-                loading={msgLoading && record?.patient?.phone === destPhone}
-                disabled={labFeature === null}
+                icon={<BarcodeOutlined />}
+                disabled
+                hidden
               />
-            </Popover>
+            </Tooltip>
+            <Divider type="vertical" />
+            {
+              <Popover
+                onOpenChange={(isOpen) => {
+                  if (isOpen) setDestPhone(record?.patient?.phone);
+                  else setIsConfirm(false);
+                }}
+                placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
+                content={
+                  userType === "trial" ? (
+                    <PopOverContent
+                      website={"https://www.puretik.com/ar"}
+                      email={"puretik@gmail.com"}
+                      phone={"07710553120"}
+                    />
+                  ) : (
+                    whatsapContnet(record)
+                  )
+                }
+                open={
+                  userType === "trial"
+                    ? undefined
+                    : record?.status == "PENDING"
+                    ? false
+                    : undefined
+                }
+              >
+                <Button
+                  size="small"
+                  className=" sticky"
+                  icon={<WhatsAppOutlined />}
+                  loading={msgLoading && record?.patient?.phone === destPhone}
+                  disabled={record?.status == "PENDING" || userType === "trial"}
+                />
+              </Popover>
+            }
             <Button
               size="small"
               disabled={record?.status === t("COMPLETED")}
@@ -422,6 +466,7 @@ export const PureTable = ({ isReport = false }) => {
       .then((resp) => {
         if (resp.success) {
           console.log("Success deleteVisit");
+          message.success(t("Visitdeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
           console.error("Error deleteVisit:", resp.error);
@@ -454,6 +499,15 @@ export const PureTable = ({ isReport = false }) => {
     setCreatedAt(createdAt);
   };
 
+  const handelOpenModal = (data) => {
+    const numberValue = Number(querySearch);
+    let isBarcode = !isNaN(numberValue) && querySearch.length === 6;
+    if (isBarcode && data.length === 1) {
+      setRecord(data[0]);
+      setIsResultsModal(true);
+    }
+  };
+
   useEffect(() => {
     setLoading(true);
     let startDate = filterDate
@@ -481,15 +535,21 @@ export const PureTable = ({ isReport = false }) => {
         endDate,
       },
     }).then((resp) => {
+      console.log(resp, "respspspspspspsps", flag);
       if (resp.success) {
+        console.log(resp.data, "data fetched");
+
         setData(resp.data);
         setTotal(resp.total);
+        handelOpenModal(resp.data);
+        // message.success(t("Visitsretrievedsuccessfully"));
       } else {
         console.error("Error retrieving visits:", resp.error);
       }
       setLoading(false);
+      setFlag(false);
     });
-  }, [page, isReload, querySearch, isToday, filterDate, limit]);
+  }, [page, isReload, querySearch, isToday, filterDate, limit, flag]);
 
   return (
     <Table
@@ -499,7 +559,6 @@ export const PureTable = ({ isReport = false }) => {
         borderRadius: 10,
         overflow: "hidden",
       }}
-      
       columns={columns}
       dataSource={data}
       loading={loading}
@@ -508,7 +567,7 @@ export const PureTable = ({ isReport = false }) => {
       footer={() => (
         <div className="table-footer app-flex-space">
           <div
-            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+            className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
           ></div>
           <p>

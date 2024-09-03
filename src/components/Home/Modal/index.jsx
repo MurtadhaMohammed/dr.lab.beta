@@ -29,7 +29,7 @@ export const PureModal = () => {
   } = useHomeStore();
   const [step, setStep] = useState(0);
 
-  const { t,i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   // const testLabel = {
   //   [t("CUSTOME")]: "Custome",
   //   [t("PACKAGE")]: "Package",
@@ -64,8 +64,7 @@ export const PureModal = () => {
       })
         .then((resp) => {
           if (resp.success) {
-            message.success(t("visitupdatesucess"));
-            console.log("updateVisit response:", resp);
+            message.success(t("Visitupdatedsuccessfully"));
             send({
               query: "updatePatient",
               id: patientID,
@@ -108,7 +107,7 @@ export const PureModal = () => {
               .then((resp) => {
                 if (resp.success) {
                   console.log("addVisit response:", resp);
-                  message.success(t("Visitaddedsuccess"));
+                  message.success(t("Visitaddedsuccessfully"));
                   setReset();
                   setIsModal(false);
                   setIsReload(!isReload);
@@ -193,34 +192,33 @@ export const PureModal = () => {
   ];
 
   return (
-<Modal
-  title={
-    id
-      ? t("Edit")
-      : i18n.language === "ar"
-      ? `${t("Add")} ${t("Test")} ${testLabel[testType]} ${t("forPatient")}`
-      : `${t("Add")} ${testLabel[testType]} ${t("Test For Patient")}`
-  }
-  open={isModal}
-  width={400}
-  onOk={() => {
-    setIsModal(false);
-  }}
-  onCancel={() => {
-    setIsModal(false);
-    setReset();
-  }}
-  footer={
-    <div className="app-flex-space">
-      <PureSteps length={2} activeIndex={step} />
-      {actionStep[step]}
-    </div>
-  }
-  centered
-  destroyOnClose
->
-  <div className="create-test-modal">{pageStep[step]}</div>
-</Modal>
-
+    <Modal
+      title={
+        id
+          ? t("Edit")
+          : i18n.language === "ar"
+          ? `${t("Add")} ${t("Test")} ${testLabel[testType]} ${t("forPatient")}`
+          : `${t("Add")} ${testLabel[testType]} ${t("Test For Patient")}`
+      }
+      open={isModal}
+      width={420}
+      onOk={() => {
+        setIsModal(false);
+      }}
+      onCancel={() => {
+        setIsModal(false);
+        setReset();
+      }}
+      footer={
+        <div className="app-flex-space">
+          <PureSteps length={2} activeIndex={step} />
+          {actionStep[step]}
+        </div>
+      }
+      centered
+      destroyOnClose
+    >
+      <div className="create-test-modal">{pageStep[step]}</div>
+    </Modal>
   );
 };

@@ -44,14 +44,11 @@ function App() {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
-    console.log(isOnline, "isOnline!!!!!!!!!!!!!!!!!!!!!");
-
     const online = window.addEventListener("online", handleOnline);
     const offline = window.addEventListener("offline", handleOffline);
 
     return () => {
-      online,
-        offline
+      online, offline;
     };
   }, []);
 

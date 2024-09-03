@@ -27,6 +27,7 @@ import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
 import { stringify } from "postcss";
+import { URL } from "../../libs/api";
 
 const { Sider, Content } = Layout;
 
@@ -50,16 +51,13 @@ const MainContainerV2 = ({ children }) => {
     setSignoutLoading(true);
     try {
       let serial = localStorage.getItem("lab-serial");
-      const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ serial }),
-        }
-      );
+      const resp = await fetch(`${URL}/app/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ serial }),
+      });
       if (resp.status === 200) {
         setSignoutLoading(false);
         localStorage.clear();
@@ -81,7 +79,7 @@ const MainContainerV2 = ({ children }) => {
       setShowTrialAlert(true);
     }
 
-    if (userData?.type === "paid" && !isNaN(labExp) && labExp <= 3) {
+    if (userData?.type !== "trial" && !isNaN(labExp) && labExp <= 3) {
       setRemainingDays(labExp);
       setShowExpAlert(true);
     }
@@ -208,14 +206,10 @@ const MainContainerV2 = ({ children }) => {
               onConfirm={signout}
               title={t("SignoutConfirm")}
               description={t("SignOutFormThisApp")}
-              disabled={userType === "trial"} // Disable Popconfirm if the user is a trial user
             >
               <button
                 onClick={() => signoutLoading}
-                className={`border-t border-t-[#eee] h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 ${
-                  userType === "trial" ? "text-[#ccc]" : "text-[#eb2f96]"
-                }`}
-                disabled={userType === "trial"} // Disable button if the user is a trial user
+                className={`border-t border-t-[#eee] h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 text-[#eb2f96]`}
               >
                 <IoMdLogOut
                   style={{
@@ -263,7 +257,7 @@ const MainContainerV2 = ({ children }) => {
                   content={
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
-                      email={"https://www.puretik.com/ar"}
+                      email={"info@puretik.com"}
                       phone={"07710553120"}
                     />
                   }
@@ -298,7 +292,7 @@ const MainContainerV2 = ({ children }) => {
                   content={
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
-                      email={"https://www.puretik.com/ar"}
+                      email={"info@puretik.com"}
                       phone={"07710553120"}
                     />
                   }
