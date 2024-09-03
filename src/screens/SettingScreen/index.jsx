@@ -117,7 +117,6 @@ const SettingsScreen = () => {
     setPrintFontSize(val);
   };
 
-  console.log(printFontSize, "fontSize***************");
 
   const handelCancel = () => {
     form.setFieldsValue(user);
@@ -188,7 +187,6 @@ const SettingsScreen = () => {
       }
     });
   };
-  //test push
 
   const handleLang = (checked) => {
     if (checked != undefined) {

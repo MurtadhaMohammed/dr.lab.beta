@@ -390,8 +390,7 @@ export const PureTable = ({ isReport = false }) => {
                 style={{ fontSize: 12 }}
                 size="small"
                 icon={<BarcodeOutlined />}
-                disabled
-                hidden
+
               />
             </Tooltip>
             <Divider type="vertical" />
