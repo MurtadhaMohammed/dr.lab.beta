@@ -42,6 +42,7 @@ const SettingsScreen = () => {
     expire: localStorage.getItem("lab-exp"),
   });
   const navigate = useNavigate();
+  const [whatsappCount, setWhatsappCount] = useState({ sent: 0, limit: 50 }); 
 
   const { t } = useTranslation();
 
@@ -62,6 +63,51 @@ const SettingsScreen = () => {
     }
   }
 
+  const handleWhatsappCount = async (labUserId) => {
+    const url = `${URL}/send/whatsapp-count/${labUserId}`;
+    console.log("Fetching URL:", url);
+  
+    try {
+      const response = await fetch(url);
+      console.log("Response Status:", response.status);
+      console.log("Response Headers:", [...response.headers]);
+  
+      const text = await response.text(); 
+      console.log("Response Text:", text);
+  
+      try {
+        const data = JSON.parse(text);
+        setWhatsappCount({ sent: data.count, limit: 50 });
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+      }
+    } catch (error) {
+      console.error("Error fetching WhatsApp count:", error);
+    }
+  };
+
+  useEffect(() => {
+    const labUserData = localStorage.getItem('lab-user');
+  
+    if (labUserData) {
+      try {
+        const parsedData = JSON.parse(labUserData);
+        const labUserId = parsedData.id;
+  
+        if (labUserId) {
+          handleWhatsappCount(labUserId);
+        } else {
+          console.error("No client ID found in local storage data.");
+        }
+      } catch (error) {
+        console.error("Error parsing local storage data:", error);
+      }
+    } else {
+      console.error("No lab-user data found in local storage.");
+    }
+  }, []);
+  
+  
   useEffect(() => {
     fetchImagePath();
   }, []);
@@ -444,7 +490,9 @@ const SettingsScreen = () => {
                 </div>
                 <div className="w-full flex justify-between inter px-1">
                   <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">10/50</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">
+                  {`${whatsappCount.sent}/${whatsappCount.limit}`}
+                  </p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
                   <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
