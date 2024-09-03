@@ -42,10 +42,16 @@ const SettingsScreen = () => {
     expire: localStorage.getItem("lab-exp"),
   });
   const navigate = useNavigate();
-  const [whatsappCount, setWhatsappCount] = useState({ sent: 0, limit: 50 }); 
+  const [whatsappCount, setWhatsappCount] = useState({ sent: 0 });
+  const [error, setError] = useState(null);
+
 
   const { t } = useTranslation();
 
+  const limits = {
+    basic : 50,
+    premium:1000
+  }
   const labUser = JSON.parse(localStorage.getItem("lab-user"));
   const userType = labUser?.type;
 
@@ -64,49 +70,76 @@ const SettingsScreen = () => {
   }
 
   const handleWhatsappCount = async (labUserId) => {
-    const url = `${URL}/send/whatsapp-count/${labUserId}`;
-    console.log("Fetching URL:", url);
-  
+    const url = `${URL}/send/whatsapp-count/${labUserId}`;  
     try {
       const response = await fetch(url);
-      console.log("Response Status:", response.status);
-      console.log("Response Headers:", [...response.headers]);
-  
-      const text = await response.text(); 
-      console.log("Response Text:", text);
+      const text = await response.text();
   
       try {
         const data = JSON.parse(text);
-        setWhatsappCount({ sent: data.count, limit: 50 });
+        console.log("Parsed Data:", data);
+        const newCount = { sent: data.count };
+        setWhatsappCount(newCount);
+        localStorage.setItem('whatsappCount', JSON.stringify(newCount));
       } catch (error) {
         console.error("Error parsing JSON:", error);
+        setError("Error parsing response data.");
       }
     } catch (error) {
       console.error("Error fetching WhatsApp count:", error);
+      setError("Error fetching WhatsApp count.");
+    } finally {
+      setLoading(false);
     }
   };
-
+  
+  
   useEffect(() => {
-    const labUserData = localStorage.getItem('lab-user');
-  
-    if (labUserData) {
+    const storedCount = localStorage.getItem('whatsappCount');  
+    console.log(storedCount);
+    if (storedCount) {
       try {
-        const parsedData = JSON.parse(labUserData);
-        const labUserId = parsedData.id;
-  
-        if (labUserId) {
-          handleWhatsappCount(labUserId);
-        } else {
-          console.error("No client ID found in local storage data.");
-        }
+        const parsedCount = JSON.parse(storedCount);
+        setWhatsappCount(parsedCount);
       } catch (error) {
-        console.error("Error parsing local storage data:", error);
+        console.error("Error parsing stored count:", error);
+        setError("Error loading stored data.");
+        
       }
     } else {
-      console.error("No lab-user data found in local storage.");
+      const labUserData = localStorage.getItem('lab-user');
+
+      if (labUserData) {
+        try {
+          const parsedData = JSON.parse(labUserData);
+          const labUserId = parsedData.id;
+
+          if (labUserId) {
+            handleWhatsappCount(labUserId);
+          } else {
+            console.error("No client ID found in local storage data.");
+            setError("No client ID found.");
+          }
+        } catch (error) {
+          console.error("Error parsing local storage data:", error);
+          setError("Error parsing local storage data.");
+        }
+      } else {
+        console.error("No lab-user data found in local storage.");
+        setError("No lab-user data found.");
+      }
     }
   }, []);
-  
+
+  useEffect(() => {
+    if (userType) {
+      const defaultLimit = limits[userType] || 0;
+      setWhatsappCount(prevCount => ({
+        ...prevCount,
+        limit: defaultLimit
+      }));
+    }
+  }, [userType]);
   
   useEffect(() => {
     fetchImagePath();
