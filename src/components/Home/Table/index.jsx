@@ -30,6 +30,7 @@ import {
   useHomeStore,
   useReportsStore,
   useTrigger,
+  useWhatsappCountStore
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
@@ -75,6 +76,11 @@ export const PureTable = ({ isReport = false }) => {
   const { t, i18n } = useTranslation();
 
   const direction = i18n.dir();
+
+  const { isLimitExceeded } = useWhatsappCountStore((state) => ({
+    isLimitExceeded: state.isLimitExceeded,
+  }));
+
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -402,6 +408,13 @@ export const PureTable = ({ isReport = false }) => {
                 }}
                 placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
                 content={
+                  isLimitExceeded ? (
+                    <PopOverContent
+                      website={"https://www.puretik.com/ar"}
+                      email={"puretik@gmail.com"}
+                      phone={"07710553120"}
+                      limitExceededMessage={t("limit_exceeded_message")}
+                    /> ) :
                   userType === "trial" ? (
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
@@ -425,7 +438,7 @@ export const PureTable = ({ isReport = false }) => {
                   className=" sticky"
                   icon={<WhatsAppOutlined />}
                   loading={msgLoading && record?.patient?.phone === destPhone}
-                  disabled={record?.status == "PENDING" || userType === "trial"}
+                  disabled={record?.status == "PENDING" || userType === "trial" || isLimitExceeded}
                 />
               </Popover>
             }

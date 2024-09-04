@@ -214,5 +214,6 @@
   "Failedserialexpiration": "Failed to check serial expiration.",
   "UpdateSuccess": "Update Successfully.",
   "Failedcommunicateserver": "Failed to communicate with server.",
-  "error": "Error, Try Again Later"
+  "error": "Error, Try Again Later",
+  "limit_exceeded_message":"You reached the limit for whatsapp messages"
 }

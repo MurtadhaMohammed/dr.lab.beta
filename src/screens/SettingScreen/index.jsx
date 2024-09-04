@@ -20,7 +20,7 @@ import {
 import { PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
-import { useAppStore, useLanguage } from "../../libs/appStore";
+import { useAppStore, useLanguage ,useWhatsappCountStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
@@ -36,13 +36,13 @@ const SettingsScreen = () => {
   const [remainingDays, setRemainingDays] = useState(null);
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
+  const {whatsappCount , setWhatsappCount} = useWhatsappCountStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
     register: localStorage.getItem("lab-created"),
     expire: localStorage.getItem("lab-exp"),
   });
   const navigate = useNavigate();
-  const [whatsappCount, setWhatsappCount] = useState({ sent: 0 });
   const [error, setError] = useState(null);
 
 
@@ -132,14 +132,14 @@ const SettingsScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (userType) {
-      const defaultLimit = limits[userType] || 0;
-      setWhatsappCount(prevCount => ({
-        ...prevCount,
-        limit: defaultLimit
-      }));
+    let limit = 0;
+    if (userType === 'basic') {
+      limit = 50;
+    } else if (userType === 'premium') {
+      limit = 1000;
     }
-  }, [userType]);
+    setWhatsappCount({ limit });
+  }, [userType, setWhatsappCount]);
   
   useEffect(() => {
     fetchImagePath();
