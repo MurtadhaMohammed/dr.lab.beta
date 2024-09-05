@@ -714,6 +714,25 @@ class LabDB {
 
     return { success: info.changes > 0, newTests };
   }
+
+  async exportAllData() {
+    try {
+      const patients = await this.getPatients(); // Use a large limit to get all patients
+      const tests = await this.getTests({});
+      const packages = await this.getPackages({});
+      const visits = await this.getVisits(); // Use a large limit to get all visits
+
+      return {
+        patients: patients.data,
+        tests: tests.data,
+        packages: packages.data,
+        visits: visits.data
+      };
+    } catch (error) {
+      console.error("Error exporting all data:", error);
+      throw error;
+    }
+  }
 }
 
 module.exports = { LabDB };
