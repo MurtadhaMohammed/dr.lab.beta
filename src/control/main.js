@@ -462,6 +462,30 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       );
 
       break;
+          case "exportDatabase": {
+      try {
+        const desktopPath = app.getPath("desktop");
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const exportPath = path.join(desktopPath, `lab_database_export_${timestamp}.json`);
+
+        const data = await labDB.exportAllData();
+        fs.writeFileSync(exportPath, JSON.stringify(data, null, 2));
+
+        event.reply("asynchronous-reply", {
+          success: true,
+          message: "Database exported successfully",
+          path: exportPath
+        });
+      } catch (error) {
+        console.error("Error exporting database:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message
+        });
+      }
+      break;
+    }
+
 
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });

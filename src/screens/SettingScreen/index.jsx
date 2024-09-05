@@ -17,7 +17,7 @@ import {
   Switch,
   Tag,
 } from "antd";
-import { PhoneOutlined, UserOutlined } from "@ant-design/icons";
+import { PhoneOutlined, UserOutlined, DownloadOutlined } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore, useLanguage } from "../../libs/appStore";
@@ -44,6 +44,7 @@ const SettingsScreen = () => {
   const navigate = useNavigate();
   const [whatsappCount, setWhatsappCount] = useState({ sent: 0 });
   const [error, setError] = useState(null);
+  const [exportLoading, setExportLoading] = useState(false);
 
 
   const { t } = useTranslation();
@@ -319,6 +320,24 @@ const SettingsScreen = () => {
     [remainingDays, lang]
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
+  const handleExportDatabase = async () => {
+    setExportLoading(true);
+    try {
+      const response = await send({ query: "exportDatabase" });
+      if (response.success) {
+        message.success(t("DatabaseExportedSuccessfully"));
+        console.log("Export path:", response.path);
+      } else {
+        throw new Error(response.error || "Unknown error occurred");
+      }
+    } catch (error) {
+      console.error("Error exporting database:", error);
+      message.error(t("ErrorExportingDatabase"));
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -564,6 +583,28 @@ const SettingsScreen = () => {
                   </p>
                 </div> */}
               </div>
+            </Card>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-[20px] mt-[24px]">
+          <div>
+            <p className="pl-[4px] opacity-60">{t("DatabaseManagement")}</p>
+            <Card className="mt-[6px]">
+              <div className="flex justify-between items-center">
+                <b className="text-[14px]">{t("ExportDatabase")}</b>
+                <Button 
+                  type="primary" 
+                  icon={<DownloadOutlined />} 
+                  onClick={handleExportDatabase}
+                  loading={exportLoading}
+                >
+                  {t("ExportToDesktop")}
+                </Button>
+              </div>
+              <p className="mt-2 text-sm text-gray-500">
+                {t("ExportDatabaseDescription")}
+              </p>
             </Card>
           </div>
         </section>
