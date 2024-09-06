@@ -15,16 +15,18 @@ import {
   Select,
   Space,
   Switch,
+  Tag,
 } from "antd";
 import { PhoneOutlined, UserOutlined } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
-import { useAppStore, useLanguage } from "../../libs/appStore";
+import { useAppStore, useLanguage ,useWhatsappCountStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import PopOverContent from "./PopOverContent";
+import { URL } from "../../libs/api";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -34,15 +36,22 @@ const SettingsScreen = () => {
   const [remainingDays, setRemainingDays] = useState(null);
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
+  const {whatsappCount , setWhatsappCount} = useWhatsappCountStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
     register: localStorage.getItem("lab-created"),
     expire: localStorage.getItem("lab-exp"),
   });
   const navigate = useNavigate();
+  const [error, setError] = useState(null);
+
 
   const { t } = useTranslation();
 
+  const limits = {
+    basic : 50,
+    premium:1000
+  }
   const labUser = JSON.parse(localStorage.getItem("lab-user"));
   const userType = labUser?.type;
 
@@ -60,6 +69,78 @@ const SettingsScreen = () => {
     }
   }
 
+  const handleWhatsappCount = async (labUserId) => {
+    const url = `${URL}/send/whatsapp-count/${labUserId}`;  
+    try {
+      const response = await fetch(url);
+      const text = await response.text();
+  
+      try {
+        const data = JSON.parse(text);
+        console.log("Parsed Data:", data);
+        const newCount = { sent: data.count };
+        setWhatsappCount(newCount);
+        localStorage.setItem('whatsappCount', JSON.stringify(newCount));
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        setError("Error parsing response data.");
+      }
+    } catch (error) {
+      console.error("Error fetching WhatsApp count:", error);
+      setError("Error fetching WhatsApp count.");
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  
+  useEffect(() => {
+    const storedCount = localStorage.getItem('whatsappCount');  
+    console.log(storedCount);
+    if (storedCount) {
+      try {
+        const parsedCount = JSON.parse(storedCount);
+        setWhatsappCount(parsedCount);
+      } catch (error) {
+        console.error("Error parsing stored count:", error);
+        setError("Error loading stored data.");
+        
+      }
+    } else {
+      const labUserData = localStorage.getItem('lab-user');
+
+      if (labUserData) {
+        try {
+          const parsedData = JSON.parse(labUserData);
+          const labUserId = parsedData.id;
+
+          if (labUserId) {
+            handleWhatsappCount(labUserId);
+          } else {
+            console.error("No client ID found in local storage data.");
+            setError("No client ID found.");
+          }
+        } catch (error) {
+          console.error("Error parsing local storage data:", error);
+          setError("Error parsing local storage data.");
+        }
+      } else {
+        console.error("No lab-user data found in local storage.");
+        setError("No lab-user data found.");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    let limit = 0;
+    if (userType === 'basic') {
+      limit = 50;
+    } else if (userType === 'premium') {
+      limit = 1000;
+    }
+    setWhatsappCount({ limit });
+  }, [userType, setWhatsappCount]);
+  
   useEffect(() => {
     fetchImagePath();
   }, []);
@@ -73,16 +154,13 @@ const SettingsScreen = () => {
     try {
       let serial = localStorage.getItem("lab-serial");
       console.log("Serial:", serial);
-      const resp = await fetch(
-        `https://dr-lab-apiv2.onrender.com/api/app/logout`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ serial }),
-        }
-      );
+      const resp = await fetch(`${URL}/app/logout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ serial }),
+      });
       if (resp.status === 200) {
         setSignoutLoading(false);
         localStorage.clear();
@@ -118,7 +196,6 @@ const SettingsScreen = () => {
     setPrintFontSize(val);
   };
 
-  console.log(printFontSize, "fontSize***************");
 
   const handelCancel = () => {
     form.setFieldsValue(user);
@@ -156,19 +233,16 @@ const SettingsScreen = () => {
       console.log("UUID:", UUID);
 
       try {
-        const resp = await fetch(
-          "https://dr-lab-apiv2.onrender.com/api/app/update-client",
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              ...values,
-              device: UUID,
-            }),
-          }
-        );
+        const resp = await fetch(`${URL}/app/update-client`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...values,
+            device: UUID,
+          }),
+        });
 
         console.log("Response status:", resp.status);
 
@@ -192,7 +266,6 @@ const SettingsScreen = () => {
       }
     });
   };
-  //test push
 
   const handleLang = (checked) => {
     if (checked != undefined) {
@@ -279,11 +352,7 @@ const SettingsScreen = () => {
               title={t("SignoutConfirm")}
               description={t("SignOutFormThisApp")}
             >
-              <Button
-                loading={signoutLoading}
-                danger
-                disabled={userType === "trial"} // Disable button if user type is trial
-              >
+              <Button loading={signoutLoading} danger>
                 {t("SignOut")}
               </Button>
             </Popconfirm>
@@ -421,11 +490,11 @@ const SettingsScreen = () => {
                   </p>
                 </div>
 
-                {userType === "paid" && remainingDays < 4 ? (
+                {/* {userType === "paid" && remainingDays < 4 ? (
                   <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">
                     {t("supportPaymentReminder")}
                   </p>
-                ) : null}
+                ) : null} */}
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p>{t("startedAt")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
@@ -452,8 +521,21 @@ const SettingsScreen = () => {
                     remainingDays || 120
                   } ${t("day")}`}</p>
                 </div>
+                <div className="w-full flex justify-between inter px-1">
+                  <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">
+                  {`${whatsappCount.sent}/${whatsappCount.limit}`}
+                  </p>
+                </div>
+                <div className="w-full flex justify-between inter px-1">
+                  <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
 
-                <div className="px-1 h-full flex flex-col gap-2">
+                  <Tag color="magenta-inverse" className="m-0">
+                    {String(userType).toLocaleUpperCase()}
+                  </Tag>
+                </div>
+
+                {/* <div className="px-1 h-full flex flex-col gap-2">
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
                     <p className=" font-normal">{t("whatsappIntegration")}</p>
@@ -480,7 +562,7 @@ const SettingsScreen = () => {
                   >
                     {whatsAppStatus.description}
                   </p>
-                </div>
+                </div> */}
               </div>
             </Card>
           </div>

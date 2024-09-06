@@ -30,6 +30,7 @@ import {
   useHomeStore,
   useReportsStore,
   useTrigger,
+  useWhatsappCountStore
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
@@ -66,20 +67,20 @@ export const PureTable = ({ isReport = false }) => {
   const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [labFeature, setLabFeature] = useState(
-    localStorage.getItem("lab-feature") === "null"
-      ? null
-      : localStorage.getItem("lab-feature")
-  );
-  const userType = useState(JSON.parse(localStorage.getItem("lab-user"))?.type);
-  const { flag, setFlag, test } = useTrigger();
-  console.log(data);
+
+  const [userType] = useState(JSON.parse(localStorage.getItem("lab-user"))?.type);
+  const { flag, setFlag } = useTrigger();
 
   const limit = usePageLimit();
   // const { setTableData } = useHomeStore();
   const { t, i18n } = useTranslation();
 
   const direction = i18n.dir();
+
+  const { isLimitExceeded } = useWhatsappCountStore((state) => ({
+    isLimitExceeded: state.isLimitExceeded,
+  }));
+
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -126,6 +127,7 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   const handleSandWhatsap = async (record) => {
+    setMsgLoading(true);
     if (destPhone !== record?.phone) await updatePatient(record, destPhone);
     let phone = destPhone;
     if (!phoneValidate(phone)) {
@@ -173,7 +175,6 @@ export const PureTable = ({ isReport = false }) => {
         }).then(({ err }) => {
           if (err) message.error("Error !");
           else {
-            message.success(t("savesuccess"));
             setRecord(null);
             setIsResultsModal(false);
             setIsReload(!isReload);
@@ -181,20 +182,14 @@ export const PureTable = ({ isReport = false }) => {
               try {
                 const res = await printResults();
                 pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
-                console.log(res, "ressss");
-
+                const user = JSON.parse(localStorage?.getItem("lab-user"));
                 const formData = new FormData();
+                formData.append("clientId", user?.id);
                 formData.append("name", record?.patient?.name);
                 formData.append("phone", phone);
-                formData.append(
-                  "lab",
-                  JSON.parse(localStorage?.getItem("lab-user"))?.labName || ""
-                );
+                formData.append("lab", user?.labName || "");
                 formData.append("file", pdf, "report.pdf");
-                formData.append(
-                  "senderPhone",
-                  JSON.parse(localStorage?.getItem("lab-user"))?.phone || ""
-                );
+                formData.append("senderPhone", user?.phone || "");
                 const resp = await apiCall({
                   method: "POST",
                   pathname: "/send/whatsapp-message",
@@ -202,8 +197,7 @@ export const PureTable = ({ isReport = false }) => {
                   data: formData,
                 });
                 const response = await resp.json();
-
-                console.log(response);
+                setMsgLoading(false);
 
                 if (response?.message === t("Messagesentsuccess")) {
                   message.success(t("SendSuccess"));
@@ -213,8 +207,9 @@ export const PureTable = ({ isReport = false }) => {
               } catch (error) {
                 console.error("Error generating PDF:", error);
                 message.error(t("ErrorGenerate"));
+                setMsgLoading(false);
               }
-            }, 1000);
+            }, 100);
           }
         });
       };
@@ -223,7 +218,6 @@ export const PureTable = ({ isReport = false }) => {
     } catch (error) {
       console.error("Error generating PDF or sending data:", error);
       message.error(t("erroroccurred"));
-    } finally {
       setMsgLoading(false);
     }
   };
@@ -402,8 +396,7 @@ export const PureTable = ({ isReport = false }) => {
                 style={{ fontSize: 12 }}
                 size="small"
                 icon={<BarcodeOutlined />}
-                disabled
-                hidden
+
               />
             </Tooltip>
             <Divider type="vertical" />
@@ -415,7 +408,14 @@ export const PureTable = ({ isReport = false }) => {
                 }}
                 placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
                 content={
-                  userType === "trial" || labFeature === null ? (
+                  isLimitExceeded ? (
+                    <PopOverContent
+                      website={"https://www.puretik.com/ar"}
+                      email={"puretik@gmail.com"}
+                      phone={"07710553120"}
+                      limitExceededMessage={t("limit_exceeded_message")}
+                    /> ) :
+                  userType === "trial" ? (
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
                       email={"puretik@gmail.com"}
@@ -438,11 +438,7 @@ export const PureTable = ({ isReport = false }) => {
                   className=" sticky"
                   icon={<WhatsAppOutlined />}
                   loading={msgLoading && record?.patient?.phone === destPhone}
-                  disabled={
-                    labFeature === null ||
-                    record?.status == "PENDING" ||
-                    userType === "trial"
-                  }
+                  disabled={record?.status == "PENDING" || userType === "trial" || isLimitExceeded}
                 />
               </Popover>
             }
