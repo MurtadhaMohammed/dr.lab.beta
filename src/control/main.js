@@ -6,7 +6,8 @@ const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
-const sharp = require("sharp");
+const Jimp = require('jimp');
+const { createCanvas, loadImage } = require('canvas');
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -426,7 +427,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           height: 5,
           includetext: false,
         },
-        function (err, png) {
+        async function (err, png) {
           if (err) {
             console.error(err);
             event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode" });
@@ -470,7 +471,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                       event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode image" });
                     } else {
                       const base64Image = outputBuffer.toString('base64');
-                      
+
                       const printWin = new BrowserWindow({
                         width: 162,
                         height: 76,
@@ -499,7 +500,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                       printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
 
                       printWin.webContents.on('did-finish-load', () => {
-                        printWin.webContents.print({ 
+                        printWin.webContents.print({
                           silent: true, // Set to true to bypass the print dialog
                           printBackground: true,
                           deviceName: 'Birch DP-2412BF', // Make sure this exactly matches your printer name
@@ -529,7 +530,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       );
 
       break;
-          case "exportDatabase": {
+    case "exportDatabase": {
       try {
         const desktopPath = app.getPath("desktop");
         const timestamp = new Date().toISOString().replace(/[:.]/g, "-");

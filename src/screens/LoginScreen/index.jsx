@@ -9,7 +9,7 @@ import { apiCall } from "../../libs/api";
 import BackIcon from "./BackIcon";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
-import {URL} from "../../libs/api"
+import { URL } from "../../libs/api"
 
 const LoginScreen = () => {
   const [key, setKey] = useState("");
@@ -44,9 +44,11 @@ const LoginScreen = () => {
 
         if (resp.ok) {
           setDisable(false);
+        } else {
+          throw new Error("Request failed");
         }
       } catch (e) {
-        console.log(e);
+        setDisable(false);
       }
     };
 

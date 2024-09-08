@@ -38,7 +38,7 @@ import { parseTests } from "../ResultsModal";
 import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 
 export const PureTable = ({ isReport = false }) => {
-  const { isReload, setIsReload } = useAppStore();
+  const { isReload, setIsReload, isOnline } = useAppStore();
   const {
     setIsModal,
     setId,
@@ -71,7 +71,7 @@ export const PureTable = ({ isReport = false }) => {
   const { flag, setFlag } = useTrigger();
 
   const limit = usePageLimit();
-  // const { setTableData } = useHomeStore();
+  const { setIsBarcode } = useHomeStore();
   const { t, i18n } = useTranslation();
 
   const direction = i18n.dir();
@@ -88,17 +88,9 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   const handlePrintBarcode = async (record) => {
-    const resp = await send({
-      query: "printParcode",
-      data: {
-        name: record.patient.name,
-        id: record.id,
-      },
-    });
-
-    if (resp.success) {
-      setIsReload(!isReload);
-    }
+    setRecord(record);
+    setIsBarcode(true);
+    setIsResultsModal(true);
   };
 
   const updatePatient = async (record, phone) => {
@@ -195,6 +187,20 @@ export const PureTable = ({ isReport = false }) => {
 
                 if (response?.message === t("Messagesentsuccess")) {
                   message.success(t("SendSuccess"));
+
+                  try {
+                    if (isOnline && window.gtag) {
+                      console.log('whatsapp event trigger');
+                      window.gtag('event', 'click', {
+                        event_category: 'button',
+                        event_label: 'whatsapp-message-button',
+                        value: 1,
+                      });
+                    }
+                  } catch (e) {
+                    throw new Error(e.message);
+                  }
+
                 } else {
                   message.error(t("Error"));
                 }
@@ -313,10 +319,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
+                textDecoration: "line-through",
+                opacity: 0.3,
+                fontStyle: "italic",
+              }
               : {}
           }
         >
@@ -416,8 +422,8 @@ export const PureTable = ({ isReport = false }) => {
                   userType === "trial"
                     ? undefined
                     : record?.status == "PENDING"
-                    ? false
-                    : undefined
+                      ? false
+                      : undefined
                 }
               >
                 <Button
@@ -534,10 +540,7 @@ export const PureTable = ({ isReport = false }) => {
         endDate,
       },
     }).then((resp) => {
-      console.log(resp, "respspspspspspsps", flag);
       if (resp.success) {
-        console.log(resp.data, "data fetched");
-
         setData(resp.data);
         setTotal(resp.total);
         handelOpenModal(resp.data);

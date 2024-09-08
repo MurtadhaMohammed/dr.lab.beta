@@ -16,6 +16,7 @@ import { useAppStore } from "./libs/appStore";
 import useLang from "./hooks/useLang";
 import useInitHeaderImage from "./hooks/useInitHeaderImage";
 
+
 const { ipcRenderer } = window.require("electron");
 
 function App() {

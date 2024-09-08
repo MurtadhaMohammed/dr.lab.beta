@@ -50,8 +50,8 @@ const SettingsScreen = () => {
   const { t } = useTranslation();
 
   const limits = {
-    basic : 50,
-    premium:1000
+    basic: 50,
+    premium: 1000
   }
   const labUser = JSON.parse(localStorage.getItem("lab-user"));
   const userType = labUser?.type;
@@ -71,11 +71,11 @@ const SettingsScreen = () => {
   }
 
   const handleWhatsappCount = async (labUserId) => {
-    const url = `${URL}/send/whatsapp-count/${labUserId}`;  
+    const url = `${URL}/send/whatsapp-count/${labUserId}`;
     try {
       const response = await fetch(url);
       const text = await response.text();
-  
+
       try {
         const data = JSON.parse(text);
         console.log("Parsed Data:", data);
@@ -93,10 +93,10 @@ const SettingsScreen = () => {
       setLoading(false);
     }
   };
-  
-  
+
+
   useEffect(() => {
-    const storedCount = localStorage.getItem('whatsappCount');  
+    const storedCount = localStorage.getItem('whatsappCount');
     console.log(storedCount);
     if (storedCount) {
       try {
@@ -105,7 +105,7 @@ const SettingsScreen = () => {
       } catch (error) {
         console.error("Error parsing stored count:", error);
         setError("Error loading stored data.");
-        
+
       }
     } else {
       const labUserData = localStorage.getItem('lab-user');
@@ -141,14 +141,14 @@ const SettingsScreen = () => {
       }));
     }
   }, [userType]);
-  
+
   useEffect(() => {
     fetchImagePath();
   }, []);
 
   useEffect(() => {
     form.setFieldsValue(user);
-  }, [user]);
+  }, [labUser]);
 
   const signout = async () => {
     setSignoutLoading(true);
@@ -260,7 +260,6 @@ const SettingsScreen = () => {
           );
         }
       } catch (error) {
-        console.log("Network error:", error);
         message.error(error.message);
       } finally {
         setLoading(false);
@@ -307,7 +306,7 @@ const SettingsScreen = () => {
       };
     } else {
       return {
-        status: t("Subscribe"),
+        status: t("UPGRADE"),
         textStyle: "text-[#0000FF] text-sm font-bold inter leading-[16.94px]",
         descStyle: "bg-[#F6F6F6] border-[#EEEEEE] text-black",
         description: t("subscribeDescription"),
@@ -497,11 +496,10 @@ const SettingsScreen = () => {
             <Card className="mt-[6px] min-h-[212px]">
               <div className="flex flex-col w-full gap-[10px]">
                 <div
-                  className={`${
-                    remainingDays < 7
-                      ? "bg-[#F187060A] border-[#BF6A0224]"
-                      : "bg-[#C8E6C942] border-[#4CAF50]"
-                  }  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}
+                  className={`${remainingDays < 7
+                    ? "bg-[#F187060A] border-[#BF6A0224]"
+                    : "bg-[#C8E6C942] border-[#4CAF50]"
+                    }  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}
                 >
                   <p className=" font-normal">{t("SerialNumber")}</p>
                   <p className=" font-bold">
@@ -528,22 +526,21 @@ const SettingsScreen = () => {
                   <p className=" text-[#A5A5A5] font-normal text-sm">
                     {expireData.expire
                       ? dayjs()
-                          .add(expireData.expire, "day")
-                          .format("YYYY MMM, DD")
+                        .add(expireData.expire, "day")
+                        .format("YYYY MMM, DD")
                       : "2024 Aug, 11"}
                   </p>
                 </div>
 
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p className=" font-normal text-sm">{t("daysLeft")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{`${
-                    remainingDays || 120
-                  } ${t("day")}`}</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">{`${remainingDays || 120
+                    } ${t("day")}`}</p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
                   <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
                   <p className=" text-[#A5A5A5] font-normal text-sm">
-                  {`${whatsappCount.sent}/${whatsappCount.limit}`}
+                    {`${whatsappCount.sent}/${whatsappCount.limit}`}
                   </p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
@@ -593,9 +590,9 @@ const SettingsScreen = () => {
             <Card className="mt-[6px]">
               <div className="flex justify-between items-center">
                 <b className="text-[14px]">{t("ExportDatabase")}</b>
-                <Button 
-                  type="primary" 
-                  icon={<DownloadOutlined />} 
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
                   onClick={handleExportDatabase}
                   loading={exportLoading}
                 >
