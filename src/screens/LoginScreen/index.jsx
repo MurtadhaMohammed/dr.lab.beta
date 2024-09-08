@@ -9,6 +9,7 @@ import { apiCall } from "../../libs/api";
 import BackIcon from "./BackIcon";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
+import { URL } from "../../libs/api"
 
 const LoginScreen = () => {
   const [key, setKey] = useState("");
@@ -39,7 +40,7 @@ const LoginScreen = () => {
     const fetchData = async () => {
       try {
         setDisable(true);
-        const resp = await fetch("https://dr-lab-apiv2.onrender.com/");
+        const resp = await fetch(`${URL}`);
 
         if (resp.ok) {
           setDisable(false);
@@ -89,16 +90,16 @@ const LoginScreen = () => {
           localStorage.setItem("lab-exp", updatedSerial.exp);
           localStorage.setItem("lab-created", updatedSerial.startAt);
           localStorage.setItem("lab-serial", updatedSerial.serial);
-          localStorage.setItem(
-            "lab-feature",
-            updatedSerial.feature
-              ? updatedSerial.feature
-                .map((v) => {
-                  if (v.name === "whatsapp") return v.name;
-                })
-                .filter(Boolean)
-              : ["null"]
-          );
+          // localStorage.setItem(
+          //   "lab-feature",
+          //   updatedSerial.feature
+          //     ? updatedSerial.feature
+          //         .map((v) => {
+          //           if (v.name === "whatsapp") return v.name;
+          //         })
+          //         .filter(Boolean)
+          //     : ["null"]
+          // );
 
           setIsLogin(true);
         } else {
@@ -187,7 +188,7 @@ const LoginScreen = () => {
 
   return (
     <div
-      className="h-screen flex items-center justify-center bg-gradient-to-r from-violet-600 to-[#0000ff]"
+      className="h-screen flex items-center justify-center bg-gradient-to-r from-violet-600 to-[#ff0000]"
       style={{
         backgroundImage: `url(${background})`,
         backgroundRepeat: "no-repeat",

@@ -51,7 +51,7 @@ export const parseTests = (record) => {
 export const ResultsModal = () => {
   const { isReload, setIsReload, setPrintFontSize, printFontSize } =
     useAppStore();
-  const { setIsResultsModal, isResultsModal, record, setRecord } =
+  const { setIsResultsModal, isResultsModal, record, setRecord, isBarcode, setIsBarcode } =
     useHomeStore();
   const { t } = useTranslation();
   const { isOnline } = useAppStore();
@@ -100,7 +100,8 @@ export const ResultsModal = () => {
     setRecord(newRecord);
   };
 
-  let printResults = () => {
+  let printResults = (newTests) => {
+    record.tests = newTests;
     let data = {
       patient: record.patient.name,
       age: dayjs().diff(dayjs(record.patient.birth), "y"),
@@ -109,7 +110,6 @@ export const ResultsModal = () => {
       isHeader: true,
       fontSize: printFontSize,
     };
-
     send({
       query: "print",
       data,
@@ -124,8 +124,8 @@ export const ResultsModal = () => {
       doc: "visits",
       query: "updateVisit",
       data: { ...data },
-      id: record.id
-    }).then(({ err }) => {
+      id: record.id,
+    }).then(({ err, newTests }) => {
       if (err) message.error("Error !");
       else {
         message.success(t("Saved Successfully"));
@@ -146,23 +146,47 @@ export const ResultsModal = () => {
         setIsResultsModal(false);
         setIsReload(!isReload);
         setTimeout(() => {
-          printResults();
+          printResults(newTests);
         }, 1000);
       }
     });
   };
+
+  const handleBarcode = async (record) => {
+    console.log(record, 'rrr');
+
+    const resp = await send({
+      query: "printParcode",
+      data: {
+        name: record?.patient?.name,
+        id: record?.id,
+      },
+    });
+
+    if (resp.success) {
+      setIsReload(!isReload);
+      setIsResultsModal(false);
+      setIsBarcode(false);
+      console.log(resp.success);
+    }
+
+    setIsBarcode(false);
+    console.log(resp, 'ress');
+  }
 
   let renderTable = {
     CUSTOME: (
       <div className="test-section">
         <Space direction="vertical" size={0} style={{ width: "100%" }}>
           <div className="title">
-            <Typography.Text type="secondary">{t("CustomTest")}</Typography.Text>
+            <Typography.Text type="secondary">
+              {t("CustomTest")}
+            </Typography.Text>
           </div>
           <div className="test-list">
             {record?.tests?.map((row) => {
               // Check and parse options if necessary
-              if (typeof row.options === 'string') {
+              if (typeof row.options === "string") {
                 try {
                   row.options = JSON.parse(row.options);
                 } catch (error) {
@@ -218,7 +242,7 @@ export const ResultsModal = () => {
           <div className="test-list">
             {group?.tests?.map((row) => {
               // Check and parse options if necessary
-              if (typeof row.options === 'string') {
+              if (typeof row.options === "string") {
                 try {
                   row.options = JSON.parse(row.options);
                 } catch (error) {
@@ -279,46 +303,69 @@ export const ResultsModal = () => {
       onCancel={() => {
         setIsResultsModal(false);
         setRecord(null);
+        setIsBarcode(false);
       }}
       footer={
         <div className={"results-modal-footer"}>
-          <Space>
-            <b>{t("FontSize")}</b>
-            <Radio.Group
-              value={printFontSize}
-              onChange={(e) => setPrintFontSize(e.target.value)}
-            >
-              <Tooltip title="12px">
-                <Radio value={12}>SM</Radio>
-              </Tooltip>
-              <Tooltip title="14px">
-                <Radio value={14}>MD</Radio>
-              </Tooltip>
-              <Tooltip title="16px">
-                <Radio value={16}>LG</Radio>
-              </Tooltip>
-            </Radio.Group>
-          </Space>
+
+          {
+            isBarcode ?
+              null
+              :
+              <Space>
+                <b>{t("FontSize")}</b>
+                <Radio.Group
+                  value={printFontSize}
+                  onChange={(e) => setPrintFontSize(e.target.value)}
+                >
+                  <Tooltip title="12px">
+                    <Radio value={12}>SM</Radio>
+                  </Tooltip>
+                  <Tooltip title="14px">
+                    <Radio value={14}>MD</Radio>
+                  </Tooltip>
+                  <Tooltip title="16px">
+                    <Radio value={16}>LG</Radio>
+                  </Tooltip>
+                </Radio.Group>
+              </Space>
+          }
           <Space>
             <Button
               onClick={() => {
                 setIsResultsModal(false);
                 setRecord(null);
+                setIsBarcode(false);
               }}
             >
               {t("Close")}
             </Button>
-            <Button type="primary" onClick={handleSubmit}>
-              {t("SavePrint")}
-            </Button>
+            {
+              isBarcode ?
+                <Button type="primary" onClick={() => handleBarcode(record)}>
+                  {"Print Barcode"}
+                </Button>
+                :
+                <Button type="primary" onClick={handleSubmit}>
+                  {t("SavePrint")}
+                </Button>
+            }
           </Space>
         </div>
       }
       centered
     >
-      <div className="results-modal" id="printJS-form">
-        {record && renderTable[record?.testType]}
-      </div>
+
+      {
+        isBarcode ?
+          <div className="py-4">
+            Do you want to print barcode for this patient: {record?.patient?.name}
+          </div>
+          :
+          <div className="results-modal" id="printJS-form">
+            {record && renderTable[record?.testType]}
+          </div>
+      }
     </Modal>
   );
 };

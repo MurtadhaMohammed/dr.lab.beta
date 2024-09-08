@@ -17,7 +17,7 @@ import {
   Switch,
   Tag,
 } from "antd";
-import { UserOutlined } from "@ant-design/icons";
+import { PhoneOutlined, UserOutlined, DownloadOutlined } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore, useLanguage } from "../../libs/appStore";
@@ -42,9 +42,17 @@ const SettingsScreen = () => {
     expire: localStorage.getItem("lab-exp"),
   });
   const navigate = useNavigate();
+  const [whatsappCount, setWhatsappCount] = useState({ sent: 0 });
+  const [error, setError] = useState(null);
+  const [exportLoading, setExportLoading] = useState(false);
+
 
   const { t } = useTranslation();
 
+  const limits = {
+    basic: 50,
+    premium: 1000
+  }
   const labUser = JSON.parse(localStorage.getItem("lab-user"));
   const userType = labUser?.type;
 
@@ -61,6 +69,78 @@ const SettingsScreen = () => {
       console.error("Failed to load image:", error);
     }
   }
+
+  const handleWhatsappCount = async (labUserId) => {
+    const url = `${URL}/send/whatsapp-count/${labUserId}`;
+    try {
+      const response = await fetch(url);
+      const text = await response.text();
+
+      try {
+        const data = JSON.parse(text);
+        console.log("Parsed Data:", data);
+        const newCount = { sent: data.count };
+        setWhatsappCount(newCount);
+        localStorage.setItem('whatsappCount', JSON.stringify(newCount));
+      } catch (error) {
+        console.error("Error parsing JSON:", error);
+        setError("Error parsing response data.");
+      }
+    } catch (error) {
+      console.error("Error fetching WhatsApp count:", error);
+      setError("Error fetching WhatsApp count.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+    const storedCount = localStorage.getItem('whatsappCount');
+    console.log(storedCount);
+    if (storedCount) {
+      try {
+        const parsedCount = JSON.parse(storedCount);
+        setWhatsappCount(parsedCount);
+      } catch (error) {
+        console.error("Error parsing stored count:", error);
+        setError("Error loading stored data.");
+
+      }
+    } else {
+      const labUserData = localStorage.getItem('lab-user');
+
+      if (labUserData) {
+        try {
+          const parsedData = JSON.parse(labUserData);
+          const labUserId = parsedData.id;
+
+          if (labUserId) {
+            handleWhatsappCount(labUserId);
+          } else {
+            console.error("No client ID found in local storage data.");
+            setError("No client ID found.");
+          }
+        } catch (error) {
+          console.error("Error parsing local storage data:", error);
+          setError("Error parsing local storage data.");
+        }
+      } else {
+        console.error("No lab-user data found in local storage.");
+        setError("No lab-user data found.");
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (userType) {
+      const defaultLimit = limits[userType] || 0;
+      setWhatsappCount(prevCount => ({
+        ...prevCount,
+        limit: defaultLimit
+      }));
+    }
+  }, [userType]);
 
   useEffect(() => {
     fetchImagePath();
@@ -117,6 +197,7 @@ const SettingsScreen = () => {
     setPrintFontSize(val);
   };
 
+
   const handelCancel = () => {
     form.setFieldsValue(user);
     setIsUpdate(false);
@@ -153,19 +234,18 @@ const SettingsScreen = () => {
       console.log("UUID:", UUID);
 
       try {
-        const resp = await fetch(
-          "https://dr-lab-apiv2.onrender.com/api/app/update-client",
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              ...values,
-              device: UUID,
-            }),
-          }
-        );
+        const resp = await fetch(`${URL}/app/update-client`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            ...values,
+            device: UUID,
+          }),
+        });
+
+        console.log("Response status:", resp.status);
 
         if (resp.ok) {
           let data = await resp.json();
@@ -186,7 +266,6 @@ const SettingsScreen = () => {
       }
     });
   };
-  //test push
 
   const handleLang = (checked) => {
     if (checked != undefined) {
@@ -240,8 +319,23 @@ const SettingsScreen = () => {
     [remainingDays, lang]
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
-  console.log(labUser);
-
+  const handleExportDatabase = async () => {
+    setExportLoading(true);
+    try {
+      const response = await send({ query: "exportDatabase" });
+      if (response.success) {
+        message.success(t("DatabaseExportedSuccessfully"));
+        console.log("Export path:", response.path);
+      } else {
+        throw new Error(response.error || "Unknown error occurred");
+      }
+    } catch (error) {
+      console.error("Error exporting database:", error);
+      message.error(t("ErrorExportingDatabase"));
+    } finally {
+      setExportLoading(false);
+    }
+  };
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -444,10 +538,17 @@ const SettingsScreen = () => {
                     } ${t("day")}`}</p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
+                  <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
+                  <p className=" text-[#A5A5A5] font-normal text-sm">
+                    {`${whatsappCount.sent}/${whatsappCount.limit}`}
+                  </p>
+                </div>
+                <div className="w-full flex justify-between inter px-1">
                   <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
 
-                  <Tag color="magenta-inverse" className="m-0">{String(userType).toLocaleUpperCase()}</Tag>
-
+                  <Tag color="magenta-inverse" className="m-0">
+                    {String(userType).toLocaleUpperCase()}
+                  </Tag>
                 </div>
 
                 {/* <div className="px-1 h-full flex flex-col gap-2">
@@ -479,6 +580,28 @@ const SettingsScreen = () => {
                   </p>
                 </div> */}
               </div>
+            </Card>
+          </div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-[20px] mt-[24px]">
+          <div>
+            <p className="pl-[4px] opacity-60">{t("DatabaseManagement")}</p>
+            <Card className="mt-[6px]">
+              <div className="flex justify-between items-center">
+                <b className="text-[14px]">{t("ExportDatabase")}</b>
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={handleExportDatabase}
+                  loading={exportLoading}
+                >
+                  {t("ExportToDesktop")}
+                </Button>
+              </div>
+              <p className="mt-2 text-sm text-gray-500">
+                {t("ExportDatabaseDescription")}
+              </p>
             </Card>
           </div>
         </section>

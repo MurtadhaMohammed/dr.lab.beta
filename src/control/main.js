@@ -1,8 +1,7 @@
-const { ipcMain, shell } = require("electron");
+const { ipcMain, shell, app, BrowserWindow } = require("electron");
 var { createPDF, printReport, createPDFBlob } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
-const { app } = require("electron");
 const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
@@ -244,9 +243,12 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "updateVisit": {
       try {
-        console.log(arg.id, arg.data, 'arg.id, arg.update');
+        // console.log(arg.id, arg.data, 'arg.id, arg.update');
         const resp = await labDB.updateVisit(arg.id, arg.data);
-        event.reply("asynchronous-reply", { success: resp.success });
+        event.reply("asynchronous-reply", {
+          success: resp.success,
+          newTests: resp?.newTests,
+        });
       } catch (error) {
         event.reply("asynchronous-reply", {
           success: false,
@@ -409,132 +411,129 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
             console.error(err);
             event.reply("asynchronous-reply", { success: false });
           } else {
-            try {
-              // Load the barcode image from buffer
-              const barcode = await Jimp.read(png);
-              const barcodeWidth = barcode.bitmap.width;
-              const barcodeHeight = barcode.bitmap.height;
+            sharp(png)
+              .metadata()
+              .then((metadata) => {
+                const barcodeWidth = metadata.width;
+                const barcodeHeight = metadata.height;
 
-              // Create a canvas to render the Arabic text
-              const canvas = createCanvas(barcodeWidth, 60);
-              const ctx = canvas.getContext('2d');
+                // Create Arabic text as an SVG with matching width
+                const textSvg = Buffer.from(`
+                <svg width="${barcodeWidth}" height="60">
+                  <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
+                </svg>
+              `);
 
-              // Set up Arabic text rendering
-              ctx.font = '20px Arial';
-              ctx.fillStyle = 'black';
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.direction = 'rtl'; // Set direction to RTL for Arabic text
+                const totalWidth = barcodeWidth + 2 * padding;
+                const totalHeight = barcodeHeight + 30 + padding + padding;
 
-              // Render the Arabic text onto the canvas
-              ctx.fillText(arg.data.name, barcodeWidth / 2, 30);
+                // Composite the barcode with the Arabic text
+                sharp({
+                  create: {
+                    width: totalWidth,
+                    height: totalHeight,
+                    channels: 4,
+                    background: { r: 255, g: 255, b: 255, alpha: 1 },
+                  },
+                })
+                  .composite([
+                    { input: png, top: padding, left: padding },
+                    {
+                      input: textSvg,
+                      top: barcodeHeight + padding,
+                      left: padding,
+                    },
+                  ])
+                  .png()
+                  .toBuffer((err, outputBuffer) => {
+                    if (err) {
+                      console.error(err);
+                      event.reply("asynchronous-reply", { success: false });
+                    } else {
+                      const base64Image = outputBuffer.toString('base64');
 
-              // Convert the canvas to a buffer
-              const textImageBuffer = canvas.toBuffer();
+                      const printWin = new BrowserWindow({
+                        width: 162,
+                        height: 76,
+                        show: false,
+                        webPreferences: {
+                          nodeIntegration: true,
+                          contextIsolation: false,
+                        },
+                      });
 
-              // Load the text image buffer into Jimp
-              const textImage = await Jimp.read(textImageBuffer);
+                      const htmlContent = `
+                        <!DOCTYPE html>
+                        <html>
+                          <head>
+                            <style>
+                              body { margin: 0; padding: 0; }
+                              img { width: 100%; height: 100%; object-fit: cover; }
+                            </style>
+                          </head>
+                          <body>
+                            <img src="data:image/png;base64,${base64Image}" alt="Barcode">
+                          </body>
+                        </html>
+                      `;
 
-              // Create the final image with padding
-              const totalWidth = barcodeWidth + 2 * padding;
-              const totalHeight = barcodeHeight + 60 + padding + padding;
+                      printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
 
-              const finalImage = new Jimp(totalWidth, totalHeight, 0xFFFFFFFF);
-
-              // Composite the barcode and text onto the final image
-              finalImage.composite(barcode, padding, padding);
-              finalImage.composite(textImage, padding, barcodeHeight + padding);
-
-              // Save the final image
-              const outputPath = app.getPath("userData") + "/barcode.png";
-              await finalImage.writeAsync(outputPath);
-
-              // Open the saved image
-              shell.openPath(outputPath);
-              event.reply("asynchronous-reply", { success: true });
-            } catch (err) {
-              console.error(err);
-              event.reply("asynchronous-reply", { success: false });
-            }
+                      printWin.webContents.on('did-finish-load', () => {
+                        printWin.webContents.print({
+                          silent: true, // Set to true to bypass the print dialog
+                          printBackground: true,
+                          deviceName: 'Birch DP-2412BF', // Make sure this exactly matches your printer name
+                          margins: {
+                            marginType: 'none'
+                          },
+                          pageSize: {
+                            width: 33400,
+                            height: 20200,
+                          },
+                        }, (success, failureReason) => {
+                          if (!success) {
+                            console.error(`Printing failed: ${failureReason}`);
+                            event.reply("asynchronous-reply", { success: false, error: failureReason });
+                          } else {
+                            console.log('Printing successful');
+                            event.reply("asynchronous-reply", { success: true });
+                          }
+                          printWin.close();
+                        });
+                      });
+                    }
+                  });
+              });
           }
         }
       );
 
       break;
+    case "exportDatabase": {
+      try {
+        const desktopPath = app.getPath("desktop");
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const exportPath = path.join(desktopPath, `lab_database_export_${timestamp}.json`);
 
-    // case "printParcode":
-    //   const padding = 20;
+        const data = await labDB.exportAllData();
+        fs.writeFileSync(exportPath, JSON.stringify(data, null, 2));
 
-    //   let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
-    //   if (!visitNumber) {
-    //     event.reply("asynchronous-reply", { success: false });
-    //     return;
-    //   }
-    //   bwipjs.toBuffer(
-    //     {
-    //       bcid: "code128",
-    //       text: String(visitNumber),
-    //       scale: 4,
-    //       height: 5,
-    //       includetext: false,
-    //     },
-    //     function (err, png) {
-    //       if (err) {
-    //         console.error(err);
-    //         event.reply("asynchronous-reply", { success: false });
-    //       } else {
-    //         sharp(png)
-    //           .metadata()
-    //           .then((metadata) => {
-    //             const barcodeWidth = metadata.width;
-    //             const barcodeHeight = metadata.height;
+        event.reply("asynchronous-reply", {
+          success: true,
+          message: "Database exported successfully",
+          path: exportPath
+        });
+      } catch (error) {
+        console.error("Error exporting database:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message
+        });
+      }
+      break;
+    }
 
-    //             // Create Arabic text as an SVG with matching width
-    //             const textSvg = Buffer.from(`
-    //             <svg width="${barcodeWidth}" height="60">
-    //               <text x="50%" y="50%" font-size="20" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
-    //             </svg>
-    //           `);
-
-    //             const totalWidth = barcodeWidth + 2 * padding;
-    //             const totalHeight = barcodeHeight + 30 + padding + padding;
-
-    //             // Composite the barcode with the Arabic text
-    //             sharp({
-    //               create: {
-    //                 width: totalWidth,
-    //                 height: totalHeight,
-    //                 channels: 4,
-    //                 background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background
-    //               },
-    //             })
-    //               .composite([
-    //                 { input: png, top: padding, left: padding }, // Barcode with padding
-    //                 {
-    //                   input: textSvg,
-    //                   top: barcodeHeight + padding,
-    //                   left: padding,
-    //                 },
-    //               ])
-    //               .toFile(
-    //                 app.getPath("userData") + "barcode.png",
-    //                 (err, info) => {
-    //                   if (err) {
-    //                     console.error(err);
-    //                     event.reply("asynchronous-reply", { success: false });
-    //                   } else {
-    //                     shell.openPath(app.getPath("userData") + "barcode.png");
-    //                     event.reply("asynchronous-reply", { success: true });
-    //                   }
-    //                 }
-    //               );
-    //           });
-    //         // fs.writeFileSync("barcode.png", png);
-    //       }
-    //     }
-    //   );
-
-    //   break;
 
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });

@@ -71,7 +71,7 @@ export const PureTable = ({ isReport = false }) => {
   const { flag, setFlag } = useTrigger();
 
   const limit = usePageLimit();
-  // const { setTableData } = useHomeStore();
+  const { setIsBarcode } = useHomeStore();
   const { t, i18n } = useTranslation();
 
   const direction = i18n.dir();
@@ -88,17 +88,9 @@ export const PureTable = ({ isReport = false }) => {
   };
 
   const handlePrintBarcode = async (record) => {
-    const resp = await send({
-      query: "printParcode",
-      data: {
-        name: record.patient.name,
-        id: record.id,
-      },
-    });
-
-    if (resp.success) {
-      setIsReload(!isReload);
-    }
+    setRecord(record);
+    setIsBarcode(true);
+    setIsResultsModal(true);
   };
 
   const updatePatient = async (record, phone) => {
@@ -404,8 +396,7 @@ export const PureTable = ({ isReport = false }) => {
                 style={{ fontSize: 12 }}
                 size="small"
                 icon={<BarcodeOutlined />}
-                disabled
-                hidden
+
               />
             </Tooltip>
             <Divider type="vertical" />

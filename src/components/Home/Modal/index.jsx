@@ -71,7 +71,7 @@ export const PureModal = () => {
               data: { ...data.patient },
             }).then((resp) => {
               if (resp.success) {
-                message.success(t("Patientupdatedsuccess"));
+                // message.success(t("Patientupdatedsuccess"));
                 console.log("updatePatient response:", resp);
                 setReset();
                 setIsModal(false);
@@ -138,7 +138,7 @@ export const PureModal = () => {
                 .then((resp) => {
                   console.log("addVisit response:", resp);
                   if (resp.success) {
-                    message.success(t("Visitaddedsuccess"));
+                    // message.success(t("Visitaddedsuccess"));
                     setReset();
                     setIsModal(false);
                     setIsReload(!isReload);
