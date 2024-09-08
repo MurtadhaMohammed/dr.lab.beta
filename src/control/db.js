@@ -711,28 +711,55 @@ class LabDB {
       WHERE id = ?
     `);
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
-
+    
     return { success: info.changes > 0, newTests };
   }
-
+  
+  async getVisit(visitId) {
+    try {
+      if (!this.db) {
+        console.error("Database not initialized");
+        return null;
+      }
+      if (!this.db.visits) {
+        console.error("Visits collection not found");
+        return null;
+      }
+      console.log(`Searching for visit with id: ${visitId}`);
+      const visit = await this.db.visits.findOne({ _id: visitId });
+      console.log("Raw visit data:", visit);
+      if (!visit) {
+        console.log(`No visit found with id: ${visitId}`);
+        return null;
+      }
+      return visit;
+    } catch (error) {
+      console.error("Error fetching visit:", error);
+      return null;
+    }
+  }
   async exportAllData() {
     try {
       const patients = await this.getPatients(); // Use a large limit to get all patients
       const tests = await this.getTests({});
       const packages = await this.getPackages({});
       const visits = await this.getVisits(); // Use a large limit to get all visits
+      const visit = await this.getVisit(visits.data[0].id);
+
 
       return {
         patients: patients.data,
         tests: tests.data,
         packages: packages.data,
-        visits: visits.data
+        visits: visits.data,
+        visit: visit.data
       };
     } catch (error) {
       console.error("Error exporting all data:", error);
       throw error;
     }
   }
+
 }
 
 module.exports = { LabDB };

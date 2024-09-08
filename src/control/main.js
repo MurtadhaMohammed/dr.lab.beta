@@ -389,13 +389,35 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
 
     case "printParcode":
+      console.log("Received data for printing barcode:", arg.data);
       const padding = 20;
 
       let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
       if (!visitNumber) {
-        event.reply("asynchronous-reply", { success: false });
+        console.log("Failed to generate visit number");
+        event.reply("asynchronous-reply", { success: false, error: "Failed to generate visit number" });
         return;
       }
+      console.log("Generated visit number:", visitNumber);
+
+      // Fetch the entire visit object
+      const visit = await labDB.getVisit(arg.data.id);
+      console.log("Fetched visit:", visit);
+
+      let formattedDate;
+      if (visit && visit.date) {
+        console.log("Visit date from database:", visit.date);
+        formattedDate = new Date(visit.date).toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        });
+      } else {
+        console.log("Visit date not available in the fetched data");
+      }
+
+      console.log("Formatted date:", formattedDate);
+
       bwipjs.toBuffer(
         {
           bcid: "code128",
@@ -407,7 +429,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         function (err, png) {
           if (err) {
             console.error(err);
-            event.reply("asynchronous-reply", { success: false });
+            event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode" });
           } else {
             sharp(png)
               .metadata()
@@ -415,17 +437,16 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                 const barcodeWidth = metadata.width;
                 const barcodeHeight = metadata.height;
 
-                // Create Arabic text as an SVG with matching width
                 const textSvg = Buffer.from(`
                 <svg width="${barcodeWidth}" height="60">
                   <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
+                  <text x="50%" y="85%" font-size="25" text-anchor="middle" fill="black" dominant-baseline="middle">${formattedDate}</text>
                 </svg>
               `);
 
                 const totalWidth = barcodeWidth + 2 * padding;
-                const totalHeight = barcodeHeight + 30 + padding + padding;
+                const totalHeight = barcodeHeight + 6 + padding + padding;
 
-                // Composite the barcode with the Arabic text
                 sharp({
                   create: {
                     width: totalWidth,
@@ -446,7 +467,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                   .toBuffer((err, outputBuffer) => {
                     if (err) {
                       console.error(err);
-                      event.reply("asynchronous-reply", { success: false });
+                      event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode image" });
                     } else {
                       const base64Image = outputBuffer.toString('base64');
                       
@@ -486,8 +507,8 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                             marginType: 'none'
                           },
                           pageSize: {
-                            width: 33400,
-                            height: 20200,
+                            width: 30400,
+                            height: 15200,
                           },
                         }, (success, failureReason) => {
                           if (!success) {
