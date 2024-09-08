@@ -1,8 +1,7 @@
-const { ipcMain, shell } = require("electron");
+const { ipcMain, shell, app, BrowserWindow } = require("electron");
 var { createPDF, printReport, createPDFBlob } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
-const { app } = require("electron");
 const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
@@ -419,7 +418,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                 // Create Arabic text as an SVG with matching width
                 const textSvg = Buffer.from(`
                 <svg width="${barcodeWidth}" height="60">
-                  <text x="50%" y="50%" font-size="20" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
+                  <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
                 </svg>
               `);
 
@@ -432,31 +431,78 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                     width: totalWidth,
                     height: totalHeight,
                     channels: 4,
-                    background: { r: 255, g: 255, b: 255, alpha: 1 }, // White background
+                    background: { r: 255, g: 255, b: 255, alpha: 1 },
                   },
                 })
                   .composite([
-                    { input: png, top: padding, left: padding }, // Barcode with padding
+                    { input: png, top: padding, left: padding },
                     {
                       input: textSvg,
                       top: barcodeHeight + padding,
                       left: padding,
                     },
                   ])
-                  .toFile(
-                    app.getPath("userData") + "barcode.png",
-                    (err, info) => {
-                      if (err) {
-                        console.error(err);
-                        event.reply("asynchronous-reply", { success: false });
-                      } else {
-                        shell.openPath(app.getPath("userData") + "barcode.png");
-                        event.reply("asynchronous-reply", { success: true });
-                      }
+                  .png()
+                  .toBuffer((err, outputBuffer) => {
+                    if (err) {
+                      console.error(err);
+                      event.reply("asynchronous-reply", { success: false });
+                    } else {
+                      const base64Image = outputBuffer.toString('base64');
+                      
+                      const printWin = new BrowserWindow({
+                        width: 162,
+                        height: 76,
+                        show: false,
+                        webPreferences: {
+                          nodeIntegration: true,
+                          contextIsolation: false,
+                        },
+                      });
+
+                      const htmlContent = `
+                        <!DOCTYPE html>
+                        <html>
+                          <head>
+                            <style>
+                              body { margin: 0; padding: 0; }
+                              img { width: 100%; height: 100%; object-fit: cover; }
+                            </style>
+                          </head>
+                          <body>
+                            <img src="data:image/png;base64,${base64Image}" alt="Barcode">
+                          </body>
+                        </html>
+                      `;
+
+                      printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+
+                      printWin.webContents.on('did-finish-load', () => {
+                        printWin.webContents.print({ 
+                          silent: true, // Set to true to bypass the print dialog
+                          printBackground: true,
+                          deviceName: 'Birch DP-2412BF', // Make sure this exactly matches your printer name
+                          margins: {
+                            marginType: 'none'
+                          },
+                          pageSize: {
+                            width: 33400,
+                            height: 20200,
+                          },
+                        }, (success, failureReason) => {
+                          if (!success) {
+                            console.error(`Printing failed: ${failureReason}`);
+                            event.reply("asynchronous-reply", { success: false, error: failureReason });
+                          } else {
+                            console.log('Printing successful');
+                            event.reply("asynchronous-reply", { success: true });
+                          }
+                          printWin.close();
+                        });
+                      });
                     }
-                  );
+                  });
               });
-            // fs.writeFileSync("barcode.png", png);
           }
         }
       );
