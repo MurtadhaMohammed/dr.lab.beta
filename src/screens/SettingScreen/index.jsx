@@ -627,6 +627,10 @@ const handleExportDatabase = async () => {
                 {t("ImportDatabaseDescription")}
               </p>
             </Card>
+            <p className="pl-[4px]  opacity-60">Printer Settings</p>
+          <Card className="mt-[6px]">
+            <PrinterSelector />
+          </Card>
           </div>
         </section>
       </div>
