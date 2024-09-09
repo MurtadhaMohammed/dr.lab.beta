@@ -70,7 +70,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "addTest": {
       try {
-        console.log("Received data for adding test:", arg.data);
+        // console.log("Received data for adding test:", arg.data);
         const resp = await labDB.addTest(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
@@ -112,7 +112,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getTests": {
       try {
         const resp = await labDB.getTests(arg.data);
-        console.log("Received data for getting tests:", arg.data);
+        // console.log("Received data for getting tests:", arg.data);
         event.reply("asynchronous-reply", resp);
       } catch (error) {
         event.reply("asynchronous-reply", {
@@ -152,7 +152,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "editPackage": {
       try {
-        console.log("Received data for editing package:", arg.data);
+        // console.log("Received data for editing package:", arg.data);
         const resp = await labDB.editPackage(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
@@ -367,7 +367,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "printReport": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
       printReport(arg.data, (err, res) => {
-        console.log(res, "this is the response");
+        // console.log(res, "this is the response");
         return event.reply("asynchronous-reply", { err, res });
       });
       break;
@@ -389,21 +389,21 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
 
     case "printParcode":
-      console.log("Received data for printing barcode:", arg.data);
+      // console.log("Received data for printing barcode:", arg.data);
       const padding = 20;
 
       try {
         let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
         if (!visitNumber) {
-          console.log("Failed to generate visit number");
+          // console.log("Failed to generate visit number");
           event.reply("asynchronous-reply", { success: false, error: "Failed to generate visit number" });
           return;
         }
-        console.log("Generated visit number:", visitNumber);
+        // console.log("Generated visit number:", visitNumber);
 
         // Fetch the visit object
         const visit = await labDB.getVisitDetails(arg.data.id);
-        console.log("Fetched visit:", JSON.stringify(visit, null, 2));
+        // console.log("Fetched visit:", JSON.stringify(visit, null, 2));
 
         bwipjs.toBuffer(
           {
@@ -488,7 +488,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                           printWin.webContents.print({
                             silent: true,
                             printBackground: true,
-                            deviceName: 'Birch DP-2412BF',
+                            deviceName: arg.selectedPrinter,
                             margins: {
                               marginType: 'none'
                             },
@@ -552,4 +552,13 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
   }
+});
+
+ipcMain.handle('get-printers', async (event) => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (!win) {
+    throw new Error('No active window');
+  }
+  const printers = await win.webContents.getPrinters();
+  return printers.map(printer => printer.name);
 });

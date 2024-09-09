@@ -161,6 +161,7 @@ export const ResultsModal = () => {
         name: record?.patient?.name,
         id: record?.id,
       },
+      selectedPrinter: localStorage.getItem('selectedPrinter'),
     });
 
     if (resp.success) {
