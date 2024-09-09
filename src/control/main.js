@@ -6,9 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
-// const sharp = require("sharp");
-const archiver = require('archiver');
-
+// const sharp = require('sharp');
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -72,7 +70,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "addTest": {
       try {
-        console.log("Received data for adding test:", arg.data);
+        // console.log("Received data for adding test:", arg.data);
         const resp = await labDB.addTest(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
@@ -114,7 +112,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getTests": {
       try {
         const resp = await labDB.getTests(arg.data);
-        console.log("Received data for getting tests:", arg.data);
+        // console.log("Received data for getting tests:", arg.data);
         event.reply("asynchronous-reply", resp);
       } catch (error) {
         event.reply("asynchronous-reply", {
@@ -154,7 +152,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "editPackage": {
       try {
-        console.log("Received data for editing package:", arg.data);
+        // console.log("Received data for editing package:", arg.data);
         const resp = await labDB.editPackage(arg.id, arg.data);
         event.reply("asynchronous-reply", { success: resp.success });
       } catch (error) {
@@ -369,7 +367,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "printReport": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
       printReport(arg.data, (err, res) => {
-        console.log(res, "this is the response");
+        // console.log(res, "this is the response");
         return event.reply("asynchronous-reply", { err, res });
       });
       break;
@@ -391,125 +389,139 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
 
     case "printParcode":
+      // console.log("Received data for printing barcode:", arg.data);
       const padding = 20;
 
-      let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
-      if (!visitNumber) {
-        event.reply("asynchronous-reply", { success: false });
-        return;
-      }
-
-      bwipjs.toBuffer(
-        {
-          bcid: "code128",
-          text: String(visitNumber),
-          scale: 4,
-          height: 5,
-          includetext: false,
-        },
-        async function (err, png) {
-          if (err) {
-            console.error(err);
-            event.reply("asynchronous-reply", { success: false });
-          } else {
-            sharp(png)
-              .metadata()
-              .then((metadata) => {
-                const barcodeWidth = metadata.width;
-                const barcodeHeight = metadata.height;
-
-                // Create Arabic text as an SVG with matching width
-                const textSvg = Buffer.from(`
-                <svg width="${barcodeWidth}" height="60">
-                  <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
-                </svg>
-              `);
-
-                const totalWidth = barcodeWidth + 2 * padding;
-                const totalHeight = barcodeHeight + 30 + padding + padding;
-
-                // Composite the barcode with the Arabic text
-                sharp({
-                  create: {
-                    width: totalWidth,
-                    height: totalHeight,
-                    channels: 4,
-                    background: { r: 255, g: 255, b: 255, alpha: 1 },
-                  },
-                })
-                  .composite([
-                    { input: png, top: padding, left: padding },
-                    {
-                      input: textSvg,
-                      top: barcodeHeight + padding,
-                      left: padding,
-                    },
-                  ])
-                  .png()
-                  .toBuffer((err, outputBuffer) => {
-                    if (err) {
-                      console.error(err);
-                      event.reply("asynchronous-reply", { success: false });
-                    } else {
-                      const base64Image = outputBuffer.toString('base64');
-
-                      const printWin = new BrowserWindow({
-                        width: 162,
-                        height: 76,
-                        show: false,
-                        webPreferences: {
-                          nodeIntegration: true,
-                          contextIsolation: false,
-                        },
-                      });
-
-                      const htmlContent = `
-                        <!DOCTYPE html>
-                        <html>
-                          <head>
-                            <style>
-                              body { margin: 0; padding: 0; }
-                              img { width: 100%; height: 100%; object-fit: cover; }
-                            </style>
-                          </head>
-                          <body>
-                            <img src="data:image/png;base64,${base64Image}" alt="Barcode">
-                          </body>
-                        </html>
-                      `;
-
-                      printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
-
-                      printWin.webContents.on('did-finish-load', () => {
-                        printWin.webContents.print({
-                          silent: true, // Set to true to bypass the print dialog
-                          printBackground: true,
-                          deviceName: 'Birch DP-2412BF', // Make sure this exactly matches your printer name
-                          margins: {
-                            marginType: 'none'
-                          },
-                          pageSize: {
-                            width: 33400,
-                            height: 20200,
-                          },
-                        }, (success, failureReason) => {
-                          if (!success) {
-                            console.error(`Printing failed: ${failureReason}`);
-                            event.reply("asynchronous-reply", { success: false, error: failureReason });
-                          } else {
-                            console.log('Printing successful');
-                            event.reply("asynchronous-reply", { success: true });
-                          }
-                          printWin.close();
-                        });
-                      });
-                    }
-                  });
-              });
-          }
+      try {
+        let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
+        if (!visitNumber) {
+          // console.log("Failed to generate visit number");
+          event.reply("asynchronous-reply", { success: false, error: "Failed to generate visit number" });
+          return;
         }
-      );
+        // console.log("Generated visit number:", visitNumber);
 
+        // Fetch the visit object
+        const visit = await labDB.getVisitDetails(arg.data.id);
+        // console.log("Fetched visit:", JSON.stringify(visit, null, 2));
+
+        bwipjs.toBuffer(
+          {
+            bcid: "code128",
+            text: String(visitNumber),
+            scale: 4,
+            height: 5,
+            includetext: false,
+          },
+          function (err, png) {
+            if (err) {
+              console.error(err);
+              event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode" });
+            } else {
+              sharp(png)
+                .metadata()
+                .then((metadata) => {
+                  const barcodeWidth = metadata.width;
+                  const barcodeHeight = metadata.height;
+
+                  const textSvg = Buffer.from(`
+                  <svg width="${barcodeWidth}" height="80">
+                    <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${visit ? visit.patient.name : arg.data.name}</text>
+                  </svg>
+                `);
+
+                  const totalWidth = barcodeWidth + 2 * padding;
+                  const totalHeight = barcodeHeight + 30 + padding + padding;
+
+                  sharp({
+                    create: {
+                      width: totalWidth,
+                      height: totalHeight,
+                      channels: 4,
+                      background: { r: 255, g: 255, b: 255, alpha: 1 },
+                    },
+                  })
+                    .composite([
+                      { input: png, top: padding, left: padding },
+                      {
+                        input: textSvg,
+                        top: barcodeHeight + padding,
+                        left: padding,
+                      },
+                    ])
+                    .png()
+                    .toBuffer((err, outputBuffer) => {
+                      if (err) {
+                        console.error(err);
+                        event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode image" });
+                      } else {
+                        const base64Image = outputBuffer.toString('base64');
+
+                        const printWin = new BrowserWindow({
+                          width: 162,
+                          height: 76,
+                          show: false,
+                          webPreferences: {
+                            nodeIntegration: true,
+                            contextIsolation: false,
+                          },
+                        });
+
+                        const htmlContent = `
+                          <!DOCTYPE html>
+                          <html>
+                            <head>
+                              <style>
+                                body { margin: 0; padding-left: 5px; padding-top: 2px; }
+                                img { width: 100%; height: 100%; object-fit: cover; }
+                              </style>
+                            </head>
+                            <body>
+                              <img src="data:image/png;base64,${base64Image}" alt="Barcode">
+                            </body>
+                          </html>
+                        `;
+
+                        printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+
+                        printWin.webContents.on('did-finish-load', () => {
+                          printWin.webContents.print({
+                            silent: true,
+                            printBackground: true,
+                            deviceName: arg.selectedPrinter,
+                            margins: {
+                              marginType: 'none'
+                            },
+                            pageSize: {
+                              width: 35400,
+                              height: 17700,
+                            },
+                          }, (success, failureReason) => {
+                            if (!success) {
+                              console.error(`Printing failed: ${failureReason}`);
+                              event.reply("asynchronous-reply", { success: false, error: failureReason });
+                            } else {
+                              console.log('Printing successful');
+                              event.reply("asynchronous-reply", { success: true });
+                            }
+                            printWin.close();
+                          });
+                        });
+                      }
+                    });
+                })
+                .catch(error => {
+                  console.error("Error processing image:", error);
+                  event.reply("asynchronous-reply", { success: false, error: "Error processing image" });
+                });
+            }
+          }
+        );
+
+      } catch (error) {
+        console.error("Error in printParcode:", error);
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
       break;
     // case "exportDatabase": {
     //   try {
@@ -718,4 +730,13 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
   }
+});
+
+ipcMain.handle('get-printers', async (event) => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (!win) {
+    throw new Error('No active window');
+  }
+  const printers = await win.webContents.getPrinters();
+  return printers.map(printer => printer.name);
 });

@@ -7,6 +7,11 @@ const Database = require("better-sqlite3");
 class LabDB {
 
   constructor() {
+    this.db = null;
+    this.init();
+  }
+
+  async init() {
     // const isMac = os.platform() === "darwin";
     const dbPath = app.getPath("userData") + "database.db";
     try {
@@ -18,6 +23,10 @@ class LabDB {
       this.initializeDatabase();
       this.initTestsFromJSON();
       this.checkAndAddVisitNumberColumn();
+      console.log("LabDB initialized, db object:", this.db ? "exists" : "does not exist");
+      if (this.db) {
+        console.log("Available collections:", Object.keys(this.db));
+      }
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -549,14 +558,12 @@ class LabDB {
     const whereClauses = [
       `(p.name LIKE ? OR v.visitNumber LIKE ?)`,
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
+        }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
+        }'`
         : "",
     ]
       .filter(Boolean)
@@ -636,14 +643,12 @@ class LabDB {
   async getTotalVisits({ startDate, endDate }) {
     const whereClauses = [
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${new Date(startDate).toISOString().split("T")[0]
+        }'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${new Date(endDate).toISOString().split("T")[0]
+        }'`
         : "",
     ]
       .filter(Boolean)
@@ -715,17 +720,56 @@ class LabDB {
 
     return { success: info.changes > 0, newTests };
   }
+
+  async getVisitDetails(visitId) {
+    try {
+      if (!this.db) {
+        console.error("Database not initialized");
+        return null;
+      }
+      console.log(`Attempting to fetch visit with id: ${visitId}`);
+
+      const stmt = await this.db.prepare(`
+        SELECT v.*, p.name as patientName
+        FROM visits v
+        JOIN patients p ON v.patientID = p.id
+        WHERE v.id = ?
+      `);
+
+      const visit = stmt.get(visitId);
+      console.log("Raw visit data:", JSON.stringify(visit, null, 2));
+
+      if (visit) {
+        return {
+          id: visit.id,
+          visitNumber: visit.visitNumber,
+          patient: {
+            name: visit.patientName,
+          },
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error fetching visit details:", error);
+      return null;
+    }
+  }
   async exportAllData() {
     try {
-      const patients = await this.getPatients({ q: "", skip: 0, limit: 1000 });
-      const visits = await this.getVisits({q: "", skip: 0, limit: 1000 });
-      const tests = await this.getTests({q: "", skip: 0, limit: 1000 });
-      const packages = await this.getPackages({q: "", skip: 0, limit: 1000 });
+      const patients = await this.getPatients(); // Use a large limit to get all patients
+      const tests = await this.getTests({});
+      const packages = await this.getPackages({});
+      const visits = await this.getVisits(); // Use a large limit to get all visits
+      const visit = await this.getVisitDetails(visits.data[0].id);
+
+
       return {
-        patients: patients,
-        visits: visits,
-        tests: tests,
-        packages: packages
+        patients: patients.data,
+        tests: tests.data,
+        packages: packages.data,
+        visits: visits.data,
+        visit: visit.data
       };
 
     } catch (error) {
@@ -733,7 +777,7 @@ class LabDB {
       throw error;
     }
   }
-  
-  }
+
+}
 
 module.exports = { LabDB };

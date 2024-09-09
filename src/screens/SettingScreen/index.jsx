@@ -27,6 +27,7 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import PopOverContent from "./PopOverContent";
 import { URL } from "../../libs/api";
+import PrinterSelector from './PrinterSelector';
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -608,6 +609,10 @@ const SettingsScreen = () => {
                 {t("ExportDatabaseDescription")}
               </p>
             </Card>
+          <p className="pl-[4px]  opacity-60">Printer Settings</p>
+          <Card className="mt-[6px]">
+            <PrinterSelector />
+          </Card>
           </div>
           <div>
             <Card className="mt-[27px]">
