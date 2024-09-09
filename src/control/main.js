@@ -621,11 +621,12 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "exportDatabaseFile": {
       try {
         const userDataPath = app.getPath("userData");
-        const defaultPathDB = path.join(userDataPath, "database.db");
 
-        const defaultsavepath = app.getPath("desktop");
-        const desktopPath = path.join(defaultsavepath, "database.db");
+        const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
+        const defaultPathDB = path.join(userDataPath, '..', databaseFileName);
 
+        const defaultSavePath = app.getPath("desktop");
+        const desktopPath = path.join(defaultSavePath, databaseFileName);
 
         console.log("Database path:", defaultPathDB);
         console.log("Desktop path:", desktopPath);
@@ -633,9 +634,18 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const { filePath, canceled } = await dialog.showSaveDialog({
           title: 'Export Database',
           defaultPath: desktopPath,
+          filters: [
+            { name: 'Database Files', extensions: ['db'] }
+          ]
         });
 
         if (canceled) {
+          console.log('Export canceled by user');
+          return;
+        }
+
+        if (!filePath) {
+          console.error('No file path selected');
           return;
         }
 
@@ -655,8 +665,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "ImportDatabaseFile": {
       try {
+
         const userDataPath = app.getPath("userData");
-        const defaultPathDB = path.join(userDataPath, "database.db");
+        const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
+        const defaultPathDB = process.platform === 'darwin' ? path.join(userDataPath, '..', databaseFileName) : path.join(userDataPath, databaseFileName);
 
         const { filePaths, canceled } = await dialog.showOpenDialog({
           title: 'Import Database',
@@ -677,15 +689,19 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
         const newDbPath = filePaths[0];
 
-        fs.readFile(newDbPath, (readError, data) => {
-          if (readError) {
-            console.error('Error reading new database file:', readError);
+        fs.unlink(defaultPathDB, (unlinkError) => {
+          if (!unlinkError) {
+            console.log(`Old database file deleted: ${defaultPathDB}`);
+          }
+          if (unlinkError && unlinkError.code !== 'ENOENT') {
+            console.error('Error deleting old database file:', unlinkError);
             return;
           }
 
-          fs.writeFile(defaultPathDB, data, (writeError) => {
-            if (writeError) {
-              console.error('Error replacing database file:', writeError);
+          console.log("old database file deleted: ", defaultPathDB);
+          fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
+            if (copyError) {
+              console.error('Error replacing database file:', copyError);
             } else {
               console.log(`Database file replaced with: ${newDbPath}`);
               event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
@@ -697,6 +713,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
