@@ -717,10 +717,10 @@ class LabDB {
 
   async exportAllData() {
     try {
-      const patients = await this.getPatients(); // Use a large limit to get all patients
+      const patients = await this.getPatients();
       const tests = await this.getTests({});
       const packages = await this.getPackages({});
-      const visits = await this.getVisits(); // Use a large limit to get all visits
+      const visits = await this.getVisits();
 
       return {
         patients: patients.data,
