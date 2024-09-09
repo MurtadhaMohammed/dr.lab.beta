@@ -16,7 +16,6 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { WarningOutlined } from "@ant-design/icons";
-
 export const parseTests = (record) => {
   let tests = [];
   if (record?.testType === "CUSTOME") {
@@ -57,6 +56,7 @@ export const ResultsModal = () => {
   const { t } = useTranslation();
   const { isOnline } = useAppStore();
   const printer = useState(localStorage.getItem('selectedPrinter'));
+
 
   useEffect(() => {
     if (isResultsModal && record) {
@@ -165,6 +165,7 @@ export const ResultsModal = () => {
       },
       selectedPrinter: localStorage.getItem('selectedPrinter'),
     });
+
 
     if (resp.success) {
       setIsReload(!isReload);
@@ -293,8 +294,6 @@ export const ResultsModal = () => {
     )),
   };
 
-  console.log(printer, !!printer, "printer");
-
   return (
     <Modal
       title={
@@ -336,7 +335,7 @@ export const ResultsModal = () => {
               </Space>
           }
           <Space direction="">
-            <Button
+          <Button
               onClick={() => {
                 setIsResultsModal(false);
                 setRecord(null);
@@ -345,22 +344,23 @@ export const ResultsModal = () => {
             >
               {t("Close")}
             </Button>
-
             {
               isBarcode ?
-                <>
-                  <Button type="primary" onClick={() => handleBarcode(record)} disabled={!printer[0]}>
-                    {t("printBarcode")}
-                  </Button>
+              <>
+              <Button type="primary" onClick={() => handleBarcode(record)} disabled={!printer[0]}>
+                {t("printBarcode")}
+                </Button>
                 </>
                 :
                 <Button type="primary" onClick={handleSubmit}>
                   {t("SavePrint")}
                 </Button>
+
             }
           </Space>
           {
             !printer[0] ?
+            
               <div className="p-4 absolute bottom-0 w-fit bg-[#fff] text-start flex gap-2 -mx-3">
                 <WarningOutlined className=" text-[#ffcc00]" />
                 <p>{t("printBarcodeWarning")}</p>
@@ -372,11 +372,12 @@ export const ResultsModal = () => {
       }
       centered
     >
+
       {
         isBarcode ?
           <div className="py-4">
             {t("printBarcodeMessage")} {record?.patient?.name}
-          </div>
+            </div>
           :
           <div className="results-modal" id="printJS-form">
             {record && renderTable[record?.testType]}
