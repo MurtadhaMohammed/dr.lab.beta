@@ -14,7 +14,8 @@ import { useAppStore, useHomeStore } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { WarningOutlined } from "@ant-design/icons";
 
 export const parseTests = (record) => {
   let tests = [];
@@ -55,6 +56,7 @@ export const ResultsModal = () => {
     useHomeStore();
   const { t } = useTranslation();
   const { isOnline } = useAppStore();
+  const printer = useState(localStorage.getItem('selectedPrinter'));
 
   useEffect(() => {
     if (isResultsModal && record) {
@@ -291,6 +293,8 @@ export const ResultsModal = () => {
     )),
   };
 
+  console.log(printer, !!printer, "printer");
+
   return (
     <Modal
       title={
@@ -307,7 +311,7 @@ export const ResultsModal = () => {
         setIsBarcode(false);
       }}
       footer={
-        <div className={"results-modal-footer"}>
+        <div className={"results-modal-footer"} style={{ paddingBottom: !printer[0] ? "40px" : "" }}>
 
           {
             isBarcode ?
@@ -331,7 +335,7 @@ export const ResultsModal = () => {
                 </Radio.Group>
               </Space>
           }
-          <Space>
+          <Space direction="">
             <Button
               onClick={() => {
                 setIsResultsModal(false);
@@ -341,26 +345,37 @@ export const ResultsModal = () => {
             >
               {t("Close")}
             </Button>
+
             {
               isBarcode ?
-                <Button type="primary" onClick={() => handleBarcode(record)}>
-                  {"Print Barcode"}
-                </Button>
+                <>
+                  <Button type="primary" onClick={() => handleBarcode(record)} disabled={!printer[0]}>
+                    {t("printBarcode")}
+                  </Button>
+                </>
                 :
                 <Button type="primary" onClick={handleSubmit}>
                   {t("SavePrint")}
                 </Button>
             }
           </Space>
+          {
+            !printer[0] ?
+              <div className="p-4 absolute bottom-0 w-fit bg-[#fff] text-start flex gap-2 -mx-3">
+                <WarningOutlined className=" text-[#ffcc00]" />
+                <p>{t("printBarcodeWarning")}</p>
+              </div>
+              :
+              null
+          }
         </div>
       }
       centered
     >
-
       {
         isBarcode ?
           <div className="py-4">
-            Do you want to print barcode for this patient: {record?.patient?.name}
+            {t("printBarcodeMessage")} {record?.patient?.name}
           </div>
           :
           <div className="results-modal" id="printJS-form">

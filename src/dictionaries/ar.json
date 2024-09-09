@@ -1,4 +1,3 @@
-
 {
   "home": "الرئيسية",
   "Home": "الرئيسية",
@@ -214,17 +213,19 @@
   "UpdateSuccess": "تم التحديث بنجاح",
   "Failedcommunicateserver": "فشل الاتصال بالخادم",
   "error": "حدث خطأ، حاول مجددا في وقت لاحق",
-  "limit_exceeded_message":"لقد وصلت الى الحد الاقصى من رسائل الواتساب",
-  "DatabaseManagement":"إدارة قاعدة البيانات",
-  "ExportDatabase":"تصدير قاعدة البيانات",
-  "ExportDatabaseDescription":" لغرض النسخ احتياطي او غيره.",
-  "ImportDatabaseDescription":"استبدل قاعدة البيانات في نظامك بأخرى.",
-  "ExportToDesktop":"تصدير بيانات النظام",
-  "DatabaseExportedSuccessfully":"تم تصدير قاعدة البيانات بنجاح",
-  "ErrorExportingDatabase":"حدث خطأ في تصدير قاعدة البيانات",
-  "ImportDatabase":"إضافة قاعدة بيانات",
-  "ImportToSystem":"إضافة البيانات للنظام",
-  "importError":"حدث خطأ في إضافة البيانات",
-  "importSuccess":"تم أضافة البيانات بنجاح"
+  "limit_exceeded_message": "لقد وصلت الى الحد الاقصى من رسائل الواتساب",
+  "DatabaseManagement": "إدارة قاعدة البيانات",
+  "ExportDatabase": "تصدير قاعدة البيانات",
+  "ExportDatabaseDescription": " لغرض النسخ احتياطي او غيره.",
+  "ImportDatabaseDescription": "استبدل قاعدة البيانات في نظامك بأخرى.",
+  "ExportToDesktop": "تصدير بيانات النظام",
+  "DatabaseExportedSuccessfully": "تم تصدير قاعدة البيانات بنجاح",
+  "ErrorExportingDatabase": "حدث خطأ في تصدير قاعدة البيانات",
+  "ImportDatabase": "إضافة قاعدة بيانات",
+  "ImportToSystem": "إضافة البيانات للنظام",
+  "importError": "حدث خطأ في إضافة البيانات",
+  "importSuccess": "تم أضافة البيانات بنجاح",
+  "printBarcodeWarning": "يرجى اختيار الطابعة من الإعدادات لتتمكن من طباعة الباركود.",
+  "printBarcode": "طباعة الباركود",
+  "printBarcodeMessage": "هل ترغب في طباعة الباركود للمريض:"
 }
-
