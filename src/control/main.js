@@ -681,8 +681,13 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         try {
 
         const userDataPath = app.getPath("userData");
-         const databaseFileName = process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db';
-         const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
+        //  const databaseFileName = process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db';
+        //  const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
+
+        const databaseFileName =  'Electrondatabase.db';
+        const defaultPathDB =path.join(userDataPath, '..', databaseFileName);
+        
+        console.log("the file path of default db:",defaultPathDB)
           
           const { filePaths, canceled } = await dialog.showOpenDialog({
             title: 'Import Database',
@@ -702,17 +707,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           }
       
           const newDbPath = filePaths[0]; 
-
-          fs.unlink(defaultPathDB, (unlinkError) => {
-            if (!unlinkError) {
-              console.log(`Old database file deleted: ${defaultPathDB}`);
-            }
-            if (unlinkError && unlinkError.code !== 'ENOENT') {
-              console.error('Error deleting old database file:', unlinkError);
-              return;
-            }
-
-            console.log("old database file deleted: ", defaultPathDB);
+          
             fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
               if (copyError) {
                 console.error('Error replacing database file:', copyError);
@@ -721,7 +716,6 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                 event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
               }
             });
-          });
         } catch (error) {
           console.error('Error importing database file:', error);
         }
