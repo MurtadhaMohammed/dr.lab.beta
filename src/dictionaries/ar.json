@@ -1,3 +1,4 @@
+
 {
   "home": "الرئيسية",
   "Home": "الرئيسية",
@@ -212,5 +213,17 @@
   "Failedserialexpiration": "فشل في التحقق من انتهاء صلاحية رمز التفعيل",
   "UpdateSuccess": "تم التحديث بنجاح",
   "Failedcommunicateserver": "فشل الاتصال بالخادم",
-  "error": "حدث خطأ، حاول مجددا في وقت لاحق"
+  "error": "حدث خطأ، حاول مجددا في وقت لاحق",
+  "limit_exceeded_message":"لقد وصلت الى الحد الاقصى من رسائل الواتساب",
+  "DatabaseManagement":"إدارة قاعدة البيانات",
+  "ExportDatabase":"تصدير قاعدة البيانات",
+  "ExportDatabaseDescription":"",
+  "ExportToDesktop":"تصدير بيانات النظام",
+  "DatabaseExportedSuccessfully":"تم تصدير قاعدة البيانات بنجاح",
+  "ErrorExportingDatabase":"حدث خطأ في تصدير قاعدة البيانات",
+  "ImportDatabase":"إضافة قاعدة بيانات",
+  "ImportToSystem":"إضافة البيانات للنظام",
+  "importError":"حدث خطأ في إضافة البيانات",
+  "importSuccess":"تم أضافة البيانات بنجاح"
 }
+

@@ -1,4 +1,4 @@
-const { ipcMain, shell, app, BrowserWindow } = require("electron");
+const { dialog, BrowserWindow, ipcMain, shell, app } = require("electron");
 var { createPDF, printReport, createPDFBlob } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
@@ -6,8 +6,9 @@ const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
-const Jimp = require('jimp');
-const { createCanvas, loadImage } = require('canvas');
+// const sharp = require("sharp");
+const archiver = require('archiver');
+
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -510,31 +511,183 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       );
 
       break;
-    case "exportDatabase": {
+    // case "exportDatabase": {
+    //   try {
+    //     const desktopPath = app.getPath("desktop");
+    //     const defaultPath = path.join(desktopPath, `lab_database_export`);
+
+    //     const { filePath, canceled } = await dialog.showSaveDialog({
+    //       title: 'Export Database',
+    //       defaultPath: defaultPath,
+    //       filters: [
+    //         { name: 'JSON', extensions: ['json'] },
+    //         { name: 'CSV', extensions: ['csv'] }
+    //       ]
+    //     });
+
+    //     if (canceled) {
+    //       return; 
+    //     }
+
+    //     const data = await labDB.exportAllData();
+
+
+    //     const extension = path.extname(filePath).toLowerCase();
+    //     let fileContent;
+
+    //     switch (extension) {
+    //       case '.json': {
+    //         fileContent = JSON.stringify(data, null, 2);
+    //         await fs.promises.writeFile(filePath, fileContent);
+    //         event.reply("asynchronous-reply", {
+    //           success: true,
+    //           message: "Database exported successfully",
+    //           path: filePath
+    //         });
+    //         break;
+    //       }
+
+    // function flattenObject(obj, parentKey = '', res = {}) {
+    //   for (const key in obj) {
+    //     if (obj.hasOwnProperty(key)) {
+    //       const value = obj[key];
+    //       const newKey = parentKey ? `${parentKey}.${key}` : key;
+    //       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+    //         flattenObject(value, newKey, res);
+    //       } else {
+    //         res[newKey] = value;
+    //       }
+    //     }
+    //   }
+    //   return res;
+    // }
+
+    // case '.csv': {
+    //   if (!Array.isArray(data)) {
+    //     throw new Error("Data is not in the expected format for CSV conversion");
+    //   }
+
+    //   // Convert JSON to CSV using json-2-csv
+    //   json2csv.json2csv(data, (err, csv) => {
+    //     if (err) {
+    //       throw err;
+    //     }
+
+    //     const csvPath = filePath + '.csv';
+    //     fs.promises.writeFile(csvPath, csv)
+    //       .then(() => {
+    //         const zipPath = filePath.replace('.csv', '.zip');
+
+    //         async function createZipFile(zipPath, csvPath) {
+    //           return new Promise((resolve, reject) => {
+    //             const output = fs.createWriteStream(zipPath);
+    //             const archive = archiver('zip', { zlib: { level: 9 } });
+
+    //             output.on('close', () => resolve());
+    //             archive.on('error', (err) => reject(err));
+
+    //             archive.pipe(output);
+    //             archive.append(fs.createReadStream(csvPath), { name: 'database.csv' });
+    //             archive.finalize();
+    //           });
+    //         }
+
+    //         createZipFile(zipPath, csvPath)
+    //           .then(() => fs.promises.unlink(csvPath))
+    //           .then(() => {
+    //             event.reply("asynchronous-reply", {
+    //               success: true,
+    //               message: "Database exported and zipped successfully",
+    //               path: zipPath
+    //             });
+    //           })
+    //           .catch((err) => {
+    //             console.error("Error creating zip file:", err);
+    //             event.reply("asynchronous-reply", {
+    //               success: false,
+    //               error: "Error creating zip file"
+    //             });
+    //           });
+    //       })
+    //       .catch((err) => {
+    //         console.error("Error writing CSV file:", err);
+    //         event.reply("asynchronous-reply", {
+    //           success: false,
+    //           error: "Error writing CSV file"
+    //         });
+    //       });
+    //   });
+
+    case "exportDatabaseFile": {
       try {
         const desktopPath = app.getPath("desktop");
-        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-        const exportPath = path.join(desktopPath, `lab_database_export_${timestamp}.json`);
+        const defaultPath = path.join(desktopPath, "database.db");
 
-        const data = await labDB.exportAllData();
-        fs.writeFileSync(exportPath, JSON.stringify(data, null, 2));
+        console.log("Desktop Path:", app.getPath("desktop"));
 
-        event.reply("asynchronous-reply", {
-          success: true,
-          message: "Database exported successfully",
-          path: exportPath
+
+        console.log("The Database path:", defaultPath);
+
+        const { filePath, canceled } = await dialog.showSaveDialog({
+          title: 'Export Database',
+          defaultPath: defaultPath,
+        });
+
+        if (canceled) {
+          return;
+        }
+
+        fs.copyFile(defaultPath, filePath, (error) => {
+          if (error) {
+            console.error('Error exporting database:', error);
+          } else {
+            console.log(`Database exported to: ${filePath}`);
+          }
         });
       } catch (error) {
-        console.error("Error exporting database:", error);
-        event.reply("asynchronous-reply", {
-          success: false,
-          error: error.message
-        });
+        console.error('Error exporting database:', error);
       }
       break;
     }
+    case "ImportDatabaseFile": {
+      try {
+        const userDataPath = app.getPath("userData");
+        const existingDbPath = path.join(userDataPath, "database.db");
 
+        console.log("The existing database path:", existingDbPath);
 
+        const { filePaths, canceled } = await dialog.showOpenDialog({
+          title: 'Import Database',
+          properties: ['openFile'],
+          filters: [
+            { name: 'Database Files', extensions: ['db'] }
+          ]
+        });
+
+        if (canceled) {
+          return;
+        }
+
+        if (filePaths.length === 0) {
+          console.error('No file selected');
+          return;
+        }
+
+        const newDbPath = filePaths[0];
+
+        fs.copyFile(newDbPath, existingDbPath, (error) => {
+          if (error) {
+            console.error('Error replacing database file:', error);
+          } else {
+            console.log(`Database file replaced with: ${newDbPath}`);
+            event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
+          }
+        });
+      } catch (error) {
+        console.error('Error importing database file:', error);
+      }
+      break;
+    }
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;

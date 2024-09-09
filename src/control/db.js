@@ -5,6 +5,7 @@ const { app } = require("electron");
 const Database = require("better-sqlite3");
 
 class LabDB {
+
   constructor() {
     // const isMac = os.platform() === "darwin";
     const dbPath = app.getPath("userData") + "database.db";
@@ -714,25 +715,25 @@ class LabDB {
 
     return { success: info.changes > 0, newTests };
   }
-
   async exportAllData() {
     try {
-      const patients = await this.getPatients(); // Use a large limit to get all patients
-      const tests = await this.getTests({});
-      const packages = await this.getPackages({});
-      const visits = await this.getVisits(); // Use a large limit to get all visits
-
+      const patients = await this.getPatients({ q: "", skip: 0, limit: 1000 });
+      const visits = await this.getVisits({q: "", skip: 0, limit: 1000 });
+      const tests = await this.getTests({q: "", skip: 0, limit: 1000 });
+      const packages = await this.getPackages({q: "", skip: 0, limit: 1000 });
       return {
-        patients: patients.data,
-        tests: tests.data,
-        packages: packages.data,
-        visits: visits.data
+        patients: patients,
+        visits: visits,
+        tests: tests,
+        packages: packages
       };
+
     } catch (error) {
-      console.error("Error exporting all data:", error);
+      console.error('Error exporting all data:', error);
       throw error;
     }
   }
-}
+  
+  }
 
 module.exports = { LabDB };

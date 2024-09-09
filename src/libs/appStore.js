@@ -3,6 +3,24 @@ import { nanoid } from "nanoid";
 import { create } from "zustand";
 import { persist } from 'zustand/middleware';
 
+export const useWhatsappCountStore = create((set) => ({
+  whatsappCount: { sent: 0, limit: 0 },
+  isLimitExceeded: false,
+
+  setWhatsappCount: (newCount) => set((state) => {
+    const updatedCount = {
+      ...state.whatsappCount,
+      ...newCount,
+    };
+
+    return {
+      whatsappCount: updatedCount,
+      isLimitExceeded: updatedCount.sent >= updatedCount.limit,
+    };
+  }),
+}));
+
+
 export const useAppStore = create((set) => ({
   isLogin: true,
   user: null,
