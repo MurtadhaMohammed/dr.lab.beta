@@ -523,208 +523,102 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { success: false, error: error.message });
       }
       break;
-      // case "exportDatabase": {
-      //   try {
-      //     const desktopPath = app.getPath("desktop");
-      //     const defaultPath = path.join(desktopPath, `lab_database_export`);
+               
+      case "exportDatabaseFile": {
+        try {
+          const userDataPath = app.getPath("userData");
       
-      //     const { filePath, canceled } = await dialog.showSaveDialog({
-      //       title: 'Export Database',
-      //       defaultPath: defaultPath,
-      //       filters: [
-      //         { name: 'JSON', extensions: ['json'] },
-      //         { name: 'CSV', extensions: ['csv'] }
-      //       ]
-      //     });
+          const databaseFileName = process.platform === 'darwin' ? 'database.db' : 'Electrondatabase.db';
+          const defaultPathDB = path.join(userDataPath,'..', databaseFileName);
       
-      //     if (canceled) {
-      //       return; 
-      //     }
+          const defaultSavePath = app.getPath("desktop");
+          const desktopPath = path.join(defaultSavePath, databaseFileName);
       
-      //     const data = await labDB.exportAllData();
-
+          console.log("Database path:", defaultPathDB);
+          console.log("Desktop path:", desktopPath);
       
-      //     const extension = path.extname(filePath).toLowerCase();
-      //     let fileContent;
+          const { filePath, canceled } = await dialog.showSaveDialog({
+            title: 'Export Database',
+            defaultPath: desktopPath,
+            filters: [
+              { name: 'Database Files', extensions: ['db'] }
+            ]
+          });
       
-      //     switch (extension) {
-      //       case '.json': {
-      //         fileContent = JSON.stringify(data, null, 2);
-      //         await fs.promises.writeFile(filePath, fileContent);
-      //         event.reply("asynchronous-reply", {
-      //           success: true,
-      //           message: "Database exported successfully",
-      //           path: filePath
-      //         });
-      //         break;
-      //       }
-
-            // function flattenObject(obj, parentKey = '', res = {}) {
-            //   for (const key in obj) {
-            //     if (obj.hasOwnProperty(key)) {
-            //       const value = obj[key];
-            //       const newKey = parentKey ? `${parentKey}.${key}` : key;
-            //       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            //         flattenObject(value, newKey, res);
-            //       } else {
-            //         res[newKey] = value;
-            //       }
-            //     }
-            //   }
-            //   return res;
-            // }
-
-            // case '.csv': {
-            //   if (!Array.isArray(data)) {
-            //     throw new Error("Data is not in the expected format for CSV conversion");
-            //   }
+          if (canceled) {
+            console.log('Export canceled by user');
+            return;
+          }
       
-            //   // Convert JSON to CSV using json-2-csv
-            //   json2csv.json2csv(data, (err, csv) => {
-            //     if (err) {
-            //       throw err;
-            //     }
-      
-            //     const csvPath = filePath + '.csv';
-            //     fs.promises.writeFile(csvPath, csv)
-            //       .then(() => {
-            //         const zipPath = filePath.replace('.csv', '.zip');
-      
-            //         async function createZipFile(zipPath, csvPath) {
-            //           return new Promise((resolve, reject) => {
-            //             const output = fs.createWriteStream(zipPath);
-            //             const archive = archiver('zip', { zlib: { level: 9 } });
-      
-            //             output.on('close', () => resolve());
-            //             archive.on('error', (err) => reject(err));
-      
-            //             archive.pipe(output);
-            //             archive.append(fs.createReadStream(csvPath), { name: 'database.csv' });
-            //             archive.finalize();
-            //           });
-            //         }
-      
-            //         createZipFile(zipPath, csvPath)
-            //           .then(() => fs.promises.unlink(csvPath))
-            //           .then(() => {
-            //             event.reply("asynchronous-reply", {
-            //               success: true,
-            //               message: "Database exported and zipped successfully",
-            //               path: zipPath
-            //             });
-            //           })
-            //           .catch((err) => {
-            //             console.error("Error creating zip file:", err);
-            //             event.reply("asynchronous-reply", {
-            //               success: false,
-            //               error: "Error creating zip file"
-            //             });
-            //           });
-            //       })
-            //       .catch((err) => {
-            //         console.error("Error writing CSV file:", err);
-            //         event.reply("asynchronous-reply", {
-            //           success: false,
-            //           error: "Error writing CSV file"
-            //         });
-            //       });
-            //   });
-            
-            case "exportDatabaseFile": {
-              try {
-                const userDataPath = app.getPath("userData");
-            
-                const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
-                const defaultPathDB = path.join(userDataPath,'..', databaseFileName);
-            
-                const defaultSavePath = app.getPath("desktop");
-                const desktopPath = path.join(defaultSavePath, databaseFileName);
-            
-                console.log("Database path:", defaultPathDB);
-                console.log("Desktop path:", desktopPath);
-            
-                const { filePath, canceled } = await dialog.showSaveDialog({
-                  title: 'Export Database',
-                  defaultPath: desktopPath,
-                  filters: [
-                    { name: 'Database Files', extensions: ['db'] }
-                  ]
-                });
-            
-                if (canceled) {
-                  console.log('Export canceled by user');
-                  return;
-                }
-            
-                if (!filePath) {
-                  console.error('No file path selected');
-                  return;
-                }
-                        
-                fs.copyFile(defaultPathDB, filePath, (error) => {
-                  if (error) {
-                    console.error('Error exporting database:', error);
-                  } else {
-                    console.log(`Database exported to: ${filePath}`);
-                    event.reply("asynchronous-reply", { success: true, message: 'Database file exported successfully.' });
-                  }
-                });
-              } catch (error) {
-                console.error('Error exporting database:', error);
-              }
-              break;
+          if (!filePath) {
+            console.error('No file path selected');
+            return;
+          }
+                  
+          fs.copyFile(defaultPathDB, filePath, (error) => {
+            if (error) {
+              console.error('Error exporting database:', error);
+            } else {
+              console.log(`Database exported to: ${filePath}`);
+              event.reply("asynchronous-reply", { success: true, message: 'Database file exported successfully.' });
             }
+          });
+        } catch (error) {
+          console.error('Error exporting database:', error);
+        }
+        break;
+      }
   
-            case "ImportDatabaseFile": {
-              try {
+      case "ImportDatabaseFile": {
+        try {
 
-              const userDataPath = app.getPath("userData");
-               const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
-               const defaultPathDB = process.platform === 'darwin' ? path.join(userDataPath,'..', databaseFileName): path.join(userDataPath, databaseFileName);
-                
-                const { filePaths, canceled } = await dialog.showOpenDialog({
-                  title: 'Import Database',
-                  properties: ['openFile'],
-                  filters: [
-                    { name: 'Database Files', extensions: ['db'] } 
-                  ]
-                });
-            
-                if (canceled) {
-                  return; 
-                }
-            
-                if (filePaths.length === 0) {
-                  console.error('No file selected');
-                  return;
-                }
-            
-                const newDbPath = filePaths[0]; 
+        const userDataPath = app.getPath("userData");
+         const databaseFileName = process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db';
+         const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
+          
+          const { filePaths, canceled } = await dialog.showOpenDialog({
+            title: 'Import Database',
+            properties: ['openFile'],
+            filters: [
+              { name: 'Database Files', extensions: ['db'] } 
+            ]
+          });
+      
+          if (canceled) {
+            return; 
+          }
+      
+          if (filePaths.length === 0) {
+            console.error('No file selected');
+            return;
+          }
+      
+          const newDbPath = filePaths[0]; 
 
-                fs.unlink(defaultPathDB, (unlinkError) => {
-                  if (!unlinkError) {
-                    console.log(`Old database file deleted: ${defaultPathDB}`);
-                  }
-                  if (unlinkError && unlinkError.code !== 'ENOENT') {
-                    console.error('Error deleting old database file:', unlinkError);
-                    return;
-                  }
-
-                  console.log("old database file deleted: ", defaultPathDB);
-                  fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
-                    if (copyError) {
-                      console.error('Error replacing database file:', copyError);
-                    } else {
-                      console.log(`Database file replaced with: ${newDbPath}`);
-                      event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
-                    }
-                  });
-                });
-              } catch (error) {
-                console.error('Error importing database file:', error);
-              }
-              break;
+          fs.unlink(defaultPathDB, (unlinkError) => {
+            if (!unlinkError) {
+              console.log(`Old database file deleted: ${defaultPathDB}`);
             }
+            if (unlinkError && unlinkError.code !== 'ENOENT') {
+              console.error('Error deleting old database file:', unlinkError);
+              return;
+            }
+
+            console.log("old database file deleted: ", defaultPathDB);
+            fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
+              if (copyError) {
+                console.error('Error replacing database file:', copyError);
+              } else {
+                console.log(`Database file replaced with: ${newDbPath}`);
+                event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
+              }
+            });
+          });
+        } catch (error) {
+          console.error('Error importing database file:', error);
+        }
+        break;
+      }
                
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
