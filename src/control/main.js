@@ -6,8 +6,7 @@ const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
-const Jimp = require('jimp');
-const { createCanvas, loadImage } = require('canvas');
+const sharp = require('sharp');
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -393,142 +392,136 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       console.log("Received data for printing barcode:", arg.data);
       const padding = 20;
 
-      let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
-      if (!visitNumber) {
-        console.log("Failed to generate visit number");
-        event.reply("asynchronous-reply", { success: false, error: "Failed to generate visit number" });
-        return;
-      }
-      console.log("Generated visit number:", visitNumber);
-
-      // Fetch the entire visit object
-      const visit = await labDB.getVisit(arg.data.id);
-      console.log("Fetched visit:", visit);
-
-      let formattedDate;
-      if (visit && visit.date) {
-        console.log("Visit date from database:", visit.date);
-        formattedDate = new Date(visit.date).toLocaleDateString('en-US', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        });
-      } else {
-        console.log("Visit date not available in the fetched data");
-      }
-
-      console.log("Formatted date:", formattedDate);
-
-      bwipjs.toBuffer(
-        {
-          bcid: "code128",
-          text: String(visitNumber),
-          scale: 4,
-          height: 5,
-          includetext: false,
-        },
-        async function (err, png) {
-          if (err) {
-            console.error(err);
-            event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode" });
-          } else {
-            sharp(png)
-              .metadata()
-              .then((metadata) => {
-                const barcodeWidth = metadata.width;
-                const barcodeHeight = metadata.height;
-
-                const textSvg = Buffer.from(`
-                <svg width="${barcodeWidth}" height="60">
-                  <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${arg.data.name}</text>
-                  <text x="50%" y="85%" font-size="25" text-anchor="middle" fill="black" dominant-baseline="middle">${formattedDate}</text>
-                </svg>
-              `);
-
-                const totalWidth = barcodeWidth + 2 * padding;
-                const totalHeight = barcodeHeight + 6 + padding + padding;
-
-                sharp({
-                  create: {
-                    width: totalWidth,
-                    height: totalHeight,
-                    channels: 4,
-                    background: { r: 255, g: 255, b: 255, alpha: 1 },
-                  },
-                })
-                  .composite([
-                    { input: png, top: padding, left: padding },
-                    {
-                      input: textSvg,
-                      top: barcodeHeight + padding,
-                      left: padding,
-                    },
-                  ])
-                  .png()
-                  .toBuffer((err, outputBuffer) => {
-                    if (err) {
-                      console.error(err);
-                      event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode image" });
-                    } else {
-                      const base64Image = outputBuffer.toString('base64');
-
-                      const printWin = new BrowserWindow({
-                        width: 162,
-                        height: 76,
-                        show: false,
-                        webPreferences: {
-                          nodeIntegration: true,
-                          contextIsolation: false,
-                        },
-                      });
-
-                      const htmlContent = `
-                        <!DOCTYPE html>
-                        <html>
-                          <head>
-                            <style>
-                              body { margin: 0; padding: 0; }
-                              img { width: 100%; height: 100%; object-fit: cover; }
-                            </style>
-                          </head>
-                          <body>
-                            <img src="data:image/png;base64,${base64Image}" alt="Barcode">
-                          </body>
-                        </html>
-                      `;
-
-                      printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
-
-                      printWin.webContents.on('did-finish-load', () => {
-                        printWin.webContents.print({
-                          silent: true, // Set to true to bypass the print dialog
-                          printBackground: true,
-                          deviceName: 'Birch DP-2412BF', // Make sure this exactly matches your printer name
-                          margins: {
-                            marginType: 'none'
-                          },
-                          pageSize: {
-                            width: 30400,
-                            height: 15200,
-                          },
-                        }, (success, failureReason) => {
-                          if (!success) {
-                            console.error(`Printing failed: ${failureReason}`);
-                            event.reply("asynchronous-reply", { success: false, error: failureReason });
-                          } else {
-                            console.log('Printing successful');
-                            event.reply("asynchronous-reply", { success: true });
-                          }
-                          printWin.close();
-                        });
-                      });
-                    }
-                  });
-              });
-          }
+      try {
+        let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
+        if (!visitNumber) {
+          console.log("Failed to generate visit number");
+          event.reply("asynchronous-reply", { success: false, error: "Failed to generate visit number" });
+          return;
         }
-      );
+        console.log("Generated visit number:", visitNumber);
 
+        // Fetch the visit object
+        const visit = await labDB.getVisitDetails(arg.data.id);
+        console.log("Fetched visit:", JSON.stringify(visit, null, 2));
+
+        bwipjs.toBuffer(
+          {
+            bcid: "code128",
+            text: String(visitNumber),
+            scale: 4,
+            height: 5,
+            includetext: false,
+          },
+          function (err, png) {
+            if (err) {
+              console.error(err);
+              event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode" });
+            } else {
+              sharp(png)
+                .metadata()
+                .then((metadata) => {
+                  const barcodeWidth = metadata.width;
+                  const barcodeHeight = metadata.height;
+
+                  const textSvg = Buffer.from(`
+                  <svg width="${barcodeWidth}" height="80">
+                    <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${visit ? visit.patient.name : arg.data.name}</text>
+                  </svg>
+                `);
+
+                  const totalWidth = barcodeWidth + 2 * padding;
+                  const totalHeight = barcodeHeight + 30 + padding + padding;
+
+                  sharp({
+                    create: {
+                      width: totalWidth,
+                      height: totalHeight,
+                      channels: 4,
+                      background: { r: 255, g: 255, b: 255, alpha: 1 },
+                    },
+                  })
+                    .composite([
+                      { input: png, top: padding, left: padding },
+                      {
+                        input: textSvg,
+                        top: barcodeHeight + padding,
+                        left: padding,
+                      },
+                    ])
+                    .png()
+                    .toBuffer((err, outputBuffer) => {
+                      if (err) {
+                        console.error(err);
+                        event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode image" });
+                      } else {
+                        const base64Image = outputBuffer.toString('base64');
+
+                        const printWin = new BrowserWindow({
+                          width: 162,
+                          height: 76,
+                          show: false,
+                          webPreferences: {
+                            nodeIntegration: true,
+                            contextIsolation: false,
+                          },
+                        });
+
+                        const htmlContent = `
+                          <!DOCTYPE html>
+                          <html>
+                            <head>
+                              <style>
+                                body { margin: 0; padding-left: 5px; padding-top: 2px; }
+                                img { width: 100%; height: 100%; object-fit: cover; }
+                              </style>
+                            </head>
+                            <body>
+                              <img src="data:image/png;base64,${base64Image}" alt="Barcode">
+                            </body>
+                          </html>
+                        `;
+
+                        printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+
+                        printWin.webContents.on('did-finish-load', () => {
+                          printWin.webContents.print({
+                            silent: true,
+                            printBackground: true,
+                            deviceName: 'Birch DP-2412BF',
+                            margins: {
+                              marginType: 'none'
+                            },
+                            pageSize: {
+                              width: 35400,
+                              height: 17700,
+                            },
+                          }, (success, failureReason) => {
+                            if (!success) {
+                              console.error(`Printing failed: ${failureReason}`);
+                              event.reply("asynchronous-reply", { success: false, error: failureReason });
+                            } else {
+                              console.log('Printing successful');
+                              event.reply("asynchronous-reply", { success: true });
+                            }
+                            printWin.close();
+                          });
+                        });
+                      }
+                    });
+                })
+                .catch(error => {
+                  console.error("Error processing image:", error);
+                  event.reply("asynchronous-reply", { success: false, error: "Error processing image" });
+                });
+            }
+          }
+        );
+
+      } catch (error) {
+        console.error("Error in printParcode:", error);
+        event.reply("asynchronous-reply", { success: false, error: error.message });
+      }
       break;
     case "exportDatabase": {
       try {

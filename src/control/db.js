@@ -6,6 +6,11 @@ const Database = require("better-sqlite3");
 
 class LabDB {
   constructor() {
+    this.db = null;
+    this.init();
+  }
+
+  async init() {
     // const isMac = os.platform() === "darwin";
     const dbPath = app.getPath("userData") + "database.db";
     try {
@@ -17,6 +22,10 @@ class LabDB {
       this.initializeDatabase();
       this.initTestsFromJSON();
       this.checkAndAddVisitNumberColumn();
+      console.log("LabDB initialized, db object:", this.db ? "exists" : "does not exist");
+      if (this.db) {
+        console.log("Available collections:", Object.keys(this.db));
+      }
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -715,26 +724,37 @@ class LabDB {
     return { success: info.changes > 0, newTests };
   }
   
-  async getVisit(visitId) {
+  async getVisitDetails(visitId) {
     try {
       if (!this.db) {
         console.error("Database not initialized");
         return null;
       }
-      if (!this.db.visits) {
-        console.error("Visits collection not found");
-        return null;
+      console.log(`Attempting to fetch visit with id: ${visitId}`);
+      
+      const stmt = await this.db.prepare(`
+        SELECT v.*, p.name as patientName
+        FROM visits v
+        JOIN patients p ON v.patientID = p.id
+        WHERE v.id = ?
+      `);
+
+      const visit = stmt.get(visitId);
+      console.log("Raw visit data:", JSON.stringify(visit, null, 2));
+
+      if (visit) {
+        return {
+          id: visit.id,
+          visitNumber: visit.visitNumber,
+          patient: {
+            name: visit.patientName,
+          },
+        };
       }
-      console.log(`Searching for visit with id: ${visitId}`);
-      const visit = await this.db.visits.findOne({ _id: visitId });
-      console.log("Raw visit data:", visit);
-      if (!visit) {
-        console.log(`No visit found with id: ${visitId}`);
-        return null;
-      }
-      return visit;
+
+      return null;
     } catch (error) {
-      console.error("Error fetching visit:", error);
+      console.error("Error fetching visit details:", error);
       return null;
     }
   }
@@ -744,7 +764,7 @@ class LabDB {
       const tests = await this.getTests({});
       const packages = await this.getPackages({});
       const visits = await this.getVisits(); // Use a large limit to get all visits
-      const visit = await this.getVisit(visits.data[0].id);
+      const visit = await this.getVisitDetails(visits.data[0].id);
 
 
       return {
