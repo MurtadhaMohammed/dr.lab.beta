@@ -617,85 +617,102 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
             //       });
             //   });
             
-    case "exportDatabaseFile":{
-      try {
-        const userDataPath = app.getPath("userData");
-        const defaultPathDB = path.join(userDataPath, "database.db");
-
-        const defaultsavepath = app.getPath("desktop");
-        const desktopPath = path.join( defaultsavepath, "database.db");
-
-
-        console.log("Database path:", defaultPathDB);
-        console.log("Desktop path:", desktopPath);
-
-        const { filePath, canceled } = await dialog.showSaveDialog({
-          title: 'Export Database',
-          defaultPath: desktopPath,
-        });
-    
-        if (canceled) {
-          return; 
-        }
-    
-        fs.copyFile(defaultPathDB, filePath, (error) => {
-          if (error) {
-            console.error('Error exporting database:', error);
-          } else {
-            console.log(`Database exported to: ${filePath}`);
-            event.reply("asynchronous-reply", { success: true, message: 'Database file exported successfully.' });
-          }
-        });
-      } catch (error) {
-        console.error('Error exporting database:', error);
-      }
-      break;
-    }
-  
-    case "ImportDatabaseFile": {
-      try {
-        const userDataPath = app.getPath("userData");
-        const defaultPathDB = path.join(userDataPath, "database.db"); 
-    
-        const { filePaths, canceled } = await dialog.showOpenDialog({
-          title: 'Import Database',
-          properties: ['openFile'],
-          filters: [
-            { name: 'Database Files', extensions: ['db'] } 
-          ]
-        });
-    
-        if (canceled) {
-          return; 
-        }
-    
-        if (filePaths.length === 0) {
-          console.error('No file selected');
-          return;
-        }
-    
-        const newDbPath = filePaths[0]; 
-    
-        fs.readFile(newDbPath, (readError, data) => {
-          if (readError) {
-            console.error('Error reading new database file:', readError);
-            return;
-          }
-    
-          fs.writeFile(defaultPathDB, data, (writeError) => {
-            if (writeError) {
-              console.error('Error replacing database file:', writeError);
-            } else {
-              console.log(`Database file replaced with: ${newDbPath}`);
-              event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
+            case "exportDatabaseFile": {
+              try {
+                const userDataPath = app.getPath("userData");
+            
+                const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
+                const defaultPathDB = path.join(userDataPath,'..', databaseFileName);
+            
+                const defaultSavePath = app.getPath("desktop");
+                const desktopPath = path.join(defaultSavePath, databaseFileName);
+            
+                console.log("Database path:", defaultPathDB);
+                console.log("Desktop path:", desktopPath);
+            
+                const { filePath, canceled } = await dialog.showSaveDialog({
+                  title: 'Export Database',
+                  defaultPath: desktopPath,
+                  filters: [
+                    { name: 'Database Files', extensions: ['db'] }
+                  ]
+                });
+            
+                if (canceled) {
+                  console.log('Export canceled by user');
+                  return;
+                }
+            
+                if (!filePath) {
+                  console.error('No file path selected');
+                  return;
+                }
+                        
+                fs.copyFile(defaultPathDB, filePath, (error) => {
+                  if (error) {
+                    console.error('Error exporting database:', error);
+                  } else {
+                    console.log(`Database exported to: ${filePath}`);
+                    event.reply("asynchronous-reply", { success: true, message: 'Database file exported successfully.' });
+                  }
+                });
+              } catch (error) {
+                console.error('Error exporting database:', error);
+              }
+              break;
             }
-          });
-        });
-      } catch (error) {
-        console.error('Error importing database file:', error);
-      }
-      break;
-    }    
+  
+            case "ImportDatabaseFile": {
+              try {
+
+              const userDataPath = app.getPath("userData");
+               const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
+               const defaultPathDB = process.platform === 'darwin' ? path.join(userDataPath,'..', databaseFileName): path.join(userDataPath, databaseFileName);
+                
+                const { filePaths, canceled } = await dialog.showOpenDialog({
+                  title: 'Import Database',
+                  properties: ['openFile'],
+                  filters: [
+                    { name: 'Database Files', extensions: ['db'] } 
+                  ]
+                });
+            
+                if (canceled) {
+                  return; 
+                }
+            
+                if (filePaths.length === 0) {
+                  console.error('No file selected');
+                  return;
+                }
+            
+                const newDbPath = filePaths[0]; 
+
+                fs.unlink(defaultPathDB, (unlinkError) => {
+                  if (!unlinkError) {
+                    console.log(`Old database file deleted: ${defaultPathDB}`);
+                  }
+                  if (unlinkError && unlinkError.code !== 'ENOENT') {
+                    console.error('Error deleting old database file:', unlinkError);
+                    return;
+                  }
+
+                  console.log("old database file deleted: ", defaultPathDB);
+                  fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
+                    if (copyError) {
+                      console.error('Error replacing database file:', copyError);
+                    } else {
+                      console.log(`Database file replaced with: ${newDbPath}`);
+                      event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
+                    }
+                  });
+                });
+              } catch (error) {
+                console.error('Error importing database file:', error);
+              }
+              break;
+            }
+               
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
