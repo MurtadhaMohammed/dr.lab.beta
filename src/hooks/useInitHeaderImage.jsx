@@ -9,12 +9,10 @@ const useInitHeaderImage = () => {
             const response = await fetch("http://localhost:3009/head.png");
             if (response.status === 200) {
                 setSuccess(true)
-                console.log(response, 'init iamge');
             } else {
                 setSuccess(false);
             }
         } catch (e) {
-            console.log(e);
             setSuccess(false);
         }
     }

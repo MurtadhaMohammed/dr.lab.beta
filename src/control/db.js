@@ -7,6 +7,11 @@ const Database = require("better-sqlite3");
 class LabDB {
 
   constructor() {
+    this.db = null;
+    this.init();
+  }
+
+  async init() {
     // const isMac = os.platform() === "darwin";
     const dbPath = app.getPath("userData") + "database.db";
     try {
@@ -18,6 +23,10 @@ class LabDB {
       this.initializeDatabase();
       this.initTestsFromJSON();
       this.checkAndAddVisitNumberColumn();
+      console.log("LabDB initialized, db object:", this.db ? "exists" : "does not exist");
+      if (this.db) {
+        console.log("Available collections:", Object.keys(this.db));
+      }
     } catch (err) {
       console.error("Error opening database", err);
     }
@@ -712,20 +721,60 @@ class LabDB {
       WHERE id = ?
     `);
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
-
+    
     return { success: info.changes > 0, newTests };
   }
+  
+  async getVisitDetails(visitId) {
+    try {
+      if (!this.db) {
+        console.error("Database not initialized");
+        return null;
+      }
+      console.log(`Attempting to fetch visit with id: ${visitId}`);
+      
+      const stmt = await this.db.prepare(`
+        SELECT v.*, p.name as patientName
+        FROM visits v
+        JOIN patients p ON v.patientID = p.id
+        WHERE v.id = ?
+      `);
+
+      const visit = stmt.get(visitId);
+      console.log("Raw visit data:", JSON.stringify(visit, null, 2));
+
+      if (visit) {
+        return {
+          id: visit.id,
+          visitNumber: visit.visitNumber,
+          patient: {
+            name: visit.patientName,
+          },
+        };
+      }
+
+      return null;
+    } catch (error) {
+      console.error("Error fetching visit details:", error);
+      return null;
+    }
+  }
+  
   async exportAllData() {
     try {
       const patients = await this.getPatients({ q: "", skip: 0, limit: 1000 });
       const visits = await this.getVisits({q: "", skip: 0, limit: 1000 });
       const tests = await this.getTests({q: "", skip: 0, limit: 1000 });
       const packages = await this.getPackages({q: "", skip: 0, limit: 1000 });
+     
+
+
       return {
         patients: patients,
         visits: visits,
         tests: tests,
         packages: packages
+        
       };
 
     } catch (error) {
@@ -735,5 +784,6 @@ class LabDB {
   }
   
   }
+
 
 module.exports = { LabDB };

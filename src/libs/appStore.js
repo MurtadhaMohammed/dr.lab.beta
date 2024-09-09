@@ -37,6 +37,7 @@ export const useAppStore = create((set) => ({
 }));
 
 export const useHomeStore = create((set) => ({
+  isBarcode: false,
   isModal: false,
   isResultsModal: false,
   isToday: true,
@@ -58,6 +59,7 @@ export const useHomeStore = create((set) => ({
   record: null,
   setPatientID: (patientID) => set({ patientID }),
   setIsToday: (isToday) => set({ isToday }),
+  setIsBarcode: (isBarcode) => set({ isBarcode }),
   setRecord: (record) => set({ record }),
   setUID: (uID) => set({ uID }),
   setName: (name) => set({ name }),
