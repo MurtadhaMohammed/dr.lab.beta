@@ -7,7 +7,6 @@ const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
-const archiver = require('archiver');
 
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
