@@ -14,3 +14,8 @@
 .modal{
   direction: rtl;
 }
+.limit-text {
+  max-width: 220px; 
+  overflow-wrap: break-word; 
+}
+

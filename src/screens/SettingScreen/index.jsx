@@ -17,10 +17,10 @@ import {
   Switch,
   Tag,
 } from "antd";
-import { PhoneOutlined, UserOutlined, DownloadOutlined } from "@ant-design/icons";
+import { PhoneOutlined, UserOutlined, DownloadOutlined , ExportOutlined , ImportOutlined } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
-import { useAppStore, useLanguage } from "../../libs/appStore";
+import { useAppStore, useLanguage ,useWhatsappCountStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
@@ -37,15 +37,17 @@ const SettingsScreen = () => {
   const [remainingDays, setRemainingDays] = useState(null);
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
+  const {whatsappCount , setWhatsappCount} = useWhatsappCountStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
     register: localStorage.getItem("lab-created"),
     expire: localStorage.getItem("lab-exp"),
   });
   const navigate = useNavigate();
-  const [whatsappCount, setWhatsappCount] = useState({ sent: 0 });
   const [error, setError] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+
 
 
   const { t } = useTranslation();
@@ -134,15 +136,15 @@ const SettingsScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (userType) {
-      const defaultLimit = limits[userType] || 0;
-      setWhatsappCount(prevCount => ({
-        ...prevCount,
-        limit: defaultLimit
-      }));
+    let limit = 0;
+    if (userType === 'basic') {
+      limit = 50;
+    } else if (userType === 'premium') {
+      limit = 1000;
     }
-  }, [userType]);
-
+    setWhatsappCount({ limit });
+  }, [userType, setWhatsappCount]);
+  
   useEffect(() => {
     fetchImagePath();
   }, []);
@@ -320,24 +322,27 @@ const SettingsScreen = () => {
     [remainingDays, lang]
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
-  const handleExportDatabase = async () => {
-    setExportLoading(true);
-    try {
-      const response = await send({ query: "exportDatabase" });
-      if (response.success) {
-        message.success(t("DatabaseExportedSuccessfully"));
-        console.log("Export path:", response.path);
-      } else {
-        throw new Error(response.error || "Unknown error occurred");
-      }
-    } catch (error) {
-      console.error("Error exporting database:", error);
-      message.error(t("ErrorExportingDatabase"));
-    } finally {
-      setExportLoading(false);
-    }
-  };
 
+const handleExportDatabase = async () => {
+  const res = await send({ query: "exportDatabaseFile" });
+  if (res.success) {
+    message.success(t("DatabaseExportedSuccessfully"));
+  } else {
+    message.error(t("ErrorExportingDatabase"));
+    console.error("Error exporting :", res.error);
+  }
+}
+//it doesn't show the sucess msg
+  const handleImportDatabase = async () => {
+      const res = await send({ query: "ImportDatabaseFile"});
+      console.log(res)
+      if (res.success) {
+        message.success(t("importSuccess"));
+      } else {
+        message.error(t("importError"));
+      }
+     }
+  
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -591,9 +596,9 @@ const SettingsScreen = () => {
             <Card className="mt-[6px]">
               <div className="flex justify-between items-center">
                 <b className="text-[14px]">{t("ExportDatabase")}</b>
-                <Button
-                  type="primary"
-                  icon={<DownloadOutlined />}
+                <Button 
+                  type="primary" 
+                  icon={<ExportOutlined />} 
                   onClick={handleExportDatabase}
                   loading={exportLoading}
                 >
@@ -609,10 +614,27 @@ const SettingsScreen = () => {
             <PrinterSelector />
           </Card>
           </div>
+          <div>
+            <Card className="mt-[27px]">
+              <div className="flex justify-between items-center">
+                <b className="text-[14px]">{t("ImportDatabase")}</b>
+                <Button 
+                  type="primary" 
+                  icon={<ImportOutlined />} 
+                  onClick={handleImportDatabase}
+                  loading={exportLoading}
+                >
+                  {t("ImportToSystem")}
+                </Button>
+              </div>
+              <p className="mt-2 text-sm text-gray-500">
+                {t("ImportDatabaseDescription")}
+              </p>
+            </Card>
+          </div>
         </section>
       </div>
     </div>
   );
 };
-
 export default SettingsScreen;

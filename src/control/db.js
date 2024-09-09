@@ -5,6 +5,7 @@ const { app } = require("electron");
 const Database = require("better-sqlite3");
 
 class LabDB {
+
   constructor() {
     this.db = null;
     this.init();
@@ -723,8 +724,7 @@ class LabDB {
     
     return { success: info.changes > 0, newTests };
   }
-  
-  async getVisitDetails(visitId) {
+    async getVisitDetails(visitId) {
     try {
       if (!this.db) {
         console.error("Database not initialized");
@@ -774,8 +774,9 @@ class LabDB {
         visits: visits.data,
         visit: visit.data
       };
+
     } catch (error) {
-      console.error("Error exporting all data:", error);
+      console.error('Error exporting all data:', error);
       throw error;
     }
   }
