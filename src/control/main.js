@@ -677,56 +677,56 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               break;
             }
   
-            case "ImportDatabaseFile": {
-              try {
+      case "ImportDatabaseFile": {
+        try {
 
-              const userDataPath = app.getPath("userData");
-               const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
-               const defaultPathDB = process.platform === 'darwin' ? path.join(userDataPath,'..', databaseFileName): path.join(userDataPath, databaseFileName);
-                
-                const { filePaths, canceled } = await dialog.showOpenDialog({
-                  title: 'Import Database',
-                  properties: ['openFile'],
-                  filters: [
-                    { name: 'Database Files', extensions: ['db'] } 
-                  ]
-                });
-            
-                if (canceled) {
-                  return; 
-                }
-            
-                if (filePaths.length === 0) {
-                  console.error('No file selected');
-                  return;
-                }
-            
-                const newDbPath = filePaths[0]; 
+        const userDataPath = app.getPath("userData");
+         const databaseFileName = process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db';
+         const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
+          
+          const { filePaths, canceled } = await dialog.showOpenDialog({
+            title: 'Import Database',
+            properties: ['openFile'],
+            filters: [
+              { name: 'Database Files', extensions: ['db'] } 
+            ]
+          });
+      
+          if (canceled) {
+            return; 
+          }
+      
+          if (filePaths.length === 0) {
+            console.error('No file selected');
+            return;
+          }
+      
+          const newDbPath = filePaths[0]; 
 
-                fs.unlink(defaultPathDB, (unlinkError) => {
-                  if (!unlinkError) {
-                    console.log(`Old database file deleted: ${defaultPathDB}`);
-                  }
-                  if (unlinkError && unlinkError.code !== 'ENOENT') {
-                    console.error('Error deleting old database file:', unlinkError);
-                    return;
-                  }
-
-                  console.log("old database file deleted: ", defaultPathDB);
-                  fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
-                    if (copyError) {
-                      console.error('Error replacing database file:', copyError);
-                    } else {
-                      console.log(`Database file replaced with: ${newDbPath}`);
-                      event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
-                    }
-                  });
-                });
-              } catch (error) {
-                console.error('Error importing database file:', error);
-              }
-              break;
+          fs.unlink(defaultPathDB, (unlinkError) => {
+            if (!unlinkError) {
+              console.log(`Old database file deleted: ${defaultPathDB}`);
             }
+            if (unlinkError && unlinkError.code !== 'ENOENT') {
+              console.error('Error deleting old database file:', unlinkError);
+              return;
+            }
+
+            console.log("old database file deleted: ", defaultPathDB);
+            fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
+              if (copyError) {
+                console.error('Error replacing database file:', copyError);
+              } else {
+                console.log(`Database file replaced with: ${newDbPath}`);
+                event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
+              }
+            });
+          });
+        } catch (error) {
+          console.error('Error importing database file:', error);
+        }
+        break;
+      }
                
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
