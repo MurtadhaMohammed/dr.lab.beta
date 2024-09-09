@@ -619,28 +619,31 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
             
     case "exportDatabaseFile":{
       try {
-        const desktopPath = app.getPath("desktop");
-        const defaultPath = path.join(desktopPath, "database.db");
+        const userDataPath = app.getPath("userData");
+        const defaultPathDB = path.join(userDataPath, "database.db");
 
-        console.log("Desktop Path:", app.getPath("desktop"));
+        const defaultsavepath = app.getPath("desktop");
+        const desktopPath = path.join( defaultsavepath, "database.db");
 
 
-        console.log("The Database path:", defaultPath);
+        console.log("Database path:", defaultPathDB);
+        console.log("Desktop path:", desktopPath);
 
         const { filePath, canceled } = await dialog.showSaveDialog({
           title: 'Export Database',
-          defaultPath: defaultPath,
+          defaultPath: desktopPath,
         });
     
         if (canceled) {
           return; 
         }
     
-        fs.copyFile(defaultPath, filePath, (error) => {
+        fs.copyFile(defaultPathDB, filePath, (error) => {
           if (error) {
             console.error('Error exporting database:', error);
           } else {
             console.log(`Database exported to: ${filePath}`);
+            event.reply("asynchronous-reply", { success: true, message: 'Database file exported successfully.' });
           }
         });
       } catch (error) {
@@ -648,12 +651,11 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+  
     case "ImportDatabaseFile": {
       try {
         const userDataPath = app.getPath("userData");
-        const existingDbPath = path.join(userDataPath, "database.db");
-
-        console.log("The existing database path:", existingDbPath);
+        const defaultPathDB = path.join(userDataPath, "database.db"); 
     
         const { filePaths, canceled } = await dialog.showOpenDialog({
           title: 'Import Database',
@@ -674,19 +676,26 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     
         const newDbPath = filePaths[0]; 
     
-        fs.copyFile(newDbPath, existingDbPath, (error) => {
-          if (error) {
-            console.error('Error replacing database file:', error);
-          } else {
-            console.log(`Database file replaced with: ${newDbPath}`);
-            event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
+        fs.readFile(newDbPath, (readError, data) => {
+          if (readError) {
+            console.error('Error reading new database file:', readError);
+            return;
           }
+    
+          fs.writeFile(defaultPathDB, data, (writeError) => {
+            if (writeError) {
+              console.error('Error replacing database file:', writeError);
+            } else {
+              console.log(`Database file replaced with: ${newDbPath}`);
+              event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
+            }
+          });
         });
       } catch (error) {
         console.error('Error importing database file:', error);
       }
       break;
-    }
+    }    
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
