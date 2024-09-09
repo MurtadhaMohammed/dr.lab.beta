@@ -623,7 +623,7 @@ const SettingsScreen = () => {
                 </Button>
               </div>
               <p className="mt-2 text-sm text-gray-500">
-                {t("ExportDatabaseDescription")}
+                {t("ImportDatabaseDescription")}
               </p>
             </Card>
           </div>
