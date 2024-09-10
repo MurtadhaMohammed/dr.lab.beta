@@ -229,5 +229,7 @@
   "importSuccess": "Data imported successfully",
   "printBarcodeWarning": "Please choose a printer from the settings to proceed with printing the barcode.",
   "printBarcode": "Print Barcode",
-  "printBarcodeMessage": "Would you like to print the barcode for the patient:"
+  "printBarcodeMessage": "Would you like to print the barcode for the patient:",
+  "printer": "Printer",
+  "choosePrinter": "Choose a Printer"
 }

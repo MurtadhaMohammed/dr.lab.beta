@@ -426,7 +426,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                   const barcodeHeight = metadata.height;
 
                   const textSvg = Buffer.from(`
-                  <svg width="${barcodeWidth}" height="80">
+                  <svg width="${barcodeWidth}" height="60">
                     <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${visit ? visit.patient.name : arg.data.name}</text>
                   </svg>
                 `);

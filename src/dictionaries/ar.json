@@ -227,5 +227,7 @@
   "importSuccess": "تم أضافة البيانات بنجاح",
   "printBarcodeWarning": "يرجى اختيار الطابعة من الإعدادات لتتمكن من طباعة الباركود.",
   "printBarcode": "طباعة الباركود",
-  "printBarcodeMessage": "هل ترغب في طباعة الباركود للمريض:"
+  "printBarcodeMessage": "هل ترغب في طباعة الباركود للمريض:",
+  "printer": "طابعة",
+  "choosePrinter": "اختر الطابعة"
 }

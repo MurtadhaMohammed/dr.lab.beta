@@ -627,9 +627,13 @@ const handleExportDatabase = async () => {
                 {t("ImportDatabaseDescription")}
               </p>
             </Card>
-            <p className="pl-[4px]  opacity-60">Printer Settings</p>
-          <Card className="mt-[6px]">
+            <p className="pl-[4px]  opacity-60">{t('printer')}</p>
+          <Card className="mt-[6px] ">
+            <div className="flex justify-between items-center">
             <PrinterSelector />
+            <p className="py-2">{t('printer')} : {localStorage.getItem("selectedPrinter")}</p>
+
+            </div>
           </Card>
           </div>
         </section>
