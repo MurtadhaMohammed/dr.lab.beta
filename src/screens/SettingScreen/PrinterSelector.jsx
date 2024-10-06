@@ -4,11 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { CheckOutlined } from '@ant-design/icons';
 const { ipcRenderer } = window.require('electron');
 
-const PrinterSelector = () => {
+const PrinterSelector = ({ onPrinterSelect }) => { 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [printers, setPrinters] = useState([]);
   const [selectedPrinter, setSelectedPrinter] = useState(localStorage.getItem('selectedPrinter') || '');
   const {t} = useTranslation();
+  
   useEffect(() => {
     fetchPrinters();
   }, []);
@@ -33,6 +34,9 @@ const PrinterSelector = () => {
     }
     setIsModalVisible(false);
     localStorage.setItem('selectedPrinter', selectedPrinter);
+    if (onPrinterSelect) {
+      onPrinterSelect(selectedPrinter);
+    }
   };
 
   const handleCancel = () => {

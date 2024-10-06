@@ -37,7 +37,7 @@ const SettingsScreen = () => {
   const [remainingDays, setRemainingDays] = useState(null);
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
-  const {whatsappCount , setWhatsappCount} = useWhatsappCountStore();
+  const { whatsappCount , setWhatsappCount } = useWhatsappCountStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
     register: localStorage.getItem("lab-created"),
@@ -48,8 +48,6 @@ const SettingsScreen = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
 
-
-
   const { t } = useTranslation();
 
   const limits = {
@@ -58,6 +56,9 @@ const SettingsScreen = () => {
   }
   const labUser = JSON.parse(localStorage.getItem("lab-user"));
   const userType = labUser?.type;
+
+  // **New State for Selected Printer**
+  const [selectedPrinter, setSelectedPrinter] = useState(localStorage.getItem('selectedPrinter') || '');
 
   async function fetchImagePath() {
     setImagePath(null);
@@ -323,26 +324,35 @@ const SettingsScreen = () => {
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
 
-const handleExportDatabase = async () => {
-  const res = await send({ query: "exportDatabaseFile" });
-  if (res.success) {
-    message.success(t("DatabaseExportedSuccessfully"));
-  } else {
-    message.error(t("ErrorExportingDatabase"));
-    console.error("Error exporting :", res.error);
+  const handleExportDatabase = async () => {
+    setExportLoading(true); // Start loading
+    const res = await send({ query: "exportDatabaseFile" });
+    if (res.success) {
+      message.success(t("DatabaseExportedSuccessfully"));
+    } else {
+      message.error(t("ErrorExportingDatabase"));
+      console.error("Error exporting :", res.error);
+    }
+    setExportLoading(false); // Stop loading
   }
-}
-//it doesn't show the sucess msg
+
   const handleImportDatabase = async () => {
-      const res = await send({ query: "ImportDatabaseFile"});
-      console.log(res)
-      if (res.success) {
-        message.success(t("importSuccess"));
-      } else {
-        message.error(t("importError"));
-      }
-     }
+    setImportLoading(true); // Start loading
+    const res = await send({ query: "ImportDatabaseFile"});
+    console.log(res)
+    if (res.success) {
+      message.success(t("importSuccess"));
+    } else {
+      message.error(t("importError"));
+    }
+    setImportLoading(false); // Stop loading
+  }
   
+  // **Callback to handle printer selection**
+  const handlePrinterSelect = (printer) => {
+    setSelectedPrinter(printer);
+  };
+
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -545,6 +555,7 @@ const handleExportDatabase = async () => {
                 </div>
                 <div className="w-full flex justify-between inter px-1">
                   <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
+
                   <p className=" text-[#A5A5A5] font-normal text-sm">
                     {`${whatsappCount.sent}/${whatsappCount.limit}`}
                   </p>
@@ -618,7 +629,7 @@ const handleExportDatabase = async () => {
                   type="primary" 
                   icon={<ImportOutlined />} 
                   onClick={handleImportDatabase}
-                  loading={exportLoading}
+                  loading={importLoading} // Changed to importLoading
                 >
                   {t("ImportToSystem")}
                 </Button>
@@ -628,13 +639,13 @@ const handleExportDatabase = async () => {
               </p>
             </Card>
             <p className="pl-[4px]  opacity-60">{t('printer')}</p>
-          <Card className="mt-[6px] ">
-            <div className="flex justify-between items-center">
-            <PrinterSelector />
-            <p className="py-2">{t('printer')} : {localStorage.getItem("selectedPrinter")}</p>
-
-            </div>
-          </Card>
+            <Card className="mt-[6px] ">
+              <div className="flex justify-between items-center">
+                {/* **Pass the callback to PrinterSelector** */}
+                <PrinterSelector onPrinterSelect={handlePrinterSelect} />
+                <p className="py-2">{t('printer')} : {selectedPrinter}</p>
+              </div>
+            </Card>
           </div>
         </section>
       </div>

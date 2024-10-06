@@ -7,6 +7,7 @@ const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
+const isDev = require('electron-is-dev');
 
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
@@ -360,8 +361,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { err, count });
       });
       break;
-    case "print": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
+    case "print": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }'
+      console.log(arg.data, "this is the data");
       createPDF(arg.data, arg?.isView, (err, res, file) => {
+        console.log(err, res, file, "this is the error, response and file");
         event.reply("asynchronous-reply", { err, res, file });
       });
       break;
@@ -530,9 +533,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               try {
                 const userDataPath = app.getPath("userData");
             
-                const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
-                const defaultPathDB = path.join(userDataPath,'..', databaseFileName);
-            
+                const databaseFileName = !isDev ? 'lab-betadatabase.db' : (process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db');
+                const defaultPathDB = process.platform === 'win32' ? path.join(userDataPath, '..', databaseFileName) : userDataPath;
+       
                 const defaultSavePath = app.getPath("desktop");
                 const desktopPath = path.join(defaultSavePath, databaseFileName);
             
@@ -575,11 +578,11 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         try {
 
         const userDataPath = app.getPath("userData");
-        //  const databaseFileName = process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db';
-        //  const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
+         const databaseFileName = !isDev ? 'lab-betadatabase.db' : (process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db');
+         const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
 
-        const databaseFileName =  'Electrondatabase.db';
-        const defaultPathDB =path.join(userDataPath, '..', databaseFileName);
+        // const databaseFileName =  'Electrondatabase.db';
+        // const defaultPathDB =path.join(userDataPath, '..', databaseFileName);
         
         console.log("the file path of default db:",defaultPathDB)
           
