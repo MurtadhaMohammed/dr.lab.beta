@@ -51,14 +51,12 @@ export const PureModal = () => {
     };
   
     if (id) {
-      console.log("Updating patient with ID:", id);
       send({
         query: "updatePatient",
         id,
         data: { ...data }
       }).then(resp => {
         if (resp.success) {
-          console.log("Patient updated:", resp.data);
           message.success(t("Patientupdatedsuccessfully"));
           setReset();
           setIsModal(false);
@@ -78,7 +76,6 @@ export const PureModal = () => {
         data: { ...data, createdAt: Date.now() },
       }).then(resp => {
         if (resp.success) {
-          console.log("Patient added with ID:", resp.id);
           message.success(t("Patientaddedsuccessfully"));
           setReset();
           setIsModal(false);

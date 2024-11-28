@@ -151,8 +151,10 @@ const SettingsScreen = () => {
   }, []);
 
   useEffect(() => {
-    form.setFieldsValue(user);
-  }, [labUser]);
+    if (user) {
+      form.setFieldsValue(user);
+    }
+  }, [user, form]);
 
   const signout = async () => {
     setSignoutLoading(true);
@@ -232,11 +234,7 @@ const SettingsScreen = () => {
 
   const handleUpdateClient = async (values) => {
     setLoading(true);
-    console.log("Form values:", values);
-
     send({ query: "getUUID" }).then(async ({ UUID }) => {
-      console.log("UUID:", UUID);
-
       try {
         const resp = await fetch(`${URL}/app/update-client`, {
           method: "PUT",
@@ -249,7 +247,6 @@ const SettingsScreen = () => {
           }),
         });
 
-        console.log("Response status:", resp.status);
 
         if (resp.ok) {
           let data = await resp.json();

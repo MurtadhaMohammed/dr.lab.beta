@@ -196,7 +196,6 @@ export const PureTable = ({ isReport = false }) => {
 
                   try {
                     if (isOnline && window.gtag) {
-                      console.log('whatsapp event trigger');
                       window.gtag('event', 'click', {
                         event_category: 'button',
                         event_label: 'whatsapp-message-button',
@@ -483,7 +482,6 @@ export const PureTable = ({ isReport = false }) => {
     })
       .then((resp) => {
         if (resp.success) {
-          console.log("Success deleteVisit");
           message.success(t("Visitdeletedsuccessfully"));
           setIsReload(!isReload);
         } else {

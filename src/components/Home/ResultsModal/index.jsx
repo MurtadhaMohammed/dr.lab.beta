@@ -60,7 +60,6 @@ export const ResultsModal = () => {
 
   useEffect(() => {
     if (isResultsModal && record) {
-      console.log("Modal opened with the following options:");
       if (record?.testType === "CUSTOME") {
         record?.tests?.forEach((row) => {
           console.log(`Options for ${row?.name}:`, row?.options);
@@ -155,7 +154,6 @@ export const ResultsModal = () => {
   };
 
   const handleBarcode = async (record) => {
-    console.log(record, 'rrr');
 
     const resp = await send({
       query: "printParcode",
@@ -175,7 +173,6 @@ export const ResultsModal = () => {
     }
 
     setIsBarcode(false);
-    console.log(resp, 'ress');
   }
 
   let renderTable = {

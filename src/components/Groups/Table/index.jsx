@@ -35,7 +35,6 @@ export const PureTable = () => {
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
   const limit = usePageLimit();
-console.log(total, "totallllllllllllllllllll");
   const columns = [
     {
       title: t("PackageTitle"),
@@ -156,7 +155,6 @@ console.log(total, "totallllllllllllllllllll");
     })
       .then((resp) => {
         if (resp.success) {
-          console.log("Success deletePackage");
           message.success(t("Packagedeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
@@ -190,7 +188,6 @@ console.log(total, "totallllllllllllllllllll");
         if (resp.success) {
           setData(resp.data);
           setTotal(resp.total);
-          console.log("Packages retrieved successfully:", resp.data);
         } else {
           console.error("Error retrieving packages:", resp.error);
         }
