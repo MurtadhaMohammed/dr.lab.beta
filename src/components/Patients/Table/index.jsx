@@ -47,7 +47,13 @@ export const PureTable = () => {
 
   const columns = [
     {
-      title: "#",
+      title: t("Name"),
+      dataIndex: "name",
+      key: "name",
+      render: (text) => <b>{text}</b>,
+    },
+    {
+      title: t("Gender"),
       dataIndex: "gender",
       key: "gender",
       render: (gender) =>
@@ -56,12 +62,6 @@ export const PureTable = () => {
         ) : (
           <WomanOutlined style={{ color: "rgb(235, 47, 150)", fontSize: 16 }} />
         ),
-    },
-    {
-      title: t("Name"),
-      dataIndex: "name",
-      key: "name",
-      render: (text) => <b>{text}</b>,
     },
     {
       title: t("Age"),
@@ -189,7 +189,6 @@ export const PureTable = () => {
         if (resp.success) {
           setData(resp.data);
           setTotal(resp?.total);
-          console.log("Patients data:", resp.data);
         } else {
           console.error("Error fetching patients:", resp.error);
         }

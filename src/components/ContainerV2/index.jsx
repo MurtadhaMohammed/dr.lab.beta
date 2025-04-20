@@ -50,19 +50,20 @@ const MainContainerV2 = ({ children }) => {
   const signout = async () => {
     setSignoutLoading(true);
     try {
-      let serial = localStorage.getItem("lab-serial");
+      let username = JSON.parse(localStorage.getItem("lab-user"))?.username;
       const resp = await fetch(`${URL}/app/logout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ serial }),
+        body: JSON.stringify({ username }),
       });
       if (resp.status === 200) {
         setSignoutLoading(false);
         localStorage.clear();
         setIsLogin(false);
-      } else message.error(t("Serialnotfound"));
+      } 
+      // else message.error(t("Serialnotfound"));
     } catch (error) {
       console.log(error);
       message.error(error.message);

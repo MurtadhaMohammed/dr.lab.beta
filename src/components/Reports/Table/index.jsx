@@ -86,7 +86,7 @@ export const PureTable = () => {
     },
     {
       id: 2,
-      title: t("SubTotalAmounts"),
+      title: t("SubTotalAmount"),
       total: (
         <b style={{ fontSize: 14 }}>
           {Number(data?.subTotalAmount?.total || 0).toLocaleString("en")} IQD
@@ -108,7 +108,7 @@ export const PureTable = () => {
     },
     {
       id: 4,
-      title: <span style={{ fontSize: 18 }}>{t("TotalAmounts")}</span>,
+      title: <span style={{ fontSize: 18 }}>{t("TotalAmount")}</span>,
       total: (
         <b style={{ fontSize: 18 }}>
           {Number(data?.totalAmount?.total || 0).toLocaleString("en")} IQD

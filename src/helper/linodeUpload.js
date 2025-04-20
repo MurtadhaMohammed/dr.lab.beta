@@ -25,7 +25,6 @@ async function uploadFileToLinode(file) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
 
-    console.log("File uploaded successfully:", response.status);
   } catch (error) {
     console.error("File upload failed:", error);
   }

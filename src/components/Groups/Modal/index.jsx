@@ -61,7 +61,6 @@ export const PureModal = () => {
             setTestsList((prev) => [...prev, ...resp.data]);
           }
 
-          console.log("Tests fetched successfully:", resp.data);
           if (resp.data.length === limit) {
             skip += limit;
           }
@@ -138,7 +137,6 @@ export const PureModal = () => {
       })
         .then((resp) => {
           if (resp.success) {
-            console.log(t("Packageupdatedsuccessfully"));
             setReset();
             setIsModal(false);
             setIsReload(!isReload);

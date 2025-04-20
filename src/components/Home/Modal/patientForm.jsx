@@ -50,7 +50,6 @@ const PatientForm = () => {
       .then((resp) => {
         if (resp.success) {
           setPatientsList(resp.data);
-          console.log("Patients data:", resp.data);
         } else {
           console.error("Error fetching patients:", resp.error);
         }

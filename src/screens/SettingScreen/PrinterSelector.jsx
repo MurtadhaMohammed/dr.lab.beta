@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, List } from 'antd';
+import { Button, Modal, List , message } from 'antd';
 const { ipcRenderer } = window.require('electron');
 
 const PrinterSelector = () => {
@@ -9,7 +9,7 @@ const PrinterSelector = () => {
 
   useEffect(() => {
     fetchPrinters();
-  }, []);
+  }, []);  
 
   const fetchPrinters = async () => {
     try {
@@ -25,6 +25,10 @@ const PrinterSelector = () => {
   };
 
   const handleOk = () => {
+    if (!selectedPrinter) {
+      message.warning('Please select a printer before proceeding.');
+      return;
+    }
     setIsModalVisible(false);
     localStorage.setItem('selectedPrinter', selectedPrinter);
   };

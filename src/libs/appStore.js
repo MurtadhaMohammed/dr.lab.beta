@@ -20,6 +20,23 @@ export const useWhatsappCountStore = create((set) => ({
   }),
 }));
 
+export const usePrintCountStore = create((set) => ({
+  printCount: { sent: 0, limit: 0 },
+  isLimitExceeded: false,
+
+  setPrintCount: (newCount) => set((state) => {
+    const updatedCount = {
+      ...state.printCount,
+      ...newCount,
+    };
+
+    return {
+      printCount: updatedCount,
+      isLimitExceeded: updatedCount.sent >= updatedCount.limit,
+    };
+  }),
+}));
+
 
 export const useAppStore = create((set) => ({
   isLogin: true,

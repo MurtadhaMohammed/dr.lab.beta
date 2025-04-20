@@ -20,7 +20,7 @@ import {
 import { PhoneOutlined, UserOutlined, DownloadOutlined , ExportOutlined , ImportOutlined } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
-import { useAppStore, useLanguage ,useWhatsappCountStore } from "../../libs/appStore";
+import { useAppStore, useLanguage ,useWhatsappCountStore,usePrintCountStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
@@ -28,6 +28,7 @@ import { useNavigate } from "react-router-dom";
 import PopOverContent from "./PopOverContent";
 import { URL } from "../../libs/api";
 import PrinterSelector from './PrinterSelector';
+import { signout } from "../../helper/signOut";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -38,6 +39,7 @@ const SettingsScreen = () => {
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const {whatsappCount , setWhatsappCount} = useWhatsappCountStore();
+  const {printCount , setPrintCount} = usePrintCountStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
     register: localStorage.getItem("lab-created"),
@@ -47,18 +49,13 @@ const SettingsScreen = () => {
   const [error, setError] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
-
-
+  const [labUser, setLabUser] = useState(null);
+  const [startDate, setStartDate] = useState(null);
 
   const { t } = useTranslation();
 
-  const limits = {
-    basic: 50,
-    premium: 1000
-  }
-  const labUser = JSON.parse(localStorage.getItem("lab-user"));
-  const userType = labUser?.type;
-
+  const userType = labUser?.Plan;
+  
   async function fetchImagePath() {
     setImagePath(null);
     try {
@@ -74,14 +71,13 @@ const SettingsScreen = () => {
   }
 
   const handleWhatsappCount = async (labUserId) => {
-    const url = `${URL}/send/whatsapp-count/${labUserId}`;
+    const url = `${URL}/whatsapp/whatsapp-count/${labUserId}`;
     try {
       const response = await fetch(url);
       const text = await response.text();
 
       try {
         const data = JSON.parse(text);
-        console.log("Parsed Data:", data);
         const newCount = { sent: data.count };
         setWhatsappCount(newCount);
         localStorage.setItem('whatsappCount', JSON.stringify(newCount));
@@ -97,10 +93,8 @@ const SettingsScreen = () => {
     }
   };
 
-
   useEffect(() => {
     const storedCount = localStorage.getItem('whatsappCount');
-    console.log(storedCount);
     if (storedCount) {
       try {
         const parsedCount = JSON.parse(storedCount);
@@ -137,49 +131,44 @@ const SettingsScreen = () => {
 
   useEffect(() => {
     let limit = 0;
-    if (userType === 'basic') {
-      limit = 50;
-    } else if (userType === 'premium') {
+    if (userType?.id === 2) {
       limit = 1000;
-    }
+    } 
     setWhatsappCount({ limit });
   }, [userType, setWhatsappCount]);
-  
+
   useEffect(() => {
     fetchImagePath();
   }, []);
 
   useEffect(() => {
-    form.setFieldsValue(user);
-  }, [labUser]);
-
-  const signout = async () => {
-    setSignoutLoading(true);
     try {
-      let serial = localStorage.getItem("lab-serial");
-      console.log("Serial:", serial);
-      const resp = await fetch(`${URL}/app/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ serial }),
-      });
-      if (resp.status === 200) {
-        setSignoutLoading(false);
-        localStorage.clear();
-        setIsLogin(false);
-        navigate(-1, { replace: true });
-      } else message.error(t("Serialnotfound"));
+      const userData = JSON.parse(localStorage.getItem("lab-user"));
+      if (userData) {
+        setLabUser(userData);
+        form.setFieldsValue(userData);
+      }
     } catch (error) {
-      console.log(error);
-      message.error(error.message);
-      setSignoutLoading(false);
+      console.error("Error parsing lab-user:", error);
+      setError("Error loading user data");
     }
-  };
+  }, []);
 
   useEffect(() => {
     calculateRemainingDays();
+  }, []);
+
+  useEffect(() => {
+    try {
+      const labUser = JSON.parse(localStorage.getItem("lab-user"));
+      if (labUser?.Plan?.id === 1) {
+        setStartDate(labUser.createdAt);
+      } else {
+        setStartDate(localStorage.getItem("lab-created"));
+      }
+    } catch (error) {
+      console.error("Error setting start date:", error);
+    }
   }, []);
 
   const calculateRemainingDays = () => {
@@ -202,7 +191,7 @@ const SettingsScreen = () => {
 
 
   const handelCancel = () => {
-    form.setFieldsValue(user);
+    form.setFieldsValue(labUser);
     setIsUpdate(false);
   };
 
@@ -210,31 +199,64 @@ const SettingsScreen = () => {
     let name = field[0].name[0];
     let value = field[0].value;
     if (value === "") value = null;
-    if (value !== user[name]) setIsUpdate(true);
+    if (value !== labUser[name]) setIsUpdate(true);
     else setIsUpdate(false);
   };
 
   const handleChangeFile = async () => {
-    fileDialog().then(async (file) => {
-      send({
-        query: "saveHeadImage",
-        file: file[0]?.path,
-      }).then((resp) => {
-        if (resp.success) {
-          fetchImagePath();
-        } else {
-          console.error("Error retrieving visits:", resp.error);
-        }
+    try {
+      const files = await fileDialog();
+      if (!files || files.length === 0) return;
+      
+      const selectedFile = files[0];
+      const fileName = selectedFile.name.toLowerCase();
+      
+      const validExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+      const isImageFile = validExtensions.some(ext => fileName.endsWith(ext));
+      
+      if (!isImageFile) {
+        message.error(t("PleaseSelectImageFile"));
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      
+      const response = await fetch(`${URL}/upload`, {
+        method: 'POST',
+        body: formData
       });
-    });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      
+      const saveResponse = await send({
+        query: "saveHeadImage",
+        file: result.path
+      });
+
+      if (saveResponse.success) {
+        await fetchImagePath();
+        message.success(t("ImageUploadedSuccessfully"));
+      } else {
+        throw new Error(saveResponse.error);
+      }
+
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      message.error(t("ErrorUploadingImage")); 
+    }
   };
 
   const handleUpdateClient = async (values) => {
     setLoading(true);
-    console.log("Form values:", values);
 
     send({ query: "getUUID" }).then(async ({ UUID }) => {
-      console.log("UUID:", UUID);
+
+      const storedToken = localStorage.getItem("lab_token");
 
       try {
         const resp = await fetch(`${URL}/app/update-client`, {
@@ -248,7 +270,6 @@ const SettingsScreen = () => {
           }),
         });
 
-        console.log("Response status:", resp.status);
 
         if (resp.ok) {
           let data = await resp.json();
@@ -335,14 +356,37 @@ const handleExportDatabase = async () => {
 //it doesn't show the sucess msg
   const handleImportDatabase = async () => {
       const res = await send({ query: "ImportDatabaseFile"});
-      console.log(res)
       if (res.success) {
         message.success(t("importSuccess"));
       } else {
         message.error(t("importError"));
       }
-     }
+      }
   
+  const handleSignout = async () => {
+    setSignoutLoading(true);
+    try {
+      await signout(setSignoutLoading, setIsLogin, navigate);
+    } catch (error) {
+      console.error("Error during signout:", error);
+      message.error(t("SignoutError"));
+    } finally {
+      setSignoutLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    let limit = 20;
+    let sent = 0;  
+    if (userType?.id === 2) {
+      limit = "Unlimited";
+    } 
+    setPrintCount({ 
+      limit,
+      sent 
+    });
+  }, [userType]);
+
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -350,9 +394,9 @@ const handleExportDatabase = async () => {
           <div className="flex items-center gap-4">
             <Avatar size={"large"} icon={<UserOutlined />} />
             <div>
-              <b className="text-[16px]">{user?.name}</b>
+              <b className="text-[16px]">{labUser?.name}</b>
               <span className="text-[14px] text-[#A5A5A5] block">
-                {user?.phone}
+                {labUser?.phone}
               </span>
             </div>
           </div>
@@ -372,7 +416,7 @@ const handleExportDatabase = async () => {
             <Divider type="vertical" />
             <Popconfirm
               placement="rightBottom"
-              onConfirm={signout}
+              onConfirm={handleSignout}
               title={t("SignoutConfirm")}
               description={t("SignOutFormThisApp")}
             >
@@ -392,6 +436,7 @@ const handleExportDatabase = async () => {
               onFieldsChange={onFieldsChange}
               layout="vertical"
               autoComplete="off"
+              initialValues={labUser}
             >
               <Row gutter={[20, 0]}>
                 <Col span={6}>
@@ -402,6 +447,21 @@ const handleExportDatabase = async () => {
                       {
                         required: true,
                         message: t("PleaseInputYourName"),
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                </Col>
+                
+                <Col span={6}>
+                  <Form.Item
+                    label={t("Username")}
+                    name="username"
+                    rules={[
+                      {
+                        required: true,
+                        message: t("PleaseInputYourUsername"),
                       },
                     ]}
                   >
@@ -423,12 +483,6 @@ const handleExportDatabase = async () => {
                     <Input />
                   </Form.Item>
                 </Col>
-
-                <Col span={6}>
-                  <Form.Item label={t("Email")} name="email">
-                    <Input type="email" />
-                  </Form.Item>
-                </Col>
               </Row>
 
               <Row gutter={[20, 0]}>
@@ -439,11 +493,19 @@ const handleExportDatabase = async () => {
                 </Col>
 
                 <Col span={6}>
+                  <Form.Item label={t("Email")} name="email">
+                    <Input type="email" />
+                  </Form.Item>
+                </Col>
+
+                <Col span={6}>
                   <Form.Item label={t("LabName")} name="labName">
                     <Input />
                   </Form.Item>
                 </Col>
+              </Row>
 
+              <Row gutter={[20, 0]}>
                 {(isUpdate || loading) && (
                   <Col span={6}>
                     <Space>
@@ -473,10 +535,10 @@ const handleExportDatabase = async () => {
             <Card className="mt-[6px]">
               <div className="flex justify-between items-center">
                 <b className="text-[14px]">{t("ImageCover")}</b>
-                <Button type="link" onClick={handleChangeFile}>
-                  {t("ChangeImage")}
-                </Button>
-              </div>
+                  <Button type="link" onClick={handleChangeFile}>
+                    {t("ChangeImage")}
+                  </Button>
+              </div> 
               <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
                 {imagePath && <img className="w-full" src={imagePath} />}
               </div>
@@ -501,7 +563,7 @@ const handleExportDatabase = async () => {
             <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
             <Card className="mt-[6px] min-h-[212px]">
               <div className="flex flex-col w-full gap-[10px]">
-                <div
+                {/* <div
                   className={`${remainingDays < 7
                     ? "bg-[#F187060A] border-[#BF6A0224]"
                     : "bg-[#C8E6C942] border-[#4CAF50]"
@@ -511,7 +573,7 @@ const handleExportDatabase = async () => {
                   <p className=" font-bold">
                     {localStorage.getItem("lab-serial") || "10992909"}
                   </p>
-                </div>
+                </div> */}
 
                 {/* {userType === "paid" && remainingDays < 4 ? (
                   <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">
@@ -521,41 +583,81 @@ const handleExportDatabase = async () => {
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p>{t("startedAt")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
-                    {expireData.register
-                      ? dayjs(expireData.register).format("YYYY MMM, DD")
-                      : "2024 Aug, 11"}
+                    {labUser?.Plan?.id === 1 
+                      ? dayjs(labUser.createdAt).format("YYYY MMM, DD")
+                      : expireData.register
+                        ? dayjs(expireData.register).format("YYYY MMM, DD")
+                        : "2024 Aug, 11"}
                   </p>
                 </div>
 
-                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">{t("expiredAt")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">
-                    {expireData.expire
-                      ? dayjs()
-                        .add(expireData.expire, "day")
-                        .format("YYYY MMM, DD")
-                      : "2024 Aug, 11"}
+                {labUser?.Plan?.id !== 1 && (
+                  <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
+                    <p className="font-normal text-sm">{t("expiredAt")}</p>
+                    <p className="text-[#A5A5A5] font-normal text-sm">
+                      {expireData.expire
+                        ? dayjs()
+                          .add(expireData.expire, "day")
+                          .format("YYYY MMM, DD")
+                        : "2024 Aug, 11"}
+                    </p>
+                  </div>
+                )}
+                {labUser?.Plan?.id !== 1 && (
+                  <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
+                    <p className="font-normal text-sm">{t("daysLeft")}</p>
+                    <p className="text-[#A5A5A5] font-normal text-sm">
+                      {`${remainingDays || 120} ${t("day")}`}
+                    </p>
+                  </div>
+                )}
+                <div className="w-full flex justify-between inter px-1">
+                  <p className="font-normal text-sm">{t("whatsappLimit")}</p>
+                  <p className="text-[#A5A5A5] font-normal text-sm">
+                    {`${whatsappCount.sent}/${whatsappCount.limit}`}
                   </p>
-                </div>
-
-                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p className=" font-normal text-sm">{t("daysLeft")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">{`${remainingDays || 120
-                    } ${t("day")}`}</p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
-                  <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
-                  <p className=" text-[#A5A5A5] font-normal text-sm">
-                    {`${whatsappCount.sent}/${whatsappCount.limit}`}
+                  <p className="font-normal text-sm">{t("printLimit")}</p>
+                  <p className="text-[#A5A5A5] font-normal text-sm">
+                    {`${printCount.sent || 0}/${printCount.limit}`}
                   </p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
                   <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
 
                   <Tag color="magenta-inverse" className="m-0">
-                    {String(userType).toLocaleUpperCase()}
+                    {String(userType?.name || '').toLocaleUpperCase()}
                   </Tag>
                 </div>
+
+                {labUser?.Plan?.id === 1 && (
+                  <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <p className="text-sm font-medium text-blue-800">{t("WantToUpgrade")}</p>
+                      <Popover
+                        placement="right"
+                        title={<div className="text-center font-medium">{t("ContactUs")}</div>}
+                        content={
+                          <PopOverContent
+                            website={"https://www.puretik.com/ar"}
+                            email={"info@puretik.com"}
+                            phone={"07710553120"}
+                          />
+                        }
+                        trigger="click"
+                      >
+                        <Button 
+                          type="primary" 
+                          size="small"
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          {t("UpgradeNow")}
+                        </Button>
+                      </Popover>
+                    </div>
+                  </div>
+                )}
 
                 {/* <div className="px-1 h-full flex flex-col gap-2">
                   <Divider className="!m-0 px-1" />

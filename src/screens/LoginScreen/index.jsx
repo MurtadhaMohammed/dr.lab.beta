@@ -10,10 +10,13 @@ import BackIcon from "./BackIcon";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import { URL } from "../../libs/api"
+import { useNavigate } from "react-router-dom";
 
 const LoginScreen = () => {
   const [key, setKey] = useState("");
   const [phone, setPhone] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const { setIsLogin } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
@@ -23,6 +26,7 @@ const LoginScreen = () => {
   const { t } = useTranslation();
   const [disable, setDisable] = useState(false);
   const direction = i18n.dir();
+  const navigate = useNavigate();
 
   const getUUID = () => {
     send({ query: "getUUID" }).then((resp) => {
@@ -63,57 +67,56 @@ const LoginScreen = () => {
     return "Unknown";
   };
 
-  const checkSerial = async () => {
+  const login = async () => {
     setLoading(true);
     try {
       const resp = await apiCall({
         method: "POST",
-        pathname: "/app/check-client",
+        pathname: "/app/login",
         isFormData: false,
         data: {
-          serial: key,
-          device: UUID,
-          platform: getPlatform(),
+          username,  
+          password, 
+          device: UUID, 
         },
       });
-
-      console.log(resp, "resp");
 
       if (resp.ok) {
         const data = await resp.json();
 
-        const { client, updatedSerial } = data;
+        if (data.success) {
+          const { client, token } = data;
 
-        if (updatedSerial && updatedSerial.exp) {
-          localStorage.setItem("lab-user", JSON.stringify(client));
-          localStorage.setItem("lab-serial-id", updatedSerial?.id);
-          localStorage.setItem("lab-exp", updatedSerial.exp);
-          localStorage.setItem("lab-created", updatedSerial.startAt);
-          localStorage.setItem("lab-serial", updatedSerial.serial);
-          // localStorage.setItem(
-          //   "lab-feature",
-          //   updatedSerial.feature
-          //     ? updatedSerial.feature
-          //         .map((v) => {
-          //           if (v.name === "whatsapp") return v.name;
-          //         })
-          //         .filter(Boolean)
-          //     : ["null"]
-          // );
-
-          setIsLogin(true);
+          if (token && client) {
+            localStorage.setItem("lab-user", JSON.stringify(client));
+            localStorage.setItem("lab_token", token);
+            setIsLogin(true);
+          } else {
+            throw new Error(t("DataMissingOrIncomplete"));
+          }
         } else {
-          throw new Error("Serial data is missing or incomplete");
+          throw new Error(data.message || t("LoginFailed"));
         }
       } else {
-        const data = await resp.json();
-        message.error(data.message || t("Serialnotfound"));
+        const errorData = await resp.json();
+        
+        // Special handling for verification errors
+        if (errorData.error === "Account not verified") {
+          message.error(t("AccountNotVerified"));
+          // If there's a phone number in the response, redirect to verification
+          if (errorData.phone) {
+            localStorage.setItem("verification_phone", errorData.phone);
+            window.location.reload();
+          }
+        } else {
+          message.error(errorData.error || t("ErrorLogin"));
+        }
       }
     } catch (error) {
       if (error && error.message) {
         message.error(error.message);
       } else {
-        message.error("An unexpected error occurred.");
+        message.error(t("UnexpectedError"));
       }
     } finally {
       setLoading(false);
@@ -135,6 +138,8 @@ const LoginScreen = () => {
         pathname: "/app/register",
         data: {
           name: formData.name,
+          username: formData.username,
+          password: formData.password,
           labName: formData.labName,
           phone: formData.phone,
           email: formData.email,
@@ -146,22 +151,18 @@ const LoginScreen = () => {
 
       if (resp.ok) {
         const data = await resp.json();
-        const { client, serial } = data;
-
-        if (serial && serial.exp && serial.startAt) {
-          localStorage.setItem("lab-user", JSON.stringify(client));
-          localStorage.setItem("lab-serial-id", serial.id);
-          localStorage.setItem("lab-exp", serial.exp);
-          localStorage.setItem("lab-created", serial.startAt);
-          localStorage.setItem("lab-serial", serial.serial);
-          setIsLogin(true);
-          setIsForm(false);
+        
+        if (data.success) {
+          message.success(t("OTPSentSuccessfully"));
+          localStorage.setItem("verification_phone", formData.phone);
+          localStorage.setItem("userId", data.userId);
+          window.location.reload();
         } else {
-          throw new Error("Serial data is missing or incomplete");
+          throw new Error(data.message || "Registration failed");
         }
       } else {
         const errorData = await resp.json();
-        message.error(errorData.message || t("Serialnotfound"));
+        throw new Error(errorData.message || t("RegistrationFailed"));
       }
     } catch (error) {
       message.error(error.message);
@@ -222,6 +223,36 @@ const LoginScreen = () => {
               ]}
             >
               <Input placeholder={t("AliSalim")} className=" h-[40px] mt-0.5" />
+            </Form.Item>
+            <Form.Item
+              label={t("UserName")}
+              name="username"
+              className="h-16 mb-7"
+              rules={[
+                {
+                  required: true,
+                  message: t("PleaseInputyourUserName"),
+                },
+              ]}
+            >
+              <Input placeholder={t("UserExample")} className=" h-[40px] mt-0.5" />
+            </Form.Item>
+            <Form.Item
+              label={t("Password")}
+              name="password"
+              className="h-16 mb-7"
+              rules={[
+                {
+                  required: true,
+                  message: t("PleaseInputyourPassword"),
+                },
+                {
+                  min: 6,
+                  message: t("passwordleastcharacters"),
+                },
+              ]}
+            >
+              <Input.Password placeholder={t("writeyourpassword")} className="h-[40px] mt-0.5" />
             </Form.Item>
             <Form.Item
               label={t("LabName")}
@@ -322,18 +353,27 @@ const LoginScreen = () => {
                 size="large"
                 style={{ width: "100%", textAlign: "center" }}
                 className="h-12"
-                value={key}
-                onChange={(e) => setKey(e.target.value)}
-                placeholder={t("SerialNumber")}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder={t("UserName")}
+              />
+              <Input
+                size="large"
+                style={{ width: "100%", textAlign: "center" }}
+                className="h-12"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("Password")}
+                type="password"
               />
 
               <Button
-                disabled={!key || key.length < 8 || disable}
+                disabled={!username || !password || disable}
                 loading={loading}
                 type="primary"
                 block
                 className="h-12"
-                onClick={checkSerial}
+                onClick={login}
               >
                 {t("Login")}
               </Button>
@@ -348,9 +388,9 @@ const LoginScreen = () => {
                   className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px]"
                   onClick={() => setIsForm(true)}
                 >
-                  {t("clickHereToGetA")}
+                  {t("Orclickhereto")}
                   <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff] inter font-bold">
-                    {t("FreeTrial")}
+                    {t("register")}
                   </span>
                 </p>
                 <Space>

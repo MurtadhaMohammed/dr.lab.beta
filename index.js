@@ -25,6 +25,10 @@ function createWindow() {
     autoHideMenuBar: true,
     width: 1300,
     height: 800,
+    minWidth: 1024,  
+    minHeight: 750,  
+    maxWidth: 1600,  
+    maxHeight: 1000, 
     show: false,
     frame: false,
   });

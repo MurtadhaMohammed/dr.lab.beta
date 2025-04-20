@@ -262,7 +262,13 @@ export const PureTable = ({ isReport = false }) => {
 
   const columns = [
     {
-      title: "#",
+      title: t("Name"),
+      dataIndex: "name",
+      key: "name",
+      render: (_, record) => <b>{record?.patient?.name}</b>,
+    },
+    {
+      title: t("Gender"),
       dataIndex: "gender",
       key: "gender",
       render: (_, record) =>
@@ -271,12 +277,6 @@ export const PureTable = ({ isReport = false }) => {
         ) : (
           <WomanOutlined style={{ color: "rgb(235, 47, 150)", fontSize: 16 }} />
         ),
-    },
-    {
-      title: t("Name"),
-      dataIndex: "name",
-      key: "name",
-      render: (_, record) => <b>{record?.patient?.name}</b>,
     },
     {
       title: t("Tests"),
@@ -290,8 +290,8 @@ export const PureTable = ({ isReport = false }) => {
           list.length > numOfView ? list.length - numOfView : null;
         return (
           <Space wrap size={[0, "small"]}>
-            {list?.slice(0, numOfView).map((el) => (
-              <Tag key={el.id}>
+            {list?.slice(0, numOfView).map((el, index) => (
+              <Tag key={`${el.id || ""}-${index}`}>
                 {el[testType === "CUSTOME" ? "name" : "title"]}
               </Tag>
             ))}
@@ -300,8 +300,8 @@ export const PureTable = ({ isReport = false }) => {
                 content={
                   <div style={{ maxWidth: "300" }}>
                     <Space wrap>
-                      {list?.map((el) => (
-                        <Tag key={el.id}>
+                      {list?.map((el, index) => (
+                        <Tag key={`${el.id || ""}-${index}`}>
                           {el[testType === "CUSTOME" ? "name" : "title"]}
                         </Tag>
                       ))}

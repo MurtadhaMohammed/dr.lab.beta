@@ -184,7 +184,6 @@ export const PureTable = () => {
           setTotal(resp.total);
           setTest(resp.data);
           setFlag(true);
-          console.log("Tests get successfully:", resp.data);
         } else {
           console.error("Error get tests:", resp.error);
         }

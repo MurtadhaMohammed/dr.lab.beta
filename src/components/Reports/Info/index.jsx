@@ -14,7 +14,7 @@ const Info = () => {
       <Col span={6}>
         <Statistic
           loading={loading}
-          title={t("SubTotalAmounts")}
+          title={t("SubTotalAmount")}
           value={data?.subTotalAmount?.total || 0}
           precision={2}
           suffix={<Typography.Text type="secondary">IQD</Typography.Text>}
@@ -32,7 +32,7 @@ const Info = () => {
       <Col span={6}>
         <Statistic
           loading={loading}
-          title={t("TotalAmounts")}
+          title={t("TotalAmount")}
           value={data?.totalAmount?.total || 0}
           precision={2}
           suffix={<Typography.Text type="secondary">IQD</Typography.Text>}

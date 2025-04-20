@@ -344,7 +344,7 @@ export const ResultsModal = () => {
             {
               isBarcode ?
                 <Button type="primary" onClick={() => handleBarcode(record)}>
-                  {"Print Barcode"}
+                  {t("PrintBarcode")}
                 </Button>
                 :
                 <Button type="primary" onClick={handleSubmit}>
@@ -360,7 +360,7 @@ export const ResultsModal = () => {
       {
         isBarcode ?
           <div className="py-4">
-            Do you want to print barcode for this patient: {record?.patient?.name}
+            {t("printBarcodeConfirmation")}: {record?.patient?.name}
           </div>
           :
           <div className="results-modal" id="printJS-form">

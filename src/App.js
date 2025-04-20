@@ -15,6 +15,7 @@ import useLogin from "./hooks/useLogin";
 import { useAppStore } from "./libs/appStore";
 import useLang from "./hooks/useLang";
 import useInitHeaderImage from "./hooks/useInitHeaderImage";
+import OTPScreen from "./screens/OTPScreen/Index";
 
 
 const { ipcRenderer } = window.require("electron");
@@ -78,7 +79,8 @@ function App() {
       }}
     >
       <TitleBar />
-      {!isLogin && <LoginScreen />}
+      {!isLogin && !localStorage.getItem('verification_phone') && <LoginScreen />}
+      {!isLogin && localStorage.getItem('verification_phone') && <OTPScreen />}
       {isLogin && (
         <MainContainerV2>
           <Routes>

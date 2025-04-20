@@ -58,7 +58,7 @@ const ReportsScreen = () => {
               .map((el) => el[record.testType === "CUSTOME" ? "name" : "title"])
               .join(","),
             discount: Number(record?.discount).toLocaleString("en"),
-            createdAt: dayjs(record?.createdAt).format("DD/MM/YYYY"),
+            createdAt: dayjs(record?.createdAt).format("YYYY/MM/DD"),
           };
         }),
       };
@@ -141,7 +141,14 @@ const ReportsScreen = () => {
 
 
           setLoading(false);
-          setData({ visits, totalAmount, subTotalAmount, totalDiscount });
+          const dataWithKeys = {
+            visits,
+            totalAmount,
+            subTotalAmount,
+            totalDiscount,
+            key: Math.random().toString(36).substr(2, 9)
+          };
+          setData(dataWithKeys);
           setIsReload(!isReload);
         });
       });
