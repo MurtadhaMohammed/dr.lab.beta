@@ -7,7 +7,7 @@ const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
-const archiver = require('archiver');
+const isDev = require('electron-is-dev');
 
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
@@ -361,8 +361,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { err, count });
       });
       break;
-    case "print": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
+    case "print": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }'
+      console.log(arg.data, "this is the data");
       createPDF(arg.data, arg?.isView, (err, res, file) => {
+        console.log(err, res, file, "this is the error, response and file");
         event.reply("asynchronous-reply", { err, res, file });
       });
       break;
@@ -427,7 +429,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                   const barcodeHeight = metadata.height;
 
                   const textSvg = Buffer.from(`
-                  <svg width="${barcodeWidth}" height="80">
+                  <svg width="${barcodeWidth}" height="60">
                     <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${visit ? visit.patient.name : arg.data.name}</text>
                   </svg>
                 `);
@@ -525,120 +527,15 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", { success: false, error: error.message });
       }
       break;
-      // case "exportDatabase": {
-      //   try {
-      //     const desktopPath = app.getPath("desktop");
-      //     const defaultPath = path.join(desktopPath, `lab_database_export`);
-      
-      //     const { filePath, canceled } = await dialog.showSaveDialog({
-      //       title: 'Export Database',
-      //       defaultPath: defaultPath,
-      //       filters: [
-      //         { name: 'JSON', extensions: ['json'] },
-      //         { name: 'CSV', extensions: ['csv'] }
-      //       ]
-      //     });
-      
-      //     if (canceled) {
-      //       return; 
-      //     }
-      
-      //     const data = await labDB.exportAllData();
 
-      
-      //     const extension = path.extname(filePath).toLowerCase();
-      //     let fileContent;
-      
-      //     switch (extension) {
-      //       case '.json': {
-      //         fileContent = JSON.stringify(data, null, 2);
-      //         await fs.promises.writeFile(filePath, fileContent);
-      //         event.reply("asynchronous-reply", {
-      //           success: true,
-      //           message: "Database exported successfully",
-      //           path: filePath
-      //         });
-      //         break;
-      //       }
-
-            // function flattenObject(obj, parentKey = '', res = {}) {
-            //   for (const key in obj) {
-            //     if (obj.hasOwnProperty(key)) {
-            //       const value = obj[key];
-            //       const newKey = parentKey ? `${parentKey}.${key}` : key;
-            //       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            //         flattenObject(value, newKey, res);
-            //       } else {
-            //         res[newKey] = value;
-            //       }
-            //     }
-            //   }
-            //   return res;
-            // }
-
-            // case '.csv': {
-            //   if (!Array.isArray(data)) {
-            //     throw new Error("Data is not in the expected format for CSV conversion");
-            //   }
-      
-            //   // Convert JSON to CSV using json-2-csv
-            //   json2csv.json2csv(data, (err, csv) => {
-            //     if (err) {
-            //       throw err;
-            //     }
-      
-            //     const csvPath = filePath + '.csv';
-            //     fs.promises.writeFile(csvPath, csv)
-            //       .then(() => {
-            //         const zipPath = filePath.replace('.csv', '.zip');
-      
-            //         async function createZipFile(zipPath, csvPath) {
-            //           return new Promise((resolve, reject) => {
-            //             const output = fs.createWriteStream(zipPath);
-            //             const archive = archiver('zip', { zlib: { level: 9 } });
-      
-            //             output.on('close', () => resolve());
-            //             archive.on('error', (err) => reject(err));
-      
-            //             archive.pipe(output);
-            //             archive.append(fs.createReadStream(csvPath), { name: 'database.csv' });
-            //             archive.finalize();
-            //           });
-            //         }
-      
-            //         createZipFile(zipPath, csvPath)
-            //           .then(() => fs.promises.unlink(csvPath))
-            //           .then(() => {
-            //             event.reply("asynchronous-reply", {
-            //               success: true,
-            //               message: "Database exported and zipped successfully",
-            //               path: zipPath
-            //             });
-            //           })
-            //           .catch((err) => {
-            //             console.error("Error creating zip file:", err);
-            //             event.reply("asynchronous-reply", {
-            //               success: false,
-            //               error: "Error creating zip file"
-            //             });
-            //           });
-            //       })
-            //       .catch((err) => {
-            //         console.error("Error writing CSV file:", err);
-            //         event.reply("asynchronous-reply", {
-            //           success: false,
-            //           error: "Error writing CSV file"
-            //         });
-            //       });
-            //   });
             
             case "exportDatabaseFile": {
               try {
                 const userDataPath = app.getPath("userData");
             
-                const databaseFileName = process.platform === 'darwin' ? 'Electrondatabase.db' : 'database.db';
-                const defaultPathDB = path.join(userDataPath,'..', databaseFileName);
-            
+                const databaseFileName = !isDev ? 'lab-betadatabase.db' : (process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db');
+                const defaultPathDB = process.platform === 'win32' ? path.join(userDataPath, '..', databaseFileName) : userDataPath;
+       
                 const defaultSavePath = app.getPath("desktop");
                 const desktopPath = path.join(defaultSavePath, databaseFileName);
             
@@ -681,11 +578,11 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         try {
 
         const userDataPath = app.getPath("userData");
-        //  const databaseFileName = process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db';
-        //  const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
+         const databaseFileName = !isDev ? 'lab-betadatabase.db' : (process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db');
+         const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
 
-        const databaseFileName =  'Electrondatabase.db';
-        const defaultPathDB =path.join(userDataPath, '..', databaseFileName);
+        // const databaseFileName =  'Electrondatabase.db';
+        // const defaultPathDB =path.join(userDataPath, '..', databaseFileName);
         
         console.log("the file path of default db:",defaultPathDB)
           

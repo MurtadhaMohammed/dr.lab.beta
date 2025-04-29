@@ -157,7 +157,6 @@ export const PureModal = () => {
       })
         .then((resp) => {
           if (resp.success) {
-            console.log("Package added with ID:", resp.data);
             setReset();
             setIsModal(false);
             setIsReload(!isReload);

@@ -51,7 +51,6 @@ const TestForm = () => {
             setTestList((prev) => [...prev, ...resp.data]);
           }
 
-          console.log("Tests fetched successfully:", resp.data);
           if (resp.data.length === limit) {
             skip += limit;
           }
@@ -72,7 +71,6 @@ const TestForm = () => {
       .then((resp) => {
         if (resp.success) {
           setPackageList(resp.data);
-          console.log("Packages retrieved successfully:", resp.data);
         } else {
           console.error("Error retrieving packages:", resp.error);
         }

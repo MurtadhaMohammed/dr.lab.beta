@@ -189,7 +189,6 @@ export const PureTable = () => {
         if (resp.success) {
           setData(resp.data);
           setTotal(resp.total);
-          console.log("Packages retrieved successfully:", resp.data);
         } else {
           console.error("Error retrieving packages:", resp.error);
         }

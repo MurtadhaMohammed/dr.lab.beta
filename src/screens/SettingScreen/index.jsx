@@ -142,6 +142,13 @@ const SettingsScreen = () => {
   }, []);
 
   useEffect(() => {
+    if (user) {
+      form.setFieldsValue(user);
+    }
+  }, [user, form]);
+
+  const signout = async () => {
+    setSignoutLoading(true);
     try {
       const userData = JSON.parse(localStorage.getItem("lab-user"));
       if (userData) {
@@ -344,16 +351,18 @@ const SettingsScreen = () => {
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
 
-const handleExportDatabase = async () => {
-  const res = await send({ query: "exportDatabaseFile" });
-  if (res.success) {
-    message.success(t("DatabaseExportedSuccessfully"));
-  } else {
-    message.error(t("ErrorExportingDatabase"));
-    console.error("Error exporting :", res.error);
+  const handleExportDatabase = async () => {
+    setExportLoading(true); // Start loading
+    const res = await send({ query: "exportDatabaseFile" });
+    if (res.success) {
+      message.success(t("DatabaseExportedSuccessfully"));
+    } else {
+      message.error(t("ErrorExportingDatabase"));
+      console.error("Error exporting :", res.error);
+    }
+    setExportLoading(false); // Stop loading
   }
-}
-//it doesn't show the sucess msg
+
   const handleImportDatabase = async () => {
       const res = await send({ query: "ImportDatabaseFile"});
       if (res.success) {
@@ -386,6 +395,22 @@ const handleExportDatabase = async () => {
       sent 
     });
   }, [userType]);
+
+    setImportLoading(true); // Start loading
+    const res = await send({ query: "ImportDatabaseFile"});
+    console.log(res)
+    if (res.success) {
+      message.success(t("importSuccess"));
+    } else {
+      message.error(t("importError"));
+    }
+    setImportLoading(false); // Stop loading
+  }
+  
+  // **Callback to handle printer selection**
+  const handlePrinterSelect = (printer) => {
+    setSelectedPrinter(printer);
+  };
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -621,6 +646,10 @@ const handleExportDatabase = async () => {
                   <p className="font-normal text-sm">{t("printLimit")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
                     {`${printCount.sent || 0}/${printCount.limit}`}
+                  <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
+
+                  <p className=" text-[#A5A5A5] font-normal text-sm">
+                    {`${whatsappCount.sent}/${whatsappCount.limit}`}
                   </p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
@@ -720,7 +749,7 @@ const handleExportDatabase = async () => {
                   type="primary" 
                   icon={<ImportOutlined />} 
                   onClick={handleImportDatabase}
-                  loading={exportLoading}
+                  loading={importLoading} // Changed to importLoading
                 >
                   {t("ImportToSystem")}
                 </Button>
@@ -728,6 +757,14 @@ const handleExportDatabase = async () => {
               <p className="mt-2 text-sm text-gray-500">
                 {t("ImportDatabaseDescription")}
               </p>
+            </Card>
+            <p className="pl-[4px]  opacity-60">{t('printer')}</p>
+            <Card className="mt-[6px] ">
+              <div className="flex justify-between items-center">
+                {/* **Pass the callback to PrinterSelector** */}
+                <PrinterSelector onPrinterSelect={handlePrinterSelect} />
+                <p className="py-2">{t('printer')} : {selectedPrinter}</p>
+              </div>
             </Card>
           </div>
         </section>

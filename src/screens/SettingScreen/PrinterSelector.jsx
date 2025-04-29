@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, List , message } from 'antd';
+import { useTranslation } from 'react-i18next';
+import { CheckOutlined } from '@ant-design/icons';
 const { ipcRenderer } = window.require('electron');
 
-const PrinterSelector = () => {
+const PrinterSelector = ({ onPrinterSelect }) => { 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [printers, setPrinters] = useState([]);
   const [selectedPrinter, setSelectedPrinter] = useState(localStorage.getItem('selectedPrinter') || '');
-
+  const {t} = useTranslation();
+  
   useEffect(() => {
     fetchPrinters();
   }, []);  
@@ -31,6 +34,9 @@ const PrinterSelector = () => {
     }
     setIsModalVisible(false);
     localStorage.setItem('selectedPrinter', selectedPrinter);
+    if (onPrinterSelect) {
+      onPrinterSelect(selectedPrinter);
+    }
   };
 
   const handleCancel = () => {
@@ -43,10 +49,10 @@ const PrinterSelector = () => {
 
   return (
     <>
-      <Button onClick={showModal}>Select Printer</Button>
+      <Button onClick={showModal}>{t('choosePrinter')}</Button>
       <Modal
-        title="Select a Printer"
-        visible={isModalVisible}
+        title={t('choosePrinter')}
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
       >
@@ -55,9 +61,10 @@ const PrinterSelector = () => {
           renderItem={(printer) => (
             <List.Item
               onClick={() => handlePrinterSelect(printer)}
-              style={{ cursor: 'pointer', backgroundColor: printer === selectedPrinter ? '#e6f7ff' : 'transparent' }}
+              style={{ cursor: 'pointer', padding: '10px', display: 'flex', justifyContent: 'space-between', backgroundColor: printer === selectedPrinter ? '#e6f7ff' : 'transparent' }}
             >
-              {printer}
+              <span>{printer}</span>
+              {printer === selectedPrinter && <CheckOutlined />}
             </List.Item>
           )}
         />

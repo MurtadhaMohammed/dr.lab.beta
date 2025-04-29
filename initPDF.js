@@ -3,7 +3,7 @@ const electron = require("electron");
 const isDev = require("electron-is-dev");
 var { jsPDF } = require("jspdf");
 var fs = require("fs");
-const Jimp = require("jimp");
+const Jimp = require("jimp").default || require("jimp");
 const { app } = require("electron");
 require("jspdf-autotable");
 
@@ -18,8 +18,13 @@ function base64_encode(file) {
 }
 
 async function getImageDimensions(filePath) {
-  const image = await Jimp.read(filePath);
-  return { width: image.bitmap.width, height: image.bitmap.height };
+  try {
+    const image = await Jimp.read(filePath);
+    return { width: image.bitmap.width, height: image.bitmap.height };
+  } catch (error) {
+    console.error("Error reading image:", error);
+    throw error;
+  }
 }
 // const imgHeight = 65; // 245.66929134 px
 const imgWidth = 210; // 793.7007874 px
