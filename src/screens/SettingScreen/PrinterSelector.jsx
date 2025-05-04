@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Modal, List , message } from 'antd';
+import { Button, Modal, List, message } from 'antd';
 const { ipcRenderer } = window.require('electron');
+import { useTranslation } from "react-i18next";
 
 const PrinterSelector = () => {
+  const { t } = useTranslation(); 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [printers, setPrinters] = useState([]);
   const [selectedPrinter, setSelectedPrinter] = useState(localStorage.getItem('selectedPrinter') || '');
 
   useEffect(() => {
     fetchPrinters();
-  }, []);  
+  }, []);
 
   const fetchPrinters = async () => {
     try {
@@ -26,7 +28,7 @@ const PrinterSelector = () => {
 
   const handleOk = () => {
     if (!selectedPrinter) {
-      message.warning('Please select a printer before proceeding.');
+      message.warning(t('c')); 
       return;
     }
     setIsModalVisible(false);
@@ -43,10 +45,10 @@ const PrinterSelector = () => {
 
   return (
     <>
-      <Button onClick={showModal}>Select Printer</Button>
+      <Button onClick={showModal}>{t('selectButton')}</Button>
       <Modal
-        title="Select a Printer"
-        visible={isModalVisible}
+        title={t('printermodalTitle')}
+        open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
       >

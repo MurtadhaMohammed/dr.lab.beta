@@ -51,6 +51,9 @@ const SettingsScreen = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [labUser, setLabUser] = useState(null);
   const [startDate, setStartDate] = useState(null);
+  const [selectedPrinter, setSelectedPrinter] = useState(
+    localStorage.getItem("selectedPrinter") || ""
+  );
 
   const { t } = useTranslation();
 
@@ -344,24 +347,33 @@ const SettingsScreen = () => {
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
 
-const handleExportDatabase = async () => {
-  const res = await send({ query: "exportDatabaseFile" });
-  if (res.success) {
-    message.success(t("DatabaseExportedSuccessfully"));
-  } else {
-    message.error(t("ErrorExportingDatabase"));
-    console.error("Error exporting :", res.error);
-  }
-}
-//it doesn't show the sucess msg
+  const handleExportDatabase = async () => {
+    setExportLoading(true); 
+    const res = await send({ query: "exportDatabaseFile" });
+    if (res.success) {
+      message.success(t("DatabaseExportedSuccessfully"));
+    } else {
+      message.error(t("ErrorExportingDatabase"));
+      console.error("Error exporting :", res.error);
+    }
+    setExportLoading(false); 
+  };
+
   const handleImportDatabase = async () => {
-      const res = await send({ query: "ImportDatabaseFile"});
-      if (res.success) {
-        message.success(t("importSuccess"));
-      } else {
-        message.error(t("importError"));
-      }
-      }
+    setImportLoading(true); 
+    const res = await send({ query: "ImportDatabaseFile" });
+    console.log(res);
+    if (res.success) {
+      message.success(t("importSuccess"));
+    } else {
+      message.error(t("importError"));
+    }
+    setImportLoading(false); 
+  };
+
+  const handlePrinterSelect = (printer) => {
+    setSelectedPrinter(printer);
+  };
   
   const handleSignout = async () => {
     setSignoutLoading(true);
@@ -728,6 +740,17 @@ const handleExportDatabase = async () => {
               <p className="mt-2 text-sm text-gray-500">
                 {t("ImportDatabaseDescription")}
               </p>
+            </Card>
+          </div>
+          <div>
+          <p className="pl-[4px]  opacity-60">{t("printer")}</p>
+            <Card className="mt-[6px] ">
+              <div className="flex justify-between items-center">
+              <p className="py-2">
+                  {t("printer")} : {selectedPrinter}
+                </p>
+                <PrinterSelector onPrinterSelect={handlePrinterSelect} />
+              </div>
             </Card>
           </div>
         </section>
