@@ -1,42 +1,43 @@
 import dayjs from "dayjs";
 import { nanoid } from "nanoid";
 import { create } from "zustand";
-import { persist } from 'zustand/middleware';
+import { persist } from "zustand/middleware";
 
 export const useWhatsappCountStore = create((set) => ({
   whatsappCount: { sent: 0, limit: 0 },
   isLimitExceeded: false,
 
-  setWhatsappCount: (newCount) => set((state) => {
-    const updatedCount = {
-      ...state.whatsappCount,
-      ...newCount,
-    };
+  setWhatsappCount: (newCount) =>
+    set((state) => {
+      const updatedCount = {
+        ...state.whatsappCount,
+        ...newCount,
+      };
 
-    return {
-      whatsappCount: updatedCount,
-      isLimitExceeded: updatedCount.sent >= updatedCount.limit,
-    };
-  }),
+      return {
+        whatsappCount: updatedCount,
+        isLimitExceeded: updatedCount.sent >= updatedCount.limit,
+      };
+    }),
 }));
 
 export const usePrintCountStore = create((set) => ({
   printCount: { sent: 0, limit: 0 },
   isLimitExceeded: false,
 
-  setPrintCount: (newCount) => set((state) => {
-    const updatedCount = {
-      ...state.printCount,
-      ...newCount,
-    };
+  setPrintCount: (newCount) =>
+    set((state) => {
+      const updatedCount = {
+        ...state.printCount,
+        ...newCount,
+      };
 
-    return {
-      printCount: updatedCount,
-      isLimitExceeded: updatedCount.sent >= updatedCount.limit,
-    };
-  }),
+      return {
+        printCount: updatedCount,
+        isLimitExceeded: updatedCount.sent >= updatedCount.limit,
+      };
+    }),
 }));
-
 
 export const useAppStore = create((set) => ({
   isLogin: true,
@@ -210,8 +211,8 @@ export const useReportsStore = create((set) => ({
   loading: false,
   records: [],
   subTotalPrice: 0, // Add state for subtotal price
-  totalDiscount: 0,  // Add state for total discount
-  totalAmount: 0,    // Add state for total amount
+  totalDiscount: 0, // Add state for total discount
+  totalAmount: 0, // Add state for total amount
   setRecords: (records) => set({ records }),
   setLoading: (loading) => set({ loading }),
   setFilterDate: (date) => set({ filterDate: date }),
@@ -221,25 +222,23 @@ export const useReportsStore = create((set) => ({
   setTotalAmount: (amount) => set({ totalAmount: amount }), // Add setter for total amount
 }));
 
-
-
 export const useLanguage = create(
   persist(
     (set) => ({
-      lang: 'en',
+      lang: "en",
       setLang: (lang) => set({ lang }),
     }),
     {
-      name: 'lang',
+      name: "lang",
     }
   )
 );
 
-import create from 'zustand';
+import { create } from "zustand";
 
 export const useTrigger = create((set) => ({
   flag: false,
   test: [],
   setFlag: (flag) => set({ flag }),
-  setTest: (test) => set({ test })
+  setTest: (test) => set({ test }),
 }));

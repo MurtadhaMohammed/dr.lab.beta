@@ -216,7 +216,7 @@ export const PureTable = () => {
       footer={() => (
         <div className="table-footer app-flex-space">
           <div
-            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+            className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
           ></div>
           <p>

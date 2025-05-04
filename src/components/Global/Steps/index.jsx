@@ -6,7 +6,7 @@ const PureSteps = ({ length, activeIndex }) => {
   return (
     <div className="pure-steps">
       {arr.map((_, index) => (
-        <span className={index === activeIndex ? "active" : ""}></span>
+        <span key={index} className={index === activeIndex ? "active" : ""}></span>
       ))}
     </div>
   );
