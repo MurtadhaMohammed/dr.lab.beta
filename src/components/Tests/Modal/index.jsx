@@ -85,8 +85,6 @@ export const PureModal = () => {
     setInputValue(e.target.value);
   };
   const handleInputConfirm = () => {
-    console.log("Input Value:", inputValue);
-    console.log("Current Options:", options);
 
     if (!Array.isArray(options)) {
       console.error("Options is not an array. Resetting to an empty array.");
@@ -148,7 +146,6 @@ export const PureModal = () => {
       })
         .then((resp) => {
           if (resp.success) {
-            console.log("Test updated successfully");
             message.success(t("Testupdatedsuccessfully"));
             setReset();
             setIsModal(false);

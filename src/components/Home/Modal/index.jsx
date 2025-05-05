@@ -72,7 +72,6 @@ export const PureModal = () => {
             }).then((resp) => {
               if (resp.success) {
                 // message.success(t("Patientupdatedsuccess"));
-                console.log("updatePatient response:", resp);
                 setReset();
                 setIsModal(false);
                 setIsReload(!isReload);
@@ -95,7 +94,6 @@ export const PureModal = () => {
           id: patientID,
           data: { ...data.patient },
         }).then((resp) => {
-          console.log("updatePatient response:", resp);
           if (resp.success) {
             send({
               query: "addVisit",
@@ -106,7 +104,6 @@ export const PureModal = () => {
             })
               .then((resp) => {
                 if (resp.success) {
-                  console.log("addVisit response:", resp);
                   message.success(t("Visitaddedsuccessfully"));
                   setReset();
                   setIsModal(false);
@@ -130,13 +127,11 @@ export const PureModal = () => {
         })
           .then((resp) => {
             if (resp.success) {
-              console.log("addPatient response:", resp);
               send({
                 query: "addVisit",
                 data: { ...data, patientID: resp.id },
               })
                 .then((resp) => {
-                  console.log("addVisit response:", resp);
                   if (resp.success) {
                     // message.success(t("Visitaddedsuccess"));
                     setReset();

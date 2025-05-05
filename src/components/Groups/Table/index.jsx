@@ -53,8 +53,8 @@ export const PureTable = () => {
           tests.length > numOfView ? tests.length - numOfView : null;
         return (
           <Space wrap size={[0, "small"]}>
-            {tests.slice(0, numOfView).map((el) => (
-              <Tag>{el.name}</Tag>
+            {tests.slice(0, numOfView).map((el, i) => (
+              <Tag key={i}>{el.name}</Tag>
             ))}
             {restCount && (
               <Popover
@@ -62,9 +62,7 @@ export const PureTable = () => {
                   <div style={{ maxWidth: "300" }}>
                     <Space wrap>
                       {tests?.map((el) => (
-                        <Tag key={el.id}>
-                          {el.name}
-                        </Tag>
+                        <Tag key={el.id}>{el.name}</Tag>
                       ))}
                     </Space>
                   </div>
@@ -87,6 +85,7 @@ export const PureTable = () => {
           ?.reduce((a, b) => a + b, 0);
         return record?.customePrice && record?.customePrice !== totalPrice ? (
           <span
+            key={record.id}
             style={{
               textDecoration: "line-through",
               opacity: 0.3,
@@ -119,7 +118,7 @@ export const PureTable = () => {
       key: "updatedAt",
       render: (updatedAt) => (
         <span style={{ color: "#666" }}>
-          {dayjs(updatedAt).add(3, 'hour').format("DD/MM/YYYY hh:mm A")}
+          {dayjs(updatedAt).add(3, "hour").format("DD/MM/YYYY hh:mm A")}
         </span>
       ),
     },
@@ -168,7 +167,7 @@ export const PureTable = () => {
         message.error("Failed to communicate with server.");
       });
   };
-  
+
   const handleEdit = ({ id, title, tests, customePrice, createdAt }) => {
     setId(id);
     setTitle(title);
@@ -189,7 +188,6 @@ export const PureTable = () => {
         if (resp.success) {
           setData(resp.data);
           setTotal(resp.total);
-          console.log("Packages retrieved successfully:", resp.data);
         } else {
           console.error("Error retrieving packages:", resp.error);
         }
@@ -214,7 +212,7 @@ export const PureTable = () => {
       footer={() => (
         <div className="table-footer app-flex-space">
           <div
-            class="pattern-isometric pattern-indigo-400 pattern-bg-white 
+            className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
           ></div>
           <p>
