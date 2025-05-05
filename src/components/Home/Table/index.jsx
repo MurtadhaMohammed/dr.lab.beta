@@ -184,7 +184,7 @@ export const PureTable = ({ isReport = false }) => {
                 formData.append("senderPhone", user?.phone || "");
                 const resp = await apiCall({
                   method: "POST",
-                  pathname: "/send/whatsapp-message",
+                  pathname: "/whatsapp/whatsapp-message",
                   isFormData: true,
                   data: formData,
                 });
@@ -413,13 +413,13 @@ export const PureTable = ({ isReport = false }) => {
                 }}
                 placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
                 content={
-                  isLimitExceeded ? (
-                    <PopOverContent
-                      website={"https://www.puretik.com/ar"}
-                      email={"puretik@gmail.com"}
-                      phone={"07710553120"}
-                      limitExceededMessage={t("limit_exceeded_message")}
-                    /> ) :
+                  // isLimitExceeded ? (
+                  //   <PopOverContent
+                  //     website={"https://www.puretik.com/ar"}
+                  //     email={"puretik@gmail.com"}
+                  //     phone={"07710553120"}
+                  //     limitExceededMessage={t("limit_exceeded_message")}
+                  //   /> ) :
                   userType === "trial" ? (
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
