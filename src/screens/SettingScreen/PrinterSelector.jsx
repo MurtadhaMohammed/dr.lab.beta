@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Button, Modal, List , message } from 'antd';
-import { useTranslation } from 'react-i18next';
-import { CheckOutlined } from '@ant-design/icons';
 const { ipcRenderer } = window.require('electron');
+import { useTranslation } from "react-i18next";
 
-const PrinterSelector = ({ onPrinterSelect }) => { 
+const PrinterSelector = () => {
+  const { t } = useTranslation(); 
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [printers, setPrinters] = useState([]);
   const [selectedPrinter, setSelectedPrinter] = useState(localStorage.getItem('selectedPrinter') || '');
-  const {t} = useTranslation();
   
   useEffect(() => {
     fetchPrinters();
-  }, []);  
+  }, []);
 
   const fetchPrinters = async () => {
     try {
@@ -29,7 +28,7 @@ const PrinterSelector = ({ onPrinterSelect }) => {
 
   const handleOk = () => {
     if (!selectedPrinter) {
-      message.warning('Please select a printer before proceeding.');
+      message.warning(t('c')); 
       return;
     }
     setIsModalVisible(false);
@@ -49,9 +48,9 @@ const PrinterSelector = ({ onPrinterSelect }) => {
 
   return (
     <>
-      <Button onClick={showModal}>{t('choosePrinter')}</Button>
+      <Button onClick={showModal}>{t('selectButton')}</Button>
       <Modal
-        title={t('choosePrinter')}
+        title={t('printermodalTitle')}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}

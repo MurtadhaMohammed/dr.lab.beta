@@ -47,9 +47,6 @@ const SettingsScreen = () => {
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
   const [remainingDays, setRemainingDays] = useState(null);
-  const [selectedPrinter, setSelectedPrinter] = useState(
-    localStorage.getItem("selectedPrinter") || ""
-  );
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const { whatsappCount, setWhatsappCount } = useWhatsappCountStore();
@@ -65,6 +62,9 @@ const SettingsScreen = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [labUser, setLabUser] = useState(null);
   const [startDate, setStartDate] = useState(null);
+  const [selectedPrinter, setSelectedPrinter] = useState(
+    localStorage.getItem("selectedPrinter") || ""
+  );
 
   const { t } = useTranslation();
 
@@ -361,8 +361,9 @@ const SettingsScreen = () => {
     [remainingDays, lang]
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
+
   const handleExportDatabase = async () => {
-    setExportLoading(true); // Start loading
+    setExportLoading(true); 
     const res = await send({ query: "exportDatabaseFile" });
     if (res.success) {
       message.success(t("DatabaseExportedSuccessfully"));
@@ -370,11 +371,11 @@ const SettingsScreen = () => {
       message.error(t("ErrorExportingDatabase"));
       console.error("Error exporting :", res.error);
     }
-    setExportLoading(false); // Stop loading
+    setExportLoading(false); 
   };
 
   const handleImportDatabase = async () => {
-    setImportLoading(true); // Start loading
+    setImportLoading(true); 
     const res = await send({ query: "ImportDatabaseFile" });
     console.log(res);
     if (res.success) {
@@ -382,9 +383,13 @@ const SettingsScreen = () => {
     } else {
       message.error(t("importError"));
     }
-    setImportLoading(false); // Stop loading
+    setImportLoading(false); 
   };
 
+  const handlePrinterSelect = (printer) => {
+    setSelectedPrinter(printer);
+  };
+  
   const handleSignout = async () => {
     setSignoutLoading(true);
     try {
@@ -409,10 +414,6 @@ const SettingsScreen = () => {
     });
   }, [userType]);
 
-  // **Callback to handle printer selection**
-  const handlePrinterSelect = (printer) => {
-    setSelectedPrinter(printer);
-  };
 
   return (
     <div className="settings-page pb-[60px] page">
@@ -775,6 +776,17 @@ const SettingsScreen = () => {
                 <p className="py-2">
                   {t("printer")} : {selectedPrinter}
                 </p>
+              </div>
+            </Card>
+          </div>
+          <div>
+          <p className="pl-[4px]  opacity-60">{t("printer")}</p>
+            <Card className="mt-[6px] ">
+              <div className="flex justify-between items-center">
+              <p className="py-2">
+                  {t("printer")} : {selectedPrinter}
+                </p>
+                <PrinterSelector onPrinterSelect={handlePrinterSelect} />
               </div>
             </Card>
           </div>
