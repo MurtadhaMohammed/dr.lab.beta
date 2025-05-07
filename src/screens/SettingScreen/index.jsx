@@ -98,7 +98,7 @@ const SettingsScreen = () => {
         setWhatsappCount(newCount);
 
         console.log("Fetched WhatsApp count:", newCount);
-        localStorage.setItem('whatsappCount', JSON.stringify(newCount));
+        localStorage.setItem("whatsappCount", JSON.stringify(newCount));
       } catch (error) {
         console.error("Error parsing JSON:", error);
         setError("Error parsing response data.");
@@ -150,7 +150,7 @@ const SettingsScreen = () => {
   //   let limit = 0;
   //   if (userType?.id === 2) {
   //     limit = 1000;
-  //   } 
+  //   }
   //   setWhatsappCount({ limit });
   // }, [userType, setWhatsappCount]);
 
@@ -365,9 +365,8 @@ const SettingsScreen = () => {
     [remainingDays, lang]
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
-
   const handleExportDatabase = async () => {
-    setExportLoading(true); 
+    setExportLoading(true);
     const res = await send({ query: "exportDatabaseFile" });
     if (res.success) {
       message.success(t("DatabaseExportedSuccessfully"));
@@ -375,11 +374,11 @@ const SettingsScreen = () => {
       message.error(t("ErrorExportingDatabase"));
       console.error("Error exporting :", res.error);
     }
-    setExportLoading(false); 
+    setExportLoading(false);
   };
 
   const handleImportDatabase = async () => {
-    setImportLoading(true); 
+    setImportLoading(true);
     const res = await send({ query: "ImportDatabaseFile" });
     console.log(res);
     if (res.success) {
@@ -387,13 +386,13 @@ const SettingsScreen = () => {
     } else {
       message.error(t("importError"));
     }
-    setImportLoading(false); 
+    setImportLoading(false);
   };
 
   const handlePrinterSelect = (printer) => {
     setSelectedPrinter(printer);
   };
-  
+
   const handleSignout = async () => {
     setSignoutLoading(true);
     try {
@@ -646,9 +645,12 @@ const SettingsScreen = () => {
                 <div className="w-full flex justify-between inter px-1">
                   <p className="font-normal text-sm">{t("whatsappLimit")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
-                    {`${whatsappCount.count}`}
+                    {whatsappCount.count === 0
+                      ? t("noMessagesAvailable")
+                      : whatsappCount.count}
                   </p>
                 </div>
+
                 <div className="w-full flex justify-between inter px-1">
                   <p className="font-normal text-sm">{t("printLimit")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
@@ -784,10 +786,10 @@ const SettingsScreen = () => {
             </Card>
           </div>
           <div>
-          <p className="pl-[4px]  opacity-60">{t("printer")}</p>
+            <p className="pl-[4px]  opacity-60">{t("printer")}</p>
             <Card className="mt-[6px] ">
               <div className="flex justify-between items-center">
-              <p className="py-2">
+                <p className="py-2">
                   {selectedPrinter ? selectedPrinter : t("noPrinterSelected")}
                 </p>
                 <PrinterSelector onPrinterSelect={handlePrinterSelect} />
