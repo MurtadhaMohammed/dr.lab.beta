@@ -147,6 +147,7 @@
   "expiredAt": "Expired At",
   "daysLeft": "Days left",
   "whatsappLimit": "Watsapp Messages",
+  "noMessagesAvailable":"No messages available",
   "noPrinterSelected": "No printer selected",
   "printLimit":"Print",
   "accountTypeLeft": "Account Type",

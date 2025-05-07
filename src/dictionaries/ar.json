@@ -223,6 +223,7 @@
   "ErrorGenerate": "حدث خطأ أثناء إنشاء الملف",
   "erroroccurred": "حدث خطأ ما",
   "noPrinterSelected": "لم يتم تحديد طابعة",
+  "noMessagesAvailable": " لا يتوفر ارسال الرسائل",
   "InvalidUserData": "تم العثور على بيانات مستخدم غير صالحة، الرجاء تسجيل الدخول مرة أخرى",
   "Subscriptionexpired": "انتهت صلاحية الاشتراك",
   "Failedserialexpiration": "فشل في التحقق من انتهاء صلاحية رمز التفعيل",

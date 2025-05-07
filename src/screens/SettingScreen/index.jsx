@@ -17,17 +17,28 @@ import {
   Switch,
   Tag,
 } from "antd";
-import { PhoneOutlined, UserOutlined, DownloadOutlined , ExportOutlined , ImportOutlined } from "@ant-design/icons";
+import {
+  PhoneOutlined,
+  UserOutlined,
+  DownloadOutlined,
+  ExportOutlined,
+  ImportOutlined,
+} from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
-import { useAppStore, useLanguage ,useWhatsappCountStore,usePrintCountStore } from "../../libs/appStore";
+import {
+  useAppStore,
+  useLanguage,
+  useWhatsappCountStore,
+  usePrintCountStore,
+} from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import PopOverContent from "./PopOverContent";
 import { URL } from "../../libs/api";
-import PrinterSelector from './PrinterSelector';
+import PrinterSelector from "./PrinterSelector";
 import { signout } from "../../helper/signOut";
 
 const SettingsScreen = () => {
@@ -38,8 +49,8 @@ const SettingsScreen = () => {
   const [remainingDays, setRemainingDays] = useState(null);
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
-  const {whatsappCount , setWhatsappCount} = useWhatsappCountStore();
-  const {printCount , setPrintCount} = usePrintCountStore();
+  const { whatsappCount, setWhatsappCount } = useWhatsappCountStore();
+  const { printCount, setPrintCount } = usePrintCountStore();
   const [form] = Form.useForm();
   const [expireData, _] = useState({
     register: localStorage.getItem("lab-created"),
@@ -58,7 +69,7 @@ const SettingsScreen = () => {
   const { t } = useTranslation();
 
   const userType = labUser?.Plan;
-  
+
   async function fetchImagePath() {
     setImagePath(null);
     try {
@@ -87,7 +98,7 @@ const SettingsScreen = () => {
         setWhatsappCount(newCount);
 
         console.log("Fetched WhatsApp count:", newCount);
-        localStorage.setItem('whatsappCount', JSON.stringify(newCount));
+        localStorage.setItem("whatsappCount", JSON.stringify(newCount));
       } catch (error) {
         console.error("Error parsing JSON:", error);
         setError("Error parsing response data.");
@@ -101,7 +112,7 @@ const SettingsScreen = () => {
   };
 
   useEffect(() => {
-    const storedCount = localStorage.getItem('whatsappCount');
+    const storedCount = localStorage.getItem("whatsappCount");
     if (storedCount) {
       try {
         const parsedCount = JSON.parse(storedCount);
@@ -109,10 +120,9 @@ const SettingsScreen = () => {
       } catch (error) {
         console.error("Error parsing stored count:", error);
         setError("Error loading stored data.");
-
       }
     } else {
-      const labUserData = localStorage.getItem('lab-user');
+      const labUserData = localStorage.getItem("lab-user");
 
       if (labUserData) {
         try {
@@ -140,7 +150,7 @@ const SettingsScreen = () => {
   //   let limit = 0;
   //   if (userType?.id === 2) {
   //     limit = 1000;
-  //   } 
+  //   }
   //   setWhatsappCount({ limit });
   // }, [userType, setWhatsappCount]);
 
@@ -196,7 +206,6 @@ const SettingsScreen = () => {
     setPrintFontSize(val);
   };
 
-
   const handelCancel = () => {
     form.setFieldsValue(labUser);
     setIsUpdate(false);
@@ -214,35 +223,35 @@ const SettingsScreen = () => {
     try {
       const files = await fileDialog();
       if (!files || files.length === 0) return;
-      
+
       const selectedFile = files[0];
       const fileName = selectedFile.name.toLowerCase();
-      
-      const validExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
-      const isImageFile = validExtensions.some(ext => fileName.endsWith(ext));
-      
+
+      const validExtensions = [".png", ".jpg", ".jpeg", ".webp"];
+      const isImageFile = validExtensions.some((ext) => fileName.endsWith(ext));
+
       if (!isImageFile) {
         message.error(t("PleaseSelectImageFile"));
         return;
       }
 
       const formData = new FormData();
-      formData.append('file', selectedFile);
-      
+      formData.append("file", selectedFile);
+
       const response = await fetch(`${URL}/upload`, {
-        method: 'POST',
-        body: formData
+        method: "POST",
+        body: formData,
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        throw new Error("Upload failed");
       }
 
       const result = await response.json();
-      
+
       const saveResponse = await send({
         query: "saveHeadImage",
-        file: result.path
+        file: result.path,
       });
 
       if (saveResponse.success) {
@@ -251,10 +260,9 @@ const SettingsScreen = () => {
       } else {
         throw new Error(saveResponse.error);
       }
-
     } catch (error) {
       console.error("Error uploading image:", error);
-      message.error(t("ErrorUploadingImage")); 
+      message.error(t("ErrorUploadingImage"));
     }
   };
 
@@ -262,7 +270,6 @@ const SettingsScreen = () => {
     setLoading(true);
 
     send({ query: "getUUID" }).then(async ({ UUID }) => {
-
       const storedToken = localStorage.getItem("lab_token");
 
       try {
@@ -276,7 +283,6 @@ const SettingsScreen = () => {
             device: UUID,
           }),
         });
-
 
         if (resp.ok) {
           let data = await resp.json();
@@ -350,9 +356,8 @@ const SettingsScreen = () => {
     [remainingDays, lang]
   ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
 
-
   const handleExportDatabase = async () => {
-    setExportLoading(true); 
+    setExportLoading(true);
     const res = await send({ query: "exportDatabaseFile" });
     if (res.success) {
       message.success(t("DatabaseExportedSuccessfully"));
@@ -360,11 +365,11 @@ const SettingsScreen = () => {
       message.error(t("ErrorExportingDatabase"));
       console.error("Error exporting :", res.error);
     }
-    setExportLoading(false); 
+    setExportLoading(false);
   };
 
   const handleImportDatabase = async () => {
-    setImportLoading(true); 
+    setImportLoading(true);
     const res = await send({ query: "ImportDatabaseFile" });
     console.log(res);
     if (res.success) {
@@ -372,13 +377,13 @@ const SettingsScreen = () => {
     } else {
       message.error(t("importError"));
     }
-    setImportLoading(false); 
+    setImportLoading(false);
   };
 
   const handlePrinterSelect = (printer) => {
     setSelectedPrinter(printer);
   };
-  
+
   const handleSignout = async () => {
     setSignoutLoading(true);
     try {
@@ -393,13 +398,13 @@ const SettingsScreen = () => {
 
   useEffect(() => {
     let limit = 20;
-    let sent = 0;  
+    let sent = 0;
     if (userType?.id === 2) {
       limit = "Unlimited";
-    } 
-    setPrintCount({ 
+    }
+    setPrintCount({
       limit,
-      sent 
+      sent,
     });
   }, [userType]);
 
@@ -469,7 +474,7 @@ const SettingsScreen = () => {
                     <Input />
                   </Form.Item>
                 </Col>
-                
+
                 <Col span={6}>
                   <Form.Item
                     label={t("Username")}
@@ -551,10 +556,10 @@ const SettingsScreen = () => {
             <Card className="mt-[6px]">
               <div className="flex justify-between items-center">
                 <b className="text-[14px]">{t("ImageCover")}</b>
-                  <Button type="link" onClick={handleChangeFile}>
-                    {t("ChangeImage")}
-                  </Button>
-              </div> 
+                <Button type="link" onClick={handleChangeFile}>
+                  {t("ChangeImage")}
+                </Button>
+              </div>
               <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
                 {imagePath && <img className="w-full" src={imagePath} />}
               </div>
@@ -599,11 +604,11 @@ const SettingsScreen = () => {
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p>{t("startedAt")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
-                    {labUser?.Plan?.id === 1 
+                    {labUser?.Plan?.id === 1
                       ? dayjs(labUser.createdAt).format("YYYY MMM, DD")
                       : expireData.register
-                        ? dayjs(expireData.register).format("YYYY MMM, DD")
-                        : "2024 Aug, 11"}
+                      ? dayjs(expireData.register).format("YYYY MMM, DD")
+                      : "2024 Aug, 11"}
                   </p>
                 </div>
 
@@ -613,8 +618,8 @@ const SettingsScreen = () => {
                     <p className="text-[#A5A5A5] font-normal text-sm">
                       {expireData.expire
                         ? dayjs()
-                          .add(expireData.expire, "day")
-                          .format("YYYY MMM, DD")
+                            .add(expireData.expire, "day")
+                            .format("YYYY MMM, DD")
                         : "2024 Aug, 11"}
                     </p>
                   </div>
@@ -630,9 +635,12 @@ const SettingsScreen = () => {
                 <div className="w-full flex justify-between inter px-1">
                   <p className="font-normal text-sm">{t("whatsappLimit")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
-                    {`${whatsappCount.count}`}
+                    {whatsappCount.count === 0
+                      ? t("noMessagesAvailable")
+                      : whatsappCount.count}
                   </p>
                 </div>
+
                 <div className="w-full flex justify-between inter px-1">
                   <p className="font-normal text-sm">{t("printLimit")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
@@ -643,17 +651,23 @@ const SettingsScreen = () => {
                   <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
 
                   <Tag color="magenta-inverse" className="m-0">
-                    {String(userType?.name || '').toLocaleUpperCase()}
+                    {String(userType?.name || "").toLocaleUpperCase()}
                   </Tag>
                 </div>
 
                 {labUser?.Plan?.id === 1 && (
                   <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
                     <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium text-blue-800">{t("WantToUpgrade")}</p>
+                      <p className="text-sm font-medium text-blue-800">
+                        {t("WantToUpgrade")}
+                      </p>
                       <Popover
                         placement="right"
-                        title={<div className="text-center font-medium">{t("ContactUs")}</div>}
+                        title={
+                          <div className="text-center font-medium">
+                            {t("ContactUs")}
+                          </div>
+                        }
                         content={
                           <PopOverContent
                             website={"https://www.puretik.com/ar"}
@@ -663,8 +677,8 @@ const SettingsScreen = () => {
                         }
                         trigger="click"
                       >
-                        <Button 
-                          type="primary" 
+                        <Button
+                          type="primary"
                           size="small"
                           className="bg-blue-600 hover:bg-blue-700"
                         >
@@ -714,9 +728,9 @@ const SettingsScreen = () => {
             <Card className="mt-[6px]">
               <div className="flex justify-between items-center">
                 <b className="text-[14px]">{t("ExportDatabase")}</b>
-                <Button 
-                  type="primary" 
-                  icon={<ExportOutlined />} 
+                <Button
+                  type="primary"
+                  icon={<ExportOutlined />}
                   onClick={handleExportDatabase}
                   loading={exportLoading}
                 >
@@ -732,9 +746,9 @@ const SettingsScreen = () => {
             <Card className="mt-[27px]">
               <div className="flex justify-between items-center">
                 <b className="text-[14px]">{t("ImportDatabase")}</b>
-                <Button 
-                  type="primary" 
-                  icon={<ImportOutlined />} 
+                <Button
+                  type="primary"
+                  icon={<ImportOutlined />}
                   onClick={handleImportDatabase}
                   loading={exportLoading}
                 >
@@ -747,10 +761,10 @@ const SettingsScreen = () => {
             </Card>
           </div>
           <div>
-          <p className="pl-[4px]  opacity-60">{t("printer")}</p>
+            <p className="pl-[4px]  opacity-60">{t("printer")}</p>
             <Card className="mt-[6px] ">
               <div className="flex justify-between items-center">
-              <p className="py-2">
+                <p className="py-2">
                   {selectedPrinter ? selectedPrinter : t("noPrinterSelected")}
                 </p>
                 <PrinterSelector onPrinterSelect={handlePrinterSelect} />
