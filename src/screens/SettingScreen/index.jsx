@@ -159,6 +159,15 @@ const SettingsScreen = () => {
   }, []);
 
   useEffect(() => {
+    console.log("labUser", labUser);
+    console.log("user", user);
+    if (user) {
+      form.setFieldsValue(user);
+    }
+  }, [user, form]);
+
+  const signout = async () => {
+    setSignoutLoading(true);
     try {
       const userData = JSON.parse(localStorage.getItem("lab-user"));
       if (userData) {
@@ -169,7 +178,7 @@ const SettingsScreen = () => {
       console.error("Error parsing lab-user:", error);
       setError("Error loading user data");
     }
-  }, []);
+  };
 
   useEffect(() => {
     calculateRemainingDays();
@@ -408,6 +417,7 @@ const SettingsScreen = () => {
     });
   }, [userType]);
 
+
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -586,21 +596,21 @@ const SettingsScreen = () => {
               <div className="flex flex-col w-full gap-[10px]">
                 {/* <div
                   className={`${remainingDays < 7
-                    ? "bg-[#F187060A] border-[#BF6A0224]"
-                    : "bg-[#C8E6C942] border-[#4CAF50]"
-                    }  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}
-                >
+                  ? "bg-[#F187060A] border-[#BF6A0224]"
+                  : "bg-[#C8E6C942] border-[#4CAF50]"
+                  }  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}
+                  >
                   <p className=" font-normal">{t("SerialNumber")}</p>
                   <p className=" font-bold">
-                    {localStorage.getItem("lab-serial") || "10992909"}
+                  {localStorage.getItem("lab-serial") || "10992909"}
                   </p>
-                </div> */}
+                  </div> */}
 
                 {/* {userType === "paid" && remainingDays < 4 ? (
                   <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">
-                    {t("supportPaymentReminder")}
+                  {t("supportPaymentReminder")}
                   </p>
-                ) : null} */}
+                  ) : null} */}
                 <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                   <p>{t("startedAt")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
@@ -645,6 +655,11 @@ const SettingsScreen = () => {
                   <p className="font-normal text-sm">{t("printLimit")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
                     {`${printCount.sent || 0}/${printCount.limit}`}
+                  </p>
+                  <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
+
+                  <p className=" text-[#A5A5A5] font-normal text-sm">
+                    {`${whatsappCount.sent}/${whatsappCount.limit}`}
                   </p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
@@ -692,31 +707,31 @@ const SettingsScreen = () => {
                 {/* <div className="px-1 h-full flex flex-col gap-2">
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
-                    <p className=" font-normal">{t("whatsappIntegration")}</p>
-                    <Popover
-                      trigger="hover"
-                      content={
-                        <PopOverContent
-                          website={"https://www.puretik.com/ar"}
-                          email={"info@puretik.com"}
-                          phone={"07710553120"}
-                        />
-                      }
+                  <p className=" font-normal">{t("whatsappIntegration")}</p>
+                  <Popover
+                  trigger="hover"
+                  content={
+                    <PopOverContent
+                    website={"https://www.puretik.com/ar"}
+                    email={"info@puretik.com"}
+                    phone={"07710553120"}
+                    />
+                    }
                     >
-                      <p
-                        className={`${whatsAppStatus.textStyle} font-bold text-sm`}
-                      >
-                        {whatsAppStatus.status}
-                      </p>
+                    <p
+                    className={`${whatsAppStatus.textStyle} font-bold text-sm`}
+                    >
+                    {whatsAppStatus.status}
+                    </p>
                     </Popover>
-                  </div>
-
-                  <p
+                    </div>
+                    
+                    <p
                     className={`${whatsAppStatus.descStyle} p-2 border-[1px] rounded-lg !mt-2`}
-                  >
+                    >
                     {whatsAppStatus.description}
-                  </p>
-                </div> */}
+                    </p>
+                    </div> */}
               </div>
             </Card>
           </div>
@@ -750,7 +765,7 @@ const SettingsScreen = () => {
                   type="primary"
                   icon={<ImportOutlined />}
                   onClick={handleImportDatabase}
-                  loading={exportLoading}
+                  loading={importLoading} // Changed to importLoading
                 >
                   {t("ImportToSystem")}
                 </Button>
@@ -758,6 +773,16 @@ const SettingsScreen = () => {
               <p className="mt-2 text-sm text-gray-500">
                 {t("ImportDatabaseDescription")}
               </p>
+            </Card>
+            <p className="pl-[4px]  opacity-60">{t("printer")}</p>
+            <Card className="mt-[6px] ">
+              <div className="flex justify-between items-center">
+                {/* **Pass the callback to PrinterSelector** */}
+                <PrinterSelector onPrinterSelect={handlePrinterSelect} />
+                <p className="py-2">
+                  {t("printer")} : {selectedPrinter}
+                </p>
+              </div>
             </Card>
           </div>
           <div>
@@ -776,4 +801,5 @@ const SettingsScreen = () => {
     </div>
   );
 };
+
 export default SettingsScreen;

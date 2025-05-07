@@ -11,45 +11,48 @@ const useLogin = () => {
 
   useEffect(() => {
     const storedToken = localStorage.getItem("lab_token");
-  
+
     if (storedToken) {
-      setIsLogin(true);  
+      const decodedToken = JSON.parse(atob(storedToken.split(".")[1]));
+      console.log("Decoded Token:", decodedToken);
+      
+      setUser(decodedToken);
+      setIsLogin(true);
     } else {
       setIsLogin(false);
     }
-  }, []); 
-  
+  }, []);
 
   // const checkExpire = async (user) => {
   //   try {
   //     const serialId = localStorage.getItem("lab-serial-id");
   //     const exp = localStorage.getItem("lab-exp");
   //     const labCreated = localStorage.getItem("lab-created");
-  
+
   //     if (!exp || !labCreated || !serialId) {
   //       console.warn("Required data missing for expiration check.");
   //       setIsLogin(false);
   //       setUser(null);
   //       return;
   //     }
-  
+
   //     const createdDate = dayjs(labCreated);
   //     const today = dayjs();
   //     const dayPassed = today.diff(createdDate, "day");
-  
+
   //     // Define the expiration period based on the user type
   //     const expirationPeriod = user?.type === "trial" ? 7 : 365;
   //     const remaining = expirationPeriod - dayPassed;
-  
+
   //     if (remaining <= 0) {
   //       setIsLogin(false);
   //       setUser(null);
   //       message.error(t("Subscriptionexpired"));
   //       return;
   //     }
-  
+
   //     const { isOnline } = useAppStore.getState(); // Get the latest online status
-  
+
   //     if (isOnline) {
   //       // User is online, proceed with serial expiration check
   //       const response = await fetch(
@@ -62,10 +65,10 @@ const useLogin = () => {
   //           body: JSON.stringify({ serialId: parseInt(serialId, 10) }),
   //         }
   //       );
-  
+
   //       if (response.ok) {
   //         const data = await response.json();
-  
+
   //         if (data?.expired) {
   //           message.error("Serial Expired!");
   //           setIsLogin(false);
@@ -84,7 +87,7 @@ const useLogin = () => {
   //     } else if (!isOnline) {
   //       // User is offline, wait for online status to retry
   //       console.log("User is offline. Will retry when connection is restored.");
-  
+
   //       const handleOnline = async () => {
   //         const { isOnline: newIsOnline } = useAppStore.getState(); // Get the latest online status
   //         if (newIsOnline) {
@@ -93,7 +96,7 @@ const useLogin = () => {
   //           await checkExpire(user); // Retry the expiration check
   //         }
   //       };
-  
+
   //       window.addEventListener("online", handleOnline); // Attach the event listener
   //     }
   //   } catch (error) {
@@ -103,11 +106,8 @@ const useLogin = () => {
   //     setUser(null);
   //   }
   // };
-  
-  
 
   return null;
 };
-
 
 export default useLogin;
