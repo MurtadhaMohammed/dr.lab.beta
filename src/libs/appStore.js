@@ -4,22 +4,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export const useWhatsappCountStore = create((set) => ({
-  whatsappCount: { sent: 0, limit: 0 },
-  isLimitExceeded: false,
+  whatsappCount:  0 ,
 
-  setWhatsappCount: (newCount) =>
-    set((state) => {
-      const updatedCount = {
-        ...state.whatsappCount,
-        ...newCount,
-      };
-
-      return {
-        whatsappCount: updatedCount,
-        isLimitExceeded: updatedCount.sent >= updatedCount.limit,
-      };
-    }),
+  setWhatsappCount: (newCount) => set(() => ({
+    whatsappCount: newCount ,
+  })),
 }));
+
 
 export const usePrintCountStore = create((set) => ({
   printCount: { sent: 0, limit: 0 },

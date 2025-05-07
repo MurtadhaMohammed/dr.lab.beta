@@ -86,15 +86,19 @@ const SettingsScreen = () => {
 
   const handleWhatsappCount = async (labUserId) => {
     const url = `${URL}/whatsapp/whatsapp-count/${labUserId}`;
+
     try {
       const response = await fetch(url);
       const text = await response.text();
 
       try {
         const data = JSON.parse(text);
-        const newCount = { sent: data.count };
+
+        const newCount = { count: data.count };
         setWhatsappCount(newCount);
-        localStorage.setItem("whatsappCount", JSON.stringify(newCount));
+
+        console.log("Fetched WhatsApp count:", newCount);
+        localStorage.setItem('whatsappCount', JSON.stringify(newCount));
       } catch (error) {
         console.error("Error parsing JSON:", error);
         setError("Error parsing response data.");
@@ -142,13 +146,13 @@ const SettingsScreen = () => {
     }
   }, []);
 
-  useEffect(() => {
-    let limit = 0;
-    if (userType?.id === 2) {
-      limit = 1000;
-    }
-    setWhatsappCount({ limit });
-  }, [userType, setWhatsappCount]);
+  // useEffect(() => {
+  //   let limit = 0;
+  //   if (userType?.id === 2) {
+  //     limit = 1000;
+  //   } 
+  //   setWhatsappCount({ limit });
+  // }, [userType, setWhatsappCount]);
 
   useEffect(() => {
     fetchImagePath();
@@ -642,7 +646,7 @@ const SettingsScreen = () => {
                 <div className="w-full flex justify-between inter px-1">
                   <p className="font-normal text-sm">{t("whatsappLimit")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
-                    {`${whatsappCount.sent}/${whatsappCount.limit}`}
+                    {`${whatsappCount.count}`}
                   </p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
@@ -784,7 +788,7 @@ const SettingsScreen = () => {
             <Card className="mt-[6px] ">
               <div className="flex justify-between items-center">
               <p className="py-2">
-                  {t("printer")} : {selectedPrinter}
+                  {selectedPrinter ? selectedPrinter : t("noPrinterSelected")}
                 </p>
                 <PrinterSelector onPrinterSelect={handlePrinterSelect} />
               </div>
