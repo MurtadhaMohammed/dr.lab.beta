@@ -68,6 +68,19 @@ const SettingsScreen = () => {
 
   const { t } = useTranslation();
 
+  useEffect(() => {
+    const storedLabUser = localStorage.getItem("lab-user");
+    if (storedLabUser) {
+      console.log("storedLabUser", JSON.parse(storedLabUser));
+      setLabUser(JSON.parse(storedLabUser));
+      form.setFieldsValue(JSON.parse(storedLabUser));
+      setPrintCount({
+        limit: JSON.parse(storedLabUser)?.Plan?.printLimit,
+        sent: printCount.sent,
+      });
+    }
+  }, []);
+
   const userType = labUser?.Plan;
 
   async function fetchImagePath() {
@@ -417,7 +430,6 @@ const SettingsScreen = () => {
     });
   }, [userType]);
 
-
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -655,11 +667,6 @@ const SettingsScreen = () => {
                   <p className="font-normal text-sm">{t("printLimit")}</p>
                   <p className="text-[#A5A5A5] font-normal text-sm">
                     {`${printCount.sent || 0}/${printCount.limit}`}
-                  </p>
-                  <p className=" font-normal text-sm">{t("whatsappLimit")}</p>
-
-                  <p className=" text-[#A5A5A5] font-normal text-sm">
-                    {`${whatsappCount.sent}/${whatsappCount.limit}`}
                   </p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
