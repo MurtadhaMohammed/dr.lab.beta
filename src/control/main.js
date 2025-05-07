@@ -721,7 +721,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         }
         break;
       }
-               
+      
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
@@ -733,6 +733,6 @@ ipcMain.handle('get-printers', async (event) => {
   if (!win) {
     throw new Error('No active window');
   }
-  const printers = await win.webContents.getPrinters();
+  const printers = await win.webContents.getPrintersAsync();
   return printers.map(printer => printer.name);
 });
