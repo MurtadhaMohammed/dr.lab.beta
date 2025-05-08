@@ -25,8 +25,12 @@ function App() {
   const { lang } = useLang();
   const { isOnline, setIsOnline } = useAppStore();
 
+
+
   useInitHeaderImage();
   useLogin();
+
+  
 
   useEffect(() => {
     // ipcRenderer.on("hello", () => {
