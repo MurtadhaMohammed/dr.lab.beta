@@ -665,8 +665,11 @@ const SettingsScreen = () => {
 
                 <div className="w-full flex justify-between inter px-1">
                   <p className="font-normal text-sm">{t("printLimit")}</p>
+
                   <p className="text-[#A5A5A5] font-normal text-sm">
-                    {`${printCount.sent || 0}/${printCount.limit}`}
+                    {userType?.type === "FREE"
+                      ? `${printCount.sent || 0}/${printCount.limit}`
+                      : "Unlimited"}
                   </p>
                 </div>
                 <div className="w-full flex justify-between inter px-1">
@@ -780,16 +783,6 @@ const SettingsScreen = () => {
               <p className="mt-2 text-sm text-gray-500">
                 {t("ImportDatabaseDescription")}
               </p>
-            </Card>
-            <p className="pl-[4px]  opacity-60">{t("printer")}</p>
-            <Card className="mt-[6px] ">
-              <div className="flex justify-between items-center">
-                {/* **Pass the callback to PrinterSelector** */}
-                <PrinterSelector onPrinterSelect={handlePrinterSelect} />
-                <p className="py-2">
-                  {t("printer")} : {selectedPrinter}
-                </p>
-              </div>
             </Card>
           </div>
           <div>

@@ -27,8 +27,8 @@ function createWindow() {
     height: 800,
     minWidth: 1024,  
     minHeight: 750,  
-    maxWidth: 1600,  
-    maxHeight: 1000, 
+    maxWidth: 1920,  
+    maxHeight: 1080, 
     show: false,
     frame: false,
   });
