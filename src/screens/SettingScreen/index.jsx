@@ -70,13 +70,13 @@ const SettingsScreen = () => {
 
   useEffect(() => {
     const storedLabUser = localStorage.getItem("lab-user");
+    const printData = localStorage.getItem("printData");
     if (storedLabUser) {
-      console.log("storedLabUser", JSON.parse(storedLabUser));
       setLabUser(JSON.parse(storedLabUser));
       form.setFieldsValue(JSON.parse(storedLabUser));
       setPrintCount({
         limit: JSON.parse(storedLabUser)?.Plan?.printLimit,
-        sent: printCount.sent,
+        sent: JSON.parse(printData)?.printUsed,
       });
     }
   }, []);
@@ -172,11 +172,7 @@ const SettingsScreen = () => {
   }, []);
 
   useEffect(() => {
-    console.log("labUser", labUser);
-    console.log("user", user);
-    if (user) {
-      form.setFieldsValue(user);
-    }
+    if (user) form.setFieldsValue(user);
   }, [user, form]);
 
   const signout = async () => {
@@ -418,18 +414,6 @@ const SettingsScreen = () => {
     }
   };
 
-  useEffect(() => {
-    let limit = 20;
-    let sent = 0;
-    if (userType?.id === 2) {
-      limit = "Unlimited";
-    }
-    setPrintCount({
-      limit,
-      sent,
-    });
-  }, [userType]);
-
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -610,12 +594,12 @@ const SettingsScreen = () => {
                 <div className="rounded-lg border border-1-[#eee] mt-[8px]">
                   <div className="border-b border-b-[#eee] p-[24px]">
                     <div className="flex justify-between items-center">
-                     <div>
-                     <b className="text-[14px]">{t("ExportDatabase")}</b>
-                    <p className="mt-2 text-sm text-gray-500">
-                      {t("ExportDatabaseDescription")}
-                    </p>
-                     </div>
+                      <div>
+                        <b className="text-[14px]">{t("ExportDatabase")}</b>
+                        <p className="mt-2 text-sm text-gray-500">
+                          {t("ExportDatabaseDescription")}
+                        </p>
+                      </div>
                       <Button
                         type="primary"
                         icon={<ExportOutlined />}
@@ -629,12 +613,12 @@ const SettingsScreen = () => {
 
                   <div className="p-[24px]">
                     <div className="flex justify-between items-center">
-                    <div>
-                    <b className="text-[14px]">{t("ImportDatabase")}</b>
-                      <p className="mt-2 text-sm text-gray-500">
-                      {t("ImportDatabaseDescription")}
-                    </p>
-                    </div>
+                      <div>
+                        <b className="text-[14px]">{t("ImportDatabase")}</b>
+                        <p className="mt-2 text-sm text-gray-500">
+                          {t("ImportDatabaseDescription")}
+                        </p>
+                      </div>
                       <Button
                         type="primary"
                         icon={<ImportOutlined />}
@@ -644,7 +628,6 @@ const SettingsScreen = () => {
                         {t("ImportToSystem")}
                       </Button>
                     </div>
-                   
                   </div>
                 </div>
               </div>

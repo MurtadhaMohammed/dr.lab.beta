@@ -110,10 +110,6 @@ export const ResultsModal = () => {
   };
   const PlanType = JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type;
   let printResults = (newTests) => {
-    // if (PlanType === "FREE" && !canPrint()) {
-    //   message.error(t("printLimitMessage"));
-    //   return;
-    // }
     record.tests = newTests;
     let data = {
       patient: record.patient.name,
@@ -122,10 +118,11 @@ export const ResultsModal = () => {
       tests: parseTests(record),
       isHeader: true,
       fontSize: printFontSize,
+      isFree: PlanType === "FREE",
     };
 
     send({
-      query: PlanType === "FREE" ? "printFree" : "print",
+      query: "print",
       data,
     }).then(({ err, res }) => {
       recordPrint();

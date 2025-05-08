@@ -140,14 +140,13 @@ export const PureTable = ({ isReport = false }) => {
             tests: parseTests(record),
             isHeader: true,
             fontSize: 12,
+            isFree: planType === "FREE",
           };
           const planType = JSON.parse(localStorage?.getItem("lab-user"))?.Plan
             ?.type;
 
-          console.log("planType", planType);
-
           send({
-            query: planType === "FREE" ? "print" : "print",
+            query: "print",
             data,
             isView: false,
           }).then(({ err, res, file }) => {
