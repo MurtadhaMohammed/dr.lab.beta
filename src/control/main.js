@@ -1,5 +1,10 @@
-const { dialog ,BrowserWindow, ipcMain, shell , app } = require("electron");
-var { createPDF, printReport, createPDFBlob } = require("../../initPDF");
+const { dialog, BrowserWindow, ipcMain, shell, app } = require("electron");
+var {
+  createFreePDF,
+  createPDF,
+  printReport,
+  createPDFBlob,
+} = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
 const fs = require("fs");
@@ -7,8 +12,7 @@ const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
-const isDev = require('electron-is-dev');
-
+const isDev = require("electron-is-dev");
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -362,8 +366,13 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       });
       break;
     case "print": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }'
-      console.log(arg.data, "this is the data");
       createPDF(arg.data, arg?.isView, (err, res, file) => {
+        console.log(err, res, file, "this is the error, response and file");
+        event.reply("asynchronous-reply", { err, res, file });
+      });
+      break;
+    case "printFree": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
+      createFreePDF(arg.data, arg?.isView, (err, res, file) => {
         console.log(err, res, file, "this is the error, response and file");
         event.reply("asynchronous-reply", { err, res, file });
       });
@@ -400,7 +409,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
         if (!visitNumber) {
           // console.log("Failed to generate visit number");
-          event.reply("asynchronous-reply", { success: false, error: "Failed to generate visit number" });
+          event.reply("asynchronous-reply", {
+            success: false,
+            error: "Failed to generate visit number",
+          });
           return;
         }
         // console.log("Generated visit number:", visitNumber);
@@ -420,7 +432,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           function (err, png) {
             if (err) {
               console.error(err);
-              event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode" });
+              event.reply("asynchronous-reply", {
+                success: false,
+                error: "Failed to generate barcode",
+              });
             } else {
               sharp(png)
                 .metadata()
@@ -430,7 +445,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
                   const textSvg = Buffer.from(`
                   <svg width="${barcodeWidth}" height="60">
-                    <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${visit ? visit.patient.name : arg.data.name}</text>
+                    <text x="50%" y="50%" font-size="35" text-anchor="middle" fill="black" dominant-baseline="middle">${
+                      visit ? visit.patient.name : arg.data.name
+                    }</text>
                   </svg>
                 `);
 
@@ -457,9 +474,12 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                     .toBuffer((err, outputBuffer) => {
                       if (err) {
                         console.error(err);
-                        event.reply("asynchronous-reply", { success: false, error: "Failed to generate barcode image" });
+                        event.reply("asynchronous-reply", {
+                          success: false,
+                          error: "Failed to generate barcode image",
+                        });
                       } else {
-                        const base64Image = outputBuffer.toString('base64');
+                        const base64Image = outputBuffer.toString("base64");
 
                         const printWin = new BrowserWindow({
                           width: 162,
@@ -486,150 +506,183 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                           </html>
                         `;
 
-                        printWin.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+                        printWin.loadURL(
+                          `data:text/html;charset=utf-8,${encodeURIComponent(
+                            htmlContent
+                          )}`
+                        );
 
-                        printWin.webContents.on('did-finish-load', () => {
-                          printWin.webContents.print({
-                            silent: true,
-                            printBackground: true,
-                            deviceName: arg.selectedPrinter,
-                            margins: {
-                              marginType: 'none'
+                        printWin.webContents.on("did-finish-load", () => {
+                          printWin.webContents.print(
+                            {
+                              silent: true,
+                              printBackground: true,
+                              deviceName: arg.selectedPrinter,
+                              margins: {
+                                marginType: "none",
+                              },
+                              pageSize: {
+                                width: 35400,
+                                height: 17700,
+                              },
                             },
-                            pageSize: {
-                              width: 35400,
-                              height: 17700,
-                            },
-                          }, (success, failureReason) => {
-                            if (!success) {
-                              console.error(`Printing failed: ${failureReason}`);
-                              event.reply("asynchronous-reply", { success: false, error: failureReason });
-                            } else {
-                              console.log('Printing successful');
-                              event.reply("asynchronous-reply", { success: true });
+                            (success, failureReason) => {
+                              if (!success) {
+                                console.error(
+                                  `Printing failed: ${failureReason}`
+                                );
+                                event.reply("asynchronous-reply", {
+                                  success: false,
+                                  error: failureReason,
+                                });
+                              } else {
+                                console.log("Printing successful");
+                                event.reply("asynchronous-reply", {
+                                  success: true,
+                                });
+                              }
+                              printWin.close();
                             }
-                            printWin.close();
-                          });
+                          );
                         });
                       }
                     });
                 })
-                .catch(error => {
+                .catch((error) => {
                   console.error("Error processing image:", error);
-                  event.reply("asynchronous-reply", { success: false, error: "Error processing image" });
+                  event.reply("asynchronous-reply", {
+                    success: false,
+                    error: "Error processing image",
+                  });
                 });
             }
           }
         );
-
       } catch (error) {
         console.error("Error in printParcode:", error);
-        event.reply("asynchronous-reply", { success: false, error: error.message });
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
       }
       break;
 
-            
-            case "exportDatabaseFile": {
-              try {
-                const userDataPath = app.getPath("userData");
-            
-                const databaseFileName = !isDev ? 'lab-betadatabase.db' : (process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db');
-                const defaultPathDB = process.platform === 'win32' ? path.join(userDataPath, '..', databaseFileName) : userDataPath;
-       
-                const defaultSavePath = app.getPath("desktop");
-                const desktopPath = path.join(defaultSavePath, databaseFileName);
-            
-                console.log("Database path:", defaultPathDB);
-                console.log("Desktop path:", desktopPath);
-            
-                const { filePath, canceled } = await dialog.showSaveDialog({
-                  title: 'Export Database',
-                  defaultPath: desktopPath,
-                  filters: [
-                    { name: 'Database Files', extensions: ['db'] }
-                  ]
-                });
-            
-                if (canceled) {
-                  console.log('Export canceled by user');
-                  return;
-                }
-            
-                if (!filePath) {
-                  console.error('No file path selected');
-                  return;
-                }
-                        
-                fs.copyFile(defaultPathDB, filePath, (error) => {
-                  if (error) {
-                    console.error('Error exporting database:', error);
-                  } else {
-                    console.log(`Database exported to: ${filePath}`);
-                    event.reply("asynchronous-reply", { success: true, message: 'Database file exported successfully.' });
-                  }
-                });
-              } catch (error) {
-                console.error('Error exporting database:', error);
-              }
-              break;
-            }
-  
-      case "ImportDatabaseFile": {
-        try {
-
+    case "exportDatabaseFile": {
+      try {
         const userDataPath = app.getPath("userData");
-         const databaseFileName = !isDev ? 'lab-betadatabase.db' : (process.platform === 'win32' ? 'Electrondatabase.db' : 'database.db');
-         const defaultPathDB = process.platform === 'win32' ?  path.join(userDataPath, '..', databaseFileName) : userDataPath;
+
+        const databaseFileName = !isDev
+          ? "lab-betadatabase.db"
+          : process.platform === "win32"
+          ? "Electrondatabase.db"
+          : "database.db";
+        const defaultPathDB =
+          process.platform === "win32"
+            ? path.join(userDataPath, "..", databaseFileName)
+            : userDataPath;
+
+        const defaultSavePath = app.getPath("desktop");
+        const desktopPath = path.join(defaultSavePath, databaseFileName);
+
+        console.log("Database path:", defaultPathDB);
+        console.log("Desktop path:", desktopPath);
+
+        const { filePath, canceled } = await dialog.showSaveDialog({
+          title: "Export Database",
+          defaultPath: desktopPath,
+          filters: [{ name: "Database Files", extensions: ["db"] }],
+        });
+
+        if (canceled) {
+          console.log("Export canceled by user");
+          return;
+        }
+
+        if (!filePath) {
+          console.error("No file path selected");
+          return;
+        }
+
+        fs.copyFile(defaultPathDB, filePath, (error) => {
+          if (error) {
+            console.error("Error exporting database:", error);
+          } else {
+            console.log(`Database exported to: ${filePath}`);
+            event.reply("asynchronous-reply", {
+              success: true,
+              message: "Database file exported successfully.",
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error exporting database:", error);
+      }
+      break;
+    }
+
+    case "ImportDatabaseFile": {
+      try {
+        const userDataPath = app.getPath("userData");
+        const databaseFileName = !isDev
+          ? "lab-betadatabase.db"
+          : process.platform === "win32"
+          ? "Electrondatabase.db"
+          : "database.db";
+        const defaultPathDB =
+          process.platform === "win32"
+            ? path.join(userDataPath, "..", databaseFileName)
+            : userDataPath;
 
         // const databaseFileName =  'Electrondatabase.db';
         // const defaultPathDB =path.join(userDataPath, '..', databaseFileName);
-        
-        console.log("the file path of default db:",defaultPathDB)
-          
-          const { filePaths, canceled } = await dialog.showOpenDialog({
-            title: 'Import Database',
-            properties: ['openFile'],
-            filters: [
-              { name: 'Database Files', extensions: ['db'] } 
-            ]
-          });
-      
-          if (canceled) {
-            return; 
-          }
-      
-          if (filePaths.length === 0) {
-            console.error('No file selected');
-            return;
-          }
-      
-          const newDbPath = filePaths[0]; 
-          
-            fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
-              if (copyError) {
-                console.error('Error replacing database file:', copyError);
-              } else {
-                console.log(`Database file replaced with: ${newDbPath}`);
-                event.reply("asynchronous-reply", { success: true, message: 'Database file replaced successfully.' });
-              }
-            });
-        } catch (error) {
-          console.error('Error importing database file:', error);
+
+        console.log("the file path of default db:", defaultPathDB);
+
+        const { filePaths, canceled } = await dialog.showOpenDialog({
+          title: "Import Database",
+          properties: ["openFile"],
+          filters: [{ name: "Database Files", extensions: ["db"] }],
+        });
+
+        if (canceled) {
+          return;
         }
-        break;
+
+        if (filePaths.length === 0) {
+          console.error("No file selected");
+          return;
+        }
+
+        const newDbPath = filePaths[0];
+
+        fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
+          if (copyError) {
+            console.error("Error replacing database file:", copyError);
+          } else {
+            console.log(`Database file replaced with: ${newDbPath}`);
+            event.reply("asynchronous-reply", {
+              success: true,
+              message: "Database file replaced successfully.",
+            });
+          }
+        });
+      } catch (error) {
+        console.error("Error importing database file:", error);
       }
-      
+      break;
+    }
+
     default:
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
   }
 });
 
-ipcMain.handle('get-printers', async (event) => {
+ipcMain.handle("get-printers", async (event) => {
   const win = BrowserWindow.getFocusedWindow();
   if (!win) {
-    throw new Error('No active window');
+    throw new Error("No active window");
   }
   const printers = await win.webContents.getPrintersAsync();
-  return printers.map(printer => printer.name);
+  return printers.map((printer) => printer.name);
 });
