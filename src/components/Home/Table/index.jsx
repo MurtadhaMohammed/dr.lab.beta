@@ -133,6 +133,8 @@ export const PureTable = ({ isReport = false }) => {
 
       let printResults = () => {
         return new Promise((resolve, reject) => {
+          const planType = JSON.parse(localStorage?.getItem("lab-user"))?.Plan
+            ?.type;
           let data = {
             patient: record.patient.name,
             age: dayjs().diff(dayjs(record.patient.birth), "y"),
@@ -142,8 +144,6 @@ export const PureTable = ({ isReport = false }) => {
             fontSize: 12,
             isFree: planType === "FREE",
           };
-          const planType = JSON.parse(localStorage?.getItem("lab-user"))?.Plan
-            ?.type;
 
           send({
             query: "print",
@@ -189,18 +189,18 @@ export const PureTable = ({ isReport = false }) => {
                 formData.append("phone", phone);
                 formData.append("lab", user?.labName || "");
                 formData.append("file", pdf, "report.pdf");
-                formData.append("senderPhone", user?.phone || "");
                 const resp = await apiCall({
                   method: "POST",
                   pathname: "/whatsapp/whatsapp-message",
                   isFormData: true,
                   data: formData,
                 });
-                const response = await resp.json();
-                setMsgLoading(false);
 
-                if (response?.message === t("Messagesentsuccess")) {
-                  message.success(t("SendSuccess"));
+                if (resp.status === 200) {
+                  const response = await resp.json();
+                  setMsgLoading(false);
+
+                  message.success(response?.message);
 
                   try {
                     if (isOnline && window.gtag) {
@@ -214,11 +214,11 @@ export const PureTable = ({ isReport = false }) => {
                     throw new Error(e.message);
                   }
                 } else {
-                  message.error(t("Error"));
+                  message.error(response?.error);
                 }
               } catch (error) {
                 console.error("Error generating PDF:", error);
-                message.error(t("ErrorGenerate"));
+                message.error("Error!.");
                 setMsgLoading(false);
               }
             }, 100);
@@ -449,7 +449,7 @@ export const PureTable = ({ isReport = false }) => {
                   size="small"
                   className=" sticky"
                   icon={<WhatsAppOutlined />}
-                  loading={msgLoading && record?.patient?.phone === destPhone}
+                  loading={msgLoading}
                   disabled={
                     record?.status == "PENDING" ||
                     userType === "FREE" ||

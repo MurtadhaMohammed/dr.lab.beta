@@ -124,40 +124,40 @@ const SettingsScreen = () => {
     }
   };
 
-  useEffect(() => {
-    const storedCount = localStorage.getItem("whatsappCount");
-    if (storedCount) {
-      try {
-        const parsedCount = JSON.parse(storedCount);
-        setWhatsappCount(parsedCount);
-      } catch (error) {
-        console.error("Error parsing stored count:", error);
-        setError("Error loading stored data.");
-      }
-    } else {
-      const labUserData = localStorage.getItem("lab-user");
+  // useEffect(() => {
+  //   const storedCount = localStorage.getItem("whatsappCount");
+  //   if (storedCount) {
+  //     try {
+  //       const parsedCount = JSON.parse(storedCount);
+  //       setWhatsappCount(parsedCount);
+  //     } catch (error) {
+  //       console.error("Error parsing stored count:", error);
+  //       setError("Error loading stored data.");
+  //     }
+  //   } else {
+  //     const labUserData = localStorage.getItem("lab-user");
 
-      if (labUserData) {
-        try {
-          const parsedData = JSON.parse(labUserData);
-          const labUserId = parsedData.id;
+  //     if (labUserData) {
+  //       try {
+  //         const parsedData = JSON.parse(labUserData);
+  //         const labUserId = parsedData.id;
 
-          if (labUserId) {
-            handleWhatsappCount(labUserId);
-          } else {
-            console.error("No client ID found in local storage data.");
-            setError("No client ID found.");
-          }
-        } catch (error) {
-          console.error("Error parsing local storage data:", error);
-          setError("Error parsing local storage data.");
-        }
-      } else {
-        console.error("No lab-user data found in local storage.");
-        setError("No lab-user data found.");
-      }
-    }
-  }, []);
+  //         if (labUserId) {
+  //           handleWhatsappCount(labUserId);
+  //         } else {
+  //           console.error("No client ID found in local storage data.");
+  //           setError("No client ID found.");
+  //         }
+  //       } catch (error) {
+  //         console.error("Error parsing local storage data:", error);
+  //         setError("Error parsing local storage data.");
+  //       }
+  //     } else {
+  //       console.error("No lab-user data found in local storage.");
+  //       setError("No lab-user data found.");
+  //     }
+  //   }
+  // }, []);
 
   // useEffect(() => {
   //   let limit = 0;
