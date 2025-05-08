@@ -147,7 +147,7 @@ export const PureTable = ({ isReport = false }) => {
           console.log("planType", planType);
 
           send({
-            query: planType === "FREE" ? "printFree" : "print",
+            query: planType === "FREE" ? "print" : "print",
             data,
             isView: false,
           }).then(({ err, res, file }) => {
