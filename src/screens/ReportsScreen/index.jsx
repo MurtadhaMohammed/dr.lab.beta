@@ -1,4 +1,4 @@
-import { Button, Card, DatePicker, Divider, Space } from "antd";
+import { Button, Card, DatePicker, Divider, Popover, Space } from "antd";
 import "./style.css";
 import { PureTable } from "../../components/Reports";
 import { PureTable as HomeTable } from "../../components/Home";
@@ -11,6 +11,7 @@ import Info from "../../components/Reports/Info";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import useLang from "../../hooks/useLang";
+import PopOverContent from "../SettingScreen/PopOverContent";
 
 const ReportsScreen = () => {
   const { filterDate, setFilterDate, data, setData, setLoading } =
@@ -43,7 +44,7 @@ const ReportsScreen = () => {
         total: Number(data?.totalAmount?.total || 0).toLocaleString("en"),
         subTotal: Number(data?.subTotalAmount?.total || 0).toLocaleString("en"),
         discount: Number(data?.totalDiscount?.total || 0).toLocaleString("en"),
-        fontSize,  // Add the font size to the data object
+        fontSize, // Add the font size to the data object
         records: rows?.map((record) => {
           let list = record.tests;
           return {
@@ -72,28 +73,27 @@ const ReportsScreen = () => {
     });
   };
 
-
   useEffect(() => {
     setLoading(true);
     loadData((rows) => {
       getTotalVisits(filterDate, (visits) => {
         getSubTotalAmount(filterDate, async () => {
-
           let tests = rows?.map((el) => {
-            let subTotal = el?.tests
-              ?.map((test) => {
-                let price =
-                  el?.testType === "CUSTOME"
-                    ? test?.price
-                    : test?.customePrice ||
-                    test?.tests
-                      ?.map((group) => group?.price)
-                      ?.reduce((a, b) => a + b, 0) || 0;
+            let subTotal =
+              el?.tests
+                ?.map((test) => {
+                  let price =
+                    el?.testType === "CUSTOME"
+                      ? test?.price
+                      : test?.customePrice ||
+                        test?.tests
+                          ?.map((group) => group?.price)
+                          ?.reduce((a, b) => a + b, 0) ||
+                        0;
 
-                return price;
-              })
-              .reduce((a, b) => a + b, 0) || 0;
-
+                  return price;
+                })
+                .reduce((a, b) => a + b, 0) || 0;
 
             return {
               gender: el?.patient?.gender,
@@ -104,41 +104,57 @@ const ReportsScreen = () => {
             };
           });
 
-
           let totalAmount = {};
           let subTotalAmount = {};
           let totalDiscount = {};
 
-          totalAmount.total = tests?.map((el) => el.total).reduce((a, b) => a + b, 0) || 0;
-          totalAmount.male = tests?.filter((el) => el?.gender === "male")
-            .map((el) => el.total)
-            .reduce((a, b) => a + b, 0) || 0;
-          subTotalAmount.total = tests?.map((el) => el.subTotal)
-            .reduce((a, b) => a + b, 0) || 0;
-          subTotalAmount.male = tests?.filter((el) => el?.gender === "male")
-            .map((el) => el.subTotal)
-            .reduce((a, b) => a + b, 0) || 0;
-          totalDiscount.total = tests?.map((el) => el.discount)
-            .reduce((a, b) => a + b, 0) || 0;
-          totalDiscount.male = tests?.filter((el) => el?.gender === "male")
-            .map((el) => el.discount)
-            .reduce((a, b) => a + b, 0) || 0;
+          totalAmount.total =
+            tests?.map((el) => el.total).reduce((a, b) => a + b, 0) || 0;
+          totalAmount.male =
+            tests
+              ?.filter((el) => el?.gender === "male")
+              .map((el) => el.total)
+              .reduce((a, b) => a + b, 0) || 0;
+          subTotalAmount.total =
+            tests?.map((el) => el.subTotal).reduce((a, b) => a + b, 0) || 0;
+          subTotalAmount.male =
+            tests
+              ?.filter((el) => el?.gender === "male")
+              .map((el) => el.subTotal)
+              .reduce((a, b) => a + b, 0) || 0;
+          totalDiscount.total =
+            tests?.map((el) => el.discount).reduce((a, b) => a + b, 0) || 0;
+          totalDiscount.male =
+            tests
+              ?.filter((el) => el?.gender === "male")
+              .map((el) => el.discount)
+              .reduce((a, b) => a + b, 0) || 0;
 
           totalAmount.female = totalAmount.total - totalAmount.male;
           subTotalAmount.female = subTotalAmount.total - subTotalAmount.male;
           totalDiscount.female = totalDiscount.total - totalDiscount.male;
 
-
           // Percentage calculations
-          subTotalAmount.male = Math.round((subTotalAmount.male / subTotalAmount.total) * 100);
-          subTotalAmount.female = Math.round((subTotalAmount.female / subTotalAmount.total) * 100);
+          subTotalAmount.male = Math.round(
+            (subTotalAmount.male / subTotalAmount.total) * 100
+          );
+          subTotalAmount.female = Math.round(
+            (subTotalAmount.female / subTotalAmount.total) * 100
+          );
 
-          totalAmount.male = Math.round((totalAmount.male / totalAmount.total) * 100);
-          totalAmount.female = Math.round((totalAmount.female / totalAmount.total) * 100);
+          totalAmount.male = Math.round(
+            (totalAmount.male / totalAmount.total) * 100
+          );
+          totalAmount.female = Math.round(
+            (totalAmount.female / totalAmount.total) * 100
+          );
 
-          totalDiscount.male = Math.round((totalDiscount.male / totalDiscount.total) * 100);
-          totalDiscount.female = Math.round((totalDiscount.female / totalDiscount.total) * 100);
-
+          totalDiscount.male = Math.round(
+            (totalDiscount.male / totalDiscount.total) * 100
+          );
+          totalDiscount.female = Math.round(
+            (totalDiscount.female / totalDiscount.total) * 100
+          );
 
           setLoading(false);
           const dataWithKeys = {
@@ -146,7 +162,7 @@ const ReportsScreen = () => {
             totalAmount,
             subTotalAmount,
             totalDiscount,
-            key: Math.random().toString(36).substr(2, 9)
+            key: Math.random().toString(36).substr(2, 9),
           };
           setData(dataWithKeys);
           setIsReload(!isReload);
@@ -157,41 +173,103 @@ const ReportsScreen = () => {
 
   const homeTable = useMemo(() => <HomeTable isReport />, [data]);
 
-  return (
-    <div className="reports-screen page">
-      <div className="border-none  p-[2%]">
+  const planType = JSON.parse(localStorage.getItem("lab-user")).Plan.type;
 
-        <section className="header app-flex-space mb-[18px]">
-          <Space>
-            <DatePicker.RangePicker
-              allowClear={false}
-              value={filterDate}
-              onChange={setFilterDate}
-            />
-            {/* <Divider type="vertical" />
+  if (planType === "FREE") {
+    return (
+      <div className={`reports-screen page relative z-10`}>
+        <div className="z-20 absolute left-1/2 top-2/3 transform -translate-x-1/2 text-black p-[2%] flex justify-center">
+          <div className="flex items-center flex-col text-center gap-2">
+            <p className="font-semibold text-lg"> {t("UpgradeToProDescription")}</p>
+
+            <Popover
+              placement="right"
+              title={
+                <div className="text-center font-medium">{t("ContactUs")}</div>
+              }
+              content={
+                <PopOverContent
+                  website={"https://www.puretik.com/ar"}
+                  email={"info@puretik.com"}
+                  phone={"07710553120"}
+                />
+              }
+              trigger="click"
+            >
+              <Button
+                type="primary"
+                size="medium"
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {t("UpgradeToPro")}
+              </Button>
+            </Popover>
+          </div>
+        </div>
+        <div className="border-none p-[2%] select-none z-20 blur">
+          <section className="header app-flex-space mb-[18px]">
+            <Space>
+              <DatePicker.RangePicker
+                allowClear={false}
+                value={filterDate}
+                onChange={setFilterDate}
+              />
+              {/* <Divider type="vertical" />
             <InputNumber disabled value={minAge} onChange={setMinAge}/> -
             <InputNumber disabled value={maxAge} onChange={setMaxAge}/>
             <Typography.Text>Years Old</Typography.Text> */}
-          </Space>
-          <Space>
-            <Button disabled={!data || !filterDate} onClick={handlePrint}>
-              {t("Print")}
-            </Button>
-            {/* <Button type="primary" onClick={handleSearch}>
+            </Space>
+            <Space>
+              <Button disabled={!data || !filterDate} onClick={handlePrint}>
+                {t("Print")}
+              </Button>
+              {/* <Button type="primary" onClick={handleSearch}>
               Search
             </Button> */}
-          </Space>
-        </section>
-        <Divider />
-        {/* <PureTable /> */}
-        <Info />
+            </Space>
+          </section>
+          <Divider />
+          {/* <PureTable /> */}
+          <Info />
 
-        <div className="mt-6">
-          {homeTable}
+          <div className="mt-6 select-none">{homeTable}</div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return (
+      <div className={`reports-screen page`}>
+        <div className="border-none  p-[2%]">
+          <section className="header app-flex-space mb-[18px]">
+            <Space>
+              <DatePicker.RangePicker
+                allowClear={false}
+                value={filterDate}
+                onChange={setFilterDate}
+              />
+              {/* <Divider type="vertical" />
+            <InputNumber disabled value={minAge} onChange={setMinAge}/> -
+            <InputNumber disabled value={maxAge} onChange={setMaxAge}/>
+            <Typography.Text>Years Old</Typography.Text> */}
+            </Space>
+            <Space>
+              <Button disabled={!data || !filterDate} onClick={handlePrint}>
+                {t("Print")}
+              </Button>
+              {/* <Button type="primary" onClick={handleSearch}>
+              Search
+            </Button> */}
+            </Space>
+          </section>
+          <Divider />
+          {/* <PureTable /> */}
+          <Info />
+
+          <div className="mt-6">{homeTable}</div>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default ReportsScreen;
