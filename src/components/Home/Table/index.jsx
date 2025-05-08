@@ -30,7 +30,7 @@ import {
   useHomeStore,
   useReportsStore,
   useTrigger,
-  useWhatsappCountStore
+  useWhatsappCountStore,
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
@@ -68,7 +68,9 @@ export const PureTable = ({ isReport = false }) => {
   const [destPhone, setDestPhone] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const [userType] = useState(JSON.parse(localStorage.getItem("lab-user"))?.type);
+  const [userType] = useState(
+    JSON.parse(localStorage.getItem("lab-user"))?.type
+  );
   const { flag, setFlag } = useTrigger();
 
   const limit = usePageLimit();
@@ -80,7 +82,6 @@ export const PureTable = ({ isReport = false }) => {
   const { isLimitExceeded } = useWhatsappCountStore((state) => ({
     isLimitExceeded: state.isLimitExceeded,
   }));
-
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -140,16 +141,26 @@ export const PureTable = ({ isReport = false }) => {
             isHeader: true,
             fontSize: 12,
           };
+          const planType = JSON.parse(localStorage?.getItem("lab-user"))?.Plan
+            ?.type;
+
+          console.log("planType", planType);
+
           send({
-            query: "print",
+            query: planType === "FREE" ? "printFree" : "print",
             data,
             isView: false,
           }).then(({ err, res, file }) => {
             if (err) {
+              console.error("Error generating PDF:", err);
               reject(err);
             }
             if (file) {
+              console.log("✅ File received:", file);
               resolve(file);
+            } else {
+              console.error("❌ No file returned for plan type:", planType);
+              reject(new Error("No file returned"));
             }
             console.log(err, res, file);
           });
@@ -196,16 +207,15 @@ export const PureTable = ({ isReport = false }) => {
 
                   try {
                     if (isOnline && window.gtag) {
-                      window.gtag('event', 'click', {
-                        event_category: 'button',
-                        event_label: 'whatsapp-message-button',
+                      window.gtag("event", "click", {
+                        event_category: "button",
+                        event_label: "whatsapp-message-button",
                         value: 1,
                       });
                     }
                   } catch (e) {
                     throw new Error(e.message);
                   }
-
                 } else {
                   message.error(t("Error"));
                 }
@@ -324,10 +334,10 @@ export const PureTable = ({ isReport = false }) => {
           style={
             record?.discount
               ? {
-                textDecoration: "line-through",
-                opacity: 0.3,
-                fontStyle: "italic",
-              }
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
               : {}
           }
         >
@@ -401,7 +411,6 @@ export const PureTable = ({ isReport = false }) => {
                 style={{ fontSize: 12 }}
                 size="small"
                 icon={<BarcodeOutlined />}
-
               />
             </Tooltip>
             <Divider type="vertical" />
@@ -434,8 +443,8 @@ export const PureTable = ({ isReport = false }) => {
                   userType === "trial"
                     ? undefined
                     : record?.status == "PENDING"
-                      ? false
-                      : undefined
+                    ? false
+                    : undefined
                 }
               >
                 <Button
@@ -443,7 +452,11 @@ export const PureTable = ({ isReport = false }) => {
                   className=" sticky"
                   icon={<WhatsAppOutlined />}
                   loading={msgLoading && record?.patient?.phone === destPhone}
-                  disabled={record?.status == "PENDING" || userType === "trial" || isLimitExceeded}
+                  disabled={
+                    record?.status == "PENDING" ||
+                    userType === "trial" ||
+                    isLimitExceeded
+                  }
                 />
               </Popover>
             }
