@@ -51,12 +51,17 @@ export const parseTests = (record) => {
 export const ResultsModal = () => {
   const { isReload, setIsReload, setPrintFontSize, printFontSize } =
     useAppStore();
-  const { setIsResultsModal, isResultsModal, record, setRecord, isBarcode, setIsBarcode } =
-    useHomeStore();
+  const {
+    setIsResultsModal,
+    isResultsModal,
+    record,
+    setRecord,
+    isBarcode,
+    setIsBarcode,
+  } = useHomeStore();
   const { t } = useTranslation();
   const { isOnline } = useAppStore();
-  const printer = useState(localStorage.getItem('selectedPrinter'));
-
+  const printer = useState(localStorage.getItem("selectedPrinter"));
 
   useEffect(() => {
     if (isResultsModal && record) {
@@ -111,12 +116,24 @@ export const ResultsModal = () => {
       isHeader: true,
       fontSize: printFontSize,
     };
-    send({
-      query: "print",
-      data,
-    }).then(({ err, res }) => {
-      console.log(err, res);
-    });
+    const PlanType = JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type;
+    console.log(PlanType);
+    
+    if (PlanType === "FREE") {
+      send({
+        query: "printFree",
+        data,
+      }).then(({ err, res }) => {
+        console.log(err, res);
+      });
+    } else if (PlanType === "PAID" || PlanType === "SUBSCRIPTION") {
+      send({
+        query: "print",
+        data,
+      }).then(({ err, res }) => {
+        console.log(err, res);
+      });
+    }
   };
 
   let handleSubmit = () => {
@@ -133,9 +150,9 @@ export const ResultsModal = () => {
 
         try {
           if (isOnline && window.gtag) {
-            window.gtag('event', 'click', {
-              event_category: 'button',
-              event_label: 'print-result-button',
+            window.gtag("event", "click", {
+              event_category: "button",
+              event_label: "print-result-button",
               value: 1,
             });
           }
@@ -154,16 +171,14 @@ export const ResultsModal = () => {
   };
 
   const handleBarcode = async (record) => {
-
     const resp = await send({
       query: "printParcode",
       data: {
         name: record?.patient?.name,
         id: record?.id,
       },
-      selectedPrinter: localStorage.getItem('selectedPrinter'),
+      selectedPrinter: localStorage.getItem("selectedPrinter"),
     });
-
 
     if (resp.success) {
       setIsReload(!isReload);
@@ -173,7 +188,7 @@ export const ResultsModal = () => {
     }
 
     setIsBarcode(false);
-  }
+  };
 
   let renderTable = {
     CUSTOME: (
@@ -212,10 +227,10 @@ export const ResultsModal = () => {
                     >
                       {Array.isArray(row?.options) && row.options.length > 0
                         ? row.options.map((option, i) => (
-                          <Select.Option key={i} value={option}>
-                            {option}
-                          </Select.Option>
-                        ))
+                            <Select.Option key={i} value={option}>
+                              {option}
+                            </Select.Option>
+                          ))
                         : null}
                     </Select>
                   ) : (
@@ -268,10 +283,10 @@ export const ResultsModal = () => {
                     >
                       {Array.isArray(row?.options) && row.options.length > 0
                         ? row.options.map((option, i) => (
-                          <Select.Option key={i} value={option}>
-                            {option}
-                          </Select.Option>
-                        ))
+                            <Select.Option key={i} value={option}>
+                              {option}
+                            </Select.Option>
+                          ))
                         : null}
                     </Select>
                   ) : (
@@ -307,32 +322,31 @@ export const ResultsModal = () => {
         setIsBarcode(false);
       }}
       footer={
-        <div className={"results-modal-footer"} style={{ paddingBottom: !printer[0] ? "40px" : "" }}>
-
-          {
-            isBarcode ?
-              null
-              :
-              <Space>
-                <b>{t("FontSize")}</b>
-                <Radio.Group
-                  value={printFontSize}
-                  onChange={(e) => setPrintFontSize(e.target.value)}
-                >
-                  <Tooltip title="12px">
-                    <Radio value={12}>SM</Radio>
-                  </Tooltip>
-                  <Tooltip title="14px">
-                    <Radio value={14}>MD</Radio>
-                  </Tooltip>
-                  <Tooltip title="16px">
-                    <Radio value={16}>LG</Radio>
-                  </Tooltip>
-                </Radio.Group>
-              </Space>
-          }
+        <div
+          className={"results-modal-footer"}
+          style={{ paddingBottom: !printer[0] ? "40px" : "" }}
+        >
+          {isBarcode ? null : (
+            <Space>
+              <b>{t("FontSize")}</b>
+              <Radio.Group
+                value={printFontSize}
+                onChange={(e) => setPrintFontSize(e.target.value)}
+              >
+                <Tooltip title="12px">
+                  <Radio value={12}>SM</Radio>
+                </Tooltip>
+                <Tooltip title="14px">
+                  <Radio value={14}>MD</Radio>
+                </Tooltip>
+                <Tooltip title="16px">
+                  <Radio value={16}>LG</Radio>
+                </Tooltip>
+              </Radio.Group>
+            </Space>
+          )}
           <Space direction="">
-          <Button
+            <Button
               onClick={() => {
                 setIsResultsModal(false);
                 setRecord(null);
@@ -341,45 +355,41 @@ export const ResultsModal = () => {
             >
               {t("Close")}
             </Button>
-            {
-              isBarcode ?
+            {isBarcode ? (
               <>
-              <Button type="primary" onClick={() => handleBarcode(record)} disabled={!printer[0]}>
-                {t("printBarcode")}
+                <Button
+                  type="primary"
+                  onClick={() => handleBarcode(record)}
+                  disabled={!printer[0]}
+                >
+                  {t("printBarcode")}
                 </Button>
-                </>
-                :
-                <Button type="primary" onClick={handleSubmit}>
-                  {t("SavePrint")}
-                </Button>
-
-            }
+              </>
+            ) : (
+              <Button type="primary" onClick={handleSubmit}>
+                {t("SavePrint")}
+              </Button>
+            )}
           </Space>
-          {
-            !printer[0] ?
-            
-              <div className="p-4 absolute bottom-0 w-fit bg-[#fff] text-start flex gap-2 -mx-3">
-                <WarningOutlined className=" text-[#ffcc00]" />
-                <p>{t("printBarcodeWarning")}</p>
-              </div>
-              :
-              null
-          }
+          {!printer[0] ? (
+            <div className="p-4 absolute bottom-0 w-fit bg-[#fff] text-start flex gap-2 -mx-3">
+              <WarningOutlined className=" text-[#ffcc00]" />
+              <p>{t("printBarcodeWarning")}</p>
+            </div>
+          ) : null}
         </div>
       }
       centered
     >
-
-      {
-        isBarcode ?
-          <div className="py-4">
-            {t("printBarcodeMessage")} {record?.patient?.name}
-            </div>
-          :
-          <div className="results-modal" id="printJS-form">
-            {record && renderTable[record?.testType]}
-          </div>
-      }
+      {isBarcode ? (
+        <div className="py-4">
+          {t("printBarcodeMessage")} {record?.patient?.name}
+        </div>
+      ) : (
+        <div className="results-modal" id="printJS-form">
+          {record && renderTable[record?.testType]}
+        </div>
+      )}
     </Modal>
   );
 };
