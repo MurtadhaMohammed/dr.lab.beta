@@ -572,41 +572,90 @@ const SettingsScreen = () => {
             </Form>
           </Card>
         </section>
-        <section className=" grid grid-cols-2 gap-[20px] mt-[24px]">
-          <div>
-            <p className="pl-[4px] opacity-60">{t("PDFSetting")}</p>
-            <Card className="mt-[6px]">
-              <div className="flex justify-between items-center">
-                <b className="text-[14px]">{t("ImageCover")}</b>
-                <Button type="link" onClick={handleChangeFile}>
-                  {t("ChangeImage")}
-                </Button>
+        <Row gutter={[20, 20]} className="mt-[24px]">
+          <Col span={12}>
+            <section>
+              <div>
+                <p className="pl-[4px] opacity-60">{t("PDFSetting")}</p>
+                <Card className="mt-[6px]">
+                  <div className="flex justify-between items-center">
+                    <b className="text-[14px]">{t("ImageCover")}</b>
+                    <Button type="link" onClick={handleChangeFile}>
+                      {t("ChangeImage")}
+                    </Button>
+                  </div>
+                  <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
+                    {imagePath && <img className="w-full" src={imagePath} />}
+                  </div>
+                  <Divider />
+                  <div className="flex justify-between items-center">
+                    <b className="text-[14px]">{t("FontSize")}</b>
+                    <Select
+                      value={printFontSize}
+                      variant="borderless"
+                      onChange={handleSizeChange}
+                      popupMatchSelectWidth={false}
+                      style={{ width: 100, textAlign: "center" }}
+                    >
+                      <Select.Option value={12}>Small</Select.Option>
+                      <Select.Option value={14}>Medium</Select.Option>
+                      <Select.Option value={16}>Large</Select.Option>
+                    </Select>
+                  </div>
+                </Card>
               </div>
-              <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
-                {imagePath && <img className="w-full" src={imagePath} />}
+
+              <div className="mt-[16px]">
+                <p className="pl-[4px] opacity-60">{t("DatabaseManagement")}</p>
+                <div className="rounded-lg border border-1-[#eee] mt-[8px]">
+                  <div className="border-b border-b-[#eee] p-[24px]">
+                    <div className="flex justify-between items-center">
+                     <div>
+                     <b className="text-[14px]">{t("ExportDatabase")}</b>
+                    <p className="mt-2 text-sm text-gray-500">
+                      {t("ExportDatabaseDescription")}
+                    </p>
+                     </div>
+                      <Button
+                        type="primary"
+                        icon={<ExportOutlined />}
+                        onClick={handleExportDatabase}
+                        loading={exportLoading}
+                      >
+                        {t("ExportToDesktop")}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-[24px]">
+                    <div className="flex justify-between items-center">
+                    <div>
+                    <b className="text-[14px]">{t("ImportDatabase")}</b>
+                      <p className="mt-2 text-sm text-gray-500">
+                      {t("ImportDatabaseDescription")}
+                    </p>
+                    </div>
+                      <Button
+                        type="primary"
+                        icon={<ImportOutlined />}
+                        onClick={handleImportDatabase}
+                        loading={importLoading} // Changed to importLoading
+                      >
+                        {t("ImportToSystem")}
+                      </Button>
+                    </div>
+                   
+                  </div>
+                </div>
               </div>
-              <Divider />
-              <div className="flex justify-between items-center">
-                <b className="text-[14px]">{t("FontSize")}</b>
-                <Select
-                  value={printFontSize}
-                  variant="borderless"
-                  onChange={handleSizeChange}
-                  popupMatchSelectWidth={false}
-                  style={{ width: 100, textAlign: "center" }}
-                >
-                  <Select.Option value={12}>Small</Select.Option>
-                  <Select.Option value={14}>Medium</Select.Option>
-                  <Select.Option value={16}>Large</Select.Option>
-                </Select>
-              </div>
-            </Card>
-          </div>
-          <div>
-            <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
-            <Card className="mt-[6px] min-h-[212px]">
-              <div className="flex flex-col w-full gap-[10px]">
-                {/* <div
+            </section>
+          </Col>
+          <Col span={12}>
+            <div>
+              <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
+              <Card className="mt-[6px] min-h-[212px]">
+                <div className="flex flex-col w-full gap-[10px]">
+                  {/* <div
                   className={`${remainingDays < 7
                   ? "bg-[#F187060A] border-[#BF6A0224]"
                   : "bg-[#C8E6C942] border-[#4CAF50]"
@@ -618,103 +667,105 @@ const SettingsScreen = () => {
                   </p>
                   </div> */}
 
-                {/* {userType === "paid" && remainingDays < 4 ? (
+                  {/* {userType === "paid" && remainingDays < 4 ? (
                   <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">
                   {t("supportPaymentReminder")}
                   </p>
                   ) : null} */}
-                <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                  <p>{t("startedAt")}</p>
-                  <p className="text-[#A5A5A5] font-normal text-sm">
-                    {labUser?.Plan?.id === 1
-                      ? dayjs(labUser.createdAt).format("YYYY MMM, DD")
-                      : expireData.register
-                      ? dayjs(expireData.register).format("YYYY MMM, DD")
-                      : "2024 Aug, 11"}
-                  </p>
-                </div>
-
-                {labUser?.Plan?.id !== 1 && (
                   <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                    <p className="font-normal text-sm">{t("expiredAt")}</p>
+                    <p>{t("startedAt")}</p>
                     <p className="text-[#A5A5A5] font-normal text-sm">
-                      {expireData.expire
-                        ? dayjs()
-                            .add(expireData.expire, "day")
-                            .format("YYYY MMM, DD")
+                      {labUser?.Plan?.id === 1
+                        ? dayjs(labUser.createdAt).format("YYYY MMM, DD")
+                        : expireData.register
+                        ? dayjs(expireData.register).format("YYYY MMM, DD")
                         : "2024 Aug, 11"}
                     </p>
                   </div>
-                )}
-                {labUser?.Plan?.id !== 1 && (
-                  <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                    <p className="font-normal text-sm">{t("daysLeft")}</p>
+
+                  {labUser?.Plan?.id !== 1 && (
+                    <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
+                      <p className="font-normal text-sm">{t("expiredAt")}</p>
+                      <p className="text-[#A5A5A5] font-normal text-sm">
+                        {expireData.expire
+                          ? dayjs()
+                              .add(expireData.expire, "day")
+                              .format("YYYY MMM, DD")
+                          : "2024 Aug, 11"}
+                      </p>
+                    </div>
+                  )}
+                  {labUser?.Plan?.id !== 1 && (
+                    <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
+                      <p className="font-normal text-sm">{t("daysLeft")}</p>
+                      <p className="text-[#A5A5A5] font-normal text-sm">
+                        {`${remainingDays || 120} ${t("day")}`}
+                      </p>
+                    </div>
+                  )}
+                  <div className="w-full flex justify-between inter px-1">
+                    <p className="font-normal text-sm">{t("whatsappLimit")}</p>
                     <p className="text-[#A5A5A5] font-normal text-sm">
-                      {`${remainingDays || 120} ${t("day")}`}
+                      {whatsappCount.count === 0
+                        ? t("noMessagesAvailable")
+                        : whatsappCount.count || 0}
                     </p>
                   </div>
-                )}
-                <div className="w-full flex justify-between inter px-1">
-                  <p className="font-normal text-sm">{t("whatsappLimit")}</p>
-                  <p className="text-[#A5A5A5] font-normal text-sm">
-                    {whatsappCount.count === 0
-                      ? t("noMessagesAvailable")
-                      : whatsappCount.count}
-                  </p>
-                </div>
 
-                <div className="w-full flex justify-between inter px-1">
-                  <p className="font-normal text-sm">{t("printLimit")}</p>
+                  <div className="w-full flex justify-between inter px-1">
+                    <p className="font-normal text-sm">{t("printLimit")}</p>
 
-                  <p className="text-[#A5A5A5] font-normal text-sm">
-                    {userType?.type === "FREE"
-                      ? `${printCount.sent || 0}/${printCount.limit}`
-                      : "Unlimited"}
-                  </p>
-                </div>
-                <div className="w-full flex justify-between inter px-1">
-                  <p className=" font-normal text-sm">{t("accountTypeLeft")}</p>
-
-                  <Tag color="magenta-inverse" className="m-0">
-                    {String(userType?.name || "").toLocaleUpperCase()}
-                  </Tag>
-                </div>
-
-                {labUser?.Plan?.id === 1 && (
-                  <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium text-blue-800">
-                        {t("WantToUpgrade")}
-                      </p>
-                      <Popover
-                        placement="right"
-                        title={
-                          <div className="text-center font-medium">
-                            {t("ContactUs")}
-                          </div>
-                        }
-                        content={
-                          <PopOverContent
-                            website={"https://www.puretik.com/ar"}
-                            email={"info@puretik.com"}
-                            phone={"07710553120"}
-                          />
-                        }
-                        trigger="click"
-                      >
-                        <Button
-                          type="primary"
-                          size="small"
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          {t("UpgradeNow")}
-                        </Button>
-                      </Popover>
-                    </div>
+                    <p className="text-[#A5A5A5] font-normal text-sm">
+                      {userType?.type === "FREE"
+                        ? `${printCount.sent || 0}/${printCount.limit}`
+                        : "Unlimited"}
+                    </p>
                   </div>
-                )}
+                  <div className="w-full flex justify-between inter px-1">
+                    <p className=" font-normal text-sm">
+                      {t("accountTypeLeft")}
+                    </p>
 
-                {/* <div className="px-1 h-full flex flex-col gap-2">
+                    <Tag color="magenta-inverse" className="m-0">
+                      {String(userType?.name || "").toLocaleUpperCase()}
+                    </Tag>
+                  </div>
+
+                  {labUser?.Plan?.id === 1 && (
+                    <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                      <div className="flex justify-between items-center">
+                        <p className="text-sm font-medium text-blue-800">
+                          {t("WantToUpgrade")}
+                        </p>
+                        <Popover
+                          placement="right"
+                          title={
+                            <div className="text-center font-medium">
+                              {t("ContactUs")}
+                            </div>
+                          }
+                          content={
+                            <PopOverContent
+                              website={"https://www.puretik.com/ar"}
+                              email={"info@puretik.com"}
+                              phone={"07710553120"}
+                            />
+                          }
+                          trigger="click"
+                        >
+                          <Button
+                            type="primary"
+                            size="small"
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            {t("UpgradeNow")}
+                          </Button>
+                        </Popover>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* <div className="px-1 h-full flex flex-col gap-2">
                   <Divider className="!m-0 px-1" />
                   <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
                   <p className=" font-normal">{t("whatsappIntegration")}</p>
@@ -742,61 +793,25 @@ const SettingsScreen = () => {
                     {whatsAppStatus.description}
                     </p>
                     </div> */}
-              </div>
-            </Card>
-          </div>
-        </section>
+                </div>
+              </Card>
 
-        <section className="grid grid-cols-2 gap-[20px] mt-[24px]">
-          <div>
-            <p className="pl-[4px] opacity-60">{t("DatabaseManagement")}</p>
-            <Card className="mt-[6px]">
-              <div className="flex justify-between items-center">
-                <b className="text-[14px]">{t("ExportDatabase")}</b>
-                <Button
-                  type="primary"
-                  icon={<ExportOutlined />}
-                  onClick={handleExportDatabase}
-                  loading={exportLoading}
-                >
-                  {t("ExportToDesktop")}
-                </Button>
+              <div className="mt-[16px]">
+                <p className="pl-[4px]  opacity-60">{t("printer")}</p>
+                <Card className="mt-[6px] ">
+                  <div className="flex justify-between items-center">
+                    <p className="py-2">
+                      {selectedPrinter
+                        ? selectedPrinter
+                        : t("noPrinterSelected")}
+                    </p>
+                    <PrinterSelector onPrinterSelect={handlePrinterSelect} />
+                  </div>
+                </Card>
               </div>
-              <p className="mt-2 text-sm text-gray-500">
-                {t("ExportDatabaseDescription")}
-              </p>
-            </Card>
-          </div>
-          <div>
-            <Card className="mt-[27px]">
-              <div className="flex justify-between items-center">
-                <b className="text-[14px]">{t("ImportDatabase")}</b>
-                <Button
-                  type="primary"
-                  icon={<ImportOutlined />}
-                  onClick={handleImportDatabase}
-                  loading={importLoading} // Changed to importLoading
-                >
-                  {t("ImportToSystem")}
-                </Button>
-              </div>
-              <p className="mt-2 text-sm text-gray-500">
-                {t("ImportDatabaseDescription")}
-              </p>
-            </Card>
-          </div>
-          <div>
-            <p className="pl-[4px]  opacity-60">{t("printer")}</p>
-            <Card className="mt-[6px] ">
-              <div className="flex justify-between items-center">
-                <p className="py-2">
-                  {selectedPrinter ? selectedPrinter : t("noPrinterSelected")}
-                </p>
-                <PrinterSelector onPrinterSelect={handlePrinterSelect} />
-              </div>
-            </Card>
-          </div>
-        </section>
+            </div>
+          </Col>
+        </Row>
       </div>
     </div>
   );

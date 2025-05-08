@@ -17,6 +17,7 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { WarningOutlined } from "@ant-design/icons";
 import { canPrint, recordPrint } from "../../../helper/printCount";
+
 export const parseTests = (record) => {
   let tests = [];
   if (record?.testType === "CUSTOME") {
@@ -52,6 +53,7 @@ export const parseTests = (record) => {
 export const ResultsModal = () => {
   const { isReload, setIsReload, setPrintFontSize, printFontSize } =
     useAppStore();
+
   const {
     setIsResultsModal,
     isResultsModal,
@@ -108,10 +110,10 @@ export const ResultsModal = () => {
   };
   const PlanType = JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type;
   let printResults = (newTests) => {
-    if (PlanType === "FREE" && !canPrint()) {
-      message.error(t("printLimitMessage"));
-      return;
-    }
+    // if (PlanType === "FREE" && !canPrint()) {
+    //   message.error(t("printLimitMessage"));
+    //   return;
+    // }
     record.tests = newTests;
     let data = {
       patient: record.patient.name,
@@ -121,7 +123,6 @@ export const ResultsModal = () => {
       isHeader: true,
       fontSize: printFontSize,
     };
-
 
     send({
       query: PlanType === "FREE" ? "printFree" : "print",
@@ -142,10 +143,6 @@ export const ResultsModal = () => {
     }).then(({ err, newTests }) => {
       if (err) message.error("Error !");
       else {
-        if (PlanType === "FREE" && !canPrint()) {
-          message.error(t("printLimitMessage"));
-          return;
-        }
         message.success(t("Saved Successfully"));
 
         try {
@@ -164,6 +161,15 @@ export const ResultsModal = () => {
         setIsResultsModal(false);
         setIsReload(!isReload);
         setTimeout(() => {
+          if (PlanType === "FREE" && !canPrint()) {
+            Modal.warning({
+              centered: true,
+              title: t("printLimitTitle"),
+              content: t("printLimitMessage"),
+            });
+            // message.error(t("printLimitMessage"));
+            return;
+          }
           printResults(newTests);
         }, 1000);
       }

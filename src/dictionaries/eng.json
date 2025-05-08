@@ -278,5 +278,6 @@
   "NetworkError": "Network connection error. Please check your internet connection and try again.",
   "UpgradeToPro": "Upgrade to Pro",
   "UpgradeToProDescription": "Upgrade to the Pro version for more features and benefits.",
+  "printLimitTitle": "Print unavailable",
   "printLimitMessage": "You have reached the print limit for this day. Please upgrade your plan to continue printing."
 }

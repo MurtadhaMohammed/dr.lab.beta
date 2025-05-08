@@ -180,7 +180,7 @@ const ReportsScreen = () => {
       <div className={`reports-screen page relative z-10`}>
         <div className="z-20 absolute left-1/2 top-2/3 transform -translate-x-1/2 text-black p-[2%] flex justify-center">
           <div className="flex items-center flex-col text-center gap-2">
-            <p className="font-semibold text-lg"> {t("UpgradeToProDescription")}</p>
+            <p className="font-semibold text-lg "> {t("UpgradeToProDescription")}</p>
 
             <Popover
               placement="right"
@@ -199,7 +199,7 @@ const ReportsScreen = () => {
               <Button
                 type="primary"
                 size="medium"
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 mt-[24px]"
               >
                 {t("UpgradeToPro")}
               </Button>

@@ -1,24 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Modal, List , message } from 'antd';
-const { ipcRenderer } = window.require('electron');
+import React, { useState, useEffect } from "react";
+import { Button, Modal, List, message } from "antd";
+const { ipcRenderer } = window.require("electron");
 import { useTranslation } from "react-i18next";
+import { CheckOutlined } from "@ant-design/icons";
 
-const PrinterSelector = () => {
-  const { t } = useTranslation(); 
+const PrinterSelector = ({ onPrinterSelect }) => {
+  const { t } = useTranslation();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [printers, setPrinters] = useState([]);
-  const [selectedPrinter, setSelectedPrinter] = useState(localStorage.getItem('selectedPrinter') || '');
-  
+  const [selectedPrinter, setSelectedPrinter] = useState(
+    localStorage.getItem("selectedPrinter") || ""
+  );
+
   useEffect(() => {
     fetchPrinters();
   }, []);
 
   const fetchPrinters = async () => {
     try {
-      const response = await ipcRenderer.invoke('get-printers');
+      const response = await ipcRenderer.invoke("get-printers");
       setPrinters(response);
     } catch (error) {
-      console.error('Failed to fetch printers:', error);
+      console.error("Failed to fetch printers:", error);
     }
   };
 
@@ -28,11 +31,11 @@ const PrinterSelector = () => {
 
   const handleOk = () => {
     if (!selectedPrinter) {
-      message.warning(t('c')); 
+      message.warning(t("c"));
       return;
     }
     setIsModalVisible(false);
-    localStorage.setItem('selectedPrinter', selectedPrinter);
+    localStorage.setItem("selectedPrinter", selectedPrinter);
     if (onPrinterSelect) {
       onPrinterSelect(selectedPrinter);
     }
@@ -48,9 +51,9 @@ const PrinterSelector = () => {
 
   return (
     <>
-      <Button onClick={showModal}>{t('selectButton')}</Button>
+      <Button onClick={showModal}>{t("selectButton")}</Button>
       <Modal
-        title={t('printermodalTitle')}
+        title={t("printermodalTitle")}
         open={isModalVisible}
         onOk={handleOk}
         onCancel={handleCancel}
@@ -60,7 +63,14 @@ const PrinterSelector = () => {
           renderItem={(printer) => (
             <List.Item
               onClick={() => handlePrinterSelect(printer)}
-              style={{ cursor: 'pointer', padding: '10px', display: 'flex', justifyContent: 'space-between', backgroundColor: printer === selectedPrinter ? '#e6f7ff' : 'transparent' }}
+              style={{
+                cursor: "pointer",
+                padding: "10px",
+                display: "flex",
+                justifyContent: "space-between",
+                backgroundColor:
+                  printer === selectedPrinter ? "#e6f7ff" : "transparent",
+              }}
             >
               <span>{printer}</span>
               {printer === selectedPrinter && <CheckOutlined />}
