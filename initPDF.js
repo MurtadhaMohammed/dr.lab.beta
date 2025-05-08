@@ -7,6 +7,7 @@ const { app } = require("electron");
 require("jspdf-autotable");
 const path = require("path");
 var refFont = require("./Frutiger-normal");
+const { LocalFileData } = require("get-file-object-from-local-path");
 const { shell } = electron;
 
 const logoPath = path.join(__dirname, "src", "assets", "logo2.png");
@@ -287,6 +288,7 @@ async function createPDF(data, isView = true, cb) {
   }
 }
 
+
 async function createFreePDF(data, isView = true, cb) {
   const imgDimensions = await getImageDimensions(imgUrl);
   const aspectRatio = imgDimensions.width / imgDimensions.height;
@@ -319,13 +321,7 @@ async function createFreePDF(data, isView = true, cb) {
     doc.text("Age:", leftMargin, infoStartY + lineHeight);
     doc.text(`${data.age || ""}`, leftMargin + 10, infoStartY + lineHeight);
     doc.text("Date:", leftMargin, infoStartY + lineHeight * 2);
-    doc.text(
-      `${data.date || ""}`,
-      leftMargin + 10,
-      infoStartY + lineHeight * 2
-    );
-
-    let elemInfo = [];
+    doc.text(`${data.date || ""}`, leftMargin + 10, infoStartY + lineHeight * 2);
 
     data.tests.forEach((el, i) => {
       let results = el?.rows?.map((r) => ({ ...r, normal: r?.normal?.trim() }));
@@ -374,9 +370,7 @@ async function createFreePDF(data, isView = true, cb) {
           if (data.column.dataKey === "result" && data.section === "body") {
             const result = data.cell.raw;
             const normal = data.row.cells.normal?.raw;
-            const resultNum = parseFloat(
-              String(result).replace(/[^\d.-]/g, "")
-            );
+            const resultNum = parseFloat(String(result).replace(/[^\d.-]/g, ""));
             const normalStr = String(normal);
 
             if (normalStr && resultNum) {
@@ -385,7 +379,7 @@ async function createFreePDF(data, isView = true, cb) {
                 const [min, max] = normalStr
                   .split("-")
                   .map((v) => parseFloat(v.replace(/[^\d.-]/g, "")));
-                if (!isNaN(min) && !isNaN(max) && !isNaN(resultNum)) {
+                if (!isNaN(min) && !isNaN(max)) {
                   isAbnormal = resultNum < min || resultNum > max;
                 }
               } else if (normalStr.includes("<")) {
@@ -410,7 +404,7 @@ async function createFreePDF(data, isView = true, cb) {
           // Watermark
           const originalWidth = 2796;
           const originalHeight = 795;
-          const maxLogoWidth = 180; // Desired max width
+          const maxLogoWidth = 180;
           const scale = maxLogoWidth / originalWidth;
 
           const logoWidth = originalWidth * scale;
@@ -418,8 +412,6 @@ async function createFreePDF(data, isView = true, cb) {
 
           const centerX = (pageWidth - logoWidth) / 2 + 45;
           const centerY = (pageHeight - logoHeight) / 2 + 30;
-
-          const rotateAngle = 45; // degrees
 
           if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.05 }));
           doc.addImage(
@@ -431,7 +423,7 @@ async function createFreePDF(data, isView = true, cb) {
             logoHeight,
             undefined,
             "FAST",
-            rotateAngle
+            45
           );
           if (doc.setGState) doc.setGState(new doc.GState({ opacity: 1 }));
 
@@ -459,13 +451,16 @@ async function createFreePDF(data, isView = true, cb) {
     });
 
     const outputPath = path.join(app.getPath("userData"), "report.pdf");
-    doc.save(outputPath);
+    await doc.save(outputPath);
     if (isView) shell.openPath(outputPath);
-    cb(null, outputPath);
-  } catch (err) {
-    cb(err, null);
+
+    const file = new LocalFileData(outputPath);
+    cb(null, true, file); // ✅ match `createPDF` structure
+  } catch (error) {
+    cb(error, null, null); // ✅ match error callback pattern
   }
 }
+
 
 function printReport(data, cb) {
   try {
