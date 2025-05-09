@@ -69,7 +69,7 @@ export const PureTable = ({ isReport = false }) => {
   const [loading, setLoading] = useState(false);
 
   const [userType] = useState(
-    JSON.parse(localStorage.getItem("lab-user"))?.type
+    JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type
   );
   const { flag, setFlag } = useTrigger();
 
@@ -156,10 +156,8 @@ export const PureTable = ({ isReport = false }) => {
               reject(err);
             }
             if (file) {
-              console.log("✅ File received:", file);
               resolve(file);
             } else {
-              console.error("❌ No file returned for plan type:", planType);
               reject(new Error("No file returned"));
             }
             console.log(err, res, file);
@@ -411,6 +409,7 @@ export const PureTable = ({ isReport = false }) => {
                 style={{ fontSize: 12 }}
                 size="small"
                 icon={<BarcodeOutlined />}
+                disabled={userType === "FREE"}
               />
             </Tooltip>
             <Divider type="vertical" />
@@ -429,7 +428,7 @@ export const PureTable = ({ isReport = false }) => {
                   //     phone={"07710553120"}
                   //     limitExceededMessage={t("limit_exceeded_message")}
                   //   /> ) :
-                  userType === "trial" ? (
+                  userType === "FREE" ? (
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
                       email={"puretik@gmail.com"}
@@ -440,7 +439,7 @@ export const PureTable = ({ isReport = false }) => {
                   )
                 }
                 open={
-                  userType === "trial"
+                  userType === "FREE"
                     ? undefined
                     : record?.status == "PENDING"
                     ? false
@@ -454,7 +453,7 @@ export const PureTable = ({ isReport = false }) => {
                   loading={msgLoading && record?.patient?.phone === destPhone}
                   disabled={
                     record?.status == "PENDING" ||
-                    userType === "trial" ||
+                    userType === "FREE" ||
                     isLimitExceeded
                   }
                 />

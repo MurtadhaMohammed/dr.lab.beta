@@ -16,6 +16,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { WarningOutlined } from "@ant-design/icons";
+import { canPrint, recordPrint } from "../../../helper/printCount";
 export const parseTests = (record) => {
   let tests = [];
   if (record?.testType === "CUSTOME") {
@@ -105,8 +106,12 @@ export const ResultsModal = () => {
     }
     setRecord(newRecord);
   };
-
+  const PlanType = JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type;
   let printResults = (newTests) => {
+    if (PlanType === "FREE" && !canPrint()) {
+      message.error(t("printLimitMessage"));
+      return;
+    }
     record.tests = newTests;
     let data = {
       patient: record.patient.name,
@@ -116,24 +121,15 @@ export const ResultsModal = () => {
       isHeader: true,
       fontSize: printFontSize,
     };
-    const PlanType = JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type;
-    console.log(PlanType);
-    
-    if (PlanType === "FREE") {
-      send({
-        query: "printFree",
-        data,
-      }).then(({ err, res }) => {
-        console.log(err, res);
-      });
-    } else if (PlanType === "PAID" || PlanType === "SUBSCRIPTION") {
-      send({
-        query: "print",
-        data,
-      }).then(({ err, res }) => {
-        console.log(err, res);
-      });
-    }
+
+
+    send({
+      query: PlanType === "FREE" ? "printFree" : "print",
+      data,
+    }).then(({ err, res }) => {
+      recordPrint();
+      console.log(err, res);
+    });
   };
 
   let handleSubmit = () => {
@@ -146,6 +142,10 @@ export const ResultsModal = () => {
     }).then(({ err, newTests }) => {
       if (err) message.error("Error !");
       else {
+        if (PlanType === "FREE" && !canPrint()) {
+          message.error(t("printLimitMessage"));
+          return;
+        }
         message.success(t("Saved Successfully"));
 
         try {
