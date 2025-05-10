@@ -40,6 +40,7 @@ import PopOverContent from "./PopOverContent";
 import { URL } from "../../libs/api";
 import PrinterSelector from "./PrinterSelector";
 import { signout } from "../../helper/signOut";
+import { usePlan } from "../../hooks/usePlan";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -65,6 +66,14 @@ const SettingsScreen = () => {
   const [selectedPrinter, setSelectedPrinter] = useState(
     localStorage.getItem("selectedPrinter") || ""
   );
+
+  const {
+    getPrintUsed,
+    printLimit,
+    subscriptionExpire,
+    registerAt,
+    whatsappLimit,
+  } = usePlan();
 
   const { t } = useTranslation();
 
@@ -636,62 +645,37 @@ const SettingsScreen = () => {
           <Col span={12}>
             <div>
               <p className="pl-[4px] opacity-60">{t("SubscriptionInfo")}</p>
-              <Card className="mt-[6px] min-h-[212px]">
+              <Card className="mt-[6px]">
                 <div className="flex flex-col w-full gap-[10px]">
-                  {/* <div
-                  className={`${remainingDays < 7
-                  ? "bg-[#F187060A] border-[#BF6A0224]"
-                  : "bg-[#C8E6C942] border-[#4CAF50]"
-                  }  w-full flex justify-between border-[1px] px-3 py-2 rounded-lg inters leading-[19.36px]`}
-                  >
-                  <p className=" font-normal">{t("SerialNumber")}</p>
-                  <p className=" font-bold">
-                  {localStorage.getItem("lab-serial") || "10992909"}
-                  </p>
-                  </div> */}
-
-                  {/* {userType === "paid" && remainingDays < 4 ? (
-                  <p className="px-1 text-[#F68A06] font-normal text-sm leading-[16.94px]">
-                  {t("supportPaymentReminder")}
-                  </p>
-                  ) : null} */}
                   <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                     <p>{t("startedAt")}</p>
                     <p className="text-[#A5A5A5] font-normal text-sm">
-                      {labUser?.Plan?.id === 1
-                        ? dayjs(labUser.createdAt).format("YYYY MMM, DD")
-                        : expireData.register
-                        ? dayjs(expireData.register).format("YYYY MMM, DD")
-                        : "2024 Aug, 11"}
+                      {dayjs(registerAt).format("YYYY MMM, DD")}
                     </p>
                   </div>
 
-                  {labUser?.Plan?.id !== 1 && (
+                  {userType?.type === "SUBSCRIPTION" && (
                     <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                       <p className="font-normal text-sm">{t("expiredAt")}</p>
                       <p className="text-[#A5A5A5] font-normal text-sm">
-                        {expireData.expire
-                          ? dayjs()
-                              .add(expireData.expire, "day")
-                              .format("YYYY MMM, DD")
-                          : "2024 Aug, 11"}
+                        {dayjs(subscriptionExpire).format("YYYY MMM, DD")}
                       </p>
                     </div>
                   )}
-                  {labUser?.Plan?.id !== 1 && (
+                  {/* {userType?.type === "SUBSCRIPTION" && (
                     <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                       <p className="font-normal text-sm">{t("daysLeft")}</p>
                       <p className="text-[#A5A5A5] font-normal text-sm">
-                        {`${remainingDays || 120} ${t("day")}`}
+                        {`${remainingDays} ${t("day")}`}
                       </p>
                     </div>
-                  )}
+                  )} */}
                   <div className="w-full flex justify-between inter px-1">
                     <p className="font-normal text-sm">{t("whatsappLimit")}</p>
                     <p className="text-[#A5A5A5] font-normal text-sm">
-                      {whatsappCount.count === 0
+                      {whatsappLimit === 0
                         ? t("noMessagesAvailable")
-                        : whatsappCount.count || 0}
+                        : whatsappLimit}
                     </p>
                   </div>
 
@@ -700,7 +684,7 @@ const SettingsScreen = () => {
 
                     <p className="text-[#A5A5A5] font-normal text-sm">
                       {userType?.type === "FREE"
-                        ? `${printCount.sent || 0}/${printCount.limit}`
+                        ? `${getPrintUsed() || 0}/${printLimit}`
                         : "Unlimited"}
                     </p>
                   </div>
@@ -714,7 +698,7 @@ const SettingsScreen = () => {
                     </Tag>
                   </div>
 
-                  {labUser?.Plan?.id === 1 && (
+                  {labUser?.Plan?.type === "FREE" && (
                     <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
                       <div className="flex justify-between items-center">
                         <p className="text-sm font-medium text-blue-800">

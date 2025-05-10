@@ -16,7 +16,7 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { WarningOutlined } from "@ant-design/icons";
-import { canPrint, recordPrint } from "../../../helper/printCount";
+import { usePlan } from "../../../hooks/usePlan";
 
 export const parseTests = (record) => {
   let tests = [];
@@ -53,6 +53,7 @@ export const parseTests = (record) => {
 export const ResultsModal = () => {
   const { isReload, setIsReload, setPrintFontSize, printFontSize } =
     useAppStore();
+  const { canPrint, setPrintUsed } = usePlan();
 
   const {
     setIsResultsModal,
@@ -125,7 +126,7 @@ export const ResultsModal = () => {
       query: "print",
       data,
     }).then(({ err, res }) => {
-      recordPrint();
+      setPrintUsed();
       console.log(err, res);
     });
   };
@@ -269,8 +270,6 @@ export const ResultsModal = () => {
                   row.options = [];
                 }
               }
-
-              console.log(`Rendering options for ${row?.name}:`, row?.options);
 
               return (
                 <div className="test-item" key={row?.id}>

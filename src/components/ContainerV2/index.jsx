@@ -28,23 +28,24 @@ import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
 import { stringify } from "postcss";
 import { URL } from "../../libs/api";
+import { usePlan } from "../../hooks/usePlan";
+import dayjs from "dayjs";
 
 const { Sider, Content } = Layout;
 
 const MainContainerV2 = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [signoutLoading, setSignoutLoading] = useState(false);
-  const [showTrialAlert, setShowTrialAlert] = useState(false);
-  const [showExpAlert, setShowExpAlert] = useState(false);
   const [remainingDays, setRemainingDays] = useState(null);
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { t, i18n } = useTranslation(); // Use useTranslation to get the current language
   const { setIsLogin } = useAppStore();
+  const { subscriptionExpire, planType } = usePlan();
 
   const {
-    token: { colorBgContainer, borderRadiusLG },
+    token: { colorBgContainer },
   } = theme.useToken();
 
   const signout = async () => {
@@ -62,7 +63,7 @@ const MainContainerV2 = ({ children }) => {
         setSignoutLoading(false);
         localStorage.clear();
         setIsLogin(false);
-      } 
+      }
       // else message.error(t("Serialnotfound"));
     } catch (error) {
       console.log(error);
@@ -70,28 +71,24 @@ const MainContainerV2 = ({ children }) => {
       setSignoutLoading(false);
     }
   };
-  const userType = JSON.parse(localStorage.getItem("lab-user"))?.type;
+  // const userType = JSON.parse(localStorage.getItem("lab-user"))?.type;
 
-  useEffect(() => {
-    const userData = JSON.parse(localStorage?.getItem("lab-user"));
-    const labExp = parseInt(localStorage?.getItem("lab-exp"), 10);
+  // useEffect(() => {
+  //   const userData = JSON.parse(localStorage?.getItem("lab-user"));
+  //   const labExp = parseInt(localStorage?.getItem("lab-exp"), 10);
 
-    if (userData?.type === "trial") {
-      setShowTrialAlert(true);
-    }
+  //   if (userData?.type === "trial") {
+  //     setShowTrialAlert(true);
+  //   }
 
-    if (userData?.type !== "trial" && !isNaN(labExp) && labExp <= 3) {
-      setRemainingDays(labExp);
-      setShowExpAlert(true);
-    }
-  }, []);
+  //   if (userData?.type !== "trial" && !isNaN(labExp) && labExp <= 3) {
+  //     setRemainingDays(labExp);
+  //     setShowExpAlert(true);
+  //   }
+  // }, []);
 
   const showPopover = () => {
     setIsPopoverVisible(true);
-  };
-
-  const handlePopoverCancel = () => {
-    setIsPopoverVisible(false);
   };
 
   // Function to determine rotation based on language
@@ -243,47 +240,45 @@ const MainContainerV2 = ({ children }) => {
           width: "100%",
         }}
       >
-        {showTrialAlert && (
-          <Alert
-            className="sticky top-0 z-10"
-            message={
-              <span>
-                {t("SerialKeyWilBeExpiredSoon")}
-                {t("")}
-                <Popover
-                  placement="bottom"
-                  visible={isPopoverVisible}
-                  onVisibleChange={(visible) => setIsPopoverVisible(visible)}
-                  trigger="hover"
-                  content={
-                    <PopOverContent
-                      website={"https://www.puretik.com/ar"}
-                      email={"info@puretik.com"}
-                      phone={"07710553120"}
-                    />
-                  }
-                >
-                  <a
-                    onMouseEnter={showPopover}
-                    style={{ textDecoration: "underline", cursor: "pointer" }}
+        {planType === "SUBSCRIPTION" &&
+          dayjs(subscriptionExpire).diff(dayjs(), "days") <= 3 && (
+            <Alert
+              className="sticky top-0 z-10"
+              message={
+                <span>
+                  {t("SerialKeyWilBeExpiredSoon")}
+                  <Popover
+                    placement="bottom"
+                    visible={isPopoverVisible}
+                    onVisibleChange={(visible) => setIsPopoverVisible(visible)}
+                    trigger="hover"
+                    content={
+                      <PopOverContent
+                        website={"https://www.puretik.com/ar"}
+                        email={"info@puretik.com"}
+                        phone={"07710553120"}
+                      />
+                    }
                   >
-                    {t("here")}
-                  </a>
-                </Popover>
-              </span>
-            }
-            banner
-            closable
-          />
-        )}
-        {showExpAlert && (
+                    <a
+                      onMouseEnter={showPopover}
+                      style={{ textDecoration: "underline", cursor: "pointer" }}
+                    >
+                      {t("here")}
+                    </a>
+                  </Popover>
+                </span>
+              }
+              banner
+              closable
+            />
+          )}
+        {planType === "FREE" && (
           <Alert
             className="sticky top-0 z-10"
             message={
               <span>
-                {`${t("SerialKeyWillBeExpiredIn")} ${remainingDays} ${t(
-                  "days"
-                )}`}{" "}
+                {`${t("freePlanAlert")}`}
                 <Popover
                   placement="bottom"
                   title={t("")}
@@ -298,7 +293,6 @@ const MainContainerV2 = ({ children }) => {
                     />
                   }
                 >
-                  <span>{t("upgrade")}</span>{" "}
                   <a
                     onMouseEnter={showPopover}
                     style={{ textDecoration: "underline", cursor: "pointer" }}

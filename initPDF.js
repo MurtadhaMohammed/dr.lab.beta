@@ -65,7 +65,7 @@ async function createPDF(data, isView = true, cb) {
 
     let elemInfo = [];
 
-    var watermark = (data) => {
+    var watermark = () => {
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
 
@@ -126,7 +126,7 @@ async function createPDF(data, isView = true, cb) {
           textY = lastTableY + 13;
         }
 
-        data?.tests?.length > 1 && doc.text(el.title, 10, textY);
+        data?.tests?.length > 1 && doc.text(el.title, 10, textY - 1);
       };
 
       doc.autoTable({
@@ -159,8 +159,8 @@ async function createPDF(data, isView = true, cb) {
         ],
 
         pageBreak: data?.tests?.length === 1 ? "auto" : "avoid",
-        didDrawPage: () => {
-          header();
+        didDrawPage: (e) => {
+          header(e);
           if (data?.isFree) watermark();
         },
       });

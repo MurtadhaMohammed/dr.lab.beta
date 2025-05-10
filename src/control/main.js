@@ -362,7 +362,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     case "print": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }'
       createPDF(arg.data, arg?.isView, (err, res, file) => {
-        console.log(err, res, file, "this is the error, response and file");
+        // console.log(err, res, file, "this is the error, response and file");
         event.reply("asynchronous-reply", { err, res, file });
       });
       break;

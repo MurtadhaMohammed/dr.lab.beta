@@ -37,9 +37,11 @@ import { useTranslation } from "react-i18next";
 import { apiCall } from "../../../libs/api";
 import { parseTests } from "../ResultsModal";
 import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
+import { usePlan } from "../../../hooks/usePlan";
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload, isOnline } = useAppStore();
+  const { canSendWhatsapp, init } = usePlan();
   const {
     setIsModal,
     setId,
@@ -184,21 +186,21 @@ export const PureTable = ({ isReport = false }) => {
                 pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
                 const user = JSON.parse(localStorage?.getItem("lab-user"));
                 const formData = new FormData();
-                formData.append("clientId", user?.id);
                 formData.append("name", record?.patient?.name);
                 formData.append("phone", phone);
-                formData.append("lab", user?.labName || "");
                 formData.append("file", pdf, "report.pdf");
                 const resp = await apiCall({
                   method: "POST",
                   pathname: "/whatsapp/whatsapp-message",
                   isFormData: true,
                   data: formData,
+                  auth: true,
                 });
 
                 if (resp.status === 200) {
                   const response = await resp.json();
                   setMsgLoading(false);
+                  init();
 
                   message.success(response?.message);
 
@@ -453,7 +455,7 @@ export const PureTable = ({ isReport = false }) => {
                   disabled={
                     record?.status == "PENDING" ||
                     userType === "FREE" ||
-                    isLimitExceeded
+                    !canSendWhatsapp()
                   }
                 />
               </Popover>
