@@ -185,6 +185,7 @@
   "labNameexample": "مثال: مختبر الدكتور كاظم",
   "PleaseInputYourLabName": "يرجى إدخال اسم المختبر الخاص بك",
   "Continue": "استمر",
+  "Back": "رجوع الى التسجيل",
   "Inputs": " سجل دخولك للمتابعة ",
   "businessplan": "لخطة العمل",
   "UserName": "إسم المستخدم",
@@ -254,7 +255,7 @@
   "ErrorUploadingImage": "خطأ في تحميل الصورة",
   "PleaseSelectImageFile": "الرجاء اختيار ملف صورة (PNG, JPG, JPEG, GIF, BMP, أو WEBP)",
 
-  "OTPSentSuccessfully": "تم إرسال رمز التحقق بنجاح",
+  "RegisterSuccessfully": "تم التسجيل بنجاح",
   "AccountNotVerified": "الحساب غير مفعّل. يرجى التحقق من رقم هاتفك.",
   "DataMissingOrIncomplete": "البيانات مفقودة أو غير مكتملة",
   "LoginFailed": "فشل تسجيل الدخول",

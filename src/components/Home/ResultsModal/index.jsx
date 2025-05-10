@@ -324,10 +324,7 @@ export const ResultsModal = () => {
         setIsBarcode(false);
       }}
       footer={
-        <div
-          className={"results-modal-footer"}
-          style={{ paddingBottom: !printer[0] ? "40px" : "" }}
-        >
+        <div className={"results-modal-footer"}>
           {isBarcode ? null : (
             <Space>
               <b>{t("FontSize")}</b>
@@ -373,12 +370,6 @@ export const ResultsModal = () => {
               </Button>
             )}
           </Space>
-          {!printer[0] ? (
-            <div className="p-4 absolute bottom-0 w-fit bg-[#fff] text-start flex gap-2 -mx-3">
-              <WarningOutlined className=" text-[#ffcc00]" />
-              <p>{t("printBarcodeWarning")}</p>
-            </div>
-          ) : null}
         </div>
       }
       centered

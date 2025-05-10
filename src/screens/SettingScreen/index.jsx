@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./style.css";
 import {
   Avatar,
@@ -18,26 +18,20 @@ import {
   Tag,
 } from "antd";
 import {
-  PhoneOutlined,
   UserOutlined,
-  DownloadOutlined,
   ExportOutlined,
   ImportOutlined,
+  CrownFilled,
 } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
-import {
-  useAppStore,
-  useLanguage,
-  useWhatsappCountStore,
-  usePrintCountStore,
-} from "../../libs/appStore";
+import { useAppStore, useLanguage } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import PopOverContent from "./PopOverContent";
-import { URL } from "../../libs/api";
+import { apiCall, URL } from "../../libs/api";
 import PrinterSelector from "./PrinterSelector";
 import { signout } from "../../helper/signOut";
 import { usePlan } from "../../hooks/usePlan";
@@ -47,22 +41,12 @@ const SettingsScreen = () => {
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
-  const [remainingDays, setRemainingDays] = useState(null);
   const { lang, setLang } = useLanguage();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
-  const { whatsappCount, setWhatsappCount } = useWhatsappCountStore();
-  const { printCount, setPrintCount } = usePrintCountStore();
   const [form] = Form.useForm();
-  const [expireData, _] = useState({
-    register: localStorage.getItem("lab-created"),
-    expire: localStorage.getItem("lab-exp"),
-  });
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
-  const [labUser, setLabUser] = useState(null);
-  const [startDate, setStartDate] = useState(null);
   const [selectedPrinter, setSelectedPrinter] = useState(
     localStorage.getItem("selectedPrinter") || ""
   );
@@ -73,24 +57,10 @@ const SettingsScreen = () => {
     subscriptionExpire,
     registerAt,
     whatsappLimit,
+    planType,
   } = usePlan();
 
   const { t } = useTranslation();
-
-  useEffect(() => {
-    const storedLabUser = localStorage.getItem("lab-user");
-    const printData = localStorage.getItem("printData");
-    if (storedLabUser) {
-      setLabUser(JSON.parse(storedLabUser));
-      form.setFieldsValue(JSON.parse(storedLabUser));
-      setPrintCount({
-        limit: JSON.parse(storedLabUser)?.Plan?.printLimit,
-        sent: JSON.parse(printData)?.printUsed,
-      });
-    }
-  }, []);
-
-  const userType = labUser?.Plan;
 
   async function fetchImagePath() {
     setImagePath(null);
@@ -106,76 +76,6 @@ const SettingsScreen = () => {
     }
   }
 
-  const handleWhatsappCount = async (labUserId) => {
-    const url = `${URL}/whatsapp/whatsapp-count/${labUserId}`;
-
-    try {
-      const response = await fetch(url);
-      const text = await response.text();
-
-      try {
-        const data = JSON.parse(text);
-
-        const newCount = { count: data.count };
-        setWhatsappCount(newCount);
-
-        console.log("Fetched WhatsApp count:", newCount);
-        localStorage.setItem("whatsappCount", JSON.stringify(newCount));
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        setError("Error parsing response data.");
-      }
-    } catch (error) {
-      console.error("Error fetching WhatsApp count:", error);
-      setError("Error fetching WhatsApp count.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // useEffect(() => {
-  //   const storedCount = localStorage.getItem("whatsappCount");
-  //   if (storedCount) {
-  //     try {
-  //       const parsedCount = JSON.parse(storedCount);
-  //       setWhatsappCount(parsedCount);
-  //     } catch (error) {
-  //       console.error("Error parsing stored count:", error);
-  //       setError("Error loading stored data.");
-  //     }
-  //   } else {
-  //     const labUserData = localStorage.getItem("lab-user");
-
-  //     if (labUserData) {
-  //       try {
-  //         const parsedData = JSON.parse(labUserData);
-  //         const labUserId = parsedData.id;
-
-  //         if (labUserId) {
-  //           handleWhatsappCount(labUserId);
-  //         } else {
-  //           console.error("No client ID found in local storage data.");
-  //           setError("No client ID found.");
-  //         }
-  //       } catch (error) {
-  //         console.error("Error parsing local storage data:", error);
-  //         setError("Error parsing local storage data.");
-  //       }
-  //     } else {
-  //       console.error("No lab-user data found in local storage.");
-  //       setError("No lab-user data found.");
-  //     }
-  //   }
-  // }, []);
-
-  // useEffect(() => {
-  //   let limit = 0;
-  //   if (userType?.id === 2) {
-  //     limit = 1000;
-  //   }
-  //   setWhatsappCount({ limit });
-  // }, [userType, setWhatsappCount]);
-
   useEffect(() => {
     fetchImagePath();
   }, []);
@@ -184,49 +84,10 @@ const SettingsScreen = () => {
     if (user) form.setFieldsValue(user);
   }, [user, form]);
 
-  const signout = async () => {
-    setSignoutLoading(true);
-    try {
-      const userData = JSON.parse(localStorage.getItem("lab-user"));
-      if (userData) {
-        setLabUser(userData);
-        form.setFieldsValue(userData);
-      }
-    } catch (error) {
-      console.error("Error parsing lab-user:", error);
-      setError("Error loading user data");
-    }
-  };
-
   useEffect(() => {
-    calculateRemainingDays();
+    const labUserRow = JSON.parse(localStorage.getItem("lab-user"));
+    if (labUserRow) form.setFieldsValue(labUserRow);
   }, []);
-
-  useEffect(() => {
-    try {
-      const labUser = JSON.parse(localStorage.getItem("lab-user"));
-      if (labUser?.Plan?.id === 1) {
-        setStartDate(labUser.createdAt);
-      } else {
-        setStartDate(localStorage.getItem("lab-created"));
-      }
-    } catch (error) {
-      console.error("Error setting start date:", error);
-    }
-  }, []);
-
-  const calculateRemainingDays = () => {
-    const labCreated = localStorage.getItem("lab-created");
-    const labExp = parseInt(localStorage.getItem("lab-exp"));
-
-    if (labCreated && labExp) {
-      const createdDate = dayjs(labCreated);
-      const today = dayjs();
-      const dayPassed = today.diff(createdDate, "day");
-      const remaining = labExp - dayPassed;
-      setRemainingDays(remaining > 0 ? remaining : 0);
-    }
-  };
 
   const handleSizeChange = (val) => {
     localStorage.setItem("lab-print-size", val);
@@ -234,16 +95,11 @@ const SettingsScreen = () => {
   };
 
   const handelCancel = () => {
-    form.setFieldsValue(labUser);
-    setIsUpdate(false);
-  };
-
-  const onFieldsChange = (field) => {
-    let name = field[0].name[0];
-    let value = field[0].value;
-    if (value === "") value = null;
-    if (value !== labUser[name]) setIsUpdate(true);
-    else setIsUpdate(false);
+    const labUserRow = JSON.parse(localStorage.getItem("lab-user"));
+    if (labUserRow) {
+      form.setFieldsValue(labUserRow);
+      setIsUpdate(false);
+    }
   };
 
   const handleChangeFile = async () => {
@@ -297,18 +153,20 @@ const SettingsScreen = () => {
     setLoading(true);
 
     send({ query: "getUUID" }).then(async ({ UUID }) => {
-      const storedToken = localStorage.getItem("lab_token");
-
+      let data = {
+        name: values.name,
+        labName: values.labName,
+        device: UUID,
+        address: values.address,
+        email: values.email,
+      };
       try {
-        const resp = await fetch(`${URL}/app/update-client`, {
+        const resp = await apiCall({
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...values,
-            device: UUID,
-          }),
+          pathname: "/app/update-client",
+          isFormData: false,
+          auth: true,
+          data,
         });
 
         if (resp.ok) {
@@ -347,42 +205,6 @@ const SettingsScreen = () => {
     handleLang();
   }, []);
 
-  const handleWhatsUpExpireation = (expire) => {
-    if (expire > 7) {
-      return {
-        status: t("online"),
-        textStyle: "text-[#14AE5C] inter font-bold text-sm leading-[16.94px]",
-        descStyle: "hidden",
-      };
-    } else if (expire > 0 && expire <= 7) {
-      return {
-        status: t("online"),
-        textStyle: "text-[#F68A06] inter font-bold text-sm leading-[16.94px]",
-        descStyle: "bg-[#F187060A] border-[#BF6A0224] text-[#F68A06]",
-        description: t("nearingEndDescription"),
-      };
-    } else if (expire === 0) {
-      return {
-        status: t("Disabled"),
-        textStyle: "text-[#FF0000] inter font-bold text-sm leading-[16.94px]",
-        descStyle: "bg-[#FFEDEC] border-[#FFB9B8] text-[#FF0000]",
-        description: t("disabledDescription"),
-      };
-    } else {
-      return {
-        status: t("UPGRADE"),
-        textStyle: "text-[#0000FF] text-sm font-bold inter leading-[16.94px]",
-        descStyle: "bg-[#F6F6F6] border-[#EEEEEE] text-black",
-        description: t("subscribeDescription"),
-      };
-    }
-  };
-
-  const whatsAppStatus = useMemo(
-    () => handleWhatsUpExpireation(),
-    [remainingDays, lang]
-  ); // pass the whatsapp subscription days left as an argumnet to handleWhatsUpExpireation function.
-
   const handleExportDatabase = async () => {
     setExportLoading(true);
     const res = await send({ query: "exportDatabaseFile" });
@@ -398,12 +220,9 @@ const SettingsScreen = () => {
   const handleImportDatabase = async () => {
     setImportLoading(true);
     const res = await send({ query: "ImportDatabaseFile" });
-    console.log(res);
-    if (res.success) {
-      message.success(t("importSuccess"));
-    } else {
-      message.error(t("importError"));
-    }
+    if (res.success) message.success(t("importSuccess"));
+    else message.error(t("importError"));
+
     setImportLoading(false);
   };
 
@@ -430,9 +249,9 @@ const SettingsScreen = () => {
           <div className="flex items-center gap-4">
             <Avatar size={"large"} icon={<UserOutlined />} />
             <div>
-              <b className="text-[16px]">{labUser?.name}</b>
+              <b className="text-[16px]">{user?.fullName}</b>
               <span className="text-[14px] text-[#A5A5A5] block">
-                {labUser?.phone}
+                {user?.phone}
               </span>
             </div>
           </div>
@@ -466,13 +285,13 @@ const SettingsScreen = () => {
         <section>
           <p className="pl-[4px] opacity-60">{t("AccountInfo")}</p>
           <Card className="mt-[6px]">
+            <div className="pattern-isometric pattern-indigo-400 pattern-bg-white pattern-size-6 pattern-opacity-5 absolute inset-0"></div>
             <Form
               form={form}
               onFinish={handleUpdateClient}
-              onFieldsChange={onFieldsChange}
+              onFieldsChange={() => setIsUpdate(true)}
               layout="vertical"
               autoComplete="off"
-              initialValues={labUser}
             >
               <Row gutter={[20, 0]}>
                 <Col span={6}>
@@ -489,24 +308,15 @@ const SettingsScreen = () => {
                     <Input />
                   </Form.Item>
                 </Col>
-
                 <Col span={6}>
-                  <Form.Item
-                    label={t("Username")}
-                    name="username"
-                    rules={[
-                      {
-                        required: true,
-                        message: t("PleaseInputYourUsername"),
-                      },
-                    ]}
-                  >
+                  <Form.Item label={t("LabName")} name="labName">
                     <Input />
                   </Form.Item>
                 </Col>
 
                 <Col span={6}>
                   <Form.Item
+                   
                     label={t("PhoneNumber")}
                     name="phone"
                     rules={[
@@ -516,7 +326,7 @@ const SettingsScreen = () => {
                       },
                     ]}
                   >
-                    <Input />
+                    <Input readOnly/>
                   </Form.Item>
                 </Col>
               </Row>
@@ -533,15 +343,6 @@ const SettingsScreen = () => {
                     <Input type="email" />
                   </Form.Item>
                 </Col>
-
-                <Col span={6}>
-                  <Form.Item label={t("LabName")} name="labName">
-                    <Input />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={[20, 0]}>
                 {(isUpdate || loading) && (
                   <Col span={6}>
                     <Space>
@@ -599,7 +400,11 @@ const SettingsScreen = () => {
               </div>
 
               <div className="mt-[16px]">
-                <p className="pl-[4px] opacity-60">{t("DatabaseManagement")}</p>
+                <p className="pl-[4px] ">
+                  <span className="opacity-60">{t("DatabaseManagement")}</span>{" "}
+                  <CrownFilled className="text-[18px] text-[#faad14]" />
+                </p>
+
                 <div className="rounded-lg border border-1-[#eee] mt-[8px]">
                   <div className="border-b border-b-[#eee] p-[24px]">
                     <div className="flex justify-between items-center">
@@ -614,6 +419,7 @@ const SettingsScreen = () => {
                         icon={<ExportOutlined />}
                         onClick={handleExportDatabase}
                         loading={exportLoading}
+                        disabled={planType === "FREE"}
                       >
                         {t("ExportToDesktop")}
                       </Button>
@@ -628,10 +434,12 @@ const SettingsScreen = () => {
                           {t("ImportDatabaseDescription")}
                         </p>
                       </div>
+
                       <Button
                         type="primary"
                         icon={<ImportOutlined />}
                         onClick={handleImportDatabase}
+                        disabled={planType === "FREE"}
                         loading={importLoading} // Changed to importLoading
                       >
                         {t("ImportToSystem")}
@@ -654,7 +462,7 @@ const SettingsScreen = () => {
                     </p>
                   </div>
 
-                  {userType?.type === "SUBSCRIPTION" && (
+                  {planType === "SUBSCRIPTION" && (
                     <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
                       <p className="font-normal text-sm">{t("expiredAt")}</p>
                       <p className="text-[#A5A5A5] font-normal text-sm">
@@ -662,14 +470,7 @@ const SettingsScreen = () => {
                       </p>
                     </div>
                   )}
-                  {/* {userType?.type === "SUBSCRIPTION" && (
-                    <div className="w-full flex justify-between inter px-1 leading-[16.94px]">
-                      <p className="font-normal text-sm">{t("daysLeft")}</p>
-                      <p className="text-[#A5A5A5] font-normal text-sm">
-                        {`${remainingDays} ${t("day")}`}
-                      </p>
-                    </div>
-                  )} */}
+
                   <div className="w-full flex justify-between inter px-1">
                     <p className="font-normal text-sm">{t("whatsappLimit")}</p>
                     <p className="text-[#A5A5A5] font-normal text-sm">
@@ -683,7 +484,7 @@ const SettingsScreen = () => {
                     <p className="font-normal text-sm">{t("printLimit")}</p>
 
                     <p className="text-[#A5A5A5] font-normal text-sm">
-                      {userType?.type === "FREE"
+                      {planType === "FREE"
                         ? `${getPrintUsed() || 0}/${printLimit}`
                         : "Unlimited"}
                     </p>
@@ -694,11 +495,11 @@ const SettingsScreen = () => {
                     </p>
 
                     <Tag color="magenta-inverse" className="m-0">
-                      {String(userType?.name || "").toLocaleUpperCase()}
+                      {String(planType || "").toLocaleUpperCase()}
                     </Tag>
                   </div>
 
-                  {labUser?.Plan?.type === "FREE" && (
+                  {planType === "FREE" && (
                     <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
                       <div className="flex justify-between items-center">
                         <p className="text-sm font-medium text-blue-800">
@@ -731,40 +532,14 @@ const SettingsScreen = () => {
                       </div>
                     </div>
                   )}
-
-                  {/* <div className="px-1 h-full flex flex-col gap-2">
-                  <Divider className="!m-0 px-1" />
-                  <div className="w-full flex justify-between inter leading-[16.94px] my-1 -mb-1">
-                  <p className=" font-normal">{t("whatsappIntegration")}</p>
-                  <Popover
-                  trigger="hover"
-                  content={
-                    <PopOverContent
-                    website={"https://www.puretik.com/ar"}
-                    email={"info@puretik.com"}
-                    phone={"07710553120"}
-                    />
-                    }
-                    >
-                    <p
-                    className={`${whatsAppStatus.textStyle} font-bold text-sm`}
-                    >
-                    {whatsAppStatus.status}
-                    </p>
-                    </Popover>
-                    </div>
-                    
-                    <p
-                    className={`${whatsAppStatus.descStyle} p-2 border-[1px] rounded-lg !mt-2`}
-                    >
-                    {whatsAppStatus.description}
-                    </p>
-                    </div> */}
                 </div>
               </Card>
 
               <div className="mt-[16px]">
-                <p className="pl-[4px]  opacity-60">{t("printer")}</p>
+                <p className="pl-[4px]">
+                  <span className="opacity-60">{t("printer")} </span>{" "}
+                  <CrownFilled className="text-[18px] text-[#faad14]" />
+                </p>
                 <Card className="mt-[6px] ">
                   <div className="flex justify-between items-center">
                     <p className="py-2">

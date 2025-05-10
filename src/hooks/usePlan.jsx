@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { apiCall } from "../libs/api";
 import { useAppStore } from "../libs/appStore";
+import { message } from "antd";
 
 export const usePlan = () => {
   const [planType, setPlanType] = useState(); // FREE || SUBSCRIPTION || PAID
@@ -9,7 +10,7 @@ export const usePlan = () => {
   const [whatsappLimit, setWhatsappLimit] = useState(0);
   const [subscriptionExpire, setSubscriptionExpire] = useState();
   const [registerAt, setRegisterAt] = useState();
-  const { isLogin } = useAppStore();
+  const { isLogin, setIsLogin } = useAppStore();
 
   useEffect(() => {
     init();
@@ -27,6 +28,12 @@ export const usePlan = () => {
       if (resp.ok) {
         const userData = await resp.json();
         return userData;
+      } else if (resp.status === 404) {
+        const jsonResp = await resp.json();
+        message.error(jsonResp.error);
+        localStorage.removeItem("lab-user");
+        localStorage.removeItem("lab_token");
+        setIsLogin(false);
       }
     } catch (error) {
       console.log(error);

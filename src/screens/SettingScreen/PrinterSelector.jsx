@@ -3,6 +3,7 @@ import { Button, Modal, List, message } from "antd";
 const { ipcRenderer } = window.require("electron");
 import { useTranslation } from "react-i18next";
 import { CheckOutlined } from "@ant-design/icons";
+import { usePlan } from "../../hooks/usePlan";
 
 const PrinterSelector = ({ onPrinterSelect }) => {
   const { t } = useTranslation();
@@ -11,6 +12,10 @@ const PrinterSelector = ({ onPrinterSelect }) => {
   const [selectedPrinter, setSelectedPrinter] = useState(
     localStorage.getItem("selectedPrinter") || ""
   );
+
+  const {planType} = usePlan()
+
+
 
   useEffect(() => {
     fetchPrinters();
@@ -51,7 +56,7 @@ const PrinterSelector = ({ onPrinterSelect }) => {
 
   return (
     <>
-      <Button onClick={showModal}>{t("selectButton")}</Button>
+      <Button disabled={planType === "FREE"} onClick={showModal}>{t("selectButton")}</Button>
       <Modal
         title={t("printermodalTitle")}
         open={isModalVisible}

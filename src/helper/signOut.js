@@ -1,13 +1,13 @@
 import { message } from "antd";
-import { URL } from "../libs/api"; 
-import { t } from "i18next"; 
+import { URL } from "../libs/api";
+import { t } from "i18next";
 
 export const signout = async (setSignoutLoading, setIsLogin, navigate) => {
   setSignoutLoading(true);
   try {
-    let username = JSON.parse(localStorage.getItem("lab-user"))?.username;
+    let phone = JSON.parse(localStorage.getItem("lab-user"))?.phone;
 
-    if (!username) {
+    if (!phone) {
       message.error(t("Usernotfound"));
       return;
     }
@@ -17,7 +17,7 @@ export const signout = async (setSignoutLoading, setIsLogin, navigate) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ username }),
+      body: JSON.stringify({ phone }),
     });
 
     if (resp.status === 200) {

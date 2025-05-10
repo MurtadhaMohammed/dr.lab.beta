@@ -30,6 +30,7 @@ import { stringify } from "postcss";
 import { URL } from "../../libs/api";
 import { usePlan } from "../../hooks/usePlan";
 import dayjs from "dayjs";
+import { CrownFilled } from "@ant-design/icons";
 
 const { Sider, Content } = Layout;
 
@@ -187,7 +188,7 @@ const MainContainerV2 = ({ children }) => {
                 {
                   key: "/reports",
                   icon: <TbReportSearch size={18} />,
-                  label: <p className="text-[15px]">{t("Reports")}</p>,
+                  label: <p className="text-[15px]">{t("Reports")} <CrownFilled   className="!text-[14px] text-[#faad14]"/></p>,
                   onClick: () => navigate("/reports", { replace: true }),
                 },
                 {
