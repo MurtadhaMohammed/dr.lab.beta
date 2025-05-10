@@ -1,18 +1,17 @@
 import "./style.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
 import {
   Alert,
-  Button,
   message,
-  Divider,
   Layout,
   Menu,
-  Space,
   theme,
   Popconfirm,
   Popover,
+  Modal,
+  Button,
 } from "antd";
 import { TbReportSearch } from "react-icons/tb";
 import { GrDocumentTest } from "react-icons/gr";
@@ -26,18 +25,16 @@ import logo1 from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
-import { stringify } from "postcss";
 import { URL } from "../../libs/api";
 import { usePlan } from "../../hooks/usePlan";
 import dayjs from "dayjs";
-import { CrownFilled } from "@ant-design/icons";
+import { CrownFilled, WarningFilled } from "@ant-design/icons";
 
 const { Sider, Content } = Layout;
 
 const MainContainerV2 = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
   const [signoutLoading, setSignoutLoading] = useState(false);
-  const [remainingDays, setRemainingDays] = useState(null);
   const [isPopoverVisible, setIsPopoverVisible] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -72,21 +69,6 @@ const MainContainerV2 = ({ children }) => {
       setSignoutLoading(false);
     }
   };
-  // const userType = JSON.parse(localStorage.getItem("lab-user"))?.type;
-
-  // useEffect(() => {
-  //   const userData = JSON.parse(localStorage?.getItem("lab-user"));
-  //   const labExp = parseInt(localStorage?.getItem("lab-exp"), 10);
-
-  //   if (userData?.type === "trial") {
-  //     setShowTrialAlert(true);
-  //   }
-
-  //   if (userData?.type !== "trial" && !isNaN(labExp) && labExp <= 3) {
-  //     setRemainingDays(labExp);
-  //     setShowExpAlert(true);
-  //   }
-  // }, []);
 
   const showPopover = () => {
     setIsPopoverVisible(true);
@@ -110,6 +92,16 @@ const MainContainerV2 = ({ children }) => {
       // Other languages: default rotation
       return "rotate(180deg)";
     }
+  };
+
+  const isSubscriptionWarning = () => {
+    if (planType === "SUBSCRIPTION" && !subscriptionExpire) return true;
+    if (
+      planType === "SUBSCRIPTION" &&
+      dayjs(subscriptionExpire).isBefore(dayjs())
+    )
+      return true;
+    else return false;
   };
 
   return (
@@ -188,7 +180,12 @@ const MainContainerV2 = ({ children }) => {
                 {
                   key: "/reports",
                   icon: <TbReportSearch size={18} />,
-                  label: <p className="text-[15px]">{t("Reports")} <CrownFilled   className="!text-[14px] text-[#faad14]"/></p>,
+                  label: (
+                    <p className="text-[15px]">
+                      {t("Reports")}{" "}
+                      <CrownFilled className="!text-[14px] text-[#faad14]" />
+                    </p>
+                  ),
                   onClick: () => navigate("/reports", { replace: true }),
                 },
                 {
@@ -242,6 +239,7 @@ const MainContainerV2 = ({ children }) => {
         }}
       >
         {planType === "SUBSCRIPTION" &&
+          !isSubscriptionWarning() &&
           dayjs(subscriptionExpire).diff(dayjs(), "days") <= 3 && (
             <Alert
               className="sticky top-0 z-10"
@@ -309,6 +307,38 @@ const MainContainerV2 = ({ children }) => {
         )}
         {children}
       </Content>
+      <Modal
+        open={isSubscriptionWarning()}
+        closable={false}
+        centered
+        footer={null}
+      >
+        <div className="text-center pt-10">
+          <div>
+            <WarningFilled className="text-orange-400 text-[60px]" />
+          </div>
+          <b className="block mt-4 text-[16px]">{t("SubscriptionAlertTitle")}</b>
+          <p className="block !mt-2 text-[#a5a5a5]">{t("SubscriptionAlertMsg")} </p>
+          <Popover
+            // placement="top"
+            title={
+              <div className="text-center font-medium">{t("ContactUs")}</div>
+            }
+            content={
+              <PopOverContent
+                website={"https://www.puretik.com/ar"}
+                email={"info@puretik.com"}
+                phone={"07710553120"}
+              />
+            }
+            trigger="click"
+          >
+            <Button className="mt-8" size="large" block>
+              {t("ContactUs")}
+            </Button>
+          </Popover>
+        </div>
+      </Modal>
     </Layout>
   );
 };

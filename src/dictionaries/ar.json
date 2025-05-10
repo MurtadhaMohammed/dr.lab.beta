@@ -17,6 +17,8 @@
   "PDFSetting": "اعدادت الطباعة",
   "ImageCover": "صورة الغلاف",
   "SubscriptionInfo": "معلومات الاشتراك",
+  "SubscriptionAlertTitle": "يتطلب تجديد الاشتراك!.",
+  "SubscriptionAlertMsg": "انتهت صلاحية اشتراكك الحالي أو شارفت على الانتهاء. يرجى تجديد الباقة للاستمرار في استخدام خدمات DrLab بدون انقطاع.",
   "WantToUpgrade": "ترقية الخطة؟",
   "UpgradeNow": "ترقية الان",
   "ContactUs": "تواصل معنا",
