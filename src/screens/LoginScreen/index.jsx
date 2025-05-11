@@ -9,15 +9,11 @@ import { apiCall } from "../../libs/api";
 import BackIcon from "./BackIcon";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
-import { URL } from "../../libs/api"
-import { useNavigate } from "react-router-dom";
+import { URL } from "../../libs/api";
+// import { useNavigate } from "react-router-dom";
 
 const LoginScreen = () => {
-  const [key, setKey] = useState("");
   const [phone, setPhone] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const { setIsLogin } = useAppStore();
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
   const [isForm, setIsForm] = useState(false);
@@ -25,8 +21,7 @@ const LoginScreen = () => {
   const [form] = Form.useForm();
   const { t } = useTranslation();
   const [disable, setDisable] = useState(false);
-  const direction = i18n.dir();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const getUUID = () => {
     send({ query: "getUUID" }).then((resp) => {
@@ -67,7 +62,7 @@ const LoginScreen = () => {
     return "Unknown";
   };
 
-  const login = async () => {
+  const login = async (values) => {
     setLoading(true);
     try {
       const resp = await apiCall({
@@ -75,49 +70,19 @@ const LoginScreen = () => {
         pathname: "/app/login",
         isFormData: false,
         data: {
-          username,  
-          password, 
-          device: UUID, 
+          phone: values?.phone,
         },
       });
 
       if (resp.ok) {
-        const data = await resp.json();
-
-        if (data.success) {
-          const { client, token } = data;
-
-          if (token && client) {
-            localStorage.setItem("lab-user", JSON.stringify(client));
-            localStorage.setItem("lab_token", token);
-            setIsLogin(true);
-          } else {
-            throw new Error(t("DataMissingOrIncomplete"));
-          }
-        } else {
-          throw new Error(data.message || t("LoginFailed"));
-        }
+        localStorage.setItem("verification_phone", values.phone);
+        window.location.reload();
       } else {
-        const errorData = await resp.json();
-        
-        // Special handling for verification errors
-        if (errorData.error === "Account not verified") {
-          message.error(t("AccountNotVerified"));
-          // If there's a phone number in the response, redirect to verification
-          if (errorData.phone) {
-            localStorage.setItem("verification_phone", errorData.phone);
-            window.location.reload();
-          }
-        } else {
-          message.error(errorData.error || t("ErrorLogin"));
-        }
+        const jsonResp = await resp.json();
+        message.error(jsonResp.error);
       }
     } catch (error) {
-      if (error && error.message) {
-        message.error(error.message);
-      } else {
-        message.error(t("UnexpectedError"));
-      }
+      message.error(t("UnexpectedError"));
     } finally {
       setLoading(false);
     }
@@ -151,12 +116,11 @@ const LoginScreen = () => {
 
       if (resp.ok) {
         const data = await resp.json();
-        
+
         if (data.success) {
-          message.success(t("OTPSentSuccessfully"));
-          localStorage.setItem("verification_phone", formData.phone);
-          localStorage.setItem("userId", data.userId);
-          window.location.reload();
+          message.success(t("RegisterSuccessfully"));
+          setPhone(formData.phone);
+          setIsForm(false);
         } else {
           throw new Error(data.message || "Registration failed");
         }
@@ -169,10 +133,6 @@ const LoginScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleClose = () => {
-    setIsForm(false);
   };
 
   const handleLang = (checked) => {
@@ -200,14 +160,11 @@ const LoginScreen = () => {
       {isForm ? (
         <Card
           className="w-[400px]"
-          title={<BackIcon className="cursor-pointer" onClose={handleClose} />}
+          // title={<BackIcon className="cursor-pointer" onClose={handleClose} />}
         >
           <Form
             form={form}
             onFinish={register}
-            initialValues={{
-              phone,
-            }}
             layout="vertical"
             autoComplete="off"
           >
@@ -224,7 +181,7 @@ const LoginScreen = () => {
             >
               <Input placeholder={t("AliSalim")} className=" h-[40px] mt-0.5" />
             </Form.Item>
-            <Form.Item
+            {/* <Form.Item
               label={t("UserName")}
               name="username"
               className="h-16 mb-7"
@@ -235,9 +192,12 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input placeholder={t("UserExample")} className=" h-[40px] mt-0.5" />
-            </Form.Item>
-            <Form.Item
+              <Input
+                placeholder={t("UserExample")}
+                className=" h-[40px] mt-0.5"
+              />
+            </Form.Item> */}
+            {/* <Form.Item
               label={t("Password")}
               name="password"
               className="h-16 mb-7"
@@ -252,8 +212,11 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <Input.Password placeholder={t("writeyourpassword")} className="h-[40px] mt-0.5" />
-            </Form.Item>
+              <Input.Password
+                placeholder={t("writeyourpassword")}
+                className="h-[40px] mt-0.5"
+              />
+            </Form.Item> */}
             <Form.Item
               label={t("LabName")}
               name="labName"
@@ -315,15 +278,19 @@ const LoginScreen = () => {
             >
               <Input placeholder="Iraq - Baghdad" className=" h-[40px] p-2" />
             </Form.Item>
-
-            <Button
-              loading={loading}
-              disabled={disable}
-              type="primary"
-              htmlType="submit"
-            >
-              {t("Continue")}
-            </Button>
+            <Space>
+              <Button
+                loading={loading}
+                disabled={disable}
+                type="primary"
+                htmlType="submit"
+              >
+                {t("Continue")}
+              </Button>
+              <Button htmlType="button" onClick={() => setIsForm(false)}>
+                {t("Back")}
+              </Button>
+            </Space>
           </Form>
         </Card>
       ) : (
@@ -349,34 +316,46 @@ const LoginScreen = () => {
             </div>
 
             <div className="flex flex-col handleInputs">
-              <Input
-                size="large"
-                style={{ width: "100%", textAlign: "center" }}
-                className="h-12"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder={t("UserName")}
-              />
-              <Input
-                size="large"
-                style={{ width: "100%", textAlign: "center" }}
-                className="h-12"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("Password")}
-                type="password"
-              />
-
-              <Button
-                disabled={!username || !password || disable}
-                loading={loading}
-                type="primary"
-                block
-                className="h-12"
-                onClick={login}
+              <Form
+                form={form}
+                onFinish={login}
+                initialValues={{
+                  phone,
+                }}
+                layout="vertical"
+                autoComplete="off"
               >
-                {t("Login")}
-              </Button>
+                <Form.Item
+                  //label={t("PhoneNumber")}
+                  name="phone"
+                  className="h-16 mb-7 !text-center"
+                  rules={[
+                    {
+                      required: true,
+                      message: t("PleaseInputYourPhone"),
+                    },
+                    {
+                      pattern: /^07\d{9}$/,
+                      message: t("InvalidPhoneNumber"),
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="07xxxxxxxxx"
+                    className=" h-12 p-2 text-center text-[18px]"
+                  />
+                </Form.Item>
+                <Button
+                  //disabled={!phone || disable}
+                  loading={loading}
+                  type="primary"
+                  block
+                  className="h-12"
+                  htmlType="submit"
+                >
+                  {t("Login")}
+                </Button>
+              </Form>
 
               <div className="h-full flex flex-col gap-4 handleOr">
                 <div className="w-full border-[0.5px] relative">

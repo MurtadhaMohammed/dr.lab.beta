@@ -37,9 +37,11 @@ import { useTranslation } from "react-i18next";
 import { apiCall } from "../../../libs/api";
 import { parseTests } from "../ResultsModal";
 import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
+import { usePlan } from "../../../hooks/usePlan";
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload, isOnline } = useAppStore();
+  const { canSendWhatsapp, init } = usePlan();
   const {
     setIsModal,
     setId,
@@ -133,6 +135,8 @@ export const PureTable = ({ isReport = false }) => {
 
       let printResults = () => {
         return new Promise((resolve, reject) => {
+          const planType = JSON.parse(localStorage?.getItem("lab-user"))?.Plan
+            ?.type;
           let data = {
             patient: record.patient.name,
             age: dayjs().diff(dayjs(record.patient.birth), "y"),
@@ -140,14 +144,11 @@ export const PureTable = ({ isReport = false }) => {
             tests: parseTests(record),
             isHeader: true,
             fontSize: 12,
+            isFree: planType === "FREE",
           };
-          const planType = JSON.parse(localStorage?.getItem("lab-user"))?.Plan
-            ?.type;
-
-          console.log("planType", planType);
 
           send({
-            query: planType === "FREE" ? "printFree" : "print",
+            query: "print",
             data,
             isView: false,
           }).then(({ err, res, file }) => {
@@ -185,23 +186,23 @@ export const PureTable = ({ isReport = false }) => {
                 pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
                 const user = JSON.parse(localStorage?.getItem("lab-user"));
                 const formData = new FormData();
-                formData.append("clientId", user?.id);
                 formData.append("name", record?.patient?.name);
                 formData.append("phone", phone);
-                formData.append("lab", user?.labName || "");
                 formData.append("file", pdf, "report.pdf");
-                formData.append("senderPhone", user?.phone || "");
                 const resp = await apiCall({
                   method: "POST",
                   pathname: "/whatsapp/whatsapp-message",
                   isFormData: true,
                   data: formData,
+                  auth: true,
                 });
-                const response = await resp.json();
-                setMsgLoading(false);
 
-                if (response?.message === t("Messagesentsuccess")) {
-                  message.success(t("SendSuccess"));
+                if (resp.status === 200) {
+                  const response = await resp.json();
+                  setMsgLoading(false);
+                  init();
+
+                  message.success(response?.message);
 
                   try {
                     if (isOnline && window.gtag) {
@@ -215,11 +216,11 @@ export const PureTable = ({ isReport = false }) => {
                     throw new Error(e.message);
                   }
                 } else {
-                  message.error(t("Error"));
+                  message.error(response?.error);
                 }
               } catch (error) {
                 console.error("Error generating PDF:", error);
-                message.error(t("ErrorGenerate"));
+                message.error("Error!.");
                 setMsgLoading(false);
               }
             }, 100);
@@ -450,11 +451,11 @@ export const PureTable = ({ isReport = false }) => {
                   size="small"
                   className=" sticky"
                   icon={<WhatsAppOutlined />}
-                  loading={msgLoading && record?.patient?.phone === destPhone}
+                  loading={msgLoading}
                   disabled={
                     record?.status == "PENDING" ||
                     userType === "FREE" ||
-                    isLimitExceeded
+                    !canSendWhatsapp()
                   }
                 />
               </Popover>

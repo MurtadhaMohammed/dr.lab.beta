@@ -21,7 +21,7 @@ export function getPrintUsage() {
 
 export function canPrint() {
   const { printUsed } = getPrintUsage();
-  return printUsed <= DAILY_LIMIT;
+  return printUsed < DAILY_LIMIT;
 }
 
 export function recordPrint() {

@@ -1,10 +1,5 @@
-const { dialog, BrowserWindow, ipcMain, shell, app } = require("electron");
-var {
-  createFreePDF,
-  createPDF,
-  printReport,
-  createPDFBlob,
-} = require("../../initPDF");
+const { dialog, BrowserWindow, ipcMain, app } = require("electron");
+var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
 const fs = require("fs");
@@ -367,13 +362,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     case "print": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }'
       createPDF(arg.data, arg?.isView, (err, res, file) => {
-        console.log(err, res, file, "this is the error, response and file");
-        event.reply("asynchronous-reply", { err, res, file });
-      });
-      break;
-    case "printFree": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
-      createFreePDF(arg.data, arg?.isView, (err, res, file) => {
-        console.log(err, res, file, "this is the error, response and file");
+        // console.log(err, res, file, "this is the error, response and file");
         event.reply("asynchronous-reply", { err, res, file });
       });
       break;

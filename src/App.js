@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { ConfigProvider, message } from "antd";
+import React, { useEffect } from "react";
+import { ConfigProvider } from "antd";
 import { Routes, Route } from "react-router-dom";
 import i18n from "./i18n";
 import MainContainerV2 from "./components/ContainerV2";
@@ -13,24 +13,17 @@ import SettingsScreen from "./screens/SettingScreen";
 import TitleBar from "./components/TitleBar/titleBar";
 import useLogin from "./hooks/useLogin";
 import { useAppStore } from "./libs/appStore";
-import useLang from "./hooks/useLang";
 import useInitHeaderImage from "./hooks/useInitHeaderImage";
 import OTPScreen from "./screens/OTPScreen/Index";
-
 
 const { ipcRenderer } = window.require("electron");
 
 function App() {
   const { isLogin } = useAppStore();
-  const { lang } = useLang();
-  const { isOnline, setIsOnline } = useAppStore();
-
-
+  const { setIsOnline } = useAppStore();
 
   useInitHeaderImage();
   useLogin();
-
-  
 
   useEffect(() => {
     // ipcRenderer.on("hello", () => {
@@ -58,12 +51,6 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    if (!isOnline) {
-      message.error("No internet connection. Please check your connection.");
-    }
-  }, [isOnline]);
-
   const direction = i18n.language === "ar" ? "rtl" : "ltr";
 
   useEffect(() => {
@@ -83,8 +70,10 @@ function App() {
       }}
     >
       <TitleBar />
-      {!isLogin && !localStorage.getItem('verification_phone') && <LoginScreen />}
-      {!isLogin && localStorage.getItem('verification_phone') && <OTPScreen />}
+      {!isLogin && !localStorage.getItem("verification_phone") && (
+        <LoginScreen />
+      )}
+      {!isLogin && localStorage.getItem("verification_phone") && <OTPScreen />}
       {isLogin && (
         <MainContainerV2>
           <Routes>

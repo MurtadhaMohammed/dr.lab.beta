@@ -16,7 +16,8 @@ import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { WarningOutlined } from "@ant-design/icons";
-import { canPrint, recordPrint } from "../../../helper/printCount";
+import { usePlan } from "../../../hooks/usePlan";
+
 export const parseTests = (record) => {
   let tests = [];
   if (record?.testType === "CUSTOME") {
@@ -52,6 +53,8 @@ export const parseTests = (record) => {
 export const ResultsModal = () => {
   const { isReload, setIsReload, setPrintFontSize, printFontSize } =
     useAppStore();
+  const { canPrint, setPrintUsed } = usePlan();
+
   const {
     setIsResultsModal,
     isResultsModal,
@@ -108,10 +111,6 @@ export const ResultsModal = () => {
   };
   const PlanType = JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type;
   let printResults = (newTests) => {
-    if (PlanType === "FREE" && !canPrint()) {
-      message.error(t("printLimitMessage"));
-      return;
-    }
     record.tests = newTests;
     let data = {
       patient: record.patient.name,
@@ -120,14 +119,14 @@ export const ResultsModal = () => {
       tests: parseTests(record),
       isHeader: true,
       fontSize: printFontSize,
+      isFree: PlanType === "FREE",
     };
 
-
     send({
-      query: PlanType === "FREE" ? "printFree" : "print",
+      query: "print",
       data,
     }).then(({ err, res }) => {
-      recordPrint();
+      setPrintUsed();
       console.log(err, res);
     });
   };
@@ -142,10 +141,6 @@ export const ResultsModal = () => {
     }).then(({ err, newTests }) => {
       if (err) message.error("Error !");
       else {
-        if (PlanType === "FREE" && !canPrint()) {
-          message.error(t("printLimitMessage"));
-          return;
-        }
         message.success(t("Saved Successfully"));
 
         try {
@@ -164,6 +159,15 @@ export const ResultsModal = () => {
         setIsResultsModal(false);
         setIsReload(!isReload);
         setTimeout(() => {
+          if (PlanType === "FREE" && !canPrint()) {
+            Modal.warning({
+              centered: true,
+              title: t("printLimitTitle"),
+              content: t("printLimitMessage"),
+            });
+            // message.error(t("printLimitMessage"));
+            return;
+          }
           printResults(newTests);
         }, 1000);
       }
@@ -267,8 +271,6 @@ export const ResultsModal = () => {
                 }
               }
 
-              console.log(`Rendering options for ${row?.name}:`, row?.options);
-
               return (
                 <div className="test-item" key={row?.id}>
                   <p>
@@ -322,10 +324,7 @@ export const ResultsModal = () => {
         setIsBarcode(false);
       }}
       footer={
-        <div
-          className={"results-modal-footer"}
-          style={{ paddingBottom: !printer[0] ? "40px" : "" }}
-        >
+        <div className={"results-modal-footer"}>
           {isBarcode ? null : (
             <Space>
               <b>{t("FontSize")}</b>
@@ -371,12 +370,6 @@ export const ResultsModal = () => {
               </Button>
             )}
           </Space>
-          {!printer[0] ? (
-            <div className="p-4 absolute bottom-0 w-fit bg-[#fff] text-start flex gap-2 -mx-3">
-              <WarningOutlined className=" text-[#ffcc00]" />
-              <p>{t("printBarcodeWarning")}</p>
-            </div>
-          ) : null}
         </div>
       }
       centered
