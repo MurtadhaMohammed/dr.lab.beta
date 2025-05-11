@@ -76,7 +76,7 @@ const MainContainerV2 = ({ children }) => {
 
   // Function to determine rotation based on language
   const getRotationStyle = () => {
-    if (i18n.language === "ar") {
+    if (i18n.language === "ar" || i18n.language === "ku") {
       // Arabic language: rotate -90 degrees if collapsed
       return collapsed ? "rotate(-180deg)" : "rotate(0deg)";
     } else {
@@ -85,7 +85,7 @@ const MainContainerV2 = ({ children }) => {
     }
   };
   const getRotationStyle2 = () => {
-    if (i18n.language === "ar") {
+    if (i18n.language === "ar" || i18n.language === "ku") {
       // Arabic language: rotate -90 degrees if collapsed
       return "rotate(0deg)";
     } else {
@@ -317,8 +317,12 @@ const MainContainerV2 = ({ children }) => {
           <div>
             <WarningFilled className="text-orange-400 text-[60px]" />
           </div>
-          <b className="block mt-4 text-[16px]">{t("SubscriptionAlertTitle")}</b>
-          <p className="block !mt-2 text-[#a5a5a5]">{t("SubscriptionAlertMsg")} </p>
+          <b className="block mt-4 text-[16px]">
+            {t("SubscriptionAlertTitle")}
+          </b>
+          <p className="block !mt-2 text-[#a5a5a5]">
+            {t("SubscriptionAlertMsg")}{" "}
+          </p>
           <Popover
             // placement="top"
             title={

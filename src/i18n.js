@@ -17,16 +17,29 @@ const resources = {
   },
 };
 
-const langRow = JSON.parse(
-  localStorage.getItem("lang") || "{state : {lang: 'en'}}"
-);
+// Safer way to get language from localStorage
+const getSavedLanguage = () => {
+  try {
+    const langData = localStorage.getItem("lang");
+    if (!langData) return "en"; // Default if no language is saved
+
+    const parsed = JSON.parse(langData);
+    return parsed?.state?.lang || "en"; // Fallback to 'en' if structure is unexpected
+  } catch (e) {
+    console.error("Error parsing language from localStorage:", e);
+    return "en"; // Fallback to English if parsing fails
+  }
+};
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: langRow?.state?.lang,
+  lng: getSavedLanguage(), // Use the safely retrieved language
   fallbackLng: "en",
   interpolation: {
-    escapeValue: false,
+    escapeValue: false, // Not needed for React as it escapes by default
+  },
+  react: {
+    useSuspense: false, // If you're using Suspense
   },
 });
 
