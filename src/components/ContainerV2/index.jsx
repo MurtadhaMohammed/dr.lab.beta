@@ -144,8 +144,7 @@ const MainContainerV2 = ({ children }) => {
                   key: "/patients",
                   icon: (
                     <MdOutlinePersonalInjury
-                      size={18}
-                      style={{ marginLeft: "1px" }}
+                      size={20}
                     />
                   ),
                   label: <p className="text-[15px]">{t("Patients")}</p>,
