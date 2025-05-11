@@ -1,23 +1,16 @@
 import { message } from "antd";
-import { URL } from "../libs/api";
+import { apiCall, URL } from "../libs/api";
 import { t } from "i18next";
 
 export const signout = async (setSignoutLoading, setIsLogin, navigate) => {
   setSignoutLoading(true);
   try {
-    let phone = JSON.parse(localStorage.getItem("lab-user"))?.phone;
-
-    if (!phone) {
-      message.error(t("Usernotfound"));
-      return;
-    }
-
-    const resp = await fetch(`${URL}/app/logout`, {
+    console.log("hello")
+    const resp = await apiCall({
+      pathname: `/app/logout`,
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ phone }),
+      auth: true,
+      isFormData: false,
     });
 
     if (resp.status === 200) {
