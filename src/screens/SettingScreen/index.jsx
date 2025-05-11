@@ -31,7 +31,7 @@ import i18n from "../../i18n";
 import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import PopOverContent from "./PopOverContent";
-import { apiCall, URL } from "../../libs/api";
+import { apiCall } from "../../libs/api";
 import PrinterSelector from "./PrinterSelector";
 import { signout } from "../../helper/signOut";
 import { usePlan } from "../../hooks/usePlan";
