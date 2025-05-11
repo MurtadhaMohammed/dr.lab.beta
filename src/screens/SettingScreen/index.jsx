@@ -11,6 +11,7 @@ import {
   message,
   Popconfirm,
   Popover,
+  Radio,
   Row,
   Select,
   Space,
@@ -117,7 +118,7 @@ const SettingsScreen = () => {
         message.error(t("PleaseSelectImageFile"));
         return;
       }
-      
+
       const saveResponse = await send({
         query: "saveHeadImage",
         file: selectedFile.path,
@@ -175,21 +176,12 @@ const SettingsScreen = () => {
     });
   };
 
-  const handleLang = (checked) => {
-    if (checked != undefined) {
-      const newLanguage = checked ? "ar" : "en";
-      i18n.changeLanguage(newLanguage);
-      setLang(newLanguage);
-      document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
-    } else {
-      i18n.changeLanguage(lang);
-      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    }
+  const handleLang = (val) => {
+    const newLanguage = val.target.value;
+    i18n.changeLanguage(newLanguage);
+    setLang(newLanguage);
+    document.documentElement.dir = newLanguage === "en" ? "ltr" : "rtl";
   };
-
-  useEffect(() => {
-    handleLang();
-  }, []);
 
   const handleExportDatabase = async () => {
     setExportLoading(true);
@@ -245,14 +237,11 @@ const SettingsScreen = () => {
           <Space size={28}>
             <Space>
               <span className="m-0 p-0">{t("SystemLanguage")} </span>
-              <Switch
-                className="switchBtn"
-                checkedChildren="عربي"
-                unCheckedChildren="en"
-                checked={lang === "ar"}
-                onChange={handleLang}
-                style={{ width: 60 }}
-              />
+              <Radio.Group defaultValue={lang} onChange={handleLang}>
+                <Radio.Button value="ar">عربي</Radio.Button>
+                <Radio.Button value="ku">Kurdish</Radio.Button>
+                <Radio.Button value="en">English</Radio.Button>
+              </Radio.Group>
             </Space>
             <Divider type="vertical" />
             <Popconfirm
