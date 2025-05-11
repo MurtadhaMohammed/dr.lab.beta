@@ -191,7 +191,7 @@ export const PureTable = ({ isReport = false }) => {
                 formData.append("file", pdf, "report.pdf");
                 const resp = await apiCall({
                   method: "POST",
-                  pathname: "/whatsapp/whatsapp-message",
+                  pathname: "/app/whatsapp-message",
                   isFormData: true,
                   data: formData,
                   auth: true,
