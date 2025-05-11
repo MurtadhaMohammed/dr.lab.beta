@@ -30,7 +30,6 @@ import {
   useHomeStore,
   useReportsStore,
   useTrigger,
-  useWhatsappCountStore,
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
@@ -81,9 +80,7 @@ export const PureTable = ({ isReport = false }) => {
 
   const direction = i18n.dir();
 
-  const { isLimitExceeded } = useWhatsappCountStore((state) => ({
-    isLimitExceeded: state.isLimitExceeded,
-  }));
+
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -184,7 +181,6 @@ export const PureTable = ({ isReport = false }) => {
               try {
                 const res = await printResults();
                 pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
-                const user = JSON.parse(localStorage?.getItem("lab-user"));
                 const formData = new FormData();
                 formData.append("name", record?.patient?.name);
                 formData.append("phone", phone);
@@ -462,7 +458,7 @@ export const PureTable = ({ isReport = false }) => {
             }
             <Button
               size="small"
-              disabled={record?.status === t("COMPLETED")}
+              disabled={record?.status === "COMPLETED"}
               icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
             ></Button>
