@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { ConfigProvider } from "antd";
 import { Routes, Route } from "react-router-dom";
-import i18n from "./i18n";
 import MainContainerV2 from "./components/ContainerV2";
 import PatientsScreen from "./screens/PatientsScreen";
 import TestsScreen from "./screens/TestsScreen";
@@ -15,12 +14,14 @@ import useLogin from "./hooks/useLogin";
 import { useAppStore } from "./libs/appStore";
 import useInitHeaderImage from "./hooks/useInitHeaderImage";
 import OTPScreen from "./screens/OTPScreen/Index";
+import { useTranslation } from "react-i18next";
 
 const { ipcRenderer } = window.require("electron");
 
 function App() {
   const { isLogin } = useAppStore();
   const { setIsOnline } = useAppStore();
+  const { i18n } = useTranslation();
 
   useInitHeaderImage();
   useLogin();
@@ -51,15 +52,9 @@ function App() {
     };
   }, []);
 
-  const direction = i18n.language === "en" ? "ltr" : "ltr";
-
-  useEffect(() => {
-    document.documentElement.dir = direction;
-  }, [direction]);
-
   return (
     <ConfigProvider
-      direction={direction}
+      direction={i18n.language === "en" ? "ltr" : "rtl"}
       theme={{
         token: {
           colorPrimary: "#0000ff",
