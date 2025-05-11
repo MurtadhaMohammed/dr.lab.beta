@@ -48,7 +48,9 @@ export const usePlan = () => {
     setPrintLimit(Plan?.printLimit);
     setSubscriptionExpire(expiredAt);
     setRegisterAt(createdAt);
-    setWhatsappLimit(balance / whatsappMsgPrice || 0);
+
+    let msgLimit = balance / whatsappMsgPrice;
+    setWhatsappLimit(msgLimit <= 0 ? 0 : msgLimit);
   };
 
   const init = async () => {
