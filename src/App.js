@@ -51,7 +51,7 @@ function App() {
     };
   }, []);
 
-  const direction = i18n.language === "ar" ? "rtl" : "ltr";
+  const direction = i18n.language === "en" ? "ltr" : "ltr";
 
   useEffect(() => {
     document.documentElement.dir = direction;
