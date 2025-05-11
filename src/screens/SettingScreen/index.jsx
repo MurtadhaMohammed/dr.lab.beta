@@ -117,24 +117,10 @@ const SettingsScreen = () => {
         message.error(t("PleaseSelectImageFile"));
         return;
       }
-
-      const formData = new FormData();
-      formData.append("file", selectedFile);
-
-      const response = await fetch(`${URL}/upload`, {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Upload failed");
-      }
-
-      const result = await response.json();
-
+      
       const saveResponse = await send({
         query: "saveHeadImage",
-        file: result.path,
+        file: selectedFile.path,
       });
 
       if (saveResponse.success) {
@@ -316,7 +302,6 @@ const SettingsScreen = () => {
 
                 <Col span={6}>
                   <Form.Item
-                   
                     label={t("PhoneNumber")}
                     name="phone"
                     rules={[
@@ -326,7 +311,7 @@ const SettingsScreen = () => {
                       },
                     ]}
                   >
-                    <Input readOnly/>
+                    <Input readOnly />
                   </Form.Item>
                 </Col>
               </Row>
