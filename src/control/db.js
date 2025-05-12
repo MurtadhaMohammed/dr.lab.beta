@@ -5,7 +5,6 @@ const { app } = require("electron");
 const Database = require("better-sqlite3");
 
 class LabDB {
-
   constructor() {
     this.db = null;
     this.init();
@@ -13,7 +12,8 @@ class LabDB {
 
   async init() {
     // const isMac = os.platform() === "darwin";
-    const dbPath = app.getPath("userData") + "database.db";
+    // const dbPath = app.getPath("userData") + "database.db";
+    const dbPath = path.join(app.getPath("userData"), "database.db");
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
@@ -23,7 +23,10 @@ class LabDB {
       this.initializeDatabase();
       this.initTestsFromJSON();
       this.checkAndAddVisitNumberColumn();
-      console.log("LabDB initialized, db object:", this.db ? "exists" : "does not exist");
+      console.log(
+        "LabDB initialized, db object:",
+        this.db ? "exists" : "does not exist"
+      );
       if (this.db) {
         console.log("Available collections:", Object.keys(this.db));
       }
@@ -85,6 +88,38 @@ class LabDB {
       );
 
     `);
+  }
+
+  async closeConnection() {
+    if (!this.db) {
+      console.warn("No active database connection to close");
+      return;
+    }
+
+    try {
+      // Close with timeout protection
+      await Promise.race([
+        this.db.close(),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("Database close timeout")), 2000)
+        ),
+      ]);
+
+      this.db = null; // Clear reference
+      console.log("Database connection closed successfully");
+    } catch (error) {
+      console.error("Failed to close database:", error);
+      throw error; // Re-throw if caller needs to handle it
+    } finally {
+      // Force cleanup if still connected
+      if (this.db) {
+        try {
+          this.db.closeSync(); // Fallback sync close
+        } catch (syncError) {
+          console.error("Emergency close failed:", syncError);
+        }
+      }
+    }
   }
 
   async checkAndAddVisitNumberColumn() {
@@ -721,10 +756,10 @@ class LabDB {
       WHERE id = ?
     `);
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
-    
+
     return { success: info.changes > 0, newTests };
   }
-  
+
   async getVisitDetails(visitId) {
     try {
       if (!this.db) {
@@ -732,7 +767,7 @@ class LabDB {
         return null;
       }
       console.log(`Attempting to fetch visit with id: ${visitId}`);
-      
+
       const stmt = await this.db.prepare(`
         SELECT v.*, p.name as patientName
         FROM visits v
@@ -759,31 +794,25 @@ class LabDB {
       return null;
     }
   }
-  
+
   async exportAllData() {
     try {
       const patients = await this.getPatients({ q: "", skip: 0, limit: 1000 });
-      const visits = await this.getVisits({q: "", skip: 0, limit: 1000 });
-      const tests = await this.getTests({q: "", skip: 0, limit: 1000 });
-      const packages = await this.getPackages({q: "", skip: 0, limit: 1000 });
-     
-
+      const visits = await this.getVisits({ q: "", skip: 0, limit: 1000 });
+      const tests = await this.getTests({ q: "", skip: 0, limit: 1000 });
+      const packages = await this.getPackages({ q: "", skip: 0, limit: 1000 });
 
       return {
         patients: patients,
         visits: visits,
         tests: tests,
-        packages: packages
-        
+        packages: packages,
       };
-
     } catch (error) {
-      console.error('Error exporting all data:', error);
+      console.error("Error exporting all data:", error);
       throw error;
     }
   }
-  
-  }
-
+}
 
 module.exports = { LabDB };
