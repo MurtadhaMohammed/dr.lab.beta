@@ -25,7 +25,7 @@ export const colors = {
 };
 
 const useThemeState = create((set) => ({
-  appTheme: "dark",
+  appTheme: "light",
   setAppTheme: (appTheme) => set({ appTheme }),
 }));
 
