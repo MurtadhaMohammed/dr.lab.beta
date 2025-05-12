@@ -9,6 +9,33 @@ const bwipjs = require("bwip-js");
 const sharp = require("sharp");
 const isDev = require("electron-is-dev");
 
+function findDatabaseFileInUserData() {
+  const dbFileName = isDev
+    ? "database.db"
+    : process.platform === "win32"
+    ? "Electrondatabase.db"
+    : "lab-betadatabase.db";
+
+  const dbPath = isDev
+    ? path.join(app.getPath("userData"), dbFileName)
+    : process.platform === "win32"
+    ? path.join(app.getPath("userData"), "..", dbFileName)
+    : path.join(app.getPath("userData"), dbFileName);
+
+  try {
+    if (fs.existsSync(dbPath)) {
+      console.log("✅ Database file found:", dbPath);
+      return { fullPath: path.resolve(dbPath), dbFile: dbFileName };
+    } else {
+      console.warn("⚠️ Database file does not exist at:", dbPath);
+      return null;
+    }
+  } catch (error) {
+    console.error("❌ Error checking for database file:", error);
+    return null;
+  }
+}
+
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
   switch (arg.query) {
@@ -558,105 +585,113 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "exportDatabaseFile": {
       try {
-        const userDataPath = app.getPath("userData");
+        await labDB.closeConnection();
+        const dbTarget = findDatabaseFileInUserData();
+        if (!dbTarget) {
+          console.error("❌ No database file found to export.");
+          event.reply("asynchronous-reply", {
+            success: false,
+            message: "لم يتم العثور على قاعدة بيانات للتصدير.",
+          });
+          return;
+        }
 
-        const databaseFileName = !isDev
-          ? "lab-betadatabase.db"
-          : process.platform === "win32"
-          ? "Electrondatabase.db"
-          : "database.db";
-        const defaultPathDB =
-          process.platform === "win32"
-            ? path.join(userDataPath, "..", databaseFileName)
-            : userDataPath;
+        const { fullPath: dbPath, dbFile } = dbTarget;
 
-        const defaultSavePath = app.getPath("desktop");
-        const desktopPath = path.join(defaultSavePath, databaseFileName);
-
-        console.log("Database path:", defaultPathDB);
-        console.log("Desktop path:", desktopPath);
+        const defaultPath = path.join(app.getPath("desktop"), dbFile);
 
         const { filePath, canceled } = await dialog.showSaveDialog({
           title: "Export Database",
-          defaultPath: desktopPath,
+          defaultPath: defaultPath,
           filters: [{ name: "Database Files", extensions: ["db"] }],
         });
 
-        if (canceled) {
-          console.log("Export canceled by user");
+        if (canceled || !filePath) {
+          console.log("🚫 Export canceled.");
           return;
         }
 
-        if (!filePath) {
-          console.error("No file path selected");
-          return;
-        }
-
-        fs.copyFile(defaultPathDB, filePath, (error) => {
+        fs.copyFile(dbPath, filePath, (error) => {
           if (error) {
-            console.error("Error exporting database:", error);
+            console.error("❌ Error exporting database:", error);
+            event.reply("asynchronous-reply", {
+              success: false,
+              message: "فشل في تصدير قاعدة البيانات.",
+            });
           } else {
-            console.log(`Database exported to: ${filePath}`);
+            labDB.init()
+            console.log("✅ Database exported to:", filePath);
             event.reply("asynchronous-reply", {
               success: true,
-              message: "Database file exported successfully.",
+              message: "تم تصدير قاعدة البيانات بنجاح.",
             });
           }
         });
       } catch (error) {
-        console.error("Error exporting database:", error);
+        console.error("❌ Unexpected error in ExportDatabaseFile:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          message: "حدث خطأ غير متوقع أثناء التصدير.",
+        });
       }
       break;
     }
 
     case "ImportDatabaseFile": {
       try {
-        const userDataPath = app.getPath("userData");
-        const databaseFileName = !isDev
-          ? "lab-betadatabase.db"
-          : process.platform === "win32"
-          ? "Electrondatabase.db"
-          : "database.db";
-        const defaultPathDB =
-          process.platform === "win32"
-            ? path.join(userDataPath, "..", databaseFileName)
-            : userDataPath;
-
-        // const databaseFileName =  'Electrondatabase.db';
-        // const defaultPathDB =path.join(userDataPath, '..', databaseFileName);
-
-        console.log("the file path of default db:", defaultPathDB);
-
+        await labDB.closeConnection();
         const { filePaths, canceled } = await dialog.showOpenDialog({
           title: "Import Database",
           properties: ["openFile"],
           filters: [{ name: "Database Files", extensions: ["db"] }],
         });
 
-        if (canceled) {
-          return;
-        }
-
-        if (filePaths.length === 0) {
-          console.error("No file selected");
+        if (canceled || !filePaths || filePaths.length === 0) {
+          console.log("🚫 Import canceled or no file selected.");
           return;
         }
 
         const newDbPath = filePaths[0];
 
+        const dbTarget = findDatabaseFileInUserData();
+        if (!dbTarget) {
+          console.error("❌ No existing database found to replace.");
+          event.reply("asynchronous-reply", {
+            success: false,
+            message: "لم يتم العثور على قاعدة بيانات حالية.",
+          });
+          return;
+        }
+
+        const defaultPathDB = dbTarget.fullPath;
+
+        // 🛡️ Backup before replacing
+        const backupPath = defaultPathDB + ".backup";
+        fs.copyFileSync(defaultPathDB, backupPath);
+        console.log("✅ Backup created at:", backupPath);
+
+        // 📥 Replace with new file
         fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
           if (copyError) {
-            console.error("Error replacing database file:", copyError);
+            console.error("❌ Error replacing DB:", copyError);
+            event.reply("asynchronous-reply", {
+              success: false,
+              message: "فشل في استيراد قاعدة البيانات.",
+            });
           } else {
-            console.log(`Database file replaced with: ${newDbPath}`);
+            console.log("✅ DB replaced with:", newDbPath);
             event.reply("asynchronous-reply", {
               success: true,
-              message: "Database file replaced successfully.",
+              message: "تم استيراد قاعدة البيانات بنجاح.",
             });
           }
         });
       } catch (error) {
-        console.error("Error importing database file:", error);
+        console.error("❌ Error in ImportDatabaseFile:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          message: "حدث خطأ أثناء الاستيراد.",
+        });
       }
       break;
     }
