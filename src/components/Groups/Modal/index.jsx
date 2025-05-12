@@ -24,6 +24,7 @@ import "./style.css";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
+import { useAppTheme } from "../../../hooks/useAppThem";
 const { Text } = Typography;
 
 export const PureModal = () => {
@@ -38,12 +39,12 @@ export const PureModal = () => {
     customePrice,
     setCustomePrice,
     id,
-    createdAt,
     setReset,
   } = useGroupStore();
   const [testsList, setTestsList] = useState([]);
   const [editTest, setEditTest] = useState(null); // State for editing test
   const { t } = useTranslation();
+  const { appColors, appTheme } = useAppTheme();
 
   let skip = 0; // Initialize skip (offset)
   const limit = 10; // Set the limit for the number of tests per batch
@@ -283,8 +284,12 @@ export const PureModal = () => {
               )
             )}
           </div>
-          <div className="test-form-footer">
-            <div className="overlay-top"></div>
+          <div className="inset-x-0 bottom-[10px] relative">
+            <div
+              className={`absolute inset-x-0 top-[-25px] h-5 bg-gradient-to-t ${
+                appTheme === "dark" ? "from-[#1f1f1f]" : "from-white"
+              } to-transparent z-[99]`}
+            ></div>
             <Row gutter={[16, 16]}>
               <Col span={15}>
                 <Space style={{ width: "100%" }} direction="vertical" size={3}>
@@ -318,7 +323,13 @@ export const PureModal = () => {
             </Row>
 
             <Divider />
-            <div className="total-values">
+            <div
+              className="border border-dashed  rounded-lg p-2 px-4"
+              style={{
+                backgroundColor: appColors.sideMenuBg,
+                borderColor: appColors.colorBorder,
+              }}
+            >
               <div className="app-flex-space">
                 <Text type="secondary"> {t("TotalPrice")} </Text>
                 <Text

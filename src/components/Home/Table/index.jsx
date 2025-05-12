@@ -37,6 +37,7 @@ import { apiCall } from "../../../libs/api";
 import { parseTests } from "../ResultsModal";
 import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 import { usePlan } from "../../../hooks/usePlan";
+import { useAppTheme } from "../../../hooks/useAppThem";
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload, isOnline } = useAppStore();
@@ -77,6 +78,7 @@ export const PureTable = ({ isReport = false }) => {
   const limit = usePageLimit();
   const { setIsBarcode } = useHomeStore();
   const { t, i18n } = useTranslation();
+  const { appColors } = useAppTheme();
 
   const direction = i18n.dir();
 
@@ -577,7 +579,7 @@ export const PureTable = ({ isReport = false }) => {
     <Table
       style={{
         marginTop: 16,
-        border: "1px solid #eee",
+        border: `1px solid ${appColors.colorBorder}`,
         borderRadius: 10,
         overflow: "hidden",
       }}

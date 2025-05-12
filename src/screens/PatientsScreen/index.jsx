@@ -31,7 +31,7 @@ const PatientsScreen = () => {
             />
           </Space>
           <Button
-            type="link"
+            type="primary"
             onClick={() => {
               id && setReset();
               setIsModal(true);

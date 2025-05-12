@@ -28,7 +28,7 @@ const TestsScreen = () => {
 
           <Space>
             <Button
-              type="link"
+              type="primary"
               onClick={() => {
                 id && setReset();
                 setIsModal(true);

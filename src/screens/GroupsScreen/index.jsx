@@ -35,7 +35,7 @@ const GroupsScreen = () => {
 
           <Space>
             <Button
-              type="link"
+              type="primary"
               onClick={() => {
                 id && setReset();
                 setIsModal(true);

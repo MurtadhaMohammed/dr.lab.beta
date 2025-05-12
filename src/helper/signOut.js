@@ -1,11 +1,10 @@
 import { message } from "antd";
-import { apiCall, URL } from "../libs/api";
-import { t } from "i18next";
+import { apiCall } from "../libs/api";
 
 export const signout = async (setSignoutLoading, setIsLogin, navigate) => {
   setSignoutLoading(true);
   try {
-    console.log("hello")
+    console.log("hello");
     const resp = await apiCall({
       pathname: `/app/logout`,
       method: "POST",
@@ -15,7 +14,8 @@ export const signout = async (setSignoutLoading, setIsLogin, navigate) => {
 
     if (resp.status === 200) {
       setSignoutLoading(false);
-      localStorage.clear();
+      localStorage.removeItem("lab_token");
+      localStorage.removeItem("lab-user");
       setIsLogin(false);
       navigate(-1, { replace: true });
     } else {
