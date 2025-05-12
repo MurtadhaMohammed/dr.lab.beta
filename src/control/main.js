@@ -619,6 +619,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               message: "فشل في تصدير قاعدة البيانات.",
             });
           } else {
+            labDB.init()
             console.log("✅ Database exported to:", filePath);
             event.reply("asynchronous-reply", {
               success: true,
