@@ -87,18 +87,18 @@ code {
 
 /* Track */
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #f1f1f10a;
 }
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: #4d6afe3f;
   border-radius: 10px;
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: #eee;
+  background: #4d6afe6b;
 }
 
 /* Antd Customize +++++++++++++++++++++++++ */
