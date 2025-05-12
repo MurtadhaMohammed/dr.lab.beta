@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { ConfigProvider } from "antd";
+import { ConfigProvider, theme } from "antd";
 import { Routes, Route } from "react-router-dom";
 import MainContainerV2 from "./components/ContainerV2";
 import PatientsScreen from "./screens/PatientsScreen";
@@ -15,6 +15,7 @@ import { useAppStore } from "./libs/appStore";
 import useInitHeaderImage from "./hooks/useInitHeaderImage";
 import OTPScreen from "./screens/OTPScreen/Index";
 import { useTranslation } from "react-i18next";
+// const { darkAlgorithm, defaultAlgorithm } = theme;
 
 const { ipcRenderer } = window.require("electron");
 
@@ -52,10 +53,12 @@ function App() {
     };
   }, []);
 
+
   return (
     <ConfigProvider
       direction={i18n.language === "en" ? "ltr" : "rtl"}
       theme={{
+        //algorithm: darkAlgorithm,
         token: {
           colorPrimary: "#0000ff",
           colorError: "#eb2f96",

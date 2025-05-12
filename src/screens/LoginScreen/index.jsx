@@ -1,4 +1,4 @@
-import { Button, Card, Form, Input, Space, message, Switch } from "antd";
+import { Button, Card, Form, Input, Space, message, Switch, Radio } from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useAppStore, useLanguage } from "../../libs/appStore";
@@ -135,16 +135,11 @@ const LoginScreen = () => {
     }
   };
 
-  const handleLang = (checked) => {
-    if (checked != undefined) {
-      const newLanguage = checked ? "ar" : "en";
-      i18n.changeLanguage(newLanguage);
-      setLang(newLanguage);
-      document.documentElement.dir = newLanguage === "ar" ? "rtl" : "ltr";
-    } else {
-      i18n.changeLanguage(lang);
-      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
-    }
+  const handleLang = (val) => {
+    const newLanguage = val.target.value;
+    i18n.changeLanguage(newLanguage);
+    setLang(newLanguage);
+    document.documentElement.dir = newLanguage === "en" ? "ltr" : "rtl";
   };
 
   return (
@@ -372,16 +367,18 @@ const LoginScreen = () => {
                     {t("register")}
                   </span>
                 </p>
-                <Space>
-                  <Switch
-                    className="switchBtn"
-                    checkedChildren="En"
-                    unCheckedChildren="عربي"
-                    checked={lang === "ar"}
+
+                <div className="text-center mt-4">
+                  <Radio.Group
+                    size="small"
+                    defaultValue={lang}
                     onChange={handleLang}
-                    style={{ width: 60 }}
-                  />
-                </Space>
+                  >
+                    <Radio.Button value="ar">عربي</Radio.Button>
+                    <Radio.Button value="ku">Kurdish</Radio.Button>
+                    <Radio.Button value="en">English</Radio.Button>
+                  </Radio.Group>
+                </div>
               </div>
             </div>
           </Space>

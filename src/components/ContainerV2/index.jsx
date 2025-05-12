@@ -25,10 +25,10 @@ import logo1 from "../../assets/logo.png";
 import logo2 from "../../assets/logo2.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
-import { URL } from "../../libs/api";
 import { usePlan } from "../../hooks/usePlan";
 import dayjs from "dayjs";
 import { CrownFilled, WarningFilled } from "@ant-design/icons";
+import { signout } from "../../helper/signOut";
 
 const { Sider, Content } = Layout;
 
@@ -45,30 +45,6 @@ const MainContainerV2 = ({ children }) => {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
-
-  const signout = async () => {
-    setSignoutLoading(true);
-    try {
-      let username = JSON.parse(localStorage.getItem("lab-user"))?.username;
-      const resp = await fetch(`${URL}/app/logout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ username }),
-      });
-      if (resp.status === 200) {
-        setSignoutLoading(false);
-        localStorage.clear();
-        setIsLogin(false);
-      }
-      // else message.error(t("Serialnotfound"));
-    } catch (error) {
-      console.log(error);
-      message.error(error.message);
-      setSignoutLoading(false);
-    }
-  };
 
   const showPopover = () => {
     setIsPopoverVisible(true);
@@ -103,6 +79,18 @@ const MainContainerV2 = ({ children }) => {
       return true;
     else return false;
   };
+
+    const handleSignout = async () => {
+      setSignoutLoading(true);
+      try {
+        await signout(setSignoutLoading, setIsLogin, navigate);
+      } catch (error) {
+        console.error("Error during signout:", error);
+        message.error(t("SignoutError"));
+      } finally {
+        setSignoutLoading(false);
+      }
+    };
 
   return (
     <Layout className="h-screen">
@@ -156,8 +144,7 @@ const MainContainerV2 = ({ children }) => {
                   key: "/patients",
                   icon: (
                     <MdOutlinePersonalInjury
-                      size={18}
-                      style={{ marginLeft: "1px" }}
+                      size={20}
                     />
                   ),
                   label: <p className="text-[15px]">{t("Patients")}</p>,
@@ -199,7 +186,7 @@ const MainContainerV2 = ({ children }) => {
           </div>
           <div className="w-full grid">
             <Popconfirm
-              onConfirm={signout}
+              onConfirm={handleSignout}
               title={t("SignoutConfirm")}
               description={t("SignOutFormThisApp")}
             >
