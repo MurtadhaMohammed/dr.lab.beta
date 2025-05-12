@@ -12,22 +12,45 @@ const sharp = require("sharp");
 function findDatabaseFileInUserData() {
   const userDataPath = app.getPath("userData");
 
+  const possibleDbNames = [
+    "lab-betadatabase.db",
+    "Electrondatabase.db",
+    "database.db",
+  ];
+
   try {
-    const files = fs.readdirSync(userDataPath);
-    const dbFile = files.find((file) => file.endsWith(".db"));
-    if (dbFile) {
-      const fullPath = path.join(userDataPath, dbFile);
-      console.log("✅ Database file found:", fullPath);
-      return { fullPath, dbFile };
-    } else {
-      console.warn("⚠️ No .db file found in userData directory.");
-      return null;
+    const basePath =
+      process.platform === "win32"
+        ? path.resolve(userDataPath, "..")
+        : userDataPath;
+
+    const files = fs.readdirSync(basePath);
+
+    const foundNamedFile = possibleDbNames.find((name) =>
+      files.includes(name)
+    );
+
+    if (foundNamedFile) {
+      const fullPath = path.join(basePath, foundNamedFile);
+      console.log("✅ Database file found (known name):", fullPath);
+      return { fullPath, dbFile: foundNamedFile };
     }
+
+    const fallbackDb = files.find((file) => file.endsWith(".db"));
+    if (fallbackDb) {
+      const fullPath = path.join(basePath, fallbackDb);
+      console.log("✅ Database file found (fallback):", fullPath);
+      return { fullPath, dbFile: fallbackDb };
+    }
+
+    console.warn("⚠️ No .db file found in:", basePath);
+    return null;
   } catch (error) {
-    console.error("❌ Failed to read userData directory:", error);
+    console.error("❌ Failed to read directory:", error);
     return null;
   }
 }
+
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
