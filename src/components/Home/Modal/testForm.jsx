@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import { getPrice, getTotalPrice } from "../../../helper/price";
 import { useTranslation } from "react-i18next";
+import { useAppTheme } from "../../../hooks/useAppThem";
 
 const { Text } = Typography;
 
@@ -30,6 +31,7 @@ const TestForm = () => {
   const [packageList, setPackageList] = useState([]);
   const [editTest, setEditTest] = useState(null);
   const { t } = useTranslation();
+  const { appTheme, appColors } = useAppTheme();
   const testLabel = {
     CUSTOME: t("Custom"),
     PACKAGE: t("Package"),
@@ -253,8 +255,14 @@ const TestForm = () => {
           )
         )}
       </div>
-      <div className="test-form-footer">
-        <div className="overlay-top"></div>
+      <div
+        className="inset-x-0 bottom-[10px] relative"
+      >
+        <div
+          className={`absolute inset-x-0 top-[-25px] h-5 bg-gradient-to-t ${
+            appTheme === "dark" ? "from-[#1f1f1f]" : "from-white"
+          } to-transparent z-[99]`}
+        ></div>
         <div className="app-flex-space">
           <Text type="secondary">
             {t("MenualDiscount")} {t("Optional")}{" "}
@@ -268,7 +276,13 @@ const TestForm = () => {
           />
         </div>
         <Divider />
-        <div className="total-values">
+        <div
+          className="border border-dashed  rounded-lg p-2 px-4"
+          style={{
+            backgroundColor: appColors.sideMenuBg,
+            borderColor: appColors.colorBorder,
+          }}
+        >
           <div className="app-flex-space">
             <Text type="secondary">{t("TotalPrice")} </Text>
             <Text

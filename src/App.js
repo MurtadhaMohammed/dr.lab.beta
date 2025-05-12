@@ -15,13 +15,14 @@ import { useAppStore } from "./libs/appStore";
 import useInitHeaderImage from "./hooks/useInitHeaderImage";
 import OTPScreen from "./screens/OTPScreen/Index";
 import { useTranslation } from "react-i18next";
-// const { darkAlgorithm, defaultAlgorithm } = theme;
+import { useAppTheme } from "./hooks/useAppThem";
+const { darkAlgorithm, defaultAlgorithm } = theme;
 
 const { ipcRenderer } = window.require("electron");
 
 function App() {
-  const { isLogin } = useAppStore();
-  const { setIsOnline } = useAppStore();
+  const { isLogin, setIsOnline } = useAppStore();
+  const { appTheme, appColors } = useAppTheme();
   const { i18n } = useTranslation();
 
   useInitHeaderImage();
@@ -53,16 +54,18 @@ function App() {
     };
   }, []);
 
+  console.log(appTheme)
 
   return (
     <ConfigProvider
+      key={appTheme}
       direction={i18n.language === "en" ? "ltr" : "rtl"}
       theme={{
-        //algorithm: darkAlgorithm,
+        algorithm: appTheme === "dark" ? darkAlgorithm : defaultAlgorithm,
         token: {
-          colorPrimary: "#0000ff",
-          colorError: "#eb2f96",
-          colorLink: "#0000ff",
+          colorPrimary: appColors?.colorPrimary,
+          colorError: appColors?.colorError,
+          colorLink: appColors?.colorLink,
           borderRadius: 8,
         },
       }}

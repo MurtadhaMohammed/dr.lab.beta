@@ -1,4 +1,14 @@
-import { Button, Card, Form, Input, Space, message, Switch, Radio } from "antd";
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  Space,
+  message,
+  Switch,
+  Radio,
+  Typography,
+} from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useAppStore, useLanguage } from "../../libs/appStore";
@@ -10,6 +20,7 @@ import BackIcon from "./BackIcon";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import { URL } from "../../libs/api";
+import { useAppTheme } from "../../hooks/useAppThem";
 // import { useNavigate } from "react-router-dom";
 
 const LoginScreen = () => {
@@ -17,6 +28,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
   const [isForm, setIsForm] = useState(false);
+  const { appColors } = useAppTheme();
   const { lang, setLang } = useLanguage();
   const [form] = Form.useForm();
   const { t } = useTranslation();
@@ -354,19 +366,22 @@ const LoginScreen = () => {
 
               <div className="h-full flex flex-col gap-4 handleOr">
                 <div className="w-full border-[0.5px] relative">
-                  <p className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-1 font-semibold text-base text-[#0000009d]">
-                    {t("or")}
+                  <p
+                    className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 -translate-y-1/2  p-1 font-semibold text-base text-[#0000009d]"
+                    style={{ background: appColors?.bgColor }}
+                  >
+                    <Typography.Text>{t("or")}</Typography.Text>
                   </p>
                 </div>
-                <p
-                  className="text-[#000000a1] text-center text-base font-semibold leading-[29.05px]"
+                <Typography.Text
+                  className="text-center text-base font-semibold leading-[29.05px]"
                   onClick={() => setIsForm(true)}
                 >
                   {t("Orclickhereto")}
-                  <span className="text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff] inter font-bold">
+                  <a className="hover:cursor-pointer hover:text-[#0442ff] inter font-bold">
                     {t("register")}
-                  </span>
-                </p>
+                  </a>
+                </Typography.Text>
 
                 <div className="text-center mt-4">
                   <Radio.Group
@@ -375,7 +390,7 @@ const LoginScreen = () => {
                     onChange={handleLang}
                   >
                     <Radio.Button value="ar">عربي</Radio.Button>
-                    <Radio.Button value="ku">Kurdish</Radio.Button>
+                    <Radio.Button value="ku">کوردی</Radio.Button>
                     <Radio.Button value="en">English</Radio.Button>
                   </Radio.Group>
                 </div>
