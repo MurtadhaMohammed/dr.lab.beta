@@ -35,6 +35,41 @@ class LabDB {
     }
   }
 
+  async executeMaintenance() {
+    // SQLite example
+    await this.db.exec("PRAGMA wal_checkpoint(FULL)");
+    await this.db.exec("PRAGMA synchronous = FULL");
+  }
+
+  async syncToDisk() {
+    // Force OS-level sync
+    if (this.db?.exec) {
+      await this.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+    }
+    if (this.dbPath) {
+      const fd = fs.openSync(this.dbPath, 'r+');
+      fs.fsyncSync(fd);
+      fs.closeSync(fd);
+    }
+  }
+  
+  async reconncet() {
+    const dbPath = path.join(app.getPath("userData"), "database.db");
+    try {
+      this.db = new Database(dbPath, {
+        // verbose: console.log,
+      });
+      await this.db.pragma("journal_mode = WAL");
+      console.log("Database reopen successfully");
+
+      if (this.db) {
+        console.log("Available collections:", Object.keys(this.db));
+      }
+    } catch (err) {
+      console.error("Error opening database", err);
+    }
+  }
+
   initializeDatabase() {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS patients(
@@ -95,29 +130,12 @@ class LabDB {
       console.warn("No active database connection to close");
       return;
     }
-
-    try {
-      // Close with timeout protection
-      await Promise.race([
-        this.db.close(),
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("Database close timeout")), 2000)
-        ),
-      ]);
-
-      this.db = null; // Clear reference
-      console.log("Database connection closed successfully");
-    } catch (error) {
-      console.error("Failed to close database:", error);
-      throw error; // Re-throw if caller needs to handle it
-    } finally {
-      // Force cleanup if still connected
-      if (this.db) {
-        try {
-          this.db.closeSync(); // Fallback sync close
-        } catch (syncError) {
-          console.error("Emergency close failed:", syncError);
-        }
+    if (this.db) {
+      try {
+        await this.db.close(); 
+        console.log("DATABASE CLOSED SUCCESSFULLY");
+      } catch (syncError) {
+        console.error("Emergency close failed:", syncError);
       }
     }
   }
@@ -318,6 +336,7 @@ class LabDB {
       birth ? new Date(birth).toISOString() : null,
       id
     );
+    
     return { data: info.changes > 0 };
   }
 

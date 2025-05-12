@@ -188,11 +188,8 @@ const SettingsScreen = () => {
     setExportLoading(true);
     const res = await send({ query: "exportDatabaseFile" });
     if (res.success) {
-      message.success(t("DatabaseExportedSuccessfully"));
-    } else {
-      message.error(t("ErrorExportingDatabase"));
-      console.error("Error exporting :", res.error);
-    }
+      message.success(res?.message);
+    } else message.error(res?.message);
     setExportLoading(false);
   };
 
@@ -200,9 +197,8 @@ const SettingsScreen = () => {
     setImportLoading(true);
     const res = await send({ query: "ImportDatabaseFile" });
     if (res.success) {
-      message.success(t("importSuccess"));
-      window.location.reload();
-    } else message.error(t("importError"));
+      message.success(res?.message);
+    } else message.error(res?.message);
 
     setImportLoading(false);
   };
