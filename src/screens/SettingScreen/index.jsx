@@ -43,7 +43,7 @@ const SettingsScreen = () => {
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
   const { lang, setLang } = useLanguage();
-  const { appColors} = useAppTheme();
+  const { appColors } = useAppTheme();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -199,8 +199,10 @@ const SettingsScreen = () => {
   const handleImportDatabase = async () => {
     setImportLoading(true);
     const res = await send({ query: "ImportDatabaseFile" });
-    if (res.success) message.success(t("importSuccess"));
-    else message.error(t("importError"));
+    if (res.success) {
+      message.success(t("importSuccess"));
+      window.location.reload();
+    } else message.error(t("importError"));
 
     setImportLoading(false);
   };
@@ -380,8 +382,14 @@ const SettingsScreen = () => {
                   <CrownFilled className="text-[18px] text-[#faad14]" />
                 </p>
 
-                <div className="rounded-lg border mt-[8px]" style={{ borderColor: appColors.colorBorder }}>
-                  <div className="border-b  p-[24px]"  style={{ borderColor: appColors.colorBorder }}>
+                <div
+                  className="rounded-lg border mt-[8px]"
+                  style={{ borderColor: appColors.colorBorder }}
+                >
+                  <div
+                    className="border-b  p-[24px]"
+                    style={{ borderColor: appColors.colorBorder }}
+                  >
                     <div className="flex justify-between items-center">
                       <div>
                         <b className="text-[14px]">{t("ExportDatabase")}</b>
@@ -475,9 +483,12 @@ const SettingsScreen = () => {
                   </div>
 
                   {planType === "FREE" && (
-                    <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                    <div
+                      className="mt-2 p-2 bg-gradient-to-r    rounded-lg"
+                      style={{ background: appColors.colorPrimaryHover }}
+                    >
                       <div className="flex justify-between items-center">
-                        <p className="text-sm font-medium text-blue-800">
+                        <p className="text-sm font-medium">
                           {t("WantToUpgrade")}
                         </p>
                         <Popover
