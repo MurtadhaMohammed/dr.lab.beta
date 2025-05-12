@@ -178,7 +178,7 @@ const ReportsScreen = () => {
   if (planType === "FREE") {
     return (
       <div className={`reports-screen page relative z-10`}>
-        <div className="z-20 absolute left-1/2 top-2/3 transform -translate-x-1/2 text-black p-[2%] flex justify-center">
+        <div className="z-20 absolute left-1/2 top-2/3 transform -translate-x-1/2  p-[2%] flex justify-center">
           <div className="flex items-center flex-col text-center gap-2">
             <p className="font-semibold text-lg "> {t("UpgradeToProDescription")}</p>
 

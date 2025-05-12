@@ -475,9 +475,9 @@ const SettingsScreen = () => {
                   </div>
 
                   {planType === "FREE" && (
-                    <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
+                    <div className="mt-2 p-2 bg-gradient-to-r    rounded-lg" style={{background: appColors.colorPrimaryHover}}>
                       <div className="flex justify-between items-center">
-                        <p className="text-sm font-medium text-blue-800">
+                        <p className="text-sm font-medium">
                           {t("WantToUpgrade")}
                         </p>
                         <Popover
