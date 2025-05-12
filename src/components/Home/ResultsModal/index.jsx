@@ -15,8 +15,8 @@ import { send } from "../../../control/renderer";
 import dayjs from "dayjs";
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { WarningOutlined } from "@ant-design/icons";
 import { usePlan } from "../../../hooks/usePlan";
+import { useAppTheme } from "../../../hooks/useAppThem";
 
 export const parseTests = (record) => {
   let tests = [];
@@ -65,6 +65,7 @@ export const ResultsModal = () => {
   } = useHomeStore();
   const { t } = useTranslation();
   const { isOnline } = useAppStore();
+  const { appColors } = useAppTheme();
   const printer = useState(localStorage.getItem("selectedPrinter"));
 
   useEffect(() => {
@@ -198,7 +199,7 @@ export const ResultsModal = () => {
     CUSTOME: (
       <div className="test-section">
         <Space direction="vertical" size={0} style={{ width: "100%" }}>
-          <div className="title">
+          <div className="py-2 px-3" style={{background: appColors.colorPrimaryHover}}>
             <Typography.Text type="secondary">
               {t("CustomTest")}
             </Typography.Text>
@@ -214,8 +215,6 @@ export const ResultsModal = () => {
                   row.options = [];
                 }
               }
-
-              console.log(`Rendering options for ${row?.name}:`, row?.options);
 
               return (
                 <div className="test-item" key={row?.id}>
@@ -256,7 +255,7 @@ export const ResultsModal = () => {
     PACKAGE: record?.tests?.map((group, i) => (
       <div className="test-section" key={i}>
         <Space direction="vertical" size={0} style={{ width: "100%" }}>
-          <div className="title">
+          <div className="py-2 px-3" style={{background: appColors.colorPrimaryHover}}>
             <Typography.Text type="secondary"># {group.title}</Typography.Text>
           </div>
           <div className="test-list">
@@ -312,8 +311,7 @@ export const ResultsModal = () => {
     <Modal
       title={
         <Typography.Text type="secondary">
-          {t("TestResultTitle")}{" "}
-          <b style={{ color: "#000" }}>{record?.patient?.name}</b>
+          {t("TestResultTitle")} <b>{record?.patient?.name}</b>
         </Typography.Text>
       }
       open={isResultsModal}
