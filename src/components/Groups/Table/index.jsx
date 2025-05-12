@@ -18,6 +18,7 @@ import { useAppStore, useGroupStore } from "../../../libs/appStore";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
+import { useAppTheme } from "../../../hooks/useAppThem";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -35,6 +36,7 @@ export const PureTable = () => {
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
   const limit = usePageLimit();
+  const {appColors} = useAppTheme();
 
   const columns = [
     {
@@ -201,7 +203,7 @@ export const PureTable = () => {
     <Table
       style={{
         marginTop: 16,
-        border: "1px solid #eee",
+        border: `1px solid ${appColors.colorBorder}`,
         borderRadius: 10,
         overflow: "hidden",
       }}

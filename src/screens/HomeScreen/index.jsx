@@ -73,10 +73,7 @@ const HomeScreen = () => {
                   },
                 }}
               >
-                <a
-                  style={{ color: "#000" }}
-                  onClick={(e) => e.preventDefault()}
-                >
+                <a onClick={(e) => e.preventDefault()}>
                   <Space align="center">
                     <b>{isToday ? t("Today") : t("All")}</b>
                     <DownOutlined style={{ fontSize: 13 }} />
@@ -92,7 +89,7 @@ const HomeScreen = () => {
               onClick,
             }}
           >
-            <Button type="link" onClick={(e) => e.preventDefault()}>
+            <Button type="primary" onClick={(e) => e.preventDefault()}>
               + {t("CreateTest")}
             </Button>
           </Dropdown>

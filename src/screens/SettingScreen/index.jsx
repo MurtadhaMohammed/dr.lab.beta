@@ -35,6 +35,7 @@ import { apiCall } from "../../libs/api";
 import PrinterSelector from "./PrinterSelector";
 import { signout } from "../../helper/signOut";
 import { usePlan } from "../../hooks/usePlan";
+import { useAppTheme } from "../../hooks/useAppThem";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -42,6 +43,7 @@ const SettingsScreen = () => {
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
   const { lang, setLang } = useLanguage();
+  const { appColors} = useAppTheme();
   const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
   const [form] = Form.useForm();
   const navigate = useNavigate();
@@ -235,10 +237,10 @@ const SettingsScreen = () => {
 
           <Space size={28}>
             <Space>
-              <span className="m-0 p-0">{t("SystemLanguage")} </span>
+              {/* <span className="m-0 p-0">{t("SystemLanguage")} </span> */}
               <Radio.Group defaultValue={lang} onChange={handleLang}>
                 <Radio.Button value="ar">عربي</Radio.Button>
-                <Radio.Button value="ku">Kurdish</Radio.Button>
+                <Radio.Button value="ku">کوردی</Radio.Button>
                 <Radio.Button value="en">English</Radio.Button>
               </Radio.Group>
             </Space>
@@ -378,8 +380,8 @@ const SettingsScreen = () => {
                   <CrownFilled className="text-[18px] text-[#faad14]" />
                 </p>
 
-                <div className="rounded-lg border border-1-[#eee] mt-[8px]">
-                  <div className="border-b border-b-[#eee] p-[24px]">
+                <div className="rounded-lg border mt-[8px]" style={{ borderColor: appColors.colorBorder }}>
+                  <div className="border-b  p-[24px]"  style={{ borderColor: appColors.colorBorder }}>
                     <div className="flex justify-between items-center">
                       <div>
                         <b className="text-[14px]">{t("ExportDatabase")}</b>

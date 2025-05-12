@@ -358,7 +358,7 @@ function printReport(data, cb) {
       doc.setFillColor(245, 247, 250);
       doc.rect(0, pageHeight - 20, pageWidth, 20, "F");
       doc.setDrawColor(220, 220, 220);
-      doc.line(10, pageHeight - 20, pageWidth - 10, pageHeight - 20);
+      // doc.line(10, pageHeight - 20, pageWidth - 10, pageHeight - 20);
 
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);

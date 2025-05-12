@@ -4,13 +4,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export const useWhatsappCountStore = create((set) => ({
-  whatsappCount:  0 ,
+  whatsappCount: 0,
 
-  setWhatsappCount: (newCount) => set(() => ({
-    whatsappCount: newCount ,
-  })),
+  setWhatsappCount: (newCount) =>
+    set(() => ({
+      whatsappCount: newCount,
+    })),
 }));
-
 
 export const usePrintCountStore = create((set) => ({
   printCount: { sent: 0, limit: 0 },
@@ -36,8 +36,8 @@ export const useAppStore = create((set) => ({
   isReload: false,
   link: "home",
   isOnline: navigator.onLine,
-  setIsOnline: (isOnline) => set({ isOnline }),
   printFontSize: parseInt(localStorage.getItem("lab-print-size"), 10) || 14,
+  setIsOnline: (isOnline) => set({ isOnline }),
   setUser: (user) => set({ user }),
   setPrintFontSize: (printFontSize) => set({ printFontSize }),
   setLink: (link) => set({ link }),
@@ -226,6 +226,7 @@ export const useLanguage = create(
 );
 
 import { create } from "zustand";
+import { theme } from "antd";
 
 export const useTrigger = create((set) => ({
   flag: false,

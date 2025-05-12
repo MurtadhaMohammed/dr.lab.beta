@@ -27,8 +27,14 @@ import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
 import { usePlan } from "../../hooks/usePlan";
 import dayjs from "dayjs";
-import { CrownFilled, WarningFilled } from "@ant-design/icons";
+import {
+  CrownFilled,
+  MoonFilled,
+  SunFilled,
+  WarningFilled,
+} from "@ant-design/icons";
 import { signout } from "../../helper/signOut";
+import { useAppTheme } from "../../hooks/useAppThem";
 
 const { Sider, Content } = Layout;
 
@@ -41,6 +47,7 @@ const MainContainerV2 = ({ children }) => {
   const { t, i18n } = useTranslation(); // Use useTranslation to get the current language
   const { setIsLogin } = useAppStore();
   const { subscriptionExpire, planType } = usePlan();
+  const { appTheme, appColors, changeAppTheme } = useAppTheme();
 
   const {
     token: { colorBgContainer },
@@ -80,22 +87,22 @@ const MainContainerV2 = ({ children }) => {
     else return false;
   };
 
-    const handleSignout = async () => {
-      setSignoutLoading(true);
-      try {
-        await signout(setSignoutLoading, setIsLogin, navigate);
-      } catch (error) {
-        console.error("Error during signout:", error);
-        message.error(t("SignoutError"));
-      } finally {
-        setSignoutLoading(false);
-      }
-    };
+  const handleSignout = async () => {
+    setSignoutLoading(true);
+    try {
+      await signout(setSignoutLoading, setIsLogin, navigate);
+    } catch (error) {
+      console.error("Error during signout:", error);
+      message.error(t("SignoutError"));
+    } finally {
+      setSignoutLoading(false);
+    }
+  };
 
   return (
     <Layout className="h-screen">
       <Sider
-        style={{ background: "#f6f6f6" }}
+        style={{ background: appColors?.sideMenuBg }}
         trigger={null}
         collapsible
         collapsed={collapsed}
@@ -142,11 +149,7 @@ const MainContainerV2 = ({ children }) => {
                 },
                 {
                   key: "/patients",
-                  icon: (
-                    <MdOutlinePersonalInjury
-                      size={20}
-                    />
-                  ),
+                  icon: <MdOutlinePersonalInjury size={20} />,
                   label: <p className="text-[15px]">{t("Patients")}</p>,
                   onClick: () => navigate("/patients", { replace: true }),
                 },
@@ -192,7 +195,8 @@ const MainContainerV2 = ({ children }) => {
             >
               <button
                 onClick={() => signoutLoading}
-                className={`border-t border-t-[#eee] h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 text-[#eb2f96]`}
+                className={`border-t h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 text-[#eb2f96]`}
+                style={{ borderColor: appColors.colorBorder }}
               >
                 <IoMdLogOut
                   style={{
@@ -204,14 +208,27 @@ const MainContainerV2 = ({ children }) => {
             </Popconfirm>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="border-t border-t-[#eee] h-[48px] flex items-center justify-center text-[22px] transition-all active:opacity-40"
+              className="border-t  h-[48px] flex items-center justify-center text-[22px] transition-all active:opacity-40"
+              style={{ borderColor: appColors.colorBorder }}
             >
               <RxDoubleArrowRight
                 className="transition-all"
                 style={{
                   transform: getRotationStyle(),
+                  color: appColors.colorText,
                 }}
               />
+            </button>
+            <button
+              onClick={changeAppTheme}
+              className={`border-t h-[64px] flex items-center justify-center text-[22px] transition-all active:opacity-40`}
+              style={{ borderColor: appColors.colorBorder }}
+            >
+              {appTheme === "light" ? (
+                <MoonFilled className="transition-all" />
+              ) : (
+                <SunFilled className="transition-all text-[#fff]" />
+              )}
             </button>
           </div>
         </div>

@@ -1,13 +1,11 @@
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
   Button,
-  Divider,
   Pagination,
   Popconfirm,
   Popover,
   Space,
   Table,
-  Tag,
   message,
 } from "antd";
 import "./style.css";
@@ -17,6 +15,7 @@ import { useEffect, useState } from "react";
 import { useAppStore, useTestStore, useTrigger } from "../../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
+import { useAppTheme } from "../../../hooks/useAppThem";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -38,6 +37,7 @@ export const PureTable = () => {
   const limit = usePageLimit(60, 35);
   const { t } = useTranslation();
   const { setFlag, setTest } = useTrigger();
+  const { appColors } = useAppTheme();
   const columns = [
     {
       title: t("TestName"),
@@ -71,7 +71,7 @@ export const PureTable = () => {
       key: "updatedAt",
       render: (updatedAt) => (
         <span style={{ color: "#666" }}>
-          {dayjs(updatedAt).add(3, 'hour').format("DD/MM/YYYY hh:mm A")}
+          {dayjs(updatedAt).add(3, "hour").format("DD/MM/YYYY hh:mm A")}
         </span>
       ),
     },
@@ -122,7 +122,6 @@ export const PureTable = () => {
       });
   };
 
-
   const handleEdit = ({
     id,
     name,
@@ -144,7 +143,7 @@ export const PureTable = () => {
 
     let parsedOptions = options;
 
-    if (typeof options === 'string') {
+    if (typeof options === "string") {
       try {
         parsedOptions = JSON.parse(options);
       } catch (error) {
@@ -166,8 +165,6 @@ export const PureTable = () => {
     setIsSelecte(isSelecte);
     setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
-
-
 
   useEffect(() => {
     let queryKey = querySearch ? querySearch : "";
@@ -198,7 +195,7 @@ export const PureTable = () => {
     <Table
       style={{
         marginTop: 16,
-        border: "1px solid #eee",
+        border: `1px solid ${appColors.colorBorder}`,
         borderRadius: 10,
         overflow: "hidden",
       }}
