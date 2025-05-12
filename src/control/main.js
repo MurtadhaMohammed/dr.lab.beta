@@ -7,7 +7,27 @@ const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
-const isDev = require("electron-is-dev");
+// const isDev = require("electron-is-dev");
+
+function findDatabaseFileInUserData() {
+  const userDataPath = app.getPath("userData");
+
+  try {
+    const files = fs.readdirSync(userDataPath);
+    const dbFile = files.find((file) => file.endsWith(".db"));
+    if (dbFile) {
+      const fullPath = path.join(userDataPath, dbFile);
+      console.log("✅ Database file found:", fullPath);
+      return { fullPath, dbFile };
+    } else {
+      console.warn("⚠️ No .db file found in userData directory.");
+      return null;
+    }
+  } catch (error) {
+    console.error("❌ Failed to read userData directory:", error);
+    return null;
+  }
+}
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -558,23 +578,26 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "exportDatabaseFile": {
       try {
-        const userDataPath = app.getPath("userData");
+        // const userDataPath = app.getPath("userData");
 
-        const databaseFileName = !isDev
-          ? "lab-betadatabase.db"
-          : process.platform === "win32"
-          ? "Electrondatabase.db"
-          : "database.db";
-        const defaultPathDB =
-          process.platform === "win32"
-            ? path.join(userDataPath, "..", databaseFileName)
-            : userDataPath;
+        // const databaseFileName = !isDev
+        //   ? "lab-betadatabase.db"
+        //   : process.platform === "win32"
+        //   ? "Electrondatabase.db"
+        //   : "database.db";
+
+        // const databaseFullPath =
+        //   process.platform === "win32"
+        //     ? path.join(userDataPath, "..", databaseFileName)
+        //     : path.join(userDataPath, databaseFileName);
 
         const defaultSavePath = app.getPath("desktop");
-        const desktopPath = path.join(defaultSavePath, databaseFileName);
+        const desktopPath = path.join(
+          defaultSavePath,
+          findDatabaseFileInUserData()?.dbFile
+        );
 
-        console.log("Database path:", defaultPathDB);
-        console.log("Desktop path:", desktopPath);
+        const databaseFullPath = findDatabaseFileInUserData()?.fullPath;
 
         const { filePath, canceled } = await dialog.showSaveDialog({
           title: "Export Database",
@@ -592,14 +615,18 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           return;
         }
 
-        fs.copyFile(defaultPathDB, filePath, (error) => {
+        fs.copyFile(databaseFullPath, filePath, (error) => {
           if (error) {
             console.error("Error exporting database:", error);
+            event.reply("asynchronous-reply", {
+              success: false,
+              message: "فشل في تصدير قاعدة البيانات.",
+            });
           } else {
             console.log(`Database exported to: ${filePath}`);
             event.reply("asynchronous-reply", {
               success: true,
-              message: "Database file exported successfully.",
+              message: "تم تصدير قاعدة البيانات بنجاح.",
             });
           }
         });
@@ -611,21 +638,16 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "ImportDatabaseFile": {
       try {
-        const userDataPath = app.getPath("userData");
-        const databaseFileName = !isDev
-          ? "lab-betadatabase.db"
-          : process.platform === "win32"
-          ? "Electrondatabase.db"
-          : "database.db";
-        const defaultPathDB =
-          process.platform === "win32"
-            ? path.join(userDataPath, "..", databaseFileName)
-            : userDataPath;
-
-        // const databaseFileName =  'Electrondatabase.db';
-        // const defaultPathDB =path.join(userDataPath, '..', databaseFileName);
-
-        console.log("the file path of default db:", defaultPathDB);
+        // const userDataPath = app.getPath("userData");
+        // const databaseFileName = !isDev
+        //   ? "lab-betadatabase.db"
+        //   : process.platform === "win32"
+        //   ? "Electrondatabase.db"
+        //   : "database.db";
+        // const defaultPathDB =
+        //   process.platform === "win32"
+        //     ? path.join(userDataPath, "..", databaseFileName)
+        //     : path.join(userDataPath, databaseFileName);
 
         const { filePaths, canceled } = await dialog.showOpenDialog({
           title: "Import Database",
@@ -643,6 +665,13 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         }
 
         const newDbPath = filePaths[0];
+        const defaultPathDB = findDatabaseFileInUserData()?.fullPath;
+
+        // const Database = require("better-sqlite3");
+        // const db = new Database(defaultPathDB);
+
+        // const rows = db.prepare("SELECT * FROM patients").all();
+        // console.log(rows);
 
         fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
           if (copyError) {
