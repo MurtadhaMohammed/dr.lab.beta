@@ -7,55 +7,7 @@ const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
-const isDev = require("electron-is-dev");
 
-// function findDatabaseFileInUserData() {
-//   const dbFileName = isDev
-//     ? "drlab.db"
-//     : process.platform === "win32"
-//     ? "Electrondrlab.db"
-//     : "lab-betadrlab.db";
-
-//   const dbPath = isDev
-//     ? path.join(app.getPath("userData"), dbFileName)
-//     : process.platform === "win32"
-//     ? path.join(app.getPath("userData"), "..", dbFileName)
-//     : path.join(app.getPath("userData"), dbFileName);
-
-//   try {
-//     if (fs.existsSync(dbPath)) {
-//       console.log("✅ Database file found:", dbPath);
-//       return { fullPath: path.resolve(dbPath), dbFile: dbFileName };
-//     } else {
-//       console.warn("⚠️ Database file does not exist at:", dbPath);
-//       return null;
-//     }
-//   } catch (error) {
-//     console.error("❌ Error checking for database file:", error);
-//     return null;
-//   }
-// }
-
-// function findDatabaseFileInUserData() {
-//   // ✅ Use consistent file name everywhere
-//   const dbFileName = "drlab.db";
-
-//   // ✅ Always use userData directory
-//   const dbPath = path.join(app.getPath("userData"), dbFileName);
-
-//   try {
-//     if (fs.existsSync(dbPath)) {
-//       console.log("✅ Database file found:", dbPath);
-//       return { fullPath: path.resolve(dbPath), dbFile: dbFileName };
-//     } else {
-//       console.warn("⚠️ Database file does not exist at:", dbPath);
-//       return null;
-//     }
-//   } catch (error) {
-//     console.error("❌ Error checking for database file:", error);
-//     return null;
-//   }
-// }
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
