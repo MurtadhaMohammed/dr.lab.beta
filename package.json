@@ -117,7 +117,7 @@
       "output": "out"
     },
     "extraResources": [
-      "./database.sql"
+      "./drlab.sql"
     ]
   }
 }

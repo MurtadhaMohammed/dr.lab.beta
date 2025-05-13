@@ -12,8 +12,8 @@ class LabDB {
 
   async init() {
     // const isMac = os.platform() === "darwin";
-    // const dbPath = app.getPath("userData") + "database.db";
-    const dbPath = path.join(app.getPath("userData"), "database.db");
+    // const dbPath = app.getPath("userData") + "drlab.db";
+    const dbPath = path.join(app.getPath("userData"), "drlab.db");
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
@@ -52,9 +52,9 @@ class LabDB {
       fs.closeSync(fd);
     }
   }
-  
+
   async reconncet() {
-    const dbPath = path.join(app.getPath("userData"), "database.db");
+    const dbPath = path.join(app.getPath("userData"), "drlab.db");
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
