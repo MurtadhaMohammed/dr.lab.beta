@@ -1,6 +1,6 @@
 {
   "name": "lab-beta",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "homepage": "./",
   "main": "index.js",
   "dependencies": {
