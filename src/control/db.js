@@ -5,7 +5,6 @@ const { app } = require("electron");
 const Database = require("better-sqlite3");
 
 class LabDB {
-
   constructor() {
     this.db = null;
     this.init();
@@ -13,7 +12,8 @@ class LabDB {
 
   async init() {
     // const isMac = os.platform() === "darwin";
-    const dbPath = app.getPath("userData") + "database.db";
+    // const dbPath = app.getPath("userData") + "drlab.db";
+    const dbPath = path.join(app.getPath("userData"), "drlab.db");
     try {
       this.db = new Database(dbPath, {
         // verbose: console.log,
@@ -23,7 +23,45 @@ class LabDB {
       this.initializeDatabase();
       this.initTestsFromJSON();
       this.checkAndAddVisitNumberColumn();
-      console.log("LabDB initialized, db object:", this.db ? "exists" : "does not exist");
+      console.log(
+        "LabDB initialized, db object:",
+        this.db ? "exists" : "does not exist"
+      );
+      if (this.db) {
+        console.log("Available collections:", Object.keys(this.db));
+      }
+    } catch (err) {
+      console.error("Error opening database", err);
+    }
+  }
+
+  async executeMaintenance() {
+    // SQLite example
+    await this.db.exec("PRAGMA wal_checkpoint(FULL)");
+    await this.db.exec("PRAGMA synchronous = FULL");
+  }
+
+  async syncToDisk() {
+    // Force OS-level sync
+    if (this.db?.exec) {
+      await this.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+    }
+    if (this.dbPath) {
+      const fd = fs.openSync(this.dbPath, 'r+');
+      fs.fsyncSync(fd);
+      fs.closeSync(fd);
+    }
+  }
+
+  async reconncet() {
+    const dbPath = path.join(app.getPath("userData"), "drlab.db");
+    try {
+      this.db = new Database(dbPath, {
+        // verbose: console.log,
+      });
+      await this.db.pragma("journal_mode = WAL");
+      console.log("Database reopen successfully");
+
       if (this.db) {
         console.log("Available collections:", Object.keys(this.db));
       }
@@ -85,6 +123,21 @@ class LabDB {
       );
 
     `);
+  }
+
+  async closeConnection() {
+    if (!this.db) {
+      console.warn("No active database connection to close");
+      return;
+    }
+    if (this.db) {
+      try {
+        await this.db.close(); 
+        console.log("DATABASE CLOSED SUCCESSFULLY");
+      } catch (syncError) {
+        console.error("Emergency close failed:", syncError);
+      }
+    }
   }
 
   async checkAndAddVisitNumberColumn() {
@@ -283,6 +336,7 @@ class LabDB {
       birth ? new Date(birth).toISOString() : null,
       id
     );
+    
     return { data: info.changes > 0 };
   }
 
@@ -721,10 +775,10 @@ class LabDB {
       WHERE id = ?
     `);
     const info = stmt.run(patientID, status, testType, testsStr, discount, id);
-    
+
     return { success: info.changes > 0, newTests };
   }
-  
+
   async getVisitDetails(visitId) {
     try {
       if (!this.db) {
@@ -732,7 +786,7 @@ class LabDB {
         return null;
       }
       console.log(`Attempting to fetch visit with id: ${visitId}`);
-      
+
       const stmt = await this.db.prepare(`
         SELECT v.*, p.name as patientName
         FROM visits v
@@ -759,31 +813,25 @@ class LabDB {
       return null;
     }
   }
-  
+
   async exportAllData() {
     try {
       const patients = await this.getPatients({ q: "", skip: 0, limit: 1000 });
-      const visits = await this.getVisits({q: "", skip: 0, limit: 1000 });
-      const tests = await this.getTests({q: "", skip: 0, limit: 1000 });
-      const packages = await this.getPackages({q: "", skip: 0, limit: 1000 });
-     
-
+      const visits = await this.getVisits({ q: "", skip: 0, limit: 1000 });
+      const tests = await this.getTests({ q: "", skip: 0, limit: 1000 });
+      const packages = await this.getPackages({ q: "", skip: 0, limit: 1000 });
 
       return {
         patients: patients,
         visits: visits,
         tests: tests,
-        packages: packages
-        
+        packages: packages,
       };
-
     } catch (error) {
-      console.error('Error exporting all data:', error);
+      console.error("Error exporting all data:", error);
       throw error;
     }
   }
-  
-  }
-
+}
 
 module.exports = { LabDB };

@@ -195,8 +195,8 @@ const MainContainerV2 = ({ children }) => {
             >
               <button
                 onClick={() => signoutLoading}
-                className={`border-t h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 text-[#eb2f96]`}
-                style={{ borderColor: appColors.colorBorder }}
+                className={`h-[48px] flex items-center gap-2 justify-center text-[22px] transition-all active:opacity-40 text-[#eb2f96]`}
+                // style={{ borderColor: appColors.colorBorder }}
               >
                 <IoMdLogOut
                   style={{
@@ -208,8 +208,8 @@ const MainContainerV2 = ({ children }) => {
             </Popconfirm>
             <button
               onClick={() => setCollapsed(!collapsed)}
-              className="border-t  h-[48px] flex items-center justify-center text-[22px] transition-all active:opacity-40"
-              style={{ borderColor: appColors.colorBorder }}
+              className="h-[48px] flex items-center justify-center text-[22px] transition-all active:opacity-40"
+              //style={{ borderColor: appColors.colorBorder }}
             >
               <RxDoubleArrowRight
                 className="transition-all"
@@ -221,11 +221,11 @@ const MainContainerV2 = ({ children }) => {
             </button>
             <button
               onClick={changeAppTheme}
-              className={`border-t h-[64px] flex items-center justify-center text-[22px] transition-all active:opacity-40`}
-              style={{ borderColor: appColors.colorBorder }}
+              className={`h-[64px] flex items-center justify-center text-[22px] transition-all active:opacity-4 mb-4`}
+              //style={{ borderColor: appColors.colorBorder }}
             >
               {appTheme === "light" ? (
-                <MoonFilled className="transition-all" />
+                <MoonFilled className="transition-all text-[#303030]" />
               ) : (
                 <SunFilled className="transition-all text-[#fff]" />
               )}
