@@ -9,18 +9,39 @@ const bwipjs = require("bwip-js");
 const sharp = require("sharp");
 const isDev = require("electron-is-dev");
 
-function findDatabaseFileInUserData() {
-  const dbFileName = isDev
-    ? "database.db"
-    : process.platform === "win32"
-    ? "Electrondatabase.db"
-    : "lab-betadatabase.db";
+// function findDatabaseFileInUserData() {
+//   const dbFileName = isDev
+//     ? "drlab.db"
+//     : process.platform === "win32"
+//     ? "Electrondrlab.db"
+//     : "lab-betadrlab.db";
 
-  const dbPath = isDev
-    ? path.join(app.getPath("userData"), dbFileName)
-    : process.platform === "win32"
-    ? path.join(app.getPath("userData"), "..", dbFileName)
-    : path.join(app.getPath("userData"), dbFileName);
+//   const dbPath = isDev
+//     ? path.join(app.getPath("userData"), dbFileName)
+//     : process.platform === "win32"
+//     ? path.join(app.getPath("userData"), "..", dbFileName)
+//     : path.join(app.getPath("userData"), dbFileName);
+
+//   try {
+//     if (fs.existsSync(dbPath)) {
+//       console.log("✅ Database file found:", dbPath);
+//       return { fullPath: path.resolve(dbPath), dbFile: dbFileName };
+//     } else {
+//       console.warn("⚠️ Database file does not exist at:", dbPath);
+//       return null;
+//     }
+//   } catch (error) {
+//     console.error("❌ Error checking for database file:", error);
+//     return null;
+//   }
+// }
+
+function findDatabaseFileInUserData() {
+  // ✅ Use consistent file name everywhere
+  const dbFileName = "drlab.db";
+
+  // ✅ Always use userData directory
+  const dbPath = path.join(app.getPath("userData"), dbFileName);
 
   try {
     if (fs.existsSync(dbPath)) {
@@ -585,7 +606,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "exportDatabaseFile": {
       try {
-        await labDB.closeConnection();
+        await labDB.executeMaintenance();
         const dbTarget = findDatabaseFileInUserData();
         if (!dbTarget) {
           console.error("❌ No database file found to export.");
@@ -595,6 +616,8 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           });
           return;
         }
+
+        await labDB.syncToDisk();
 
         const { fullPath: dbPath, dbFile } = dbTarget;
 
@@ -607,11 +630,17 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         });
 
         if (canceled || !filePath) {
-          console.log("🚫 Export canceled.");
-          return;
+          // console.log("🚫 Export canceled.");
+          return event.reply("asynchronous-reply", {
+            success: false,
+            message: "Export canceled.",
+          });
         }
 
-        fs.copyFile(dbPath, filePath, (error) => {
+        await labDB.closeConnection();
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        fs.copyFile(dbPath, filePath, async (error) => {
           if (error) {
             console.error("❌ Error exporting database:", error);
             event.reply("asynchronous-reply", {
@@ -619,7 +648,6 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               message: "فشل في تصدير قاعدة البيانات.",
             });
           } else {
-            labDB.init()
             console.log("✅ Database exported to:", filePath);
             event.reply("asynchronous-reply", {
               success: true,
@@ -647,8 +675,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         });
 
         if (canceled || !filePaths || filePaths.length === 0) {
-          console.log("🚫 Import canceled or no file selected.");
-          return;
+          return event.reply("asynchronous-reply", {
+            success: false,
+            message: "🚫 Import canceled or no file selected.",
+          });
         }
 
         const newDbPath = filePaths[0];
@@ -656,22 +686,22 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const dbTarget = findDatabaseFileInUserData();
         if (!dbTarget) {
           console.error("❌ No existing database found to replace.");
-          event.reply("asynchronous-reply", {
+          return event.reply("asynchronous-reply", {
             success: false,
             message: "لم يتم العثور على قاعدة بيانات حالية.",
           });
-          return;
         }
 
         const defaultPathDB = dbTarget.fullPath;
 
+        fs.unlinkSync(defaultPathDB);
+        await labDB.reconncet();
+        await labDB.closeConnection();
         // 🛡️ Backup before replacing
         const backupPath = defaultPathDB + ".backup";
         fs.copyFileSync(defaultPathDB, backupPath);
-        console.log("✅ Backup created at:", backupPath);
-
         // 📥 Replace with new file
-        fs.copyFile(newDbPath, defaultPathDB, (copyError) => {
+        fs.copyFile(newDbPath, defaultPathDB, async (copyError) => {
           if (copyError) {
             console.error("❌ Error replacing DB:", copyError);
             event.reply("asynchronous-reply", {
@@ -679,6 +709,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               message: "فشل في استيراد قاعدة البيانات.",
             });
           } else {
+            await labDB.reconncet();
             console.log("✅ DB replaced with:", newDbPath);
             event.reply("asynchronous-reply", {
               success: true,
