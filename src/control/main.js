@@ -8,7 +8,6 @@ const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
 
-
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
   switch (arg.query) {
