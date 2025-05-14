@@ -260,7 +260,13 @@ export const PureModal = () => {
                   </Space>
                 </div>
               ) : (
-                <div key={i} className="test-item app-flex-space">
+                <div
+                  key={i}
+                  className="test-item app-flex-space"
+                  style={{
+                    borderColor: appColors.colorBorder,
+                  }}
+                >
                   <Space>
                     <Button
                       onClick={() => handleDelete(el?.id)}
@@ -284,9 +290,13 @@ export const PureModal = () => {
               )
             )}
           </div>
-          <div className="inset-x-0 bottom-[10px] relative">
+          <div
+            className={`inset-x-0 bottom-[10px] relative ${
+              appTheme === "dark" ? "bg-[#1f1f1f]" : "bg-white"
+            }`}
+          >
             <div
-              className={`absolute inset-x-0 top-[-25px] h-5 bg-gradient-to-t ${
+              className={`absolute inset-x-0 top-[-20px] h-5 bg-gradient-to-t ${
                 appTheme === "dark" ? "from-[#1f1f1f]" : "from-white"
               } to-transparent z-[99]`}
             ></div>
