@@ -1,21 +1,22 @@
 const path = require("path");
-// const os = require('os');
 const fs = require("fs");
-const { app } = require("electron");
+const { app, dialog } = require("electron");
 const Database = require("better-sqlite3");
 
 class LabDB {
   constructor() {
     this.db = null;
+    this.dbPath = path.join(app.getPath("userData"), "drlab.db");
     this.init();
   }
 
   async init() {
     // const isMac = os.platform() === "darwin";
     // const dbPath = app.getPath("userData") + "drlab.db";
-    const dbPath = path.join(app.getPath("userData"), "drlab.db");
+    // const dbPath = path.join(app.getPath("userData"), "drlab.db");
     try {
-      this.db = new Database(dbPath, {
+      await this.handlePendingImport();
+      this.db = new Database(this.dbPath, {
         // verbose: console.log,
       });
       this.db.pragma("journal_mode = WAL");
@@ -35,40 +36,40 @@ class LabDB {
     }
   }
 
-  async executeMaintenance() {
-    // SQLite example
-    await this.db.exec("PRAGMA wal_checkpoint(FULL)");
-    await this.db.exec("PRAGMA synchronous = FULL");
-  }
+  // async executeMaintenance() {
+  //   // SQLite example
+  //   await this.db.exec("PRAGMA wal_checkpoint(FULL)");
+  //   await this.db.exec("PRAGMA synchronous = FULL");
+  // }
 
-  async syncToDisk() {
-    // Force OS-level sync
-    if (this.db?.exec) {
-      await this.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
-    }
-    if (this.dbPath) {
-      const fd = fs.openSync(this.dbPath, 'r+');
-      fs.fsyncSync(fd);
-      fs.closeSync(fd);
-    }
-  }
+  // async syncToDisk() {
+  //   // Force OS-level sync
+  //   if (this.db?.exec) {
+  //     await this.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+  //   }
+  //   if (this.dbPath) {
+  //     const fd = fs.openSync(this.dbPath, 'r+');
+  //     fs.fsyncSync(fd);
+  //     fs.closeSync(fd);
+  //   }
+  // }
 
-  async reconncet() {
-    const dbPath = path.join(app.getPath("userData"), "drlab.db");
-    try {
-      this.db = new Database(dbPath, {
-        // verbose: console.log,
-      });
-      await this.db.pragma("journal_mode = WAL");
-      console.log("Database reopen successfully");
+  // async reconncet() {
+  //   const dbPath = path.join(app.getPath("userData"), "drlab.db");
+  //   try {
+  //     this.db = new Database(dbPath, {
+  //       // verbose: console.log,
+  //     });
+  //     await this.db.pragma("journal_mode = WAL");
+  //     console.log("Database reopen successfully");
 
-      if (this.db) {
-        console.log("Available collections:", Object.keys(this.db));
-      }
-    } catch (err) {
-      console.error("Error opening database", err);
-    }
-  }
+  //     if (this.db) {
+  //       console.log("Available collections:", Object.keys(this.db));
+  //     }
+  //   } catch (err) {
+  //     console.error("Error opening database", err);
+  //   }
+  // }
 
   initializeDatabase() {
     this.db.exec(`
@@ -125,20 +126,20 @@ class LabDB {
     `);
   }
 
-  async closeConnection() {
-    if (!this.db) {
-      console.warn("No active database connection to close");
-      return;
-    }
-    if (this.db) {
-      try {
-        await this.db.close(); 
-        console.log("DATABASE CLOSED SUCCESSFULLY");
-      } catch (syncError) {
-        console.error("Emergency close failed:", syncError);
-      }
-    }
-  }
+  // async closeConnection() {
+  //   if (!this.db) {
+  //     console.warn("No active database connection to close");
+  //     return;
+  //   }
+  //   if (this.db) {
+  //     try {
+  //       await this.db.close();
+  //       console.log("DATABASE CLOSED SUCCESSFULLY");
+  //     } catch (syncError) {
+  //       console.error("Emergency close failed:", syncError);
+  //     }
+  //   }
+  // }
 
   async checkAndAddVisitNumberColumn() {
     try {
@@ -336,7 +337,7 @@ class LabDB {
       birth ? new Date(birth).toISOString() : null,
       id
     );
-    
+
     return { data: info.changes > 0 };
   }
 
@@ -830,6 +831,99 @@ class LabDB {
     } catch (error) {
       console.error("Error exporting all data:", error);
       throw error;
+    }
+  }
+
+  async exportDatabase() {
+    const { filePath, canceled } = await dialog.showSaveDialog({
+      title: "Export SQLite Database",
+      defaultPath: "drlab-backup.sql",
+      filters: [{ name: "SQLite Database", extensions: ["sqlite3", "db"] }],
+    });
+
+    if (canceled || !filePath) {
+      return {
+        success: false,
+        message: "Export canceled.",
+      };
+    }
+    try {
+      await this.db.backup(filePath);
+
+      return {
+        success: true,
+        message: "Database exported.",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: "Export failed !.",
+      };
+    }
+  }
+
+  async importDatabase() {
+    const { filePaths, canceled } = await dialog.showOpenDialog({
+      title: "Import SQLite Database",
+      properties: ["openFile"],
+      filters: [{ name: "SQLite Database", extensions: ["sqlite3", "db"] }],
+    });
+
+    if (canceled || !filePaths) {
+      return {
+        success: false,
+        message: "Export canceled.",
+      };
+    }
+
+    const { response } = await dialog.showMessageBox({
+      type: "question",
+      buttons: ["Restart Now", "Cancel"],
+      defaultId: 0,
+      cancelId: 1,
+      title: "Restart Required",
+      message:
+        "To complete the import, the app needs to restart.\nDo you want to restart now?",
+    });
+
+    if (response !== 0) {
+      return { success: false, message: "Restart canceled by user." };
+    }
+    const pendingPath = path.join(
+      path.dirname(this.dbPath),
+      "drlab.import-pending.db"
+    );
+    try {
+      const importPath = filePaths[0];
+      fs.copyFileSync(importPath, pendingPath);
+      app.relaunch();
+      app.exit(0);
+      return;
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: "Import failed !.",
+      };
+    }
+  }
+
+  async handlePendingImport() {
+    const dir = path.dirname(this.dbPath);
+    const pendingPath = path.join(dir, "drlab.import-pending.db");
+
+    try {
+      fs.accessSync(pendingPath);
+      fs.copyFileSync(pendingPath, this.dbPath);
+      fs.unlinkSync(pendingPath);
+
+      console.log("✅ Imported pending database on startup.");
+      return true;
+    } catch (err) {
+      if (err.code !== "ENOENT") {
+        console.error("❌ Failed to apply pending import:", err);
+      }
+      return false;
     }
   }
 }
