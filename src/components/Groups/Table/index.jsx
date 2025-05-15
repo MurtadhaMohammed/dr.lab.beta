@@ -56,7 +56,7 @@ export const PureTable = () => {
         return (
           <Space wrap size={[0, "small"]}>
             {tests.slice(0, numOfView).map((el, i) => (
-              <Tag color="pink" key={i}>{el.name}</Tag>
+              <Tag color="purple" key={i}>{el.name}</Tag>
             ))}
             {restCount && (
               <Popover
