@@ -176,11 +176,20 @@ class LabDB {
 
       if (total === 0) {
         const jsonPath = path.join(__dirname, "tests.json");
+        const jsonGroupPath = path.join(__dirname, "groups.json");
+
+        if (!fs.existsSync(jsonPath) || !fs.existsSync(jsonGroupPath)) {
+          throw new Error("One or both JSON files are missing");
+        }
+
         const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+        const jsonGroupData = JSON.parse(
+          fs.readFileSync(jsonGroupPath, "utf-8")
+        );
 
         const insertStmt = this.db.prepare(`
-          INSERT INTO tests (name, price, normal, options, isSelecte)
-          VALUES (?, ?, ?, ?, ?)
+          INSERT INTO tests (id, name, price, normal, options, isSelecte)
+          VALUES (?, ?, ?, ?, ?, ?)
         `);
 
         const insertTransaction = this.db.transaction((data) => {
@@ -189,6 +198,7 @@ class LabDB {
               ? item.normal.replace(/\\n/g, "\n")
               : null;
             insertStmt.run(
+              Number(item.id),
               item.name,
               Number(item.price),
               normalValue,
@@ -199,6 +209,14 @@ class LabDB {
         });
 
         insertTransaction(jsonData);
+
+        for (const item of jsonGroupData) {
+          await this.addPackage({
+            title: item?.groupname,
+            customePrice: 0,
+            tests: item?.testIds?.map((id) => ({ id })),
+          });
+        }
 
         console.log("Tests imported from tests.json");
       } else {
@@ -405,6 +423,7 @@ class LabDB {
     const stmt = await this.db.prepare(`
       SELECT * FROM tests
       WHERE name LIKE ?
+      ORDER BY createdAt DESC
       LIMIT ? OFFSET ?
     `);
 
@@ -548,6 +567,7 @@ class LabDB {
     const stmt = await this.db.prepare(`
       SELECT * FROM packages
       WHERE title LIKE ?
+      ORDER BY createdAt DESC
       LIMIT ? OFFSET ?
     `);
 

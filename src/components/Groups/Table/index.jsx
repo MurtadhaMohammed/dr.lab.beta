@@ -35,7 +35,7 @@ export const PureTable = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
-  const limit = usePageLimit();
+  const limit = usePageLimit(60, 35);
   const {appColors} = useAppTheme();
 
   const columns = [
@@ -50,21 +50,21 @@ export const PureTable = () => {
       dataIndex: "tests",
       key: "tests",
       render: (tests) => {
-        let numOfView = 3;
+        let numOfView = 2;
         let restCount =
           tests.length > numOfView ? tests.length - numOfView : null;
         return (
           <Space wrap size={[0, "small"]}>
             {tests.slice(0, numOfView).map((el, i) => (
-              <Tag key={i}>{el.name}</Tag>
+              <Tag color="pink" key={i}>{el.name}</Tag>
             ))}
             {restCount && (
               <Popover
                 content={
-                  <div style={{ maxWidth: "300" }}>
-                    <Space wrap>
+                  <div style={{ maxWidth: 360 }}>
+                    <Space wrap size={6}>
                       {tests?.map((el) => (
-                        <Tag key={el.id}>{el.name}</Tag>
+                        <Tag className="!m-0" key={el.id}>{el.name}</Tag>
                       ))}
                     </Space>
                   </div>
@@ -230,6 +230,7 @@ export const PureTable = () => {
             pageSize={limit}
             showSizeChanger={false}
           />
+          
         </div>
       )}
     />
