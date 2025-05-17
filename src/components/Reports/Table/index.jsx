@@ -19,12 +19,17 @@ export const getTotalVisits = (filterDate = null, cb) => {
   });
 };
 
-export const getSubTotalAmount = (filterDate = null, cb) => {
+export const getSubTotalAmount = (
+  filterDate = null,
+  visitStatus = null,
+  cb
+) => {
   send({
     query: "getVisits",
     data: {
       startDate: dayjs(filterDate[0]).startOf("day").toISOString(),
       endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
+      status: visitStatus,
     },
   }).then(({ success, data }) => {
     if (!success) message.error("Error !");
@@ -33,7 +38,8 @@ export const getSubTotalAmount = (filterDate = null, cb) => {
 };
 
 export const PureTable = () => {
-  const { data, loading, setSubTotalPrice, setTotalDiscount, setTotalAmount } = useReportsStore();
+  const { data, loading, setSubTotalPrice, setTotalDiscount, setTotalAmount } =
+    useReportsStore();
   const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
 
