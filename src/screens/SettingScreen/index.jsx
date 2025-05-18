@@ -373,9 +373,11 @@ const SettingsScreen = () => {
               </div>
 
               <div className="mt-[16px]">
-                <p className="pl-[4px] ">
-                  <span className="opacity-60">{t("DatabaseManagement")}</span>{" "}
-                  <CrownFilled className="text-[18px] text-[#faad14]" />
+                <p className="pl-[4px]">
+                  <span className="opacity-60">{t("DatabaseManagement")}</span>
+                  {planType === "FREE" && (
+                    <CrownFilled className="text-[18px] text-[#faad14] ml-1" />
+                  )}
                 </p>
 
                 <div
@@ -519,9 +521,12 @@ const SettingsScreen = () => {
 
               <div className="mt-[16px]">
                 <p className="pl-[4px]">
-                  <span className="opacity-60">{t("printer")} </span>{" "}
-                  <CrownFilled className="text-[18px] text-[#faad14]" />
+                  <span className="opacity-60">{t("printer")} </span>
+                  {planType === "FREE" && (
+                    <CrownFilled className="text-[18px] text-[#faad14] ml-1" />
+                  )}
                 </p>
+
                 <Card className="mt-[6px] ">
                   <div className="flex justify-between items-center">
                     <p className="py-2">
