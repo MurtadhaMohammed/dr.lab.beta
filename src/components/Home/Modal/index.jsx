@@ -373,7 +373,7 @@ export const PureModal = () => {
           : `${t("Add")} ${testLabel[testType]} ${t("Test For Patient")}`
       }
       open={isModal}
-      width={440}
+      width={460}
       onOk={() => {
         setIsModal(false);
       }}
