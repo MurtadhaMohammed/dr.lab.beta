@@ -178,12 +178,15 @@ const MainContainerV2 = ({ children }) => {
                   key: "/reports",
                   icon: <TbReportSearch size={18} />,
                   disabled: planType === "FREE",
-                  label: (
-                    <p className="text-[15px]">
-                      {t("Reports")}{" "}
-                      <CrownFilled className="!text-[14px] text-[#faad14]" />
-                    </p>
-                  ),
+                  label:
+                    planType === "FREE" ? (
+                      <p className="text-[15px]">
+                        {t("Reports")}
+                        <CrownFilled className="!text-[14px] text-[#faad14]" />
+                      </p>
+                    ) : (
+                      t("Reports")
+                    ),
                   onClick: () => navigate("/reports", { replace: true }),
                 },
                 {
