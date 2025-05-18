@@ -1,4 +1,4 @@
-import { Modal, Space, Table, Tag, message,Popover } from "antd";
+import { Modal, Space, Table, Tag, message, Popover } from "antd";
 import "./style.css"; // Ensure this CSS file contains the styles shown below
 import { usePatientStore } from "../../../libs/appStore";
 import { useEffect, useState } from "react";
@@ -115,6 +115,17 @@ export const PatientHistory = () => {
         ),
     },
     {
+      title: t("Doctor"),
+      dataIndex: "doctor",
+      key: "doctor",
+      render: (_, record) =>
+        record?.doctor ? (
+          <p color="geekblue">{record?.doctor.name}</p>
+        ) : (
+          ". . ."
+        ),
+    },
+    {
       title: t("VisitDate"),
       dataIndex: "createdAt",
       key: "createdAt",
@@ -134,10 +145,16 @@ export const PatientHistory = () => {
           : t("PatientHistory")
       }
       open={isHistory}
-      width={800}
       onCancel={() => {
         setIsHistory(false);
         setReset();
+      }}
+      width={"100%"}
+      styles={{
+        content: {
+          height: "92vh",
+          marginTop: "4vh",
+        },
       }}
       footer={null}
       centered

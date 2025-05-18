@@ -251,7 +251,7 @@ const ReportsScreen = () => {
         {/* <PureTable /> */}
         <Info />
 
-        <div className="mt-6">{homeTable}</div>
+        <div className="mt-6 mb-10">{homeTable}</div>
       </div>
     </div>
   );

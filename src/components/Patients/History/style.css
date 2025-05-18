@@ -8,7 +8,7 @@
   flex-direction: column;
 }
 
-.history-table-container {
+.patient-history-modal .ant-modal-body {
   flex: 1;
   overflow-y: auto; /* Enable scrolling */
 }

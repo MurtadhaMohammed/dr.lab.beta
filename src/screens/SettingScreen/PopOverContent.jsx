@@ -1,7 +1,5 @@
 import React from "react";
-import WorldWideIcon from "./WorldWideIcon";
-import EmailIcon from "./EmailIcon";
-import { PhoneOutlined } from "@ant-design/icons";
+import { PhoneOutlined , MailOutlined , GlobalOutlined } from "@ant-design/icons";
 import Logo from "../../assets/logo2.png";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
@@ -24,13 +22,13 @@ const PopOverContent = ({ website, email, phone, limitExceededMessage }) => {
       <h1 className="px-2 font-semibold">{t("contact_us_to_subscribe")}:</h1>
       <div className={`handleContact ${direction === 'rtl' ? 'rtl' : 'ltr'}`}>
         <div className="w-full flex items-center gap-2 px-2  text-sm">
-          <WorldWideIcon />
+          <GlobalOutlined />
           <a href={website || "https://google.com"} target="_blank" rel="noopener noreferrer">
             {website ? website.substring(8) : "https://google.com"}
           </a>
         </div>
         <div className="w-full flex items-center gap-2 px-2  text-sm mt-3">
-          <EmailIcon />
+          <MailOutlined />
           <p 
             onClick={() => window.location = `mailto:${email}`} 
             className="hover:cursor-pointer hover:text-blue-700"
