@@ -311,7 +311,7 @@ export const ResultsModal = () => {
     <Modal
       title={
         <Typography.Text type="secondary">
-          {t("TestResultTitle")} <b>{record?.patient?.name}</b>
+          {t("BarcodeResultTitle")} <b>{record?.patient?.name}</b>
         </Typography.Text>
       }
       open={isResultsModal}

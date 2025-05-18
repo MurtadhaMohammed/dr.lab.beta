@@ -120,6 +120,8 @@
   "PENDING": "PENDING",
   "PatientHistory": "Patient history",
   "PatientHistoryFor": "Patient history for",
+  "AddTests": "Add Tests",
+  "BarcodeResultTitle": "Print Barcode for",
   "VisitDate": "Visit Date",
   "TotalAmount": "Total Amount",
   "TestItem": "Test Item",

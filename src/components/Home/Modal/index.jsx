@@ -398,13 +398,13 @@ export const PureModal = () => {
         className="mt-[16px] mb-[26px]"
         items={[
           {
-            title: "Add Tests",
+            title: `${t("AddTests")}`,
           },
           {
-            title: "Select Patient",
+            title:  `${t("SelectPatient")}` ,
           },
           {
-            title: "Select Doctor",
+            title: `${t("SelectDoctor")}`,
           },
         ]}
       />
