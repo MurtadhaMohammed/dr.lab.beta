@@ -55,7 +55,6 @@ function App() {
     };
   }, []);
 
-  console.log(appTheme)
 
   return (
     <ConfigProvider

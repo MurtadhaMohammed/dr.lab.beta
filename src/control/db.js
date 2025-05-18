@@ -942,7 +942,7 @@ class LabDB {
         : "",
       endDate
         ? `DATE(v.createdAt) <= '${dayjs(endDate)
-            .startOf("day")
+            .endOf("day")
             .toISOString()}'`
         : "",
     ]

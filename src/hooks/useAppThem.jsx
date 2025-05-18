@@ -11,6 +11,7 @@ export const colors = {
     colorError: "#eb2f96",
     colorLink: "#0000ff",
     sideMenuBg: "#f6f6f6",
+    userWarning: "#ffcf6f",
   },
   dark: {
     bgColor: "#141414",
@@ -21,6 +22,7 @@ export const colors = {
     colorError: "#eb2f96",
     colorLink: "#6d96ff",
     sideMenuBg: "#000",
+    userWarning: "#d8961457",
   },
 };
 

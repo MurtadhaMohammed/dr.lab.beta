@@ -7,10 +7,12 @@ import packageJson from "../../../package.json";
 import "./style.css";
 import { useAppStore } from "../../libs/appStore";
 import { useAppTheme } from "../../hooks/useAppThem";
+import { useTranslation } from "react-i18next";
 
 const TiteBar = () => {
   const { isOnline } = useAppStore();
   const { appColors, appTheme } = useAppTheme();
+  const { i18n } = useTranslation();
   return (
     <header
       id="title-bar"
@@ -18,6 +20,7 @@ const TiteBar = () => {
       style={{
         backgroundColor: appColors?.bgColor,
         borderColor: appColors.colorBorder,
+        direction: i18n.language === "en" ? "ltr" : "rtl",
       }}
     >
       <Space>
