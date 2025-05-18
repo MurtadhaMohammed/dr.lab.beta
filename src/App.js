@@ -16,6 +16,7 @@ import useInitHeaderImage from "./hooks/useInitHeaderImage";
 import OTPScreen from "./screens/OTPScreen/Index";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "./hooks/useAppThem";
+import DoctorsScreen from "./screens/DoctorsScreen";
 const { darkAlgorithm, defaultAlgorithm } = theme;
 
 const { ipcRenderer } = window.require("electron");
@@ -84,6 +85,7 @@ function App() {
             <Route path="/groups" element={<GroupsScreen />} />
             <Route path="/reports" element={<ReportsScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
+            <Route path="/doctors" element={<DoctorsScreen />} />
           </Routes>
         </MainContainerV2>
       )}

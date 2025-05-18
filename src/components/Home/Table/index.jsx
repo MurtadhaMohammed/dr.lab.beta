@@ -45,22 +45,18 @@ export const PureTable = ({ isReport = false }) => {
   const {
     setIsModal,
     setId,
-    setName,
     setTestType,
-    setBirth,
-    setGender,
     setDiscount,
-    setEmail,
-    setPhone,
     setTests,
     setCreatedAt,
     querySearch,
     setIsResultsModal,
     setRecord,
     isToday,
-    setPatientID,
+    setPatientRow,
+    setDoctorRow,
   } = useHomeStore();
-  const { filterDate } = useReportsStore();
+  const { filterDate, visitStatus } = useReportsStore();
 
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
@@ -81,8 +77,6 @@ export const PureTable = ({ isReport = false }) => {
   const { appColors } = useAppTheme();
 
   const direction = i18n.dir();
-
-
 
   const phoneValidate = (phone) => {
     if (phone?.length < 11) return false;
@@ -271,7 +265,10 @@ export const PureTable = ({ isReport = false }) => {
       title: t("Name"),
       dataIndex: "name",
       key: "name",
-      render: (_, record) => <b>{record?.patient?.name}</b>,
+      render: (_, record) =><Space size={0} direction="vertical">
+         <b>{record?.patient?.name}</b>
+        {record?.doctor && <small className="block -mt-[2px] opacity-60">{t("FROM")}{" "}{record?.doctor?.name}</small>}
+      </Space>,
     },
     {
       title: t("Gender"),
@@ -420,13 +417,6 @@ export const PureTable = ({ isReport = false }) => {
                 }}
                 placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
                 content={
-                  // isLimitExceeded ? (
-                  //   <PopOverContent
-                  //     website={"https://www.puretik.com/ar"}
-                  //     email={"puretik@gmail.com"}
-                  //     phone={"07710553120"}
-                  //     limitExceededMessage={t("limit_exceeded_message")}
-                  //   /> ) :
                   userType === "FREE" ? (
                     <PopOverContent
                       website={"https://www.puretik.com/ar"}
@@ -507,19 +497,17 @@ export const PureTable = ({ isReport = false }) => {
   const handleEdit = ({
     id,
     patient,
+    doctor,
     testType,
     discount,
     tests,
     createdAt,
   }) => {
+    patient.birth = dayjs(patient.birth);
+    setPatientRow(patient);
+    setDoctorRow(doctor);
     setId(id);
     setTests(tests);
-    setPatientID(patient?.id);
-    setBirth(dayjs(patient?.birth));
-    setName(patient?.name);
-    setEmail(patient?.email);
-    setPhone(patient?.phone);
-    setGender(patient?.gender);
     setTestType(testType);
     setDiscount(discount);
     setIsModal(true);
@@ -560,20 +548,29 @@ export const PureTable = ({ isReport = false }) => {
         limit,
         startDate,
         endDate,
+        status: visitStatus,
       },
     }).then((resp) => {
       if (resp.success) {
         setData(resp.data);
         setTotal(resp.total);
         handelOpenModal(resp.data);
-        // message.success(t("Visitsretrievedsuccessfully"));
       } else {
         console.error("Error retrieving visits:", resp.error);
       }
       setLoading(false);
       setFlag(false);
     });
-  }, [page, isReload, querySearch, isToday, filterDate, limit, flag]);
+  }, [
+    page,
+    isReload,
+    querySearch,
+    isToday,
+    filterDate,
+    visitStatus,
+    limit,
+    flag,
+  ]);
 
   return (
     <Table
