@@ -2,6 +2,7 @@ import "./style.css";
 import { useState } from "react";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
+import { LiaUserNurseSolid } from "react-icons/lia";
 import {
   Alert,
   message,
@@ -154,6 +155,12 @@ const MainContainerV2 = ({ children }) => {
                   onClick: () => navigate("/patients", { replace: true }),
                 },
                 {
+                  key: "/doctors",
+                  icon: <LiaUserNurseSolid size={20} />,
+                  label: <p className="text-[15px]">{t("Doctors")}</p>,
+                  onClick: () => navigate("/doctors", { replace: true }),
+                },
+                {
                   key: "/tests",
                   icon: (
                     <GrDocumentTest size={16} style={{ marginRight: "2px" }} />
@@ -170,6 +177,7 @@ const MainContainerV2 = ({ children }) => {
                 {
                   key: "/reports",
                   icon: <TbReportSearch size={18} />,
+                  disabled: planType === "FREE",
                   label: (
                     <p className="text-[15px]">
                       {t("Reports")}{" "}

@@ -1,6 +1,5 @@
-import { Button, Card, DatePicker, Divider, Popover, Space } from "antd";
+import { Button, DatePicker, Divider, Popover, Select, Space } from "antd";
 import "./style.css";
-import { PureTable } from "../../components/Reports";
 import { PureTable as HomeTable } from "../../components/Home";
 import { useAppStore, useReportsStore } from "../../libs/appStore";
 import { getTotalVisits, getSubTotalAmount } from "../../components/Reports";
@@ -10,13 +9,21 @@ import { getTotalPrice } from "../../helper/price";
 import Info from "../../components/Reports/Info";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import useLang from "../../hooks/useLang";
 import PopOverContent from "../SettingScreen/PopOverContent";
+import { usePlan } from "../../hooks/usePlan";
 
 const ReportsScreen = () => {
-  const { filterDate, setFilterDate, data, setData, setLoading } =
-    useReportsStore();
+  const {
+    filterDate,
+    setFilterDate,
+    data,
+    setData,
+    setLoading,
+    setVisitStatus,
+    visitStatus,
+  } = useReportsStore();
   const { isReload, setIsReload } = useAppStore();
+  const { planType } = usePlan();
   const { t } = useTranslation();
 
   const loadData = (cb) => {
@@ -26,6 +33,7 @@ const ReportsScreen = () => {
         q: "",
         startDate: dayjs(filterDate[0]).startOf("day").toISOString(),
         endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
+        status: visitStatus,
       },
     }).then(({ success, data }) => {
       if (success) cb(data);
@@ -77,7 +85,7 @@ const ReportsScreen = () => {
     setLoading(true);
     loadData((rows) => {
       getTotalVisits(filterDate, (visits) => {
-        getSubTotalAmount(filterDate, async () => {
+        getSubTotalAmount(filterDate, visitStatus, async () => {
           let tests = rows?.map((el) => {
             let subTotal =
               el?.tests
@@ -169,107 +177,84 @@ const ReportsScreen = () => {
         });
       });
     });
-  }, [filterDate]);
+  }, [filterDate, visitStatus]);
 
-  const homeTable = useMemo(() => <HomeTable isReport />, [data]);
+  const homeTable = useMemo(() => <HomeTable isReport />, [data, visitStatus]);
 
-  const planType = JSON.parse(localStorage.getItem("lab-user")).Plan.type;
+  // const renderOvelay = (
+  //   <div className="z-20 absolute inset-0 h-screen flex justify-center items-center backdrop-blur-md">
+  //     <div className="flex items-center flex-col text-center gap-2">
+  //       <p className="font-semibold text-lg ">{t("UpgradeToProDescription")}</p>
+  //       <Popover
+  //         placement="right"
+  //         title={
+  //           <div className="text-center font-medium">{t("ContactUs")}</div>
+  //         }
+  //         content={
+  //           <PopOverContent
+  //             website={"https://www.puretik.com/ar"}
+  //             email={"info@puretik.com"}
+  //             phone={"07710553120"}
+  //           />
+  //         }
+  //         trigger="click"
+  //       >
+  //         <Button
+  //           type="primary"
+  //           size="medium"
+  //           className="bg-blue-600 hover:bg-blue-700 mt-[24px]"
+  //         >
+  //           {t("UpgradeToPro")}
+  //         </Button>
+  //       </Popover>
+  //     </div>
+  //   </div>
+  // );
 
-  if (planType === "FREE") {
-    return (
-      <div className={`reports-screen page relative z-10`}>
-        <div className="z-20 absolute left-1/2 top-2/3 transform -translate-x-1/2  p-[2%] flex justify-center">
-          <div className="flex items-center flex-col text-center gap-2">
-            <p className="font-semibold text-lg "> {t("UpgradeToProDescription")}</p>
-
-            <Popover
-              placement="right"
-              title={
-                <div className="text-center font-medium">{t("ContactUs")}</div>
-              }
-              content={
-                <PopOverContent
-                  website={"https://www.puretik.com/ar"}
-                  email={"info@puretik.com"}
-                  phone={"07710553120"}
-                />
-              }
-              trigger="click"
+  //  if(planType !== "FREE") return   <div className={`reports-screen page relative`}>{renderOvelay}</div>
+  return (
+    <div className={`reports-screen page relative`}>
+      
+      <div className="border-none  p-[2%]">
+        <section className="header app-flex-space mb-[18px]">
+          <Space>
+            <DatePicker.RangePicker
+              allowClear={false}
+              value={filterDate}
+              onChange={setFilterDate}
+            />
+             <Divider type="vertical" />
+            <Select
+              placeholder="Visit Status"
+              allowClear
+              value={visitStatus}
+              onChange={setVisitStatus}
             >
-              <Button
-                type="primary"
-                size="medium"
-                className="bg-blue-600 hover:bg-blue-700 mt-[24px]"
-              >
-                {t("UpgradeToPro")}
-              </Button>
-            </Popover>
-          </div>
-        </div>
-        <div className="border-none p-[2%] select-none z-20 blur">
-          <section className="header app-flex-space mb-[18px]">
-            <Space>
-              <DatePicker.RangePicker
-                allowClear={false}
-                value={filterDate}
-                onChange={setFilterDate}
-              />
-              {/* <Divider type="vertical" />
+              <Option value="PENDING">PENDING</Option>
+              <Option value="COMPLETED">COMPLETED</Option>
+            </Select>
+            {/* <Divider type="vertical" />
             <InputNumber disabled value={minAge} onChange={setMinAge}/> -
             <InputNumber disabled value={maxAge} onChange={setMaxAge}/>
             <Typography.Text>Years Old</Typography.Text> */}
-            </Space>
-            <Space>
-              <Button disabled={!data || !filterDate} onClick={handlePrint}>
-                {t("Print")}
-              </Button>
-              {/* <Button type="primary" onClick={handleSearch}>
+          </Space>
+          <Space>
+            <Button disabled={!data || !filterDate} onClick={handlePrint}>
+              {t("Print")}
+            </Button>
+            {/* <Button type="primary" onClick={handleSearch}>
               Search
             </Button> */}
-            </Space>
-          </section>
-          <Divider />
-          {/* <PureTable /> */}
-          <Info />
+          </Space>
+        </section>
+        <Divider />
+        {/* <PureTable /> */}
+        <Info />
 
-          <div className="mt-6 select-none">{homeTable}</div>
-        </div>
+        <div className="mt-6">{homeTable}</div>
       </div>
-    );
-  } else {
-    return (
-      <div className={`reports-screen page`}>
-        <div className="border-none  p-[2%]">
-          <section className="header app-flex-space mb-[18px]">
-            <Space>
-              <DatePicker.RangePicker
-                allowClear={false}
-                value={filterDate}
-                onChange={setFilterDate}
-              />
-              {/* <Divider type="vertical" />
-            <InputNumber disabled value={minAge} onChange={setMinAge}/> -
-            <InputNumber disabled value={maxAge} onChange={setMaxAge}/>
-            <Typography.Text>Years Old</Typography.Text> */}
-            </Space>
-            <Space>
-              <Button disabled={!data || !filterDate} onClick={handlePrint}>
-                {t("Print")}
-              </Button>
-              {/* <Button type="primary" onClick={handleSearch}>
-              Search
-            </Button> */}
-            </Space>
-          </section>
-          <Divider />
-          {/* <PureTable /> */}
-          <Info />
-
-          <div className="mt-6">{homeTable}</div>
-        </div>
-      </div>
-    );
-  }
+    </div>
+  );
 };
 
 export default ReportsScreen;

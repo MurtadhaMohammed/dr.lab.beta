@@ -1,9 +1,9 @@
-import { DeleteOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
   Col,
   DatePicker,
+  Divider,
   Input,
   Modal,
   Radio,
@@ -12,7 +12,7 @@ import {
   Typography,
   message,
 } from "antd";
-import { useAppStore, usePatientStore } from "../../../libs/appStore";
+import { useAppStore, useDoctorStore } from "../../../libs/appStore";
 import "./style.css";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
@@ -23,22 +23,24 @@ export const PureModal = () => {
   const { setIsReload, isReload } = useAppStore();
   const {
     id,
-    uID,
     name,
     birth,
     phone,
     email,
     gender,
+    address,
+    type,
     setName,
-    createdAt,
     setBirth,
     setPhone,
     setEmail,
     setGender,
+    setAddress,
+    setType,
     isModal,
     setIsModal,
     setReset,
-  } = usePatientStore();
+  } = useDoctorStore();
   const { t } = useTranslation();
 
   const handleSubmit = () => {
@@ -47,57 +49,59 @@ export const PureModal = () => {
       gender,
       email,
       phone,
-      birth: birth.toString(),
+      address,
+      type,
     };
-  
+
     if (id) {
       send({
-        query: "updatePatient",
+        query: "updateDoctor",
         id,
-        data: { ...data }
-      }).then(resp => {
-        if (resp.success) {
-          message.success(t("Patientupdatedsuccessfully"));
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error updating patient:", resp.error);
-          message.error(t("Failedtoupdatepatient"));
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-        message.error("Failed to communicate with server.");
-      });
-  
+        data,
+      })
+        .then((resp) => {
+          if (resp.success) {
+            message.success(t("Patientupdatedsuccessfully"));
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Error updating doctor:", resp.error);
+            message.error(t("Failedtoupdatepatient"));
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     } else {
       send({
-        query: "addPatient",
-        data: { ...data, createdAt: Date.now() },
-      }).then(resp => {
-        if (resp.success) {
-          message.success(t("Patientaddedsuccessfully"));
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error adding patient:", resp.error);
-          message.error(t("Failedtoaddpatient"));
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-        message.error("Failed to communicate with server.");
-      });
+        query: "addDoctor",
+        data,
+      })
+        .then((resp) => {
+          if (resp.success) {
+            message.success(t("Patientaddedsuccessfully"));
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Error adding doctor:", resp.error);
+            message.error(t("Failedtoaddpatient"));
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     }
   };
-  
-
 
   return (
     <Modal
-      title={`${id ? t("Edit") : t("Add")} ${t("NewPatient")}`}
+      title={`${id ? t("Edit") : t("Add")} ${t("Doctor")}`}
       open={isModal}
-      width={400}
+      width={440}
       onOk={() => {
         setIsModal(false);
       }}
@@ -114,7 +118,7 @@ export const PureModal = () => {
             {t("Close")}
           </Button>
           <Button
-            disabled={!name || !gender || !birth}
+            disabled={!name || !gender}
             type="primary"
             onClick={handleSubmit}
           >
@@ -124,11 +128,11 @@ export const PureModal = () => {
       }
       centered
     >
-      <div className="create-patient-modal">
+      <div className="create-doctors-modal">
         <Row gutter={[16, 16]}>
           <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("PatientName")}</Text>
+              <Text>{t("DoctorName")}</Text>
               <Input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -136,21 +140,11 @@ export const PureModal = () => {
               />
             </Space>
           </Col>
-          <Col span={10}>
-            <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("BirthDate")}</Text>
-              <DatePicker
-                picker={t("year")}
-                value={birth}
-                onChange={(val) => setBirth(val)}
-                style={{ width: "100%" }}
-              />
-            </Space>
-          </Col>
-          <Col span={14}>
+          
+          <Col span={12}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
-                {t("PhoneNumber")}
+                {t("PhoneNumber")} <Text type="secondary">{t("Optional")}</Text>
               </Text>
               <Input
                 value={phone}
@@ -160,7 +154,7 @@ export const PureModal = () => {
               />
             </Space>
           </Col>
-          <Col span={16}>
+          <Col span={12}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
                 {t("Email")} <Text type="secondary">{t("Optional")}</Text>
@@ -169,6 +163,30 @@ export const PureModal = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Ex: mail@example.com"
+                style={{ width: "100%" }}
+              />
+            </Space>
+          </Col>
+          <Col span={24}>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Text>
+                {t("DoctorAddress")} <Text type="secondary">{t("Optional")}</Text>
+              </Text>
+              <Input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </Space>
+          </Col>
+          <Col span={24}>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Text>
+                {t("DoctorType")} <Text type="secondary">{t("Optional")}</Text>
+              </Text>
+              <Input
+                value={type}
+                onChange={(e) => setType(e.target.value)}
                 style={{ width: "100%" }}
               />
             </Space>
@@ -191,6 +209,7 @@ export const PureModal = () => {
               </Radio.Group>
             </Space>
           </Col>
+          <Divider />
         </Row>
       </div>
     </Modal>
