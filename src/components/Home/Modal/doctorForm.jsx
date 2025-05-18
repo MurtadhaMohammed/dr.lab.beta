@@ -2,7 +2,6 @@ import {
   Button,
   Card,
   Col,
-  DatePicker,
   Divider,
   Input,
   Radio,
@@ -11,31 +10,30 @@ import {
   Space,
   Typography,
 } from "antd";
-import { RxReset } from "react-icons/rx";
 import { useHomeStore } from "../../../libs/appStore";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
-import dayjs from "dayjs";
+import { RxReset } from "react-icons/rx";
 
 const { Text } = Typography;
 
-const PatientForm = () => {
-  const { isModal, setPatientRow, patientRow, id } = useHomeStore();
-  const [patientsList, setPatientsList] = useState([]);
+const DoctorForm = () => {
+  const { isModal, doctorRow, setDoctorRow, id } = useHomeStore();
+  const [doctorsList, setDoctorsList] = useState([]);
   const [selected, setSelected] = useState(null);
   const { t } = useTranslation();
 
-  const getPtients = (querySearch = "") => {
+  const getDoctors = (querySearch = "") => {
     send({
-      query: "getPatients",
+      query: "getDoctors",
       q: querySearch,
       skip: 0,
       limit: 10,
     })
       .then((resp) => {
         if (resp.success) {
-          setPatientsList(resp.data);
+          setDoctorsList(resp.data);
         } else {
           console.error("Error fetching patients:", resp.error);
         }
@@ -46,39 +44,34 @@ const PatientForm = () => {
   };
 
   useEffect(() => {
-    isModal && getPtients();
+    isModal && getDoctors();
   }, [isModal]);
 
   useEffect(() => {
     if (!selected) return;
-    let patientObj = patientsList.find((el) => el?.id === selected);
-    setPatientRow({ ...patientObj, birth: dayjs(patientObj?.birth) });
+    let doctorObj = doctorsList.find((el) => el?.id === selected);
+    setDoctorRow(doctorObj);
   }, [selected]);
 
-  const handleChangeInput = (e, customName) => {
-    if (customName) {
-      setPatientRow({ ...patientRow, [customName]: e });
-      return;
-    }
+  const handleChangeInput = (e) => {
     let { name, value } = e.target;
-    setPatientRow({ ...patientRow, [name]: value });
+    setDoctorRow({ ...doctorRow, [name]: value });
   };
 
   return (
     <div className="user-form">
       <Select
         showSearch
-        disabled={id}
-        placeholder={t("SelectPatient")}
+        placeholder={t("SelectDoctor")}
         optionFilterProp="children"
         style={{ width: "100%" }}
-        onSearch={getPtients}
+        onSearch={getDoctors}
         onSelect={setSelected}
         allowClear
         filterOption={(input, option) =>
           (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
         }
-        options={patientsList?.map((el) => {
+        options={doctorsList?.map((el) => {
           return {
             label: el?.name,
             value: el?.id,
@@ -89,49 +82,38 @@ const PatientForm = () => {
       <Row gutter={[16, 16]} className="frutiger-font">
         <Col span={24}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
-            <Text>{t("PatientName")}</Text>
+            <Text>{t("DoctorName")}</Text>
             <Input
-              value={patientRow?.name}
-              name={"name"}
+              name="name"
+              value={doctorRow?.name}
               onChange={handleChangeInput}
               placeholder={t("ExName")}
             />
           </Space>
         </Col>
-        <Col span={10}>
-          <Space style={{ width: "100%" }} direction="vertical" size={4}>
-            <Text>{t("BirthDate")}</Text>
-            <DatePicker
-              picker={t("year")}
-              value={patientRow?.birth}
-              name={"birth"}
-              onChange={(val) => handleChangeInput(val, "birth")}
-              style={{ width: "100%" }}
-            />
-          </Space>
-        </Col>
-        <Col span={14}>
+
+        <Col span={12}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>
-              {t("PhoneNumber")}
+              {t("PhoneNumber")} <Text type="secondary">{t("Optional")}</Text>
             </Text>
             <Input
-              value={patientRow?.phone}
-              name={"phone"}
+              value={doctorRow?.phone}
+              name="phone"
               onChange={handleChangeInput}
               placeholder="07xxxxxxxxx"
               style={{ width: "100%" }}
             />
           </Space>
         </Col>
-        <Col span={16}>
+        <Col span={12}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>
               {t("Email")} <Text type="secondary">{t("Optional")}</Text>
             </Text>
             <Input
-              value={patientRow?.email}
-              name={"email"}
+              name="email"
+              value={doctorRow?.email}
               onChange={handleChangeInput}
               placeholder="Ex: mail@example.com"
               style={{ width: "100%" }}
@@ -139,16 +121,43 @@ const PatientForm = () => {
           </Space>
         </Col>
         <Col span={24}>
+          <Space style={{ width: "100%" }} direction="vertical" size={4}>
+            <Text>
+              {t("DoctorAddress")} <Text type="secondary">{t("Optional")}</Text>
+            </Text>
+            <Input
+              name="address"
+              value={doctorRow?.address}
+              onChange={handleChangeInput}
+              style={{ width: "100%" }}
+            />
+          </Space>
+        </Col>
+        <Col span={24}>
+          <Space style={{ width: "100%" }} direction="vertical" size={4}>
+            <Text>
+              {t("DoctorType")} <Text type="secondary">{t("Optional")}</Text>
+            </Text>
+            <Input
+              name="type"
+              value={doctorRow?.type}
+              onChange={handleChangeInput}
+              style={{ width: "100%" }}
+            />
+          </Space>
+        </Col>
+
+        <Col span={24}>
           <Space style={{ width: "100%" }} direction="vertical" size={0}>
             <Text>{t("Gender")}</Text>
             <Radio.Group
-              value={patientRow?.gender}
-              name={"gender"}
+              value={doctorRow?.gender}
+              name="gender"
               onChange={handleChangeInput}
             >
               <Space>
                 <Card hoverable bodyStyle={{ padding: 8 }}>
-                  <Radio value={"male"}>{t("Male")}</Radio>
+                  <Radio value={"male"}> {t("Male")}</Radio>
                 </Card>
                 <Card hoverable bodyStyle={{ padding: 8 }}>
                   <Radio value={"female"}>{t("Female")}</Radio>
@@ -160,7 +169,7 @@ const PatientForm = () => {
         <Col span={24}>
           <Button
             onClick={() => {
-              setPatientRow({});
+              setDoctorRow({});
               setSelected(null);
             }}
             icon={<RxReset />}
@@ -174,4 +183,4 @@ const PatientForm = () => {
   );
 };
 
-export default PatientForm;
+export default DoctorForm;

@@ -24,6 +24,7 @@ class LabDB {
       this.initializeDatabase();
       this.initTestsFromJSON();
       this.checkAndAddVisitNumberColumn();
+      this.migrateVisitsTableWithDoctorForeignKey();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
@@ -35,41 +36,6 @@ class LabDB {
       console.error("Error opening database", err);
     }
   }
-
-  // async executeMaintenance() {
-  //   // SQLite example
-  //   await this.db.exec("PRAGMA wal_checkpoint(FULL)");
-  //   await this.db.exec("PRAGMA synchronous = FULL");
-  // }
-
-  // async syncToDisk() {
-  //   // Force OS-level sync
-  //   if (this.db?.exec) {
-  //     await this.db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
-  //   }
-  //   if (this.dbPath) {
-  //     const fd = fs.openSync(this.dbPath, 'r+');
-  //     fs.fsyncSync(fd);
-  //     fs.closeSync(fd);
-  //   }
-  // }
-
-  // async reconncet() {
-  //   const dbPath = path.join(app.getPath("userData"), "drlab.db");
-  //   try {
-  //     this.db = new Database(dbPath, {
-  //       // verbose: console.log,
-  //     });
-  //     await this.db.pragma("journal_mode = WAL");
-  //     console.log("Database reopen successfully");
-
-  //     if (this.db) {
-  //       console.log("Available collections:", Object.keys(this.db));
-  //     }
-  //   } catch (err) {
-  //     console.error("Error opening database", err);
-  //   }
-  // }
 
   initializeDatabase() {
     this.db.exec(`
@@ -84,9 +50,22 @@ class LabDB {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
-        CREATE TABLE IF NOT EXISTS visits (
+      CREATE TABLE IF NOT EXISTS doctors(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        gender TEXT,
+        email TEXT,
+        phone TEXT,
+        address TEXT,
+        type TEXT,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS visits (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         patientID INTEGER,
+        doctorID INTEGER,
         visitNumber VARCHAR(6),
         status TEXT DEFAULT "PENDING" NOT NULL,
         testType VARCHAR(50),
@@ -95,6 +74,7 @@ class LabDB {
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(patientID) REFERENCES patients(id)
+        FOREIGN KEY(doctorID) REFERENCES doctors(id)
       );
 
       CREATE TABLE IF NOT EXISTS tests(
@@ -126,21 +106,6 @@ class LabDB {
     `);
   }
 
-  // async closeConnection() {
-  //   if (!this.db) {
-  //     console.warn("No active database connection to close");
-  //     return;
-  //   }
-  //   if (this.db) {
-  //     try {
-  //       await this.db.close();
-  //       console.log("DATABASE CLOSED SUCCESSFULLY");
-  //     } catch (syncError) {
-  //       console.error("Emergency close failed:", syncError);
-  //     }
-  //   }
-  // }
-
   async checkAndAddVisitNumberColumn() {
     try {
       // Check if the visits table has the visitNumber column
@@ -167,6 +132,73 @@ class LabDB {
     }
   }
 
+  async migrateVisitsTableWithDoctorForeignKey() {
+    try {
+      // Step 1: Enable foreign keys
+      this.db.prepare(`PRAGMA foreign_keys = ON;`).run();
+
+      // Step 2: Check if doctorID column already exists
+      const columns = this.db.prepare(`PRAGMA table_info(visits);`).all();
+      const hasDoctorID = columns.some((col) => col.name === "doctorID");
+
+      if (hasDoctorID) {
+        console.log("✅ doctorID column already exists, skipping migration.");
+        return;
+      }
+
+      this.db.transaction(() => {
+        // Step 3: Rename the existing table
+        this.db.prepare(`ALTER TABLE visits RENAME TO visits_old;`).run();
+
+        // Step 4: Create the new table with foreign key constraint
+        this.db
+          .prepare(
+            `
+            CREATE TABLE visits (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              patientID INTEGER,
+              doctorID INTEGER,
+              visitNumber VARCHAR(6),
+              status TEXT DEFAULT "PENDING" NOT NULL,
+              testType VARCHAR(50),
+              tests TEXT,
+              discount INTEGER,
+              updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+              createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY(patientID) REFERENCES patients(id),
+              FOREIGN KEY(doctorID) REFERENCES doctors(id)
+            );
+        `
+          )
+          .run();
+
+        // Step 5: Copy data from the old table
+        const oldColumns = columns.map((col) => col.name).join(", ");
+        const newColumns = oldColumns + ", NULL"; // doctorID is not in the old table
+
+        this.db
+          .prepare(
+            `
+          INSERT INTO visits (
+            id, patientID, doctorID, visitNumber, status, testType, tests, discount, updatedAt, createdAt
+          )
+          SELECT
+            id, patientID, NULL, visitNumber, status, testType, tests, discount, updatedAt, createdAt
+          FROM visits_old;
+        `
+          )
+          .run();
+
+        // Step 6: Drop old table
+        this.db.prepare(`DROP TABLE visits_old;`).run();
+
+        console.log("✅ visits table migrated with doctorID foreign key.");
+      })();
+    } catch (err) {
+      console.error("❌ Migration failed:", err.message);
+    }
+  }
+
   async initTestsFromJSON() {
     try {
       const testCountStet = this.db.prepare(`
@@ -176,11 +208,20 @@ class LabDB {
 
       if (total === 0) {
         const jsonPath = path.join(__dirname, "tests.json");
+        const jsonGroupPath = path.join(__dirname, "groups.json");
+
+        if (!fs.existsSync(jsonPath) || !fs.existsSync(jsonGroupPath)) {
+          throw new Error("One or both JSON files are missing");
+        }
+
         const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+        const jsonGroupData = JSON.parse(
+          fs.readFileSync(jsonGroupPath, "utf-8")
+        );
 
         const insertStmt = this.db.prepare(`
-          INSERT INTO tests (name, price, normal, options, isSelecte)
-          VALUES (?, ?, ?, ?, ?)
+          INSERT INTO tests (id, name, price, normal, options, isSelecte)
+          VALUES (?, ?, ?, ?, ?, ?)
         `);
 
         const insertTransaction = this.db.transaction((data) => {
@@ -189,6 +230,7 @@ class LabDB {
               ? item.normal.replace(/\\n/g, "\n")
               : null;
             insertStmt.run(
+              Number(item.id),
               item.name,
               Number(item.price),
               normalValue,
@@ -199,6 +241,14 @@ class LabDB {
         });
 
         insertTransaction(jsonData);
+
+        for (const item of jsonGroupData) {
+          await this.addPackage({
+            title: item?.groupname,
+            customePrice: 0,
+            tests: item?.testIds?.map((id) => ({ id })),
+          });
+        }
 
         console.log("Tests imported from tests.json");
       } else {
@@ -279,28 +329,6 @@ class LabDB {
     return { id: info.lastInsertRowid };
   }
 
-  // async deletePatient(id) {
-  //   const stmt = await this.db.prepare(`
-  //     DELETE FROM patients WHERE id = ?
-  //   `);
-  //   const info = stmt.run(id);
-  //   return { success: info.changes > 0, rowsDeleted: info.changes };
-  // }
-
-  // async deletePatient(id) {
-  //   const deleteVisitsStmt = await this.db.prepare(`
-  //     DELETE FROM visits WHERE patientID = ?
-  //   `);
-  //   await deleteVisitsStmt.run(id);
-
-  //   const deletePatientStmt = await this.db.prepare(`
-  //     DELETE FROM patients WHERE id = ?
-  //   `);
-  //   const info = await deletePatientStmt.run(id);
-
-  //   return { success: info.changes > 0, rowsDeleted: info.changes };
-  // }
-
   async deletePatient(id) {
     const checkVisitsStmt = await this.db.prepare(`
       DELETE FROM visits WHERE patientID = ?
@@ -337,6 +365,82 @@ class LabDB {
       birth ? new Date(birth).toISOString() : null,
       id
     );
+
+    return { data: info.changes > 0 };
+  }
+
+  async getDoctors({ q = "", skip = 0, limit = 10 }) {
+    try {
+      // Prepare the query to count the total number of doctors
+      const countStmt = await this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM doctors
+      WHERE name LIKE ?
+    `);
+
+      const countResult = countStmt.get(`%${q}%`);
+      const total = countResult?.total || 0;
+
+      const stmt = await this.db.prepare(`
+      SELECT * FROM doctors
+      WHERE name LIKE ?
+      ORDER BY doctors.id DESC
+      LIMIT ? OFFSET ?
+    `);
+
+      const doctors = stmt.all(`%${q}%`, limit, skip);
+
+      return { success: true, total, data: doctors };
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async addDoctor(doctors) {
+    try {
+      const stmt = await this.db.prepare(`
+        INSERT INTO doctors (name, gender, email, phone, address, type)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `);
+      const info = stmt.run(
+        doctors.name,
+        doctors.gender,
+        doctors.email,
+        doctors.phone,
+        doctors.address,
+        doctors.type
+      );
+      return { id: info.lastInsertRowid };
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  async deleteDoctor(id) {
+    const deleteDoctorStmt = await this.db.prepare(`
+      DELETE FROM doctors WHERE id = ?
+    `);
+
+    const info = await deleteDoctorStmt.run(id);
+
+    return { success: info.changes > 0, rowsDeleted: info.changes };
+  }
+
+  async updateDoctor(id, updates) {
+    const { name, gender, email, phone, address, type } = updates;
+    const stmt = await this.db.prepare(`
+    UPDATE doctors
+    SET 
+    name = COALESCE(?,name),
+    gender = COALESCE(?, gender),
+    email = COALESCE(?, email),
+    phone = COALESCE(?, phone),
+    address = COALESCE(?, address),
+    type = COALESCE(?, type),
+    updatedAt = CURRENT_TIMESTAMP
+    WHERE id = ?
+    `);
+    const info = stmt.run(name, gender, email, phone, address, type, id);
 
     return { data: info.changes > 0 };
   }
@@ -405,6 +509,7 @@ class LabDB {
     const stmt = await this.db.prepare(`
       SELECT * FROM tests
       WHERE name LIKE ?
+      ORDER BY createdAt DESC
       LIMIT ? OFFSET ?
     `);
 
@@ -548,6 +653,7 @@ class LabDB {
     const stmt = await this.db.prepare(`
       SELECT * FROM packages
       WHERE title LIKE ?
+      ORDER BY createdAt DESC
       LIMIT ? OFFSET ?
     `);
 
@@ -567,7 +673,7 @@ class LabDB {
   }
 
   async addVisit(data) {
-    const { patientID, status, testType, tests, discount } = data;
+    const { patientID, doctorID, status, testType, tests, discount } = data;
     const testTypeStr = testType;
     const testsStr = JSON.stringify(tests);
 
@@ -582,11 +688,12 @@ class LabDB {
       }
 
       const insertStmt = this.db.prepare(`
-        INSERT INTO visits (patientID, status, testType, tests, discount)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO visits (patientID, doctorID, status, testType, tests, discount)
+        VALUES (?, ?, ?, ?, ?, ?)
       `);
       const info = insertStmt.run(
         patientID,
+        doctorID,
         status,
         testTypeStr,
         testsStr,
@@ -609,7 +716,7 @@ class LabDB {
     return { success: info.changes > 0 };
   }
 
-  async getVisits({ q = "", skip = 0, limit = 10, startDate, endDate }) {
+  async getVisits({ q = "", skip = 0, limit = 10, startDate, endDate, status}) {
     const whereClauses = [
       `(p.name LIKE ? OR v.visitNumber LIKE ?)`,
       startDate
@@ -622,9 +729,10 @@ class LabDB {
             new Date(endDate).toISOString().split("T")[0]
           }'`
         : "",
+        status && `v.status = '${status}'`
     ]
       .filter(Boolean)
-      .join(" AND "); //"976209"
+      .join(" AND ");
 
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
@@ -637,33 +745,63 @@ class LabDB {
     const total = countResult?.total || 0;
 
     const stmt = await this.db.prepare(`
-      SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail, p.birth as patientBirth
+      SELECT 
+        v.*, 
+        p.name as patientName, 
+        p.gender as patientGender, 
+        p.phone as patientPhone, 
+        p.email as patientEmail, 
+        p.birth as patientBirth,
+        d.id as doctorID,
+        d.name as doctorName, 
+        d.gender as doctorGender, 
+        d.phone as doctorPhone, 
+        d.email as doctorEmail, 
+        d.address as doctorAddress, 
+        d.type as doctorType
       FROM visits v
       JOIN patients p ON v.patientID = p.id
+      LEFT JOIN doctors d ON v.doctorID = d.id
       WHERE ${whereClauses}
-      ORDER BY createdAt DESC
+      ORDER BY v.createdAt DESC
       LIMIT ${limit} OFFSET ${skip}
     `);
 
     const visits = stmt.all(`%${q}%`, `%${q}%`);
-    const results = visits?.map((el) => ({
-      id: el?.id,
-      tests: JSON.parse(el?.tests) || [],
-      testType: el?.testType,
-      status: el?.status,
-      discount: el?.discount,
-      createdAt: el?.createdAt,
-      updatedAt: el?.updatedAt,
-      visitNumber: el?.visitNumber,
-      patient: {
-        id: el?.patientID,
-        name: el?.patientName,
-        gender: el?.patientGender,
-        phone: el?.patientPhone,
-        email: el?.patientEmail,
-        birth: el?.patientBirth,
-      },
-    }));
+
+    const results = visits?.map((el) => {
+      const doctorData = el?.doctorID
+        ? {
+            id: el?.doctorID,
+            name: el?.doctorName,
+            gender: el?.doctorGender,
+            phone: el?.doctorPhone,
+            email: el?.doctorEmail,
+            address: el?.doctorAddress,
+            type: el?.doctorType,
+          }
+        : null;
+
+      return {
+        id: el?.id,
+        tests: JSON.parse(el?.tests) || [],
+        testType: el?.testType,
+        status: el?.status,
+        discount: el?.discount,
+        createdAt: el?.createdAt,
+        updatedAt: el?.updatedAt,
+        visitNumber: el?.visitNumber,
+        patient: {
+          id: el?.patientID,
+          name: el?.patientName,
+          gender: el?.patientGender,
+          phone: el?.patientPhone,
+          email: el?.patientEmail,
+          birth: el?.patientBirth,
+        },
+        doctor: doctorData,
+      };
+    });
 
     return { success: true, total, data: results };
   }
@@ -728,37 +866,68 @@ class LabDB {
 
   async getVisitByPatient(patientId) {
     const stmt = await this.db.prepare(`
-      SELECT v.*, p.name as patientName, p.gender as patientGender, p.phone as patientPhone, p.email as patientEmail,  p.birth as patientBirth
+      SELECT 
+        v.*, 
+        p.name as patientName, 
+        p.gender as patientGender, 
+        p.phone as patientPhone, 
+        p.email as patientEmail,  
+        p.birth as patientBirth,
+        d.id as doctorID,
+        d.name as doctorName, 
+        d.gender as doctorGender, 
+        d.phone as doctorPhone, 
+        d.email as doctorEmail, 
+        d.address as doctorAddress, 
+        d.type as doctorType
       FROM visits v
-      JOIN patients p ON v.patientId = p.id
-      WHERE v.patientId = ?
+      JOIN patients p ON v.patientID = p.id
+      LEFT JOIN doctors d ON v.doctorID = d.id
+      WHERE v.patientID = ?
       ORDER BY v.createdAt DESC
-      `);
+    `);
 
     const visits = stmt.all(patientId);
-    const results = visits?.map((el) => ({
-      id: el?.id,
-      tests: JSON.parse(el?.tests) || [],
-      testType: el?.testType,
-      status: el?.status,
-      discount: el?.discount,
-      createdAt: el?.createdAt,
-      updatedAt: el?.updatedAt,
-      patient: {
-        id: el?.patientID,
-        name: el?.patientName,
-        gender: el?.patientGender,
-        phone: el?.patientPhone,
-        email: el?.patientEmail,
-        birth: el?.patientBirth,
-      },
-    }));
+
+    const results = visits?.map((el) => {
+      const doctorData = el?.doctorID
+        ? {
+            id: el?.doctorID,
+            name: el?.doctorName,
+            gender: el?.doctorGender,
+            phone: el?.doctorPhone,
+            email: el?.doctorEmail,
+            address: el?.doctorAddress,
+            type: el?.doctorType,
+          }
+        : null;
+
+      return {
+        id: el?.id,
+        tests: JSON.parse(el?.tests) || [],
+        testType: el?.testType,
+        status: el?.status,
+        discount: el?.discount,
+        createdAt: el?.createdAt,
+        updatedAt: el?.updatedAt,
+        visitNumber: el?.visitNumber,
+        patient: {
+          id: el?.patientID,
+          name: el?.patientName,
+          gender: el?.patientGender,
+          phone: el?.patientPhone,
+          email: el?.patientEmail,
+          birth: el?.patientBirth,
+        },
+        doctor: doctorData,
+      };
+    });
 
     return { success: true, data: results };
   }
 
   async updateVisit(id, data) {
-    const { patientID, status, testType, tests, discount } = data;
+    const { patientID, doctorID, status, testType, tests, discount } = data;
 
     let newTests = await this.getTestNormalValues(testType, tests);
 
@@ -768,6 +937,7 @@ class LabDB {
       UPDATE visits
       SET 
         patientID = COALESCE(?, patientID),
+        doctorID = COALESCE(?, doctorID),
         status = COALESCE(?, status),
         testType = COALESCE(?, testType),
         tests = COALESCE(?, tests),
@@ -775,7 +945,15 @@ class LabDB {
         updatedAt = CURRENT_TIMESTAMP
       WHERE id = ?
     `);
-    const info = stmt.run(patientID, status, testType, testsStr, discount, id);
+    const info = stmt.run(
+      patientID,
+      doctorID,
+      status,
+      testType,
+      testsStr,
+      discount,
+      id
+    );
 
     return { success: info.changes > 0, newTests };
   }

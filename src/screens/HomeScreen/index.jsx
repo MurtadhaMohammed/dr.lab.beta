@@ -48,7 +48,7 @@ const HomeScreen = () => {
   ];
 
   return (
-    <div className="home-screen page">
+    <div className="home-screen page pb-[50px]">
       <div className="border-none p-[2%]">
         <section className="header app-flex-space mb-[22px]">
           <Space size={16}>

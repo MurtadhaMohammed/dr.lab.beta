@@ -5,18 +5,16 @@ import {
   Input,
   Space,
   message,
-  Switch,
   Radio,
   Typography,
 } from "antd";
 import "./style.css";
 import { useEffect, useState } from "react";
-import { useAppStore, useLanguage } from "../../libs/appStore";
+import { useLanguage } from "../../libs/appStore";
 import Logo from "../../assets/logo2.png";
 import { send } from "../../control/renderer";
 import background from "../../assets/login.svg";
 import { apiCall } from "../../libs/api";
-import BackIcon from "./BackIcon";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import { URL } from "../../libs/api";

@@ -280,5 +280,11 @@
   "UpgradeToPro": "بەرزبکەرەوە بۆ وەشانی پارەکراو",
   "UpgradeToProDescription": "بۆ بەکارهێنانی هەموو تایبەتمەندییەکان",
   "printLimitTitle": "ناتوانیت چاپ بکەیت!",
-  "printLimitMessage": "تۆ گەیشتیتە سنووری چاپکردن"
+  "printLimitMessage": "تۆ گەیشتیتە سنووری چاپکردن",
+  "Doctors": "دکتۆرەکان",
+  "SearchDoctor": "گەڕان بەدوای دکتۆر",
+  "NewDoctor": "زیادکردنی دکتۆر",
+  "DoctorAddress": "ناونیشان",
+  "DoctorType": "تایبەتمەندی",
+  "DoctorName": "ناوی دکتۆر"
 }

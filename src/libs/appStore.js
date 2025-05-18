@@ -66,6 +66,10 @@ export const useHomeStore = create((set) => ({
   email: "",
   gender: null,
   record: null,
+  patientRow: {},
+  doctorRow: {},
+  setPatientRow: (patientRow) => set({ patientRow }),
+  setDoctorRow: (doctorRow) => set({ doctorRow }),
   setPatientID: (patientID) => set({ patientID }),
   setIsToday: (isToday) => set({ isToday }),
   setIsBarcode: (isBarcode) => set({ isBarcode }),
@@ -171,6 +175,46 @@ export const usePatientStore = create((set) => ({
     }),
 }));
 
+export const useDoctorStore = create((set) => ({
+  querySearch: "",
+  isModal: false,
+  name: "",
+  birth: "",
+  phone: "",
+  email: "",
+  address: "",
+  type: "",
+  gender: null,
+  createdAt: null,
+  id: null,
+  uID: nanoid(),
+  setId: (id) => set({ id }),
+  setUID: (uID) => set({ uID }),
+  setName: (name) => set({ name }),
+  setBirth: (birth) => set({ birth }),
+  setPhone: (phone) => set({ phone }),
+  setAddress: (address) => set({ address }),
+  setType: (type) => set({ type }),
+  setEmail: (email) => set({ email }),
+  setGender: (gender) => set({ gender }),
+  setIsModal: (isModal) => set({ isModal }),
+  setCreatedAt: (createdAt) => set({ createdAt }),
+  setQuerySearch: (querySearch) => set({ querySearch }),
+  setReset: () =>
+    set({
+      id: null,
+      createdAt: null,
+      name: "",
+      birth: "",
+      phone: "",
+      email: "",
+      address: "",
+      type: "",
+      gender: null,
+      uID: nanoid(),
+    }),
+}));
+
 export const useGroupStore = create((set) => ({
   isModal: false,
   title: "",
@@ -204,6 +248,8 @@ export const useReportsStore = create((set) => ({
   subTotalPrice: 0, // Add state for subtotal price
   totalDiscount: 0, // Add state for total discount
   totalAmount: 0, // Add state for total amount
+  visitStatus: null,
+  setVisitStatus: (visitStatus) => set({ visitStatus }),
   setRecords: (records) => set({ records }),
   setLoading: (loading) => set({ loading }),
   setFilterDate: (date) => set({ filterDate: date }),
