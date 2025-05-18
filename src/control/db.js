@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const { app, dialog } = require("electron");
 const Database = require("better-sqlite3");
+const dayjs = require("dayjs");
 
 class LabDB {
   constructor() {
@@ -716,20 +717,27 @@ class LabDB {
     return { success: info.changes > 0 };
   }
 
-  async getVisits({ q = "", skip = 0, limit = 10, startDate, endDate, status}) {
+  async getVisits({
+    q = "",
+    skip = 0,
+    limit = 10,
+    startDate,
+    endDate,
+    status,
+  }) {
     const whereClauses = [
       `(p.name LIKE ? OR v.visitNumber LIKE ?)`,
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${dayjs(startDate)
+            .startOf("day")
+            .toISOString()}'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${dayjs(endDate)
+            .endOf("day")
+            .toISOString()}'`
         : "",
-        status && `v.status = '${status}'`
+      status && `v.status = '${status}'`,
     ]
       .filter(Boolean)
       .join(" AND ");
