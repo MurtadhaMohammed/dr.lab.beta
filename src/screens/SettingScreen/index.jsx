@@ -49,6 +49,7 @@ const SettingsScreen = () => {
   const navigate = useNavigate();
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
+  const [warning, setWarning] = useState(true);
   const [selectedPrinter, setSelectedPrinter] = useState(
     localStorage.getItem("selectedPrinter") || ""
   );
@@ -138,6 +139,9 @@ const SettingsScreen = () => {
   };
 
   const handleUpdateClient = async (values) => {
+    form.validateFields().then((values) => {
+      console.log("Submit:", values);
+    });
     setLoading(true);
 
     send({ query: "getUUID" }).then(async ({ UUID }) => {
@@ -219,6 +223,20 @@ const SettingsScreen = () => {
     }
   };
 
+  useEffect(() => {
+    const hasEmpty = Object.values(form.getFieldsValue()).some(
+      (val) => val === undefined || val === null || val === ""
+    );
+    setWarning(hasEmpty);
+  }, [form]);
+
+  const onValuesChange = (_, allValues) => {
+    const hasEmpty = Object.values(allValues).some(
+      (val) => val === undefined || val === null || val === ""
+    );
+    setWarning(hasEmpty);
+  };
+
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -257,13 +275,23 @@ const SettingsScreen = () => {
         </section>
 
         <section>
-          <p className="pl-[4px] opacity-60">{t("AccountInfo")}</p>
-          <Card className="mt-[6px]">
+          <p className="pl-[4px] opacity-60">
+            {t("AccountInfo")}{" "}
+            {warning && (
+              <span className="text-orange-500 text-[14px]">
+                ({t("PleaseFillRequiredFields")})
+              </span>
+            )}
+          </p>
+          <Card className={`mt-[6px] ${warning ? "border-orange-400" : ""} `}>
             <div className="pattern-isometric pattern-indigo-400 pattern-bg-white pattern-size-6 pattern-opacity-5 absolute inset-0"></div>
             <Form
               form={form}
               onFinish={handleUpdateClient}
-              onFieldsChange={() => setIsUpdate(true)}
+              onFieldsChange={() => {
+                setIsUpdate(true);
+              }}
+              onValuesChange={onValuesChange}
               layout="vertical"
               autoComplete="off"
             >
@@ -295,7 +323,7 @@ const SettingsScreen = () => {
                     rules={[
                       {
                         required: true,
-                        message: t("PleaseInputYourPhone"),
+                        message: t("PleaseInputYourPhoneNumber"),
                       },
                     ]}
                   >

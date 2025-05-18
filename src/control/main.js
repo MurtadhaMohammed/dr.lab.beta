@@ -269,7 +269,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           limit,
           startDate,
           endDate,
-          status
+          status,
         });
         event.reply("asynchronous-reply", resp);
       } catch (error) {
@@ -321,6 +321,28 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.getVisitByPatient(patientId);
         event.reply("asynchronous-reply", resp);
       } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+    case "getVisitByDoctor": {
+      try {
+        const { doctorId, startDate, endDate } = arg.data;
+        console.log("Received data for getting visit by doctor:", arg.data);
+        if (!doctorId)
+          throw new Error("Doctor ID is required to get visits by doctor.");
+        const resp = await labDB.getVisitByDoctor(doctorId, startDate, endDate);
+        if (!resp) {
+          console.log("No response returned from getVisitByDoctor");
+        } else {
+          console.log("Doctor response:", resp);
+        }
+        event.reply("asynchronous-reply", resp);
+      } catch (error) {
+        console.error("Error in getVisitByDoctor:", error); // <-- Add this
         event.reply("asynchronous-reply", {
           success: false,
           error: error.message,

@@ -2,6 +2,7 @@ import {
   Button,
   Input,
   Modal,
+  Popover,
   Radio,
   Select,
   Space,
@@ -199,7 +200,10 @@ export const ResultsModal = () => {
     CUSTOME: (
       <div className="test-section">
         <Space direction="vertical" size={0} style={{ width: "100%" }}>
-          <div className="py-2 px-3" style={{background: appColors.colorPrimaryHover}}>
+          <div
+            className="py-2 px-3"
+            style={{ background: appColors.colorPrimaryHover }}
+          >
             <Typography.Text type="secondary">
               {t("CustomTest")}
             </Typography.Text>
@@ -255,7 +259,10 @@ export const ResultsModal = () => {
     PACKAGE: record?.tests?.map((group, i) => (
       <div className="test-section" key={i}>
         <Space direction="vertical" size={0} style={{ width: "100%" }}>
-          <div className="py-2 px-3" style={{background: appColors.colorPrimaryHover}}>
+          <div
+            className="py-2 px-3"
+            style={{ background: appColors.colorPrimaryHover }}
+          >
             <Typography.Text type="secondary"># {group.title}</Typography.Text>
           </div>
           <div className="test-list">
@@ -354,13 +361,25 @@ export const ResultsModal = () => {
             </Button>
             {isBarcode ? (
               <>
-                <Button
-                  type="primary"
-                  onClick={() => handleBarcode(record)}
-                  disabled={!printer[0]}
-                >
-                  {t("printBarcode")}
-                </Button>
+                {printer[0] ? (
+                  <Button
+                    type="primary"
+                    onClick={() => handleBarcode(record)}
+                    disabled={!printer[0]}
+                  >
+                    {t("printBarcode")}
+                  </Button>
+                ):(
+                  <Popover content={t("NoPrinterSelected")}>
+                    <Button
+                      type="primary"
+                      onClick={() => handleBarcode(record)}
+                      disabled={!printer[0]}
+                    >
+                      {t("printBarcode")}
+                    </Button>
+                  </Popover>
+                )}
               </>
             ) : (
               <Button type="primary" onClick={handleSubmit}>

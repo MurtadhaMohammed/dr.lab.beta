@@ -294,5 +294,11 @@
   "DoctorAddress": "Address",
   "DoctorType": "Specialization",
   "DoctorName": "Doctor Name",
-  "FROM": "From"
+  "ViewDoctorHistory": "View Doctor History",
+  "DoctorHistory": "Doctor History",
+  "DoctorHistoryFor": "Doctor History For",
+  "DoctorTotal": "Total",
+  "FROM": "From",
+  "PleaseFillRequiredFields": "Please fill in the fields",
+  "NoPrinterSelected": "No printer selected"
 }

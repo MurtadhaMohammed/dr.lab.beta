@@ -2,7 +2,7 @@ import { Button, Input, Space } from "antd";
 import "./style.css";
 import { useDoctorStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
-import { PureModal, PureTable } from "../../components/Doctors";
+import { PureModal, PureTable, DoctorHistory } from "../../components/Doctors";
 const { Search } = Input;
 
 const DoctorsScreen = () => {
@@ -37,6 +37,7 @@ const DoctorsScreen = () => {
         </section>
         <PureTable />
         <PureModal />
+        <DoctorHistory />
       </div>
     </div>
   );

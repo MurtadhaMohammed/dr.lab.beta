@@ -293,5 +293,11 @@
   "DoctorAddress": "العنوان",
   "DoctorType": "الاختصاص",
   "DoctorName": "اسم الطبيب",
-  "FROM": "تحويل من"
+  "ViewDoctorHistory": "عرض تاريخ الطبيب",
+  "DoctorHistoryFor": "تاريخ الطبيب لـ",
+  "DoctorHistory": "تاريخ الطبيب",
+  "DoctorTotal": "المجموع الكلي",
+  "FROM": "تحويل من",
+  "PleaseFillRequiredFields": "يرجى ملء الحقول ",
+  "NoPrinterSelected": "لم يتم اختيار طابعة"
 }

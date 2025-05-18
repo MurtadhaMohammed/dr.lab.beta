@@ -733,9 +733,7 @@ class LabDB {
             .toISOString()}'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${dayjs(endDate)
-            .endOf("day")
-            .toISOString()}'`
+        ? `DATE(v.createdAt) <= '${dayjs(endDate).endOf("day").toISOString()}'`
         : "",
       status && `v.status = '${status}'`,
     ]
@@ -846,14 +844,14 @@ class LabDB {
   async getTotalVisits({ startDate, endDate }) {
     const whereClauses = [
       startDate
-        ? `DATE(v.createdAt) >= '${
-            new Date(startDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) >= '${dayjs(startDate)
+            .startOf("day")
+            .toISOString()}'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${
-            new Date(endDate).toISOString().split("T")[0]
-          }'`
+        ? `DATE(v.createdAt) <= '${dayjs(endDate)
+            .startOf("day")
+            .toISOString()}'`
         : "",
     ]
       .filter(Boolean)
@@ -896,6 +894,84 @@ class LabDB {
     `);
 
     const visits = stmt.all(patientId);
+
+    const results = visits?.map((el) => {
+      const doctorData = el?.doctorID
+        ? {
+            id: el?.doctorID,
+            name: el?.doctorName,
+            gender: el?.doctorGender,
+            phone: el?.doctorPhone,
+            email: el?.doctorEmail,
+            address: el?.doctorAddress,
+            type: el?.doctorType,
+          }
+        : null;
+
+      return {
+        id: el?.id,
+        tests: JSON.parse(el?.tests) || [],
+        testType: el?.testType,
+        status: el?.status,
+        discount: el?.discount,
+        createdAt: el?.createdAt,
+        updatedAt: el?.updatedAt,
+        visitNumber: el?.visitNumber,
+        patient: {
+          id: el?.patientID,
+          name: el?.patientName,
+          gender: el?.patientGender,
+          phone: el?.patientPhone,
+          email: el?.patientEmail,
+          birth: el?.patientBirth,
+        },
+        doctor: doctorData,
+      };
+    });
+
+    return { success: true, data: results };
+  }
+
+  async getVisitByDoctor(doctorId, startDate = null, endDate = null) {
+    const whereClauses = [
+      `v.doctorID = ?`, // always filter by doctorId
+      startDate
+        ? `DATE(v.createdAt) >= '${dayjs(startDate)
+            .startOf("day")
+            .toISOString()}'`
+        : "",
+      endDate
+        ? `DATE(v.createdAt) <= '${dayjs(endDate)
+            .startOf("day")
+            .toISOString()}'`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" AND ");
+
+    const stmt = await this.db.prepare(`
+    SELECT 
+      v.*, 
+      p.name as patientName, 
+      p.gender as patientGender, 
+      p.phone as patientPhone, 
+      p.email as patientEmail,  
+      p.birth as patientBirth,
+      d.id as doctorID,
+      d.name as doctorName, 
+      d.gender as doctorGender, 
+      d.phone as doctorPhone, 
+      d.email as doctorEmail, 
+      d.address as doctorAddress, 
+      d.type as doctorType
+    FROM visits v
+    JOIN patients p ON v.patientID = p.id
+    LEFT JOIN doctors d ON v.doctorID = d.id
+    WHERE ${whereClauses}
+    ORDER BY v.createdAt DESC
+  `);
+
+    const visits = stmt.all(doctorId);
 
     const results = visits?.map((el) => {
       const doctorData = el?.doctorID

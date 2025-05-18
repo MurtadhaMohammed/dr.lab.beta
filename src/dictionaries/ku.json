@@ -291,5 +291,11 @@
   "NewDoctor": "زیادکردنی دکتۆر",
   "DoctorAddress": "ناونیشان",
   "DoctorType": "تایبەتمەندی",
-  "DoctorName": "ناوی دکتۆر"
+  "ViewDoctorHistory": "بینینی مێژووی دکتۆر",
+  "DoctorHistory": "مێژووی دکتۆر",
+  "DoctorHistoryFor": "مێژووی دکتۆر بۆ",
+  "DoctorTotal": "کۆی گشتی",
+  "DoctorName": "ناوی دکتۆر",
+  "PleaseFillRequiredFields": "تکایە زانیارییە پڕ بکە",
+  "NoPrinterSelected": "چاپگەر هەڵنەبژێردراوە"
 }

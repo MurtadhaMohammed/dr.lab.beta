@@ -1,0 +1,14 @@
+.history {
+  max-height: 600px;
+  overflow-y: auto;
+}
+.patient-history-modal .ant-modal-content {
+  height: 70vh; /* Set the height of the modal */
+  display: flex;
+  flex-direction: column;
+}
+
+.history-table-container {
+  flex: 1;
+  overflow-y: auto; /* Enable scrolling */
+}

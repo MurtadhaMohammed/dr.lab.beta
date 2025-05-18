@@ -28,6 +28,7 @@ export const PureTable = () => {
     querySearch,
     setAddress,
     setType,
+    setIsHistory
   } = useDoctorStore();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
@@ -107,6 +108,16 @@ export const PureTable = () => {
       key: "action",
       render: (_, record) => (
         <Space size="small" className="custom-actions">
+          <Button
+            onClick={() => {
+              setIsHistory(true);
+              setId(record?.id);
+            }}
+            style={{ fontSize: 12 }}
+            size="small"
+          >
+            {t("ViewDoctorHistory")}
+          </Button>
           <Button
             size="small"
             icon={<EditOutlined />}
