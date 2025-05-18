@@ -283,9 +283,9 @@ const SettingsScreen = () => {
               </span>
             )}
           </p>
-          <Card className={"mt-[6px]"} style={{
-            borderColor: appColors.userWarning
-          }}>
+          <Card className={"mt-[6px]"} style={warning ? {
+            borderColor:  appColors.userWarning
+          }: {}}>
             <div className="pattern-isometric pattern-indigo-400 pattern-bg-white pattern-size-6 pattern-opacity-5 absolute inset-0"></div>
             <Form
               form={form}
