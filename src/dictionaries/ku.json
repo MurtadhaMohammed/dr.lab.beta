@@ -171,6 +171,8 @@
   "online": "سەرهێڵ",
   "Disabled": "ناچالاک",
   "Subscribe": "بەشداریکردن",
+  "printBarcode": "چاپی بارکۆد",
+  "printBarcodeMessage": "دەتەوێت بارکۆدی ئەم نەخۆشە چاپ بکەیت؟",
   "savedSuccessfully": "بە سەرکەوتوویی پاشەکەوتکرا",
   "whatsappIntegration": "پێکهاتەی واتساپ",
   "nearingEndDescription": "پلانی واتساپەکەت نزیکەی کۆتایی دێت",

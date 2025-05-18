@@ -115,6 +115,17 @@ export const PatientHistory = () => {
         ),
     },
     {
+      title: t("Doctor"),
+      dataIndex: "doctor",
+      key: "doctor",
+      render: (_, record) =>
+        record?.doctor ? (
+          <p color="geekblue">{record?.doctor.name}</p>
+        ) : (
+          ". . ."
+        ),
+    },
+    {
       title: t("VisitDate"),
       dataIndex: "createdAt",
       key: "createdAt",

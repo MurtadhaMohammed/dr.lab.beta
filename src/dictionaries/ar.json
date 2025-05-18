@@ -224,6 +224,8 @@
   "Messagesentsuccess": "تم ارسال الرسالة بنجاح",
   "SendSuccess": "تم الارسال بنجاح",
   "Error": "حدث خطأ ما",
+  "printBarcode": "طباعة الباركود",
+  "printBarcodeMessage": "هل تريد طباعة الباركود لهذا المريض؟",
   "ErrorGenerate": "حدث خطأ أثناء إنشاء الملف",
   "erroroccurred": "حدث خطأ ما",
   "noPrinterSelected": "لم يتم تحديد طابعة",

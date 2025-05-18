@@ -156,6 +156,8 @@
   "printBarcodeConfirmation": "Do you want to print barcode for this patient?",
   "UpgradeNow": "Upgrade Now",
   "ContactUs": "Contact Us",
+  "printBarcodeMessage": "Do you want to print barcode for this patient?",
+  "printBarcode": "Print Barcode",
   "SubscriptionAlertTitle": "Subscription Required!.",
   "SubscriptionAlertMsg": "Your current subscription has expired or is about to end. Please renew your plan to continue using DrLab services without interruption.",
   "online": "online",

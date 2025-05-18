@@ -266,7 +266,7 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "name",
       key: "name",
       render: (_, record) =><Space size={0} direction="vertical">
-         <b>{record?.patient?.name}</b>
+        <b>{record?.patient?.name}</b>
         {record?.doctor && <small className="block -mt-[2px] opacity-60">{t("FROM")}{" "}{record?.doctor?.name}</small>}
       </Space>,
     },
