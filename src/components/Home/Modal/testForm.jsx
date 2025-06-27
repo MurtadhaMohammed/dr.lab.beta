@@ -68,7 +68,7 @@ const TestForm = () => {
   const getPackages = (querySearch = "") => {
     send({
       query: "getPackages",
-      data: { querySearch },
+      data: { q: querySearch },
     })
       .then((resp) => {
         if (resp.success) {

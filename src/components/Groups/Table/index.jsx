@@ -209,6 +209,7 @@ export const PureTable = () => {
       }}
       columns={columns}
       dataSource={data}
+      rowKey={(row) => row.id}
       pagination={false}
       size="small"
       footer={() => (

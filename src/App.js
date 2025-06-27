@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { ConfigProvider, theme } from "antd";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import MainContainerV2 from "./components/ContainerV2";
 import PatientsScreen from "./screens/PatientsScreen";
 import TestsScreen from "./screens/TestsScreen";
@@ -17,6 +17,7 @@ import OTPScreen from "./screens/OTPScreen/Index";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "./hooks/useAppThem";
 import DoctorsScreen from "./screens/DoctorsScreen";
+import { usePlan } from "./hooks/usePlan";
 const { darkAlgorithm, defaultAlgorithm } = theme;
 
 const { ipcRenderer } = window.require("electron");
@@ -24,7 +25,9 @@ const { ipcRenderer } = window.require("electron");
 function App() {
   const { isLogin, setIsOnline } = useAppStore();
   const { appTheme, appColors } = useAppTheme();
+  const { initUser } = usePlan();
   const { i18n } = useTranslation();
+  const location = useLocation();
 
   useInitHeaderImage();
   useLogin();
@@ -55,6 +58,9 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isLogin) initUser();
+  }, [isLogin, location]);
 
   return (
     <ConfigProvider

@@ -1,20 +1,36 @@
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
 import { apiCall } from "../libs/api";
 import { useAppStore } from "../libs/appStore";
 import { message } from "antd";
+import { create } from "zustand";
+
+const usePlanState = create((set) => ({
+  planType: null,
+  printLimit: null,
+  whatsappLimit: null,
+  registerAt: null,
+  subscriptionExpire: null,
+  setPlanType: (planType) => set({ planType }),
+  setPrintLimit: (printLimit) => set({ printLimit }),
+  setWhatsappLimit: (whatsappLimit) => set({ whatsappLimit }),
+  setRegisterAt: (registerAt) => set({ registerAt }),
+  setSubscriptionExpire: (subscriptionExpire) => set({ subscriptionExpire }),
+}));
 
 export const usePlan = () => {
-  const [planType, setPlanType] = useState(); // FREE || SUBSCRIPTION || PAID
-  const [printLimit, setPrintLimit] = useState(20);
-  const [whatsappLimit, setWhatsappLimit] = useState(0);
-  const [subscriptionExpire, setSubscriptionExpire] = useState();
-  const [registerAt, setRegisterAt] = useState();
-  const { isLogin, setIsLogin } = useAppStore();
-
-  useEffect(() => {
-    init();
-  }, [isLogin]);
+  const {
+    planType,
+    printLimit,
+    whatsappLimit,
+    registerAt,
+    subscriptionExpire,
+    setPlanType,
+    setPrintLimit,
+    setWhatsappLimit,
+    setSubscriptionExpire,
+    setRegisterAt,
+  } = usePlanState();
+  const { setIsLogin } = useAppStore();
 
   const getUserData = async () => {
     try {
@@ -53,7 +69,7 @@ export const usePlan = () => {
     setWhatsappLimit(msgLimit <= 0 ? 0 : msgLimit);
   };
 
-  const init = async () => {
+  const initUser = async () => {
     let userInfo = localStorage.getItem("lab-user");
     let userToken = localStorage.getItem("lab_token");
 
@@ -152,6 +168,6 @@ export const usePlan = () => {
     getPrintUsed,
     canPrint,
     canSendWhatsapp,
-    init,
+    initUser,
   };
 };

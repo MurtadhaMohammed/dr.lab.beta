@@ -201,6 +201,7 @@ export const PureTable = () => {
       }}
       loading={loading}
       columns={columns}
+      rowKey={(row) => row.id}
       dataSource={data}
       pagination={false}
       size="small"

@@ -28,7 +28,7 @@ export const PureTable = () => {
     querySearch,
     setAddress,
     setType,
-    setIsHistory
+    setIsHistory,
   } = useDoctorStore();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
@@ -212,6 +212,7 @@ export const PureTable = () => {
         overflow: "hidden",
       }}
       columns={columns}
+      rowKey={(row) => row.id}
       dataSource={data}
       loading={loading}
       pagination={false}

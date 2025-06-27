@@ -9,8 +9,6 @@ const useLogin = () => {
 
     if (storedToken) {
       const decodedToken = JSON.parse(atob(storedToken.split(".")[1]));
-      console.log("Decoded Token:", decodedToken);
-
       setUser(decodedToken);
       setIsLogin(true);
     } else {
