@@ -1,49 +1,44 @@
-import React, { useEffect, useState } from "react";
 import { send } from "../control/renderer";
 import { useAppStore } from "../libs/appStore";
 
 const useInitHeaderImage = () => {
-  const [success, setSuccess] = useState(true);
-  const { user } = useAppStore();
+  const { setImagePath } = useAppStore();
 
-  const fetchHeader = async () => {
-    try {
-      const response = await fetch("http://localhost:3009/head.png");
-      if (response.status === 200) {
-        setSuccess(true);
-      } else {
-        setSuccess(false);
+  const loadImage = async () => {
+    const res = await fetch("http://localhost:3009/head.png");
+    if (!res.ok) return;
+    return res.url;
+  };
+
+  const fetchHeader = async (user) => {
+    const imageURL = await loadImage();
+    if (imageURL) setImagePath(imageURL);
+    else {
+      try {
+        await generateHeader(user);
+      } catch (err) {
+        console.error("Failed to generate or load image:", err);
       }
-    } catch (e) {
-      setSuccess(false);
     }
   };
 
-  useEffect(() => {
-    fetchHeader();
-  }, []);
+  const generateHeader = async (user) => {
+    if (!user) return Promise.reject("No user provided");
 
-  const generateHeader = (user, cb) => {
-    if (user) {
-      send({
-        query: "initHeadImage2",
-        labName: user?.labName || "...",
-        phone: user?.phone || "...",
-        address: user?.address || "...",
-      }).then(() => {
-        cb();
-      });
-    }
+    await send({
+      query: "initHeadImage2",
+      labName: user.labName || "...",
+      phone: user.phone || "...",
+      address: user.address || "...",
+    });
+    setImagePath(null);
+    setTimeout(async () => {
+      const imageURL = await loadImage();
+      setImagePath(imageURL);
+    }, 500);
   };
 
-  useEffect(() => {
-    if (!success)
-      generateHeader(user, () => {
-        console.log("Generated Image...");
-      });
-  }, [success, user]);
-
-  return { generateHeader };
+  return { generateHeader, fetchHeader, loadImage };
 };
 
 export default useInitHeaderImage;

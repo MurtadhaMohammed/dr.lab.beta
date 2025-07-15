@@ -419,9 +419,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                     class="info"
                     style="
                       padding: 20px;
-                      padding-top: 40px;
+                      padding-top: 30px;
                       padding-right: 38px;
-                      font-size: 18px;
+                      font-size: 20px;
                       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
                         Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
                         sans-serif;
