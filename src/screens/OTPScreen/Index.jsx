@@ -4,11 +4,13 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import OtpInputs from "../../components/OTP/otp";
 import Logo from "../../assets/logo2.png";
+import LogoDark from "../../assets/logo2Dark.png";
 import background from "../../assets/login.svg";
 import { apiCall } from "../../libs/api";
 import { useAppStore } from "../../libs/appStore";
 import BackIcon from "../LoginScreen/BackIcon";
 import { send } from "../../control/renderer";
+import { useAppTheme } from "../../hooks/useAppThem";
 
 const OTPScreen = () => {
   const [otp, setOtp] = useState("");
@@ -19,7 +21,7 @@ const OTPScreen = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { setIsLogin } = useAppStore();
-
+  const { appTheme } = useAppTheme();
   const getUUID = () => {
     send({ query: "getUUID" }).then((resp) => {
       setUUID(resp.UUID);
@@ -195,7 +197,11 @@ const OTPScreen = () => {
       >
         <Space direction="vertical" size={32} className="w-96 h-full">
           <div className="w-full flex flex-col items-center">
-            <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
+            <img
+              src={appTheme === "light" ? LogoDark : Logo}
+              className="w-[198px]"
+              alt="Dr.Lab"
+            />
             <div className="w-full text-center">
               <h1 className="text-2xl font-semibold mb-2">
                 {t("EnterVerificationCode")}
@@ -208,7 +214,6 @@ const OTPScreen = () => {
 
           <div className="flex flex-col items-center gap-6">
             <OtpInputs numInputs={6} onChange={handleOtpChange} />
-
 
             <div className="text-center">
               <p className="text-gray-600">
