@@ -25,19 +25,17 @@ const useInitHeaderImage = () => {
   const generateHeader = async (user) => {
     if (!user) return Promise.reject("No user provided");
 
-  const generateHeader = (user, cb) => {
-    console.log("user", user);
-    
-    if (user) {
-      send({
-        query: "initHeadImage2",
-        labName: user?.labName || "...",
-        phone: user?.phone || "...",
-        address: user?.address || "...",
-      }).then(() => {
-        cb();
-      });
-    }
+    await send({
+      query: "initHeadImage2",
+      labName: user.labName || "...",
+      phone: user.phone || "...",
+      address: user.address || "...",
+    });
+    setImagePath(null);
+    setTimeout(async () => {
+      const imageURL = await loadImage();
+      setImagePath(imageURL);
+    }, 500);
   };
 
   return { generateHeader, fetchHeader, loadImage };
