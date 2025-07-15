@@ -17,6 +17,7 @@ import {
   Space,
   Tag,
   Modal,
+  Spin,
 } from "antd";
 import {
   UserOutlined,
@@ -42,6 +43,7 @@ import useInitHeaderImage from "../../hooks/useInitHeaderImage";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
+  const [imagePathLoading, setImagePathLoading] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
@@ -73,7 +75,7 @@ const SettingsScreen = () => {
   async function fetchImagePath() {
     setImagePath(null);
     try {
-      const response = await fetch("http://localhost:3009/head.png");
+      const response = await fetch(`http://localhost:3009/head.png`);
       if (!response.ok) {
         throw new Error("Network response was not ok");
       }
@@ -180,8 +182,10 @@ const SettingsScreen = () => {
             cancelText: "لا",
             onOk: async () => {
               try {
+                setImagePathLoading(true);
                 generateHeader(values, async () => {
                   await fetchImagePath();
+                  setImagePathLoading(false);
                   message.success("تم إنشاء صورة الغلاف بنجاح");
                 });
               } catch (err) {
@@ -413,7 +417,17 @@ const SettingsScreen = () => {
                     </Button>
                   </div>
                   <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
-                    {imagePath && <img className="w-full" src={imagePath} />}
+                    {imagePath ? (
+                      <Spin spinning={imagePathLoading}>
+                        <img
+                          className="w-full"
+                          key={imagePath}
+                          src={imagePath}
+                        />
+                      </Spin>
+                    ) : (
+                      <></>
+                    )}
                   </div>
                   <Divider />
                   <div className="flex justify-between items-center">
