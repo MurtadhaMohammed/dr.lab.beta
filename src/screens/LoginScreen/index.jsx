@@ -11,7 +11,8 @@ import {
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useLanguage } from "../../libs/appStore";
-import Logo from "../../assets/logo2.png";
+import darkLogo from "../../assets/dark-logo.png";
+import lightLogo from "../../assets/light-logo.png";
 import { send } from "../../control/renderer";
 import background from "../../assets/login.svg";
 import { apiCall } from "../../libs/api";
@@ -26,7 +27,7 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const [UUID, setUUID] = useState(null);
   const [isForm, setIsForm] = useState(false);
-  const { appColors } = useAppTheme();
+  const { appColors, appTheme } = useAppTheme();
   const { lang, setLang } = useLanguage();
   const [form] = Form.useForm();
   const { t } = useTranslation();
@@ -313,7 +314,11 @@ const LoginScreen = () => {
         >
           <Space direction="vertical" size={32} className="w-96 h-full">
             <div className="w-full flex flex-col items-center">
-              <img src={Logo} className="w-[198px]" alt="Dr.Lab" />
+              <img
+                src={appTheme === "dark" ? darkLogo : lightLogo}
+                className="w-[100px] mb-[20px]"
+                alt="Dr.Lab"
+              />
 
               <div className="w-full handletext">
                 <h1 className="">{t("Inputs")}</h1>
