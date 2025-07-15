@@ -36,7 +36,7 @@ export const PureTable = () => {
   const [page, setPage] = useState(1);
   const { t } = useTranslation();
   const limit = usePageLimit(60, 35);
-  const {appColors} = useAppTheme();
+  const {appColors, appTheme} = useAppTheme();
 
   const columns = [
     {
@@ -56,7 +56,7 @@ export const PureTable = () => {
         return (
           <Space wrap size={[0, "small"]}>
             {tests.slice(0, numOfView).map((el, i) => (
-              <Tag color="purple" key={i}>{el.name}</Tag>
+              <Tag color="purple" className={appTheme === "dark" ? "!text-white !border-[#45325c]" : ""} key={i}>{el.name}</Tag>
             ))}
             {restCount && (
               <Popover

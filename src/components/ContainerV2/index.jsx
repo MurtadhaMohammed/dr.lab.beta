@@ -13,6 +13,7 @@ import {
   Popover,
   Modal,
   Button,
+  Space,
 } from "antd";
 import { TbReportSearch } from "react-icons/tb";
 import { GrDocumentTest } from "react-icons/gr";
@@ -22,8 +23,10 @@ import { RxDoubleArrowRight } from "react-icons/rx";
 import { motion } from "framer-motion";
 import { useAppStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
-import logo1 from "../../assets/logo.png";
-import logo2 from "../../assets/logo2.png";
+import darkLogo from "../../assets/dark-logo.png";
+import lightLogo from "../../assets/light-logo.png";
+import darkLogoName from "../../assets/dark-name.png";
+import lightLogoName from "../../assets/light-name.png";
 import { useNavigate, useLocation } from "react-router-dom";
 import PopOverContent from "../../screens/SettingScreen/PopOverContent";
 import { usePlan } from "../../hooks/usePlan";
@@ -100,6 +103,28 @@ const MainContainerV2 = ({ children }) => {
     }
   };
 
+    const renderLogo = () => {
+    if (appTheme === "dark" && collapsed) {
+      return <img className="w-[42px]" src={darkLogo} />;
+    } else if (appTheme === "light" && collapsed) {
+      return <img className="w-[42px]" src={lightLogo} />;
+    } else if (appTheme === "dark" && !collapsed) {
+      return (
+        <Space align="center" size={6}>
+          <img className="w-[42px]" src={darkLogo} />
+          <img className="w-[68px] mt-[8px]" src={darkLogoName} />
+        </Space>
+      );
+    } else if (appTheme === "light" && !collapsed) {
+      return (
+        <Space align="center" size={6}>
+          <img className="w-[42px]" src={lightLogo} />
+          <img className="w-[68px] mt-[8px]" src={lightLogoName} />
+        </Space>
+      );
+    }
+  };
+
   return (
     <Layout className="h-screen">
       <Sider
@@ -123,11 +148,7 @@ const MainContainerV2 = ({ children }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {collapsed ? (
-                  <img className="w-[28px]" src={logo1} />
-                ) : (
-                  <img className="w-[110px]" src={logo2} />
-                )}
+               {renderLogo()}
               </motion.div>
             </div>
             <Menu

@@ -7,6 +7,8 @@ const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
+const Jimp = require("jimp");
+const nodeHtmlToImage = require("node-html-to-image");
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
   let labDB = await new LabDB();
@@ -333,7 +335,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const { doctorId, startDate, endDate } = arg.data;
         console.log("Received data for getting visit by doctor:", arg.data);
         if (!doctorId)
-        throw new Error("Doctor ID is required to get visits by doctor.");
+          throw new Error("Doctor ID is required to get visits by doctor.");
         const resp = await labDB.getVisitByDoctor(doctorId, startDate, endDate);
         event.reply("asynchronous-reply", resp);
       } catch (error) {
@@ -377,6 +379,72 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           }
         });
       } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "initHeadImage2": {
+      try {
+        const { labName, address, phone } = arg;
+        const destPath = path.join(app.getPath("userData"), "head.png");
+
+        const backgroundImagePath = path.join(__dirname, "cover.png"); 
+        const base64Background = fs.readFileSync(backgroundImagePath, {
+          encoding: "base64",
+        });
+
+        const html = `
+              <body style="padding: 0; margin: 0; background-color: black;height: 180px;">
+                <div
+                  class="wraper"
+                  style="width: 100%; position: relative; direction: rtl; background: white"
+                >
+                  <img
+                    src="data:image/png;base64,${base64Background}"
+                    style="
+                      width: 100%;
+                      height: auto;
+                      object-fit: cover;
+                      position: absolute;
+                      top: 0;
+                      left: 0;
+                      right: 0;
+                    "
+                  />
+                  <div
+                    class="info"
+                    style="
+                      padding: 20px;
+                      padding-top: 40px;
+                      padding-right: 38px;
+                      font-size: 18px;
+                      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                        Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
+                        sans-serif;
+                    "
+                  >
+                    <b style="font-size: 24px; margin-top: 10px; display: block; color: #0054a4; position: relative; z-index: 9;">${labName}</b>
+                    <p style="line-height: 0.3;">العنوان : ${address}</p>
+                    <p>رقم الهاتف : ${phone}</p>
+                  </div>
+                </div>
+              </body>
+              `;
+
+        nodeHtmlToImage({
+          output: destPath,
+          html,
+          quality: 100,
+        }).then(() => {
+          console.log("✅ Image created at", destPath);
+        });
+        event.reply("asynchronous-reply", { success: true });
+      } catch (error) {
+        console.log(error);
         event.reply("asynchronous-reply", {
           success: false,
           error: error.message,

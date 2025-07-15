@@ -8,11 +8,22 @@ import "./style.css";
 import { useAppStore } from "../../libs/appStore";
 import { useAppTheme } from "../../hooks/useAppThem";
 import { useTranslation } from "react-i18next";
+import darkLogoName from "../../assets/dark-name.png";
+import lightLogoName from "../../assets/light-name.png";
 
 const TiteBar = () => {
   const { isOnline } = useAppStore();
   const { appColors, appTheme } = useAppTheme();
   const { i18n } = useTranslation();
+
+
+  const renderLogo = () => {
+    if (appTheme === "dark") {
+      return <img className="w-[42px] mt-[4px]" src={darkLogoName} />;
+    } else if (appTheme === "light") {
+      return <img className="w-[42px] mt-[4px]" src={lightLogoName} />;
+    }
+  };
   return (
     <header
       id="title-bar"
@@ -24,17 +35,7 @@ const TiteBar = () => {
       }}
     >
       <Space>
-        <img
-          className="w-[60px]"
-          style={
-            appTheme === "light"
-              ? {
-                  filter: "brightness(0.5)",
-                }
-              : {}
-          }
-          src={logo2}
-        />
+       {renderLogo()}
         <Divider type="vertical" />
         <span className="text-[14px] text-[#a5a5a5]">
           v{packageJson.version}-beta

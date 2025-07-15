@@ -223,7 +223,7 @@ export const PureModal = () => {
                 onChange={(e) => setNormal(e.target.value)}
                 rows={2}
                 placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
-                style={{ width: "100%" }}
+                style={{ width: "100%" , direction: "ltr"}}
                 disabled={isSelecte}
               />
             </Space>

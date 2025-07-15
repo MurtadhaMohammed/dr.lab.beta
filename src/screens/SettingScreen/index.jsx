@@ -16,12 +16,14 @@ import {
   Select,
   Space,
   Tag,
+  Modal,
 } from "antd";
 import {
   UserOutlined,
   ExportOutlined,
   ImportOutlined,
   CrownFilled,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
@@ -36,6 +38,7 @@ import PrinterSelector from "./PrinterSelector";
 import { signout } from "../../helper/signOut";
 import { usePlan } from "../../hooks/usePlan";
 import { useAppTheme } from "../../hooks/useAppThem";
+import useInitHeaderImage from "../../hooks/useInitHeaderImage";
 
 const SettingsScreen = () => {
   const [imagePath, setImagePath] = useState(null);
@@ -50,9 +53,11 @@ const SettingsScreen = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [importLoading, setImportLoading] = useState(false);
   const [warning, setWarning] = useState(true);
+  const [modal, contextHolder] = Modal.useModal();
   const [selectedPrinter, setSelectedPrinter] = useState(
     localStorage.getItem("selectedPrinter") || ""
   );
+  const { generateHeader } = useInitHeaderImage();
 
   const {
     getPrintUsed,
@@ -166,6 +171,25 @@ const SettingsScreen = () => {
           localStorage.setItem("lab-user", JSON.stringify(data.updatedClient));
           message.success(t("UpdateSuccess"));
           setIsUpdate(false);
+
+          modal.confirm({
+            title: "Confirm",
+            icon: <ExclamationCircleOutlined />,
+            content: "هل تريد اعادة انشاء صورة الغلاف حسب المعلومات الجديدة ؟",
+            okText: "نعم",
+            cancelText: "لا",
+            onOk: async () => {
+              try {
+                generateHeader(values, async () => {
+                  await fetchImagePath();
+                  message.success("تم إنشاء صورة الغلاف بنجاح");
+                });
+              } catch (err) {
+                message.error("حدث خطأ أثناء إنشاء صورة الغلاف");
+                console.error(err);
+              }
+            },
+          });
         } else {
           let errorData = await resp.json();
           console.error("Update failed:", errorData);
@@ -579,6 +603,7 @@ const SettingsScreen = () => {
           </Col>
         </Row>
       </div>
+      {contextHolder}
     </div>
   );
 };

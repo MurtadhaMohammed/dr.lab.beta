@@ -1,37 +1,49 @@
-import React, { useEffect, useState } from 'react'
-import { send } from '../control/renderer';
+import React, { useEffect, useState } from "react";
+import { send } from "../control/renderer";
+import { useAppStore } from "../libs/appStore";
 
 const useInitHeaderImage = () => {
-    const [success, setSuccess] = useState(true);
+  const [success, setSuccess] = useState(true);
+  const { user } = useAppStore();
 
-    const fetchData = async () => {
-        try {
-            const response = await fetch("http://localhost:3009/head.png");
-            if (response.status === 200) {
-                setSuccess(true)
-            } else {
-                setSuccess(false);
-            }
-        } catch (e) {
-            setSuccess(false);
-        }
+  const fetchHeader = async () => {
+    try {
+      const response = await fetch("http://localhost:3009/head.png");
+      if (response.status === 200) {
+        setSuccess(true);
+      } else {
+        setSuccess(false);
+      }
+    } catch (e) {
+      setSuccess(false);
     }
+  };
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+  useEffect(() => {
+    fetchHeader();
+  }, []);
 
-    useEffect(() => {
-        if (!success) {
-            send({
-                query: "initHeadImage",
-            }).then(({ err, res }) => {
-                console.log(err, res);
-            });
-        }
-    }, [success]);
+  const generateHeader = (user, cb) => {
+    if (user) {
+      send({
+        query: "initHeadImage2",
+        labName: user?.labName || "...",
+        phone: user?.phone || "...",
+        address: user?.address || "...",
+      }).then(() => {
+        cb();
+      });
+    }
+  };
 
-    return null;
-}
+  useEffect(() => {
+    if (!success)
+      generateHeader(user, () => {
+        console.log("Generated Image...");
+      });
+  }, [success, user]);
 
-export default useInitHeaderImage
+  return { generateHeader };
+};
+
+export default useInitHeaderImage;
