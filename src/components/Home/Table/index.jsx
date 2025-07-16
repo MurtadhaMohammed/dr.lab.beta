@@ -41,7 +41,7 @@ import { useAppTheme } from "../../../hooks/useAppThem";
 
 export const PureTable = ({ isReport = false }) => {
   const { isReload, setIsReload, isOnline } = useAppStore();
-  const { canSendWhatsapp, init } = usePlan();
+  const { canSendWhatsapp, initUser } = usePlan();
   const {
     setIsModal,
     setId,
@@ -189,10 +189,10 @@ export const PureTable = ({ isReport = false }) => {
                   auth: true,
                 });
 
-                if (resp.status === 200) {
+                if (resp?.ok) {
                   const response = await resp.json();
                   setMsgLoading(false);
-                  init();
+                  await initUser();
                   message.success(response?.message);
 
                   try {
