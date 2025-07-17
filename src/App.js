@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { useAppTheme } from "./hooks/useAppThem";
 import DoctorsScreen from "./screens/DoctorsScreen";
 import { usePlan } from "./hooks/usePlan";
+import InfoScreen from "./screens/Info";
 const { darkAlgorithm, defaultAlgorithm } = theme;
 
 const { ipcRenderer } = window.require("electron");
@@ -28,8 +29,6 @@ function App() {
   const { initUser } = usePlan();
   const { i18n } = useTranslation();
   const location = useLocation();
-    
-
 
   useLogin();
 
@@ -92,6 +91,7 @@ function App() {
             <Route path="/reports" element={<ReportsScreen />} />
             <Route path="/settings" element={<SettingsScreen />} />
             <Route path="/doctors" element={<DoctorsScreen />} />
+            <Route path="/info" element={<InfoScreen />} />
           </Routes>
         </MainContainerV2>
       )}

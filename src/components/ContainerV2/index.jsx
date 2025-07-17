@@ -17,7 +17,7 @@ import {
 } from "antd";
 import { TbReportSearch } from "react-icons/tb";
 import { GrDocumentTest } from "react-icons/gr";
-import { LuPackage2, LuSettings2 } from "react-icons/lu";
+import { LuInfo, LuPackage2, LuSettings2 } from "react-icons/lu";
 import { IoMdLogOut } from "react-icons/io";
 import { RxDoubleArrowRight } from "react-icons/rx";
 import { motion } from "framer-motion";
@@ -103,7 +103,7 @@ const MainContainerV2 = ({ children }) => {
     }
   };
 
-    const renderLogo = () => {
+  const renderLogo = () => {
     if (appTheme === "dark" && collapsed) {
       return <img className="w-[42px]" src={darkLogo} />;
     } else if (appTheme === "light" && collapsed) {
@@ -148,7 +148,7 @@ const MainContainerV2 = ({ children }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
               >
-               {renderLogo()}
+                {renderLogo()}
               </motion.div>
             </div>
             <Menu
@@ -215,6 +215,12 @@ const MainContainerV2 = ({ children }) => {
                   icon: <LuSettings2 size={19} />,
                   label: <p className="text-[15px]">{t("Settings")}</p>,
                   onClick: () => navigate("/settings", { replace: true }),
+                },
+                {
+                  key: "/info",
+                  icon: <LuInfo size={19} />,
+                  label: <p className="text-[15px]">{t("Settings")}</p>,
+                  onClick: () => navigate("/info", { replace: true }),
                 },
               ]}
             />
