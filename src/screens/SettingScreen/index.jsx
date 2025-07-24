@@ -17,6 +17,7 @@ import {
   Space,
   Tag,
   Modal,
+  Spin,
 } from "antd";
 import {
   UserOutlined,
@@ -41,13 +42,21 @@ import { useAppTheme } from "../../hooks/useAppThem";
 import useInitHeaderImage from "../../hooks/useInitHeaderImage";
 
 const SettingsScreen = () => {
-  const [imagePath, setImagePath] = useState(null);
+  // const [imagePath, setImagePath] = useState(null);
+  const [imagePathLoading, setImagePathLoading] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
   const { lang, setLang } = useLanguage();
   const { appColors } = useAppTheme();
-  const { user, setPrintFontSize, printFontSize, setIsLogin } = useAppStore();
+  const {
+    user,
+    setPrintFontSize,
+    printFontSize,
+    setIsLogin,
+    imagePath,
+    setImagePath,
+  } = useAppStore();
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const [exportLoading, setExportLoading] = useState(false);
@@ -57,7 +66,7 @@ const SettingsScreen = () => {
   const [selectedPrinter, setSelectedPrinter] = useState(
     localStorage.getItem("selectedPrinter") || ""
   );
-  const { generateHeader } = useInitHeaderImage();
+  const { generateHeader, fetchHeader } = useInitHeaderImage();
 
   const {
     getPrintUsed,
@@ -70,23 +79,23 @@ const SettingsScreen = () => {
 
   const { t } = useTranslation();
 
-  async function fetchImagePath() {
-    setImagePath(null);
-    try {
-      const response = await fetch("http://localhost:3009/head.png");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const imageURL = response.url;
-      setImagePath(imageURL);
-    } catch (error) {
-      console.error("Failed to load image:", error);
-    }
-  }
+  // async function fetchImagePath() {
+  //   setImagePath(null);
+  //   try {
+  //     const response = await fetch(`http://localhost:3009/head.png`);
+  //     if (!response.ok) {
+  //       throw new Error("Network response was not ok");
+  //     }
+  //     const imageURL = response.url;
+  //     setImagePath(imageURL);
+  //   } catch (error) {
+  //     console.error("Failed to load image:", error);
+  //   }
+  // }
 
-  useEffect(() => {
-    fetchImagePath();
-  }, []);
+  // useEffect(() => {
+  //   fetchImagePath();
+  // }, []);
 
   useEffect(() => {
     if (user) form.setFieldsValue(user);
@@ -126,13 +135,17 @@ const SettingsScreen = () => {
         return;
       }
 
+      setImagePathLoading(true);
       const saveResponse = await send({
         query: "saveHeadImage",
         file: selectedFile.path,
       });
 
       if (saveResponse.success) {
-        await fetchImagePath();
+        setImagePathLoading(true);
+        setImagePath(null);
+        await fetchHeader(user);
+        setImagePathLoading(false);
         message.success(t("ImageUploadedSuccessfully"));
       } else {
         throw new Error(saveResponse.error);
@@ -180,10 +193,13 @@ const SettingsScreen = () => {
             cancelText: "لا",
             onOk: async () => {
               try {
-                generateHeader(values, async () => {
-                  await fetchImagePath();
-                  message.success("تم إنشاء صورة الغلاف بنجاح");
-                });
+                setImagePathLoading(true);
+                await generateHeader(values);
+                setImagePath(null);
+                // const imageURL = await loadImage();
+                // if (imageURL) setImagePath(imageURL);
+                setImagePathLoading(false);
+                message.success("تم إنشاء صورة الغلاف بنجاح");
               } catch (err) {
                 message.error("حدث خطأ أثناء إنشاء صورة الغلاف");
                 console.error(err);
@@ -412,8 +428,18 @@ const SettingsScreen = () => {
                       {t("ChangeImage")}
                     </Button>
                   </div>
-                  <div className="w-full border border-[#eee]  rounded-md overflow-hidden bg-[#f6f6f6]">
-                    {imagePath && <img className="w-full" src={imagePath} />}
+                  <div className="w-full border border-[#eee]  rounded-md overflow-hidden  min-h-[80px] bg-[#f6f6f6]">
+                    {imagePath ? (
+                      <Spin spinning={imagePathLoading}>
+                        <img
+                          className="w-ful"
+                          key={imagePath}
+                          src={imagePath}
+                        />
+                      </Spin>
+                    ) : (
+                      <></>
+                    )}
                   </div>
                   <Divider />
                   <div className="flex justify-between items-center">

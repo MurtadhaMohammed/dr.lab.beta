@@ -12,7 +12,7 @@ import SettingsScreen from "./screens/SettingScreen";
 import TitleBar from "./components/TitleBar/titleBar";
 import useLogin from "./hooks/useLogin";
 import { useAppStore } from "./libs/appStore";
-import useInitHeaderImage from "./hooks/useInitHeaderImage";
+// import useInitHeaderImage from "./hooks/useInitHeaderImage";
 import OTPScreen from "./screens/OTPScreen/Index";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "./hooks/useAppThem";
@@ -28,8 +28,9 @@ function App() {
   const { initUser } = usePlan();
   const { i18n } = useTranslation();
   const location = useLocation();
+    
 
-  useInitHeaderImage();
+
   useLogin();
 
   useEffect(() => {

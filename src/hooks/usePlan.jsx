@@ -3,6 +3,7 @@ import { apiCall } from "../libs/api";
 import { useAppStore } from "../libs/appStore";
 import { message } from "antd";
 import { create } from "zustand";
+import useInitHeaderImage from "./useInitHeaderImage";
 
 const usePlanState = create((set) => ({
   planType: null,
@@ -31,6 +32,7 @@ export const usePlan = () => {
     setRegisterAt,
   } = usePlanState();
   const { setIsLogin } = useAppStore();
+  const { fetchHeader } = useInitHeaderImage();
 
   const getUserData = async () => {
     try {
@@ -80,6 +82,9 @@ export const usePlan = () => {
         localStorage.setItem("lab-user", userInfo);
       }
       if (userInfo) updateData(userInfo);
+
+      console.log({ userInfo });
+      await fetchHeader(JSON.parse(userInfo) || {});
     }
   };
 

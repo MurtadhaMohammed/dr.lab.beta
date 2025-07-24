@@ -11,8 +11,8 @@ import {
 import "./style.css";
 import { useEffect, useState } from "react";
 import { useLanguage } from "../../libs/appStore";
-import Logo from "../../assets/logo2.png";
-import LogoDark from "../../assets/logo2Dark.png";
+import darkLogo from "../../assets/dark-logo.png";
+import lightLogo from "../../assets/light-logo.png";
 import { send } from "../../control/renderer";
 import background from "../../assets/login.svg";
 import { apiCall } from "../../libs/api";
@@ -315,8 +315,8 @@ const LoginScreen = () => {
           <Space direction="vertical" size={32} className="w-96 h-full">
             <div className="w-full flex flex-col items-center">
               <img
-                src={appTheme === "light" ? LogoDark : Logo}
-                className="w-[198px]"
+                src={appTheme === "dark" ? darkLogo : lightLogo}
+                className="w-[100px] mb-[20px]"
                 alt="Dr.Lab"
               />
 

@@ -392,7 +392,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const { labName, address, phone } = arg;
         const destPath = path.join(app.getPath("userData"), "head.png");
 
-        const backgroundImagePath = path.join(__dirname, "cover.png"); 
+        const backgroundImagePath = path.join(__dirname, "cover.png");
         const base64Background = fs.readFileSync(backgroundImagePath, {
           encoding: "base64",
         });
@@ -419,15 +419,15 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                     class="info"
                     style="
                       padding: 20px;
-                      padding-top: 40px;
+                      padding-top: 30px;
                       padding-right: 38px;
-                      font-size: 18px;
+                      font-size: 20px;
                       font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
                         Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue',
                         sans-serif;
                     "
                   >
-                    <b style="font-size: 24px; margin-top: 10px; display: block; color: #0054a4; position: relative; z-index: 9;">${labName}</b>
+                    <b style="font-size: 28px; margin-top: 10px; display: block; color: #0054a4; position: relative; z-index: 9;">${labName}</b>
                     <p style="line-height: 0.3;">العنوان : ${address}</p>
                     <p>رقم الهاتف : ${phone}</p>
                   </div>
@@ -440,9 +440,8 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           html,
           quality: 100,
         }).then(() => {
-          console.log("✅ Image created at", destPath);
+          event.reply("asynchronous-reply", { success: true });
         });
-        event.reply("asynchronous-reply", { success: true });
       } catch (error) {
         console.log(error);
         event.reply("asynchronous-reply", {
