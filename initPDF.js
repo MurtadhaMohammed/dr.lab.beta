@@ -9,6 +9,25 @@ const path = require("path");
 var refFont = require("./Frutiger-normal");
 const { LocalFileData } = require("get-file-object-from-local-path");
 const { shell } = electron;
+const log = require("electron-log");
+
+// Helper function to log PDF operations
+function logPDFOperation(operation, data, result = null, error = null) {
+  const timestamp = new Date().toISOString();
+  const logData = {
+    timestamp,
+    operation,
+    data: data ? JSON.stringify(data, null, 2) : null,
+    result: result ? JSON.stringify(result, null, 2) : null,
+    error: error ? error.toString() : null
+  };
+  
+  if (error) {
+    log.error(`[PDF_ERROR] ${operation}:`, logData);
+  } else {
+    log.info(`[PDF_INFO] ${operation}:`, logData);
+  }
+}
 
 const logoPath = path.join(__dirname, "src", "assets", "logo3.png");
 const logoBase64 = fs.readFileSync(logoPath, { encoding: "base64" });
@@ -39,10 +58,25 @@ function formatDate(dateString) {
 }
 
 async function createPDF(data, isView = true, cb) {
-  const imgDimensions = await getImageDimensions(imgUrl);
-  const aspectRatio = imgDimensions.width / imgDimensions.height;
-  const imgHeight = imgWidth / aspectRatio + 20;
+  logPDFOperation("createPDF_start", {
+    patientName: data?.patient,
+    testsCount: data?.tests?.length,
+    isView: isView,
+    fontSize: data?.fontSize,
+    isHeader: data?.isHeader
+  });
+  
   try {
+    const imgDimensions = await getImageDimensions(imgUrl);
+    const aspectRatio = imgDimensions.width / imgDimensions.height;
+    const imgHeight = imgWidth / aspectRatio + 20;
+    
+    logPDFOperation("createPDF_image_dimensions", {
+      imgWidth: imgWidth,
+      imgHeight: imgHeight,
+      aspectRatio: aspectRatio,
+      imgUrl: imgUrl
+    });
     const doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -179,10 +213,28 @@ async function createPDF(data, isView = true, cb) {
       });
     }
 
-    await doc.save(app.getPath("userData") + "a4.pdf");
-    isView && shell.openPath(app.getPath("userData") + "a4.pdf");
+    const filePath = app.getPath("userData") + "a4.pdf";
+    await doc.save(filePath);
+    
+    logPDFOperation("createPDF_saved", {
+      filePath: filePath,
+      isView: isView,
+      pages: pages
+    });
+    
+    if (isView) {
+      shell.openPath(filePath);
+      logPDFOperation("createPDF_opened", { filePath: filePath });
+    }
 
-    let file = new LocalFileData(app.getPath("userData") + "a4.pdf");
+    let file = new LocalFileData(filePath);
+    
+    logPDFOperation("createPDF_success", {
+      patientName: data?.patient,
+      testsCount: data?.tests?.length,
+      fileSize: file.size,
+      pages: pages
+    });
 
     pdf = new jsPDF({
       orientation: "landscape",
@@ -190,11 +242,25 @@ async function createPDF(data, isView = true, cb) {
 
     cb(null, true, file);
   } catch (error) {
+    logPDFOperation("createPDF_error", {
+      patientName: data?.patient,
+      testsCount: data?.tests?.length,
+      isView: isView
+    }, null, error);
+    
     cb(error, null, null);
   }
 }
 
 function printReport(data, cb) {
+  logPDFOperation("printReport_start", {
+    recordsCount: data?.records?.length,
+    dateRange: data?.date,
+    subTotal: data?.subTotal,
+    discount: data?.discount,
+    total: data?.total
+  });
+  
   try {
     const doc = new jsPDF({
       orientation: "p",
@@ -204,6 +270,10 @@ function printReport(data, cb) {
     refFont;
     doc.getFontList();
     doc.setFont("Frutiger");
+    
+    logPDFOperation("printReport_doc_created", {
+      recordsCount: data?.records?.length
+    });
 
     doc.setFillColor(42, 58, 78);
     doc.rect(0, 0, 210, 35, "F");
@@ -374,17 +444,37 @@ function printReport(data, cb) {
       );
     }
 
-    doc.save(app.getPath("userData") + "a4.pdf");
-    shell.openPath(app.getPath("userData") + "a4.pdf");
+    const filePath = app.getPath("userData") + "a4.pdf";
+    doc.save(filePath);
+    
+    logPDFOperation("printReport_saved", {
+      filePath: filePath,
+      pages: pages,
+      recordsCount: data?.records?.length
+    });
+    
+    shell.openPath(filePath);
+    logPDFOperation("printReport_opened", { filePath: filePath });
 
     pdf = new jsPDF({
       orientation: "landscape",
     });
 
     const pdfBlob = doc.output("blob");
+    
+    logPDFOperation("printReport_success", {
+      recordsCount: data?.records?.length,
+      pages: pages,
+      blobSize: pdfBlob.size
+    });
 
     cb(null, JSON.parse(pdfBlob));
   } catch (error) {
+    logPDFOperation("printReport_error", {
+      recordsCount: data?.records?.length,
+      dateRange: data?.date
+    }, null, error);
+    
     cb(error, true);
   }
 }

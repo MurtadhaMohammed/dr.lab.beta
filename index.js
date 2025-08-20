@@ -19,7 +19,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      devTools: isDev,
+      devTools: true,
       allowRendererProcessReuse: false,
     },
     autoHideMenuBar: true,
