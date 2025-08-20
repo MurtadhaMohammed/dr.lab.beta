@@ -4,7 +4,7 @@ const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
 const fs = require("fs");
 const path = require("path");
-const image = path.join(__dirname, "../../defaultHeader.jpg");
+const image = path.join(__dirname, "../../defaultheader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
 const Jimp = require("jimp");
@@ -501,15 +501,65 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     case "print": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }'
       createPDF(arg.data, arg?.isView, (err, res, file) => {
-        // console.log(err, res, file, "this is the error, response and file");
-        event.reply("asynchronous-reply", { err, res, file });
+        // If PDF creation failed, try to copy defaultheader.jpg to userData and retry
+        if (err && err.message && err.message.includes('ENOENT')) {
+          console.log("PDF creation failed, attempting to copy header image...");
+          const userDataPath = app.getPath("userData");
+          const headerDestPath = path.join(userDataPath, "head.png");
+          
+          try {
+            // Ensure userData directory exists
+            if (!fs.existsSync(userDataPath)) {
+              fs.mkdirSync(userDataPath, { recursive: true });
+            }
+            
+            // Copy defaultheader.jpg to userData/head.png
+            fs.copyFileSync(image, headerDestPath);
+            console.log("Header image copied successfully, retrying PDF creation...");
+            
+            // Retry PDF creation
+            createPDF(arg.data, arg?.isView, (retryErr, retryRes, retryFile) => {
+              event.reply("asynchronous-reply", { err: retryErr, res: retryRes, file: retryFile });
+            });
+          } catch (copyErr) {
+            console.error("Failed to copy header image:", copyErr);
+            event.reply("asynchronous-reply", { err, res, file });
+          }
+        } else {
+          event.reply("asynchronous-reply", { err, res, file });
+        }
       });
       break;
 
     case "printReport": // { doc: "patients", search : {}, query: "find", skip: 0, limit: 100 }
       printReport(arg.data, (err, res) => {
-        // console.log(res, "this is the response");
-        return event.reply("asynchronous-reply", { err, res });
+        // If report creation failed, try to copy defaultheader.jpg to userData and retry
+        if (err && err.message && err.message.includes('ENOENT')) {
+          console.log("Report creation failed, attempting to copy header image...");
+          const userDataPath = app.getPath("userData");
+          const headerDestPath = path.join(userDataPath, "head.png");
+          
+          try {
+            // Ensure userData directory exists
+            if (!fs.existsSync(userDataPath)) {
+              fs.mkdirSync(userDataPath, { recursive: true });
+            }
+            
+            // Copy defaultheader.jpg to userData/head.png
+            fs.copyFileSync(image, headerDestPath);
+            console.log("Header image copied successfully, retrying report creation...");
+            
+            // Retry report creation
+            printReport(arg.data, (retryErr, retryRes) => {
+              return event.reply("asynchronous-reply", { err: retryErr, res: retryRes });
+            });
+          } catch (copyErr) {
+            console.error("Failed to copy header image:", copyErr);
+            return event.reply("asynchronous-reply", { err, res });
+          }
+        } else {
+          return event.reply("asynchronous-reply", { err, res });
+        }
       });
       break;
 
