@@ -26,6 +26,8 @@ class LabDB {
       this.initTestsFromJSON();
       this.checkAndAddVisitNumberColumn();
       this.migrateVisitsTableWithDoctorForeignKey();
+      this.checkAndAddTestTypeColumnAndGroupTest();
+      this.checkAndImportNewTestGroups();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
@@ -82,6 +84,8 @@ class LabDB {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name VARCHAR(50),
       price INTEGER, 
+      type TEXT,
+      groupTest TEXT DEFAULT "[]",
       normal TEXT,
       options TEXT,
       isSelecte INTEGER DEFAULT 0,
@@ -130,6 +134,119 @@ class LabDB {
       }
     } catch (error) {
       console.error("Error checking or adding visitNumber column:", error);
+    }
+  }
+
+  async checkAndAddTestTypeColumnAndGroupTest() {
+    try {
+      // Check if the visits table has the visitNumber column
+      const columnCheckStmt = this.db.prepare(`
+        PRAGMA table_info(tests)
+      `);
+      const columns = columnCheckStmt.all();
+
+      const hasTestTypeColumn = columns.some(
+        (column) => column.name === "testType"
+      );
+
+      const hasGroupTestColumn = columns.some(
+        (column) => column.name === "groupTest"
+      );
+
+      if (!hasTestTypeColumn) {
+        // Alter the table to add the visitNumber column if it doesn't exist
+        this.db.exec(`
+          ALTER TABLE tests ADD COLUMN testType VARCHAR(50)
+        `);
+        console.log("testType column added successfully");
+      } else {
+        console.log("testType column already exists");
+      }
+
+      if (!hasGroupTestColumn) {
+        this.db.exec(`
+          ALTER TABLE tests ADD COLUMN groupTest TEXT DEFAULT "[]"
+        `);
+        console.log("groupTest column added successfully");
+      } else {
+        console.log("groupTest column already exists");
+      }
+    } catch (error) {
+      console.error("Error checking or adding testType column:", error);
+    }
+  }
+
+  async checkAndImportNewTestGroups() {
+    try {
+      const newTestGroupsPath = path.join(__dirname, "newTestGroups.json");
+
+      // Check if newTestGroups.json exists
+      if (!fs.existsSync(newTestGroupsPath)) {
+        console.log("newTestGroups.json file not found, skipping import");
+        return;
+      }
+
+      // Read the new test groups data
+      const newTestGroupsData = JSON.parse(
+        fs.readFileSync(newTestGroupsPath, "utf-8")
+      );
+
+      if (!Array.isArray(newTestGroupsData) || newTestGroupsData.length === 0) {
+        console.log("No new test groups found in newTestGroups.json");
+        return;
+      }
+
+      // Check which test groups already exist in the database
+      const existingTestsStmt = this.db.prepare(`
+        SELECT name FROM tests WHERE type = 'groupTest'
+      `);
+      const existingTests = existingTestsStmt.all();
+      const existingTestNames = new Set(existingTests.map((test) => test.name));
+
+      // Filter out test groups that already exist
+      const newTestGroups = newTestGroupsData.filter(
+        (testGroup) => !existingTestNames.has(testGroup.name)
+      );
+
+      if (newTestGroups.length === 0) {
+        console.log(
+          "All test groups from newTestGroups.json already exist in database"
+        );
+        return;
+      }
+
+      // Insert new test groups into database
+      const insertStmt = this.db.prepare(`
+        INSERT INTO tests (name, price, normal, options, isSelecte, type, groupTest, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `);
+
+      const insertTransaction = this.db.transaction((testGroups) => {
+        for (const testGroup of testGroups) {
+          const normalValue = testGroup.normal
+            ? testGroup.normal.replace(/\\n/g, "\n")
+            : "";
+
+          insertStmt.run(
+            testGroup.name,
+            Number(testGroup.price || 0),
+            normalValue,
+            testGroup.options || "[]",
+            Number(testGroup.isSelecte || 0),
+            testGroup.type || "groupTest",
+            testGroup.groupTest || "[]"
+          );
+        }
+      });
+
+      insertTransaction(newTestGroups);
+
+      console.log(
+        `Successfully imported ${newTestGroups.length} new test groups from newTestGroups.json:`,
+        newTestGroups.map((tg) => tg.name)
+      );
+    } catch (error) {
+      console.error("Error checking or importing new test groups:", error);
     }
   }
 
@@ -220,9 +337,10 @@ class LabDB {
           fs.readFileSync(jsonGroupPath, "utf-8")
         );
 
+        // Updated insert statement to include type and groupTest fields
         const insertStmt = this.db.prepare(`
-          INSERT INTO tests (id, name, price, normal, options, isSelecte)
-          VALUES (?, ?, ?, ?, ?, ?)
+          INSERT INTO tests (name, price, normal, options, isSelecte, type, groupTest)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
         `);
 
         const insertTransaction = this.db.transaction((data) => {
@@ -230,13 +348,20 @@ class LabDB {
             const normalValue = item.normal
               ? item.normal.replace(/\\n/g, "\n")
               : null;
+
+            // Set default values for missing fields
+            const type = item.type || "singleTest";
+            const groupTest = item.groupTest || "[]";
+            const isSelecte = item.isSelecte !== undefined ? item.isSelecte : 0;
+
             insertStmt.run(
-              Number(item.id),
               item.name,
               Number(item.price),
               normalValue,
-              item.options,
-              Number(item.isSelected)
+              item.options || "[]",
+              Number(isSelecte),
+              type,
+              groupTest
             );
           }
         });
@@ -447,17 +572,19 @@ class LabDB {
   }
 
   async addTest(test) {
-    const { name, price, normal, options, isSelecte } = test;
+    const { name, price, normal, options, isSelecte, type, groupTest } = test;
     const stmt = this.db.prepare(`
-      INSERT INTO tests (name, price, normal, options, isSelecte)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO tests (name, price, normal, options, isSelecte, type, groupTest)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
     const info = stmt.run(
       name,
       price,
       normal,
       JSON.stringify(options),
-      isSelecte ? 1 : 0
+      isSelecte ? 1 : 0,
+      type || "singleTest",
+      groupTest || "[]"
     );
     return { id: info.lastInsertRowid };
   }
@@ -471,7 +598,8 @@ class LabDB {
   }
 
   async editTest(id, updates) {
-    const { name, price, normal, options, isSelecte } = updates;
+    const { name, price, normal, options, isSelecte, type, groupTest } =
+      updates;
 
     const stmt = await this.db.prepare(`
       UPDATE tests
@@ -481,6 +609,8 @@ class LabDB {
         normal = COALESCE(?, normal),
         options = COALESCE(?, options), 
         isSelecte = COALESCE(?, isSelecte),
+        type = COALESCE(?, type),
+        groupTest = COALESCE(?, groupTest),
         updatedAt = CURRENT_TIMESTAMP
         WHERE id = ?
     `);
@@ -490,6 +620,8 @@ class LabDB {
       normal,
       options ? JSON.stringify(options) : "",
       isSelecte !== undefined ? (isSelecte ? 1 : 0) : null,
+      type,
+      groupTest,
       id
     );
     return { success: info.changes > 0 };
@@ -941,9 +1073,7 @@ class LabDB {
             .toISOString()}'`
         : "",
       endDate
-        ? `DATE(v.createdAt) <= '${dayjs(endDate)
-            .endOf("day")
-            .toISOString()}'`
+        ? `DATE(v.createdAt) <= '${dayjs(endDate).endOf("day").toISOString()}'`
         : "",
     ]
       .filter(Boolean)

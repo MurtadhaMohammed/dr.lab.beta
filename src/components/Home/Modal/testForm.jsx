@@ -13,6 +13,9 @@ import {
   Select,
   Space,
   Typography,
+  Tag,
+  Popover,
+  Card,
 } from "antd";
 import { useHomeStore } from "../../../libs/appStore";
 import "./style.css";
@@ -125,7 +128,11 @@ const TestForm = () => {
   const handleSaveEdit = () => {
     send({
       query: "editTest",
-      data: { ...editTest },
+      data: {
+        ...editTest,
+        type: editTest.type || "singleTest",
+        groupTest: editTest.groupTest || "[]",
+      },
       id: editTest?.id,
     })
       .then((resp) => {
@@ -168,8 +175,10 @@ const TestForm = () => {
         options={
           testType === "CUSTOME"
             ? testsList?.map((el) => {
+                const testTypeLabel =
+                  el?.type === "groupTest" ? ` (${t("GroupTest")})` : "";
                 return {
-                  label: el?.name,
+                  label: `${el?.name}${testTypeLabel}`,
                   value: el?.id,
                   disabled: !!tests.find((item) => item?.id === el?.id),
                 };
@@ -249,7 +258,84 @@ const TestForm = () => {
                   )}
                 </Space>
                 <Divider type="vertical" style={{ margin: 0 }} />
-                <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
+                <Space direction="vertical" size={4}>
+                  <Space>
+                    <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
+                    {el?.type === "groupTest" && (
+                      <Tag color="blue" size="small">
+                        {t("GroupTest")}
+                      </Tag>
+                    )}
+                  </Space>
+                  {el?.type === "groupTest" &&
+                    el?.groupTest &&
+                    el?.groupTest !== "[]" && (
+                      <div>
+                        {(() => {
+                          try {
+                            const groups = JSON.parse(el.groupTest);
+                            return (
+                              <Space size={[4, 4]} wrap>
+                                {groups.slice(0, 3).map((group, index) => (
+                                  <Popover
+                                    key={index}
+                                    content={
+                                      <div style={{ maxWidth: 300 }}>
+                                        <Text strong>{group.name}</Text>
+                                        <Divider style={{ margin: "8px 0" }} />
+                                        {group.tests?.map((test, testIndex) => (
+                                          <div
+                                            key={testIndex}
+                                            style={{ marginBottom: 4 }}
+                                          >
+                                            <Text style={{ fontSize: "12px" }}>
+                                              • {test.name}
+                                            </Text>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    }
+                                    title="Group Details"
+                                  >
+                                    <Tag
+                                      style={{
+                                        fontSize: "10px",
+                                        padding: "2px 4px",
+                                        cursor: "pointer",
+                                      }}
+                                      color="geekblue"
+                                    >
+                                      {group.name} ({group.tests?.length || 0})
+                                    </Tag>
+                                  </Popover>
+                                ))}
+                                {groups.length > 3 && (
+                                  <Tag
+                                    style={{
+                                      fontSize: "10px",
+                                      padding: "2px 4px",
+                                    }}
+                                    color="default"
+                                  >
+                                    +{groups.length - 3} more
+                                  </Tag>
+                                )}
+                              </Space>
+                            );
+                          } catch (error) {
+                            return (
+                              <Text
+                                type="secondary"
+                                style={{ fontSize: "11px" }}
+                              >
+                                Invalid group data
+                              </Text>
+                            );
+                          }
+                        })()}
+                      </div>
+                    )}
+                </Space>
               </Space>
               <Text type="secondary">
                 {Number(getPriceWithCondition(testType, el)).toLocaleString(

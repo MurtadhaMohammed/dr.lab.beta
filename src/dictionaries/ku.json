@@ -297,5 +297,22 @@
   "DoctorTotal": "کۆی گشتی",
   "DoctorName": "ناوی دکتۆر",
   "PleaseFillRequiredFields": "تکایە زانیارییە پڕ بکە",
-  "NoPrinterSelected": "چاپگەر هەڵنەبژێردراوە"
+  "NoPrinterSelected": "چاپگەر هەڵنەبژێردراوە",
+  "SingleTest": "تاقیکردنەوەی مەکە",
+  "GroupTest": "تاقیکردنەوەی گروپ",
+  "GroupTests": "تاقیکردنەوەکانی گروپ",
+  "AddGroup": "زیادکردنی گروپ",
+  "AddTest": "زیادکردنی تاقیکردنەوە",
+  "NewOption": "بژاردەی نوێ",
+  "IsSelect": "هەڵبژاردن",
+  "Options": "بژاردەکان",
+  "Groups": "گروپەکان",
+  "NoGroups": "گروپ نییە",
+  "Error": "هەڵە",
+  "Please add at least one group with tests": "تکایە لانیکەم گروپێک زیاد بکە لەگەڵ تاقیکردنەوەکان",
+  "Each group must contain at least one test": "هەر گروپێک دەبێت لانیکەم تاقیکردنەوەیەکی تێدەبێت",
+  "NoGroupsAdded": "هێشتا گروپ زیاد نەکراوە",
+  "ClickAddGroupToStart": "کلیک لەسەر 'زیادکردنی گروپ' بۆ دەستپێکردن",
+  "NoTestsInGroup": "هیچ تاقیکردنەوەیەک لەم گروپەدا نییە",
+  "ClickAddTestToStart": "کلیک لەسەر 'زیادکردنی تاقیکردنەوە' بۆ زیادکردنی تاقیکردنەوە بۆ ئەم گروپە"
 }
