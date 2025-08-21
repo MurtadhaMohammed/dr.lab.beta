@@ -54,7 +54,7 @@ export const PureTable = () => {
       key: "type",
       render: (type) => (
         <Tag color={type === "groupTest" ? "blue" : "green"}>
-          {type === "groupTest" ? t("GroupTest") : t("SingleTest")}
+          {type === "groupTest" ? t("GroupTest") : t("single")}
         </Tag>
       ),
     },
@@ -212,6 +212,8 @@ export const PureTable = () => {
       parsedOptions = ["positive", "negative"];
     }
 
+    setType(type);
+    setGroupTest(groupTest);
     setId(id);
     setName(name);
     setPrice(price);
@@ -220,14 +222,6 @@ export const PureTable = () => {
     setCreatedAt(createdAt);
     setIsSelecte(isSelecte);
     setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
-
-    // Set type and groupTest for editing
-    if (type) {
-      setType(type);
-    }
-    if (groupTest) {
-      setGroupTest(groupTest);
-    }
   };
 
   useEffect(() => {

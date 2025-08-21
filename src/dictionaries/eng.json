@@ -301,7 +301,7 @@
   "FROM": "From",
   "PleaseFillRequiredFields": "Please fill in the fields",
   "NoPrinterSelected": "No printer selected",
-  "SingleTest": "Single Test",
+  "single": "Single Test",
   "GroupTest": "Group Test",
   "GroupTests": "Group Tests",
   "AddGroup": "Add Group",

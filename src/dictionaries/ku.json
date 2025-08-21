@@ -298,7 +298,7 @@
   "DoctorName": "ناوی دکتۆر",
   "PleaseFillRequiredFields": "تکایە زانیارییە پڕ بکە",
   "NoPrinterSelected": "چاپگەر هەڵنەبژێردراوە",
-  "SingleTest": "تاقیکردنەوەی مەکە",
+  "single": "تاقیکردنەوەی مەکە",
   "GroupTest": "تاقیکردنەوەی گروپ",
   "GroupTests": "تاقیکردنەوەکانی گروپ",
   "AddGroup": "زیادکردنی گروپ",

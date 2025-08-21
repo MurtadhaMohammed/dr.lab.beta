@@ -258,7 +258,7 @@ export const ResultsModal = () => {
   let renderTable = {
     CUSTOME: (() => {
       const groupTests = [];
-      const singleTests = [];
+      const singles = [];
 
       // Separate group tests and single tests
       record?.tests?.forEach((testItem, index) => {
@@ -269,7 +269,7 @@ export const ResultsModal = () => {
         ) {
           groupTests.push({ testItem, index });
         } else {
-          singleTests.push({ testItem, index });
+          singles.push({ testItem, index });
         }
       });
 
@@ -386,7 +386,7 @@ export const ResultsModal = () => {
           })}
 
           {/* Render single tests grouped together */}
-          {singleTests.length > 0 && (
+          {singles.length > 0 && (
             <div className="test-section">
               <Space direction="vertical" size={0} style={{ width: "100%" }}>
                 <div
@@ -398,7 +398,7 @@ export const ResultsModal = () => {
                   </Typography.Text>
                 </div>
                 <div className="test-list">
-                  {singleTests.map(({ testItem }) => {
+                  {singles.map(({ testItem }) => {
                     // Check and parse options if necessary
                     if (typeof testItem.options === "string") {
                       try {

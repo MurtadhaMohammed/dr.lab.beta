@@ -300,7 +300,7 @@
   "FROM": "تحويل من",
   "PleaseFillRequiredFields": "يرجى ملء الحقول ",
   "NoPrinterSelected": "لم يتم اختيار طابعة",
-  "SingleTest": "اختبار مفرد",
+  "single": "اختبار مفرد",
   "GroupTest": "مجموعة اختبارات",
   "GroupTests": "مجموعات الاختبارات",
   "AddGroup": "إضافة مجموعة",

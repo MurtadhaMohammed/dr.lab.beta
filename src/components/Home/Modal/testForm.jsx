@@ -130,7 +130,7 @@ const TestForm = () => {
       query: "editTest",
       data: {
         ...editTest,
-        type: editTest.type || "singleTest",
+        type: editTest.type || "single",
         groupTest: editTest.groupTest || "[]",
       },
       id: editTest?.id,

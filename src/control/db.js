@@ -27,7 +27,6 @@ class LabDB {
       this.checkAndAddVisitNumberColumn();
       this.migrateVisitsTableWithDoctorForeignKey();
       this.checkAndAddTestTypeColumnAndGroupTest();
-      this.checkAndImportNewTestGroups();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
@@ -176,23 +175,20 @@ class LabDB {
     }
   }
 
-  async checkAndImportNewTestGroups() {
+  async addNewData(data) {
     try {
-      const newTestGroupsPath = path.join(__dirname, "newTestGroups.json");
-
-      // Check if newTestGroups.json exists
-      if (!fs.existsSync(newTestGroupsPath)) {
-        console.log("newTestGroups.json file not found, skipping import");
-        return;
+      // Validate that data is an array
+      if (!Array.isArray(data)) {
+        console.error(
+          "addNewData: data parameter is not an array:",
+          typeof data,
+          data
+        );
+        throw new Error("Data parameter must be an array");
       }
 
-      // Read the new test groups data
-      const newTestGroupsData = JSON.parse(
-        fs.readFileSync(newTestGroupsPath, "utf-8")
-      );
-
-      if (!Array.isArray(newTestGroupsData) || newTestGroupsData.length === 0) {
-        console.log("No new test groups found in newTestGroups.json");
+      if (data.length === 0) {
+        console.log("addNewData: No data provided to import");
         return;
       }
 
@@ -204,7 +200,7 @@ class LabDB {
       const existingTestNames = new Set(existingTests.map((test) => test.name));
 
       // Filter out test groups that already exist
-      const newTestGroups = newTestGroupsData.filter(
+      const newTestGroups = data.filter(
         (testGroup) => !existingTestNames.has(testGroup.name)
       );
 
@@ -350,7 +346,7 @@ class LabDB {
               : null;
 
             // Set default values for missing fields
-            const type = item.type || "singleTest";
+            const type = item.type || "single";
             const groupTest = item.groupTest || "[]";
             const isSelecte = item.isSelecte !== undefined ? item.isSelecte : 0;
 
@@ -384,6 +380,7 @@ class LabDB {
       console.error("Error importing tests from JSON:", error);
     }
   }
+
   async addUniqueVisitNumber(visitId) {
     try {
       // First, check if the visitNumber already exists for the given visitId
@@ -583,7 +580,7 @@ class LabDB {
       normal,
       JSON.stringify(options),
       isSelecte ? 1 : 0,
-      type || "singleTest",
+      type || "single",
       groupTest || "[]"
     );
     return { id: info.lastInsertRowid };

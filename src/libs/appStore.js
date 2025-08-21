@@ -113,7 +113,7 @@ export const useTestStore = create((set) => ({
   isModal: false,
   querySearch: "",
   testType: null,
-  type: "singleTest",
+  type: "single",
   groupTest: "[]",
   id: null,
   name: "",
@@ -142,7 +142,7 @@ export const useTestStore = create((set) => ({
       createdAt: null,
       isSelecte: false,
       options: ["positive", "negative"],
-      type: "singleTest",
+      type: "single",
       groupTest: "[]",
     }),
 }));

@@ -298,6 +298,12 @@ export const PureModal = () => {
     setExpandedGroups(newExpanded);
   };
 
+  useEffect(() => {
+    if (groups.length > 0 && groups[0]?.id) {
+      setExpandedGroups(new Set([groups[0].id]));
+    }
+  }, [groups]);
+
   const tagInputStyle = {
     width: 78,
     verticalAlign: "top",
@@ -347,7 +353,7 @@ export const PureModal = () => {
       data.type = "groupTest";
     } else {
       data.groupTest = "[]";
-      data.type = "singleTest";
+      data.type = "single";
     }
 
     if (!id) {
@@ -430,8 +436,8 @@ export const PureModal = () => {
       centered
     >
       <div className="create-item-modal">
-        <Row gutter={[16, 16]}>
-          <Col span={14}>
+        <Row gutter={[16, 18]}>
+          <Col span={9}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>{t("TestName")}</Text>
               <Input
@@ -441,7 +447,7 @@ export const PureModal = () => {
               />
             </Space>
           </Col>
-          <Col span={10}>
+          <Col span={9}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>{t("Price")}</Text>
               <InputNumber
@@ -453,16 +459,17 @@ export const PureModal = () => {
               />
             </Space>
           </Col>
-          <Col span={12}>
+          <Col span={6}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>{t("Type")}</Text>
               <Select
                 value={type}
                 onChange={(val) => setType(val)}
+                style={{ width: "100%" }}
                 options={[
                   {
-                    label: t("SingleTest"),
-                    value: "singleTest",
+                    label: t("single"),
+                    value: "single",
                   },
                   {
                     label: t("GroupTest"),
@@ -474,7 +481,7 @@ export const PureModal = () => {
           </Col>
         </Row>
 
-        {type === "singleTest" ? (
+        {type === "single" ? (
           <>
             <Row gutter={[16, 16]}>
               <Col span={24}>
