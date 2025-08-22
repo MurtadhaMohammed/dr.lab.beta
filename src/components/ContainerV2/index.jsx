@@ -3,6 +3,8 @@ import { useState } from "react";
 import { HiOutlineHome } from "react-icons/hi2";
 import { MdOutlinePersonalInjury } from "react-icons/md";
 import { LiaUserNurseSolid } from "react-icons/lia";
+import { FiFileText } from "react-icons/fi";
+
 import {
   Alert,
   message,
@@ -103,7 +105,7 @@ const MainContainerV2 = ({ children }) => {
     }
   };
 
-    const renderLogo = () => {
+  const renderLogo = () => {
     if (appTheme === "dark" && collapsed) {
       return <img className="w-[42px]" src={darkLogo} />;
     } else if (appTheme === "light" && collapsed) {
@@ -148,7 +150,7 @@ const MainContainerV2 = ({ children }) => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.3 }}
               >
-               {renderLogo()}
+                {renderLogo()}
               </motion.div>
             </div>
             <Menu
@@ -168,6 +170,12 @@ const MainContainerV2 = ({ children }) => {
                   icon: <HiOutlineHome size={20} />,
                   label: <p className="text-[15px]">{t("Home")}</p>,
                   onClick: () => navigate("/", { replace: true }),
+                },
+                {
+                  key: "/visits",
+                  icon: <FiFileText size={18} />,
+                  label: <p className="text-[15px]">{t("Vistis")}</p>,
+                  onClick: () => navigate("/visits", { replace: true }),
                 },
                 {
                   key: "/patients",

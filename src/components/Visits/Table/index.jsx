@@ -5,7 +5,6 @@ import {
   DeleteOutlined,
   WhatsAppOutlined,
   BarcodeOutlined,
-  MoreOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -53,6 +52,7 @@ export const PureTable = ({ isReport = false }) => {
     querySearch,
     setIsResultsModal,
     setRecord,
+    isToday,
     setPatientRow,
     setDoctorRow,
   } = useHomeStore();
@@ -293,7 +293,7 @@ export const PureTable = ({ isReport = false }) => {
       render: (_, record) => {
         let testType = record.testType.replace(/^"|"$/g, "");
         let list = record.tests;
-        let numOfView = 1;
+        let numOfView = 2;
         let restCount =
           list.length > numOfView ? list.length - numOfView : null;
         return (
@@ -324,40 +324,61 @@ export const PureTable = ({ isReport = false }) => {
         );
       },
     },
-
-    // {
-    //   title: t("EndPrice"),
-    //   dataIndex: "id",
-    //   key: "id",
-    //   render: (_, record) => (
-    //     <b style={{ whiteSpace: "nowarp" }}>
-    //       {Number(
-    //         getTotalPrice(record?.testType, record?.tests) - record?.discount
-    //       ).toLocaleString("en")}{" "}
-    //       IQD
-    //     </b>
-    //   ),
-    // },
-    // {
-    //   title: t("Discount"),
-    //   dataIndex: "discount",
-    //   key: "discount",
-    //   render: (_, record) =>
-    //     record?.discount ? (
-    //       <Tag color="geekblue">{`${Number(record?.discount).toLocaleString(
-    //         "en"
-    //       )} IQD`}</Tag>
-    //     ) : (
-    //       ". . ."
-    //     ),
-    // },
+    {
+      title: t("Price"),
+      dataIndex: "id",
+      key: "id",
+      render: (_, record) => (
+        <span
+          style={
+            record?.discount
+              ? {
+                  textDecoration: "line-through",
+                  opacity: 0.3,
+                  fontStyle: "italic",
+                }
+              : {}
+          }
+        >
+          {Number(
+            getTotalPrice(record?.testType, record?.tests)
+          ).toLocaleString("en")}
+        </span>
+      ),
+    },
+    {
+      title: t("EndPrice"),
+      dataIndex: "id",
+      key: "id",
+      render: (_, record) => (
+        <b style={{ whiteSpace: "nowarp" }}>
+          {Number(
+            getTotalPrice(record?.testType, record?.tests) - record?.discount
+          ).toLocaleString("en")}{" "}
+          IQD
+        </b>
+      ),
+    },
+    {
+      title: t("Discount"),
+      dataIndex: "discount",
+      key: "discount",
+      render: (_, record) =>
+        record?.discount ? (
+          <Tag color="geekblue">{`${Number(record?.discount).toLocaleString(
+            "en"
+          )} IQD`}</Tag>
+        ) : (
+          ". . ."
+        ),
+    },
     {
       title: t("CreatedAt"),
       dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt) => (
-        <span style={{ color: "#666" , fontSize: 14}}>
-          <span style={{ fontSize: 12 }}>
+        <span style={{ color: "#666" }}>
+          <span style={{ fontSize: 14 }}>
             {dayjs(createdAt).format("DD/MM/YYYY")}
           </span>{" "}
           {dayjs(createdAt).add(3, "hours").format("hh:mm A")}
@@ -371,99 +392,86 @@ export const PureTable = ({ isReport = false }) => {
       render: (status) => <Tag color={statusColor[status]}>{status}</Tag>,
     },
     {
-      title: "",
-      key: "action",
-      render: (_, record) => (
-        <Space>
-          <Button
-            onClick={() => handleResults(record)}
-            style={{ fontSize: 12 }}
-            size="small"
-          >
-            {t("PrintResults")}
-          </Button>
-
-          <Popover
-            content={
-              <Space Space size="small" className="custom-actions">
-                <Tooltip title={t("PrintBarcode")}>
-                  <Button
-                    onClick={() => handlePrintBarcode(record)}
-                    style={{ fontSize: 12 }}
-                    size="small"
-                    icon={<BarcodeOutlined />}
-                    disabled={userType === "FREE"}
-                  />
-                </Tooltip>
-                <Divider type="vertical" />
-                {
-                  <Popover
-                    onOpenChange={(isOpen) => {
-                      if (isOpen) setDestPhone(record?.patient?.phone);
-                      else setIsConfirm(false);
-                    }}
-                    placement={
-                      direction === "ltr" ? "bottomRight" : "bottomLeft"
-                    }
-                    content={
-                      userType === "FREE" ? (
-                        <PopOverContent
-                          website={"https://www.puretik.com/ar"}
-                          email={"puretik@gmail.com"}
-                          phone={"07710553120"}
-                        />
-                      ) : (
-                        whatsapContnet(record)
-                      )
-                    }
-                    open={
-                      userType === "FREE"
-                        ? undefined
-                        : record?.status == "PENDING"
-                        ? false
-                        : undefined
-                    }
-                  >
-                    <Button
-                      size="small"
-                      className=" sticky"
-                      icon={<WhatsAppOutlined />}
-                      loading={msgLoading}
-                      disabled={
-                        record?.status == "PENDING" ||
-                        userType === "FREE" ||
-                        !canSendWhatsapp()
-                      }
+      ...(!isReport && {
+        title: "",
+        key: "action",
+        render: (_, record) => (
+          <Space Space size="small" className="custom-actions">
+            <Button
+              onClick={() => handleResults(record)}
+              style={{ fontSize: 12 }}
+              size="small"
+            >
+              {t("PrintResults")}
+            </Button>
+            <Tooltip title={t("PrintBarcode")}>
+              <Button
+                onClick={() => handlePrintBarcode(record)}
+                style={{ fontSize: 12 }}
+                size="small"
+                icon={<BarcodeOutlined />}
+                disabled={userType === "FREE"}
+              />
+            </Tooltip>
+            <Divider type="vertical" />
+            {
+              <Popover
+                onOpenChange={(isOpen) => {
+                  if (isOpen) setDestPhone(record?.patient?.phone);
+                  else setIsConfirm(false);
+                }}
+                placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
+                content={
+                  userType === "FREE" ? (
+                    <PopOverContent
+                      website={"https://www.puretik.com/ar"}
+                      email={"puretik@gmail.com"}
+                      phone={"07710553120"}
                     />
-                  </Popover>
+                  ) : (
+                    whatsapContnet(record)
+                  )
                 }
+                open={
+                  userType === "FREE"
+                    ? undefined
+                    : record?.status == "PENDING"
+                    ? false
+                    : undefined
+                }
+              >
                 <Button
                   size="small"
-                  disabled={record?.status === "COMPLETED"}
-                  icon={<EditOutlined />}
-                  onClick={() => handleEdit(record)}
-                ></Button>
-                <Popconfirm
-                  title={t("DeleteTheRecord")}
-                  description={t("DeleteThisRecord")}
-                  onConfirm={() => handleRemove(record.id)}
-                  okText={t("Yes")}
-                  cancelText={t("No")}
-                  placement="leftBottom"
-                >
-                  <Button
-                    danger
-                    size="small"
-                    icon={<DeleteOutlined />}
-                  ></Button>
-                </Popconfirm>
-              </Space>
+                  className=" sticky"
+                  icon={<WhatsAppOutlined />}
+                  loading={msgLoading}
+                  disabled={
+                    record?.status == "PENDING" ||
+                    userType === "FREE" ||
+                    !canSendWhatsapp()
+                  }
+                />
+              </Popover>
             }
-          >
-            <Button icon={<MoreOutlined />} size="small" />
-          </Popover>
-        </Space>
-      ),
+            <Button
+              size="small"
+              disabled={record?.status === "COMPLETED"}
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+            ></Button>
+            <Popconfirm
+              title={t("DeleteTheRecord")}
+              description={t("DeleteThisRecord")}
+              onConfirm={() => handleRemove(record.id)}
+              okText={t("Yes")}
+              cancelText={t("No")}
+              placement="leftBottom"
+            >
+              <Button danger size="small" icon={<DeleteOutlined />}></Button>
+            </Popconfirm>
+          </Space>
+        ),
+      }),
     },
   ];
   //commit
@@ -522,6 +530,20 @@ export const PureTable = ({ isReport = false }) => {
 
   useEffect(() => {
     setLoading(true);
+    let startDate = filterDate
+      ? dayjs(filterDate[0]).startOf("day").toISOString()
+      : "";
+    let endDate = filterDate
+      ? dayjs(filterDate[1]).endOf("day").toISOString()
+      : "";
+
+    if (!isReport && isToday) {
+      startDate = dayjs().startOf("day").toISOString();
+      endDate = dayjs().endOf("day").toISOString();
+    } else if (!isReport && !isToday) {
+      startDate = "";
+      endDate = "";
+    }
 
     send({
       query: "getVisits",
@@ -529,6 +551,9 @@ export const PureTable = ({ isReport = false }) => {
         q: querySearch,
         skip: (page - 1) * limit,
         limit,
+        startDate,
+        endDate,
+        status: visitStatus,
       },
     }).then((resp) => {
       if (resp.success) {
@@ -541,13 +566,22 @@ export const PureTable = ({ isReport = false }) => {
       setLoading(false);
       setFlag(false);
     });
-  }, [page, isReload, querySearch, limit, flag]);
+  }, [
+    page,
+    isReload,
+    querySearch,
+    isToday,
+    filterDate,
+    visitStatus,
+    limit,
+    flag,
+  ]);
 
   return (
     <Table
       style={{
-        marginTop: 12,
-        border: `none`,
+        marginTop: 16,
+        border: `1px solid ${appColors.colorBorder}`,
         borderRadius: 10,
         overflow: "hidden",
       }}
@@ -558,7 +592,7 @@ export const PureTable = ({ isReport = false }) => {
       pagination={false}
       size="small"
       footer={() => (
-        <div className="table-footer app-flex-space h-[36px]">
+        <div className="table-footer app-flex-space">
           <div
             className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
