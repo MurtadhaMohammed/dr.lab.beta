@@ -167,6 +167,19 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    case "addNewData": {
+      try {
+        const resp = await labDB.addNewData(arg.data);
+        event.reply("asynchronous-reply", { success: true, data: resp.data });
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
     case "getTests": {
       try {
         const resp = await labDB.getTests(arg.data);

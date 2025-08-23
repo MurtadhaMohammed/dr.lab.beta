@@ -24,7 +24,168 @@ textarea::placeholder,
 }
 
 :where(.css-dev-only-do-not-override-pgtbg4).ant-typography {
-  font-family: "Frutiger", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'!important;
+  font-family: "Frutiger", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji" !important;
   font-size: 14px;
   box-sizing: border-box;
+}
+
+.create-item-modal {
+  padding: 16px 0;
+}
+
+.create-item-modal .ant-card {
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.create-item-modal .ant-card-head {
+  min-height: 48px;
+  padding: 0 16px;
+}
+
+.create-item-modal .ant-card-body {
+  padding: 16px;
+}
+
+.create-item-modal .ant-card-head-title {
+  font-weight: 600;
+}
+
+.create-item-modal .ant-divider {
+  margin: 24px 0 16px 0;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.create-item-modal .ant-tag {
+  border-radius: 4px;
+  margin: 2px;
+}
+
+.create-item-modal .ant-input {
+  border-radius: 6px;
+}
+
+.create-item-modal .ant-input-number {
+  border-radius: 6px;
+}
+
+.create-item-modal .ant-select {
+  border-radius: 6px;
+}
+
+.create-item-modal .ant-btn {
+  border-radius: 6px;
+}
+
+.create-item-modal .ant-checkbox-wrapper {
+  font-weight: 500;
+}
+
+.group-test-card {
+  margin-bottom: 16px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.group-test-card .ant-card-head {
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.test-item-card {
+  margin-bottom: 8px;
+  border: 1px solid #f5f5f5;
+  border-radius: 6px;
+}
+
+.test-item-card .ant-card-head {
+  background: #fafafa;
+  border-bottom: 1px solid #f5f5f5;
+  min-height: 40px;
+}
+
+.test-item-card .ant-card-head-title {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.test-item-card .ant-card-body {
+  padding: 12px;
+}
+
+.option-tags {
+  margin-top: 8px;
+}
+
+.option-tags .ant-tag {
+  margin: 2px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.add-group-btn {
+  margin-top: 16px;
+  height: 40px;
+  border: 2px dashed #d9d9d9;
+  border-radius: 8px;
+}
+
+.add-group-btn:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.add-test-btn {
+  height: 32px;
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+}
+
+.add-test-btn:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+/* Add these animations for smooth expand/collapse */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+}
+
+.group-expandable {
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.group-header {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.group-header:hover {
+  background-color: #f0f0f0;
 }

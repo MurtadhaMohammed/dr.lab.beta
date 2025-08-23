@@ -7,6 +7,7 @@ import {
   Space,
   Table,
   message,
+  Tag,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
@@ -29,6 +30,8 @@ export const PureTable = () => {
     querySearch,
     setOptions,
     setIsSelecte,
+    setType,
+    setGroupTest,
   } = useTestStore();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
@@ -46,17 +49,66 @@ export const PureTable = () => {
       render: (name) => <b>{name}</b>,
     },
     {
+      title: t("Type"),
+      dataIndex: "type",
+      key: "type",
+      render: (type) => (
+        <Tag color={type === "groupTest" ? "blue" : "green"}>
+          {type === "groupTest" ? t("GroupTest") : t("single")}
+        </Tag>
+      ),
+    },
+    {
       title: t("NormalValue"),
       dataIndex: "normal",
       key: "normal",
-      render: (normal) =>
-        normal?.length > 30 ? (
+      render: (normal, record) => {
+        if (record.type === "groupTest") {
+          try {
+            const groups = JSON.parse(record.groupTest || "[]");
+            if (groups.length > 0) {
+              return (
+                <Popover
+                  content={
+                    <div className="max-w-[300px]">
+                      <div>
+                        <strong>{t("GroupTests")}:</strong>
+                      </div>
+                      {groups.map((group, idx) => (
+                        <div key={idx} style={{ marginBottom: 8 }}>
+                          <div>
+                            <strong>{group.name}:</strong>
+                          </div>
+                          <div style={{ marginLeft: 16 }}>
+                            {group.tests.map((test, testIdx) => (
+                              <div key={testIdx}>• {test.name}</div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  }
+                >
+                  <Tag color="blue">
+                    {groups.length} {t("Groups")}
+                  </Tag>
+                </Popover>
+              );
+            }
+            return <Tag color="default">{t("NoGroups")}</Tag>;
+          } catch (error) {
+            return <Tag color="red">{t("Error")}</Tag>;
+          }
+        }
+
+        return normal?.length > 30 ? (
           <Popover content={<div className="max-w-[260px]">{normal}</div>}>
             {normal.substr(0, 30)}...
           </Popover>
         ) : (
           normal || ". . ."
-        ),
+        );
+      },
     },
     {
       title: t("Price"),
@@ -130,6 +182,8 @@ export const PureTable = () => {
     options,
     isSelecte,
     createdAt,
+    type,
+    groupTest,
   }) => {
     console.log("Edit Test Data:::::::::::::::::", {
       id,
@@ -139,6 +193,8 @@ export const PureTable = () => {
       options,
       isSelecte,
       createdAt,
+      type,
+      groupTest,
     });
 
     let parsedOptions = options;
@@ -156,6 +212,8 @@ export const PureTable = () => {
       parsedOptions = ["positive", "negative"];
     }
 
+    setType(type);
+    setGroupTest(groupTest);
     setId(id);
     setName(name);
     setPrice(price);

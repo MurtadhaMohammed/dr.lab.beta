@@ -22,18 +22,51 @@ import { useAppTheme } from "../../../hooks/useAppThem";
 export const parseTests = (record) => {
   let tests = [];
   if (record?.testType === "CUSTOME") {
-    tests = [
-      {
-        title: "",
-        rows: record.tests.map((el) => {
-          return {
-            name: el.name,
-            result: el.result || "",
-            normal: el.normal || "",
-          };
-        }),
-      },
-    ];
+    tests = [];
+    record.tests.forEach((el) => {
+      if (el.type === "groupTest" && el.groupTest && el.groupTest !== "[]") {
+        // Handle group tests
+        try {
+          const groups = JSON.parse(el.groupTest);
+          groups.forEach((group) => {
+            tests.push({
+              title: `${el.name} - ${group.name}`,
+              rows: group.tests.map((test) => ({
+                name: test.name,
+                result: test.result || "",
+                normal: test.normal || "",
+              })),
+            });
+          });
+        } catch (error) {
+          console.error("Error parsing groupTest:", error);
+          // Fallback to single test if parsing fails
+          tests.push({
+            title: "",
+            rows: [
+              {
+                name: el.name,
+                result: el.result || "",
+                normal: el.normal || "",
+              },
+            ],
+          });
+        }
+      } else {
+        // Handle single tests - group them together
+        if (tests.length === 0 || tests[0].title !== "") {
+          tests.unshift({
+            title: "",
+            rows: [],
+          });
+        }
+        tests[0].rows.push({
+          name: el.name,
+          result: el.result || "",
+          normal: el.normal || "",
+        });
+      }
+    });
   } else if (record?.testType === "PACKAGE") {
     tests = record.tests.map((group) => {
       return {
@@ -91,7 +124,33 @@ export const ResultsModal = () => {
       newRecord = {
         ...record,
         tests: record?.tests.map((el) => {
-          if (el.id === row?.id) return { ...el, result: val };
+          // Handle group tests
+          if (
+            el.type === "groupTest" &&
+            el.groupTest &&
+            el.groupTest !== "[]"
+          ) {
+            try {
+              const groups = JSON.parse(el.groupTest);
+              const updatedGroups = groups.map((group) => ({
+                ...group,
+                tests: group.tests.map((test) => {
+                  if (test.id === row?.id) {
+                    return { ...test, result: val };
+                  }
+                  return test;
+                }),
+              }));
+              return { ...el, groupTest: JSON.stringify(updatedGroups) };
+            } catch (error) {
+              console.error("Error updating group test result:", error);
+              return el;
+            }
+          }
+          // Handle single tests
+          else if (el.id === row?.id) {
+            return { ...el, result: val };
+          }
           return el;
         }),
       };
@@ -197,64 +256,202 @@ export const ResultsModal = () => {
   };
 
   let renderTable = {
-    CUSTOME: (
-      <div className="test-section">
-        <Space direction="vertical" size={0} style={{ width: "100%" }}>
-          <div
-            className="py-2 px-3"
-            style={{ background: appColors.colorPrimaryHover }}
-          >
-            <Typography.Text type="secondary">
-              {t("CustomTest")}
-            </Typography.Text>
-          </div>
-          <div className="test-list">
-            {record?.tests?.map((row) => {
-              // Check and parse options if necessary
-              if (typeof row.options === "string") {
-                try {
-                  row.options = JSON.parse(row.options);
-                } catch (error) {
-                  console.error("Error parsing options:", error);
-                  row.options = [];
-                }
-              }
+    CUSTOME: (() => {
+      const groupTests = [];
+      const singles = [];
 
-              return (
-                <div className="test-item" key={row?.id}>
-                  <p>
-                    <b>{row?.name}</b>
-                  </p>
-                  {row?.isSelecte ? (
-                    <Select
-                      style={{ width: "100%" }}
-                      value={row?.result}
-                      onChange={(selctedVal) => handleChange(selctedVal, row)}
-                      placeholder={t("ChooseResult")}
+      // Separate group tests and single tests
+      record?.tests?.forEach((testItem, index) => {
+        if (
+          testItem.type === "groupTest" &&
+          testItem.groupTest &&
+          testItem.groupTest !== "[]"
+        ) {
+          groupTests.push({ testItem, index });
+        } else {
+          singles.push({ testItem, index });
+        }
+      });
+
+      return (
+        <div>
+          {/* Render group tests */}
+          {groupTests.map(({ testItem, index }) => {
+            try {
+              const groups = JSON.parse(testItem.groupTest);
+              return groups.map((group, groupIndex) => (
+                <div className="test-section" key={`${index}-${groupIndex}`}>
+                  <Space
+                    direction="vertical"
+                    size={0}
+                    style={{ width: "100%" }}
+                  >
+                    <div
+                      className="py-2 px-3"
+                      style={{ background: appColors.colorPrimaryHover }}
                     >
-                      {Array.isArray(row?.options) && row.options.length > 0
-                        ? row.options.map((option, i) => (
-                            <Select.Option key={i} value={option}>
-                              {option}
-                            </Select.Option>
-                          ))
-                        : null}
-                    </Select>
-                  ) : (
-                    <Input
-                      value={row?.result}
-                      onChange={(e) => handleChange(e.target.value, row)}
-                      style={{ width: "100%" }}
-                      placeholder={t("WriteResult")}
-                    />
-                  )}
+                      <Typography.Text type="secondary">
+                        {testItem.name} - {group.name}
+                      </Typography.Text>
+                    </div>
+                    <div className="test-list">
+                      {group.tests?.map((row) => {
+                        // Check and parse options if necessary
+                        if (typeof row.options === "string") {
+                          try {
+                            row.options = JSON.parse(row.options);
+                          } catch (error) {
+                            console.error("Error parsing options:", error);
+                            row.options = [];
+                          }
+                        }
+
+                        return (
+                          <div className="test-item" key={row?.id}>
+                            <p>
+                              <b>{row?.name}</b>
+                            </p>
+                            {row?.isSelecte ? (
+                              <Select
+                                style={{ width: "100%" }}
+                                value={row?.result}
+                                onChange={(selectedVal) =>
+                                  handleChange(selectedVal, row)
+                                }
+                                placeholder={t("ChooseResult")}
+                              >
+                                {Array.isArray(row?.options) &&
+                                row.options.length > 0
+                                  ? row.options.map((option, i) => (
+                                      <Select.Option key={i} value={option}>
+                                        {option}
+                                      </Select.Option>
+                                    ))
+                                  : null}
+                              </Select>
+                            ) : (
+                              <Input
+                                value={row?.result}
+                                onChange={(e) =>
+                                  handleChange(e.target.value, row)
+                                }
+                                style={{ width: "100%" }}
+                                placeholder={t("WriteResult")}
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Space>
+                </div>
+              ));
+            } catch (error) {
+              console.error("Error rendering group test:", error);
+              // Fallback to single test rendering
+              return (
+                <div className="test-section" key={index}>
+                  <Space
+                    direction="vertical"
+                    size={0}
+                    style={{ width: "100%" }}
+                  >
+                    <div
+                      className="py-2 px-3"
+                      style={{ background: appColors.colorPrimaryHover }}
+                    >
+                      <Typography.Text type="secondary">
+                        {t("CustomTest")}
+                      </Typography.Text>
+                    </div>
+                    <div className="test-list">
+                      <div className="test-item">
+                        <p>
+                          <b>{testItem?.name}</b>
+                        </p>
+                        <Input
+                          value={testItem?.result}
+                          onChange={(e) =>
+                            handleChange(e.target.value, testItem)
+                          }
+                          style={{ width: "100%" }}
+                          placeholder={t("WriteResult")}
+                        />
+                      </div>
+                    </div>
+                  </Space>
                 </div>
               );
-            })}
-          </div>
-        </Space>
-      </div>
-    ),
+            }
+          })}
+
+          {/* Render single tests grouped together */}
+          {singles.length > 0 && (
+            <div className="test-section">
+              <Space direction="vertical" size={0} style={{ width: "100%" }}>
+                <div
+                  className="py-2 px-3"
+                  style={{ background: appColors.colorPrimaryHover }}
+                >
+                  <Typography.Text type="secondary">
+                    {t("CustomTest")}
+                  </Typography.Text>
+                </div>
+                <div className="test-list">
+                  {singles.map(({ testItem }) => {
+                    // Check and parse options if necessary
+                    if (typeof testItem.options === "string") {
+                      try {
+                        testItem.options = JSON.parse(testItem.options);
+                      } catch (error) {
+                        console.error("Error parsing options:", error);
+                        testItem.options = [];
+                      }
+                    }
+
+                    return (
+                      <div className="test-item" key={testItem?.id}>
+                        <p>
+                          <b>{testItem?.name}</b>
+                        </p>
+                        {testItem?.isSelecte ? (
+                          <Select
+                            style={{ width: "100%" }}
+                            value={testItem?.result}
+                            onChange={(selectedVal) =>
+                              handleChange(selectedVal, testItem)
+                            }
+                            placeholder={t("ChooseResult")}
+                          >
+                            {Array.isArray(testItem?.options) &&
+                            testItem.options.length > 0
+                              ? testItem.options.map((option, i) => (
+                                  <Select.Option key={i} value={option}>
+                                    {option}
+                                  </Select.Option>
+                                ))
+                              : null}
+                          </Select>
+                        ) : (
+                          <Input
+                            value={testItem?.result}
+                            onChange={(e) =>
+                              handleChange(e.target.value, testItem)
+                            }
+                            style={{ width: "100%" }}
+                            placeholder={t("WriteResult")}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </Space>
+            </div>
+          )}
+        </div>
+      );
+    })(),
 
     PACKAGE: record?.tests?.map((group, i) => (
       <div className="test-section" key={i}>
@@ -369,7 +566,7 @@ export const ResultsModal = () => {
                   >
                     {t("printBarcode")}
                   </Button>
-                ):(
+                ) : (
                   <Popover content={t("NoPrinterSelected")}>
                     <Button
                       type="primary"
