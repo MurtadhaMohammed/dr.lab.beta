@@ -8,9 +8,8 @@ const useLogin = () => {
     const storedToken = localStorage.getItem("lab_token");
     const labUser = localStorage.getItem("lab-user");
 
-    if (storedToken) {
-      const decodedToken = JSON.parse(atob(storedToken.split(".")[1]));
-      setUser(labUser ? JSON.parse(labUser) : decodedToken);
+    if (storedToken && labUser) {
+      setUser(JSON.parse(labUser) || {});
       setIsLogin(true);
     } else {
       setIsLogin(false);
