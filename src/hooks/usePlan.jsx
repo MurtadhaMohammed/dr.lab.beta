@@ -54,10 +54,6 @@ export const usePlan = () => {
         if (typeof newTests === "string") {
           try {
             parsedTests = JSON.parse(newTests);
-            console.log(
-              "Successfully parsed testGroups string to array:",
-              parsedTests
-            );
           } catch (parseError) {
             console.error(
               "Failed to parse testGroups JSON string:",
@@ -85,19 +81,10 @@ export const usePlan = () => {
                 : JSON.stringify(testGroup.groupTest),
           }));
 
-          console.log(
-            "Sending stringified test groups to database:",
-            stringifiedData
-          );
           send({
             query: "addNewData",
             data: stringifiedData,
           });
-        } else {
-          console.log(
-            "No valid test groups found or testGroups is not an array:",
-            parsedTests
-          );
         }
         return userData;
       } else if (resp.status === 404) {
@@ -117,7 +104,6 @@ export const usePlan = () => {
     const actionButtons = await send({
       query: "searchGroupTest",
     });
-    console.log("actionButtonsssssssssssssss", actionButtons);
     localStorage.setItem("actionButtons", JSON.stringify(actionButtons.data));
   };
 
@@ -126,7 +112,6 @@ export const usePlan = () => {
     if (actionButtons?.length === 0 || !actionButtons) {
       fetchActionButtons();
     }
-    console.log("actionButtonsssssssssssssss", actionButtons);
   }, []);
 
   const updateData = (userInfo) => {

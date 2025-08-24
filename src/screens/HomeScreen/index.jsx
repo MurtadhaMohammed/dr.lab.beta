@@ -109,21 +109,7 @@ const HomeScreen = () => {
           send({ query: "getTotalVisits", data: {} }),
         ]);
 
-      console.log("🔍 Frontend received responses:", {
-        pendingRes,
-        todayRes,
-        totalPatientsRes,
-        totalVisitsRes,
-      });
-
       setStatistics({
-        pendingResults: pendingRes.success ? pendingRes.total : 0,
-        todayVisits: todayRes.success ? todayRes.total : 0,
-        totalPatients: totalPatientsRes.success ? totalPatientsRes.total : 0,
-        totalVisits: totalVisitsRes.success ? totalVisitsRes.total : 0,
-      });
-
-      console.log("✅ Frontend statistics set:", {
         pendingResults: pendingRes.success ? pendingRes.total : 0,
         todayVisits: todayRes.success ? todayRes.total : 0,
         totalPatients: totalPatientsRes.success ? totalPatientsRes.total : 0,
@@ -148,12 +134,12 @@ const HomeScreen = () => {
     document.documentElement.dir = newLanguage === "en" ? "ltr" : "rtl";
   };
 
-  const onClick = ({ key }) => {
+  const onClick = ({ key, id }) => {
     // Always reset when clicking any quick action button
     setReset();
     setTestType("CUSTOME");
     if (key !== "Other Tests") {
-      setSelectedTest(key);
+      setSelectedTest(id);
     }
     setIsModal(true);
   };
@@ -171,14 +157,16 @@ const HomeScreen = () => {
     // Add other buttons from localStorage
     ...filteredActionButtons.map((item) => ({
       title: item.name,
+      id: item.id,
       isPrimary: false,
-      onClick: () => onClick({ key: item.name }),
+      onClick: () => onClick({ key: item.name, id: item.id }),
+      id: item.id,
     })),
     // Add static "Other Tests" button first
     {
       title: "Other Tests",
       isPrimary: true,
-      onClick: () => onClick({ key: "Other Tests" }),
+      onClick: () => onClick({ key: "Other Tests", id: null }),
     },
   ];
 
