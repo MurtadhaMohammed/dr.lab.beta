@@ -291,9 +291,9 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-        let testType = record?.testType?.replace(/^"|"$/g, "");
-        let list = record?.tests;
-        let numOfView = 1;
+        let testType = record.testType.replace(/^"|"$/g, "");
+        let list = record.tests;
+        let numOfView = 2;
         let restCount =
           list?.length > numOfView ? list?.length - numOfView : null;
         return (

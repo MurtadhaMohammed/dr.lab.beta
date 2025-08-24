@@ -13,9 +13,6 @@ import {
   Select,
   Space,
   Typography,
-  Tag,
-  Popover,
-  Card,
 } from "antd";
 import { useHomeStore } from "../../../libs/appStore";
 import "./style.css";
@@ -36,9 +33,7 @@ const TestForm = () => {
     discount,
     setDiscount,
     selectedTest,
-    setSelectedTest,
-  } =
-    useHomeStore();
+  } = useHomeStore();
   const [testsList, setTestList] = useState([]);
   const [packageList, setPackageList] = useState([]);
   const [editTest, setEditTest] = useState(null);
@@ -60,6 +55,7 @@ const TestForm = () => {
       .then((resp) => {
         if (resp.success) {
           if (skip === 0) {
+            console.log("this is resp.data", resp.data);
             setTestList(resp.data);
           } else {
             setTestList((prev) => [...prev, ...resp.data]);
@@ -94,7 +90,6 @@ const TestForm = () => {
       });
   };
 
-
   const handleSelect = (testID) => {
     let selectedObj =
       testType === "CUSTOME"
@@ -109,9 +104,26 @@ const TestForm = () => {
   };
 
   useEffect(() => {
-    if (isModal && testType === "CUSTOME") getTests();
-    else if (isModal && testType === "PACKAGE") getPackages();
-  }, [isModal, testType]);
+    if (isModal && testType === "CUSTOME") {
+      getTests(); // Always load all tests first
+    } else if (isModal && testType === "PACKAGE") {
+      getPackages();
+    }
+  }, [isModal, testType, selectedTest]);
+
+  // Auto-select test when testsList is updated and selectedTest exists
+  useEffect(() => {
+    if (selectedTest && testsList.length > 0) {
+      const foundTest = testsList.find(
+        (test) =>
+          test?.name?.toLowerCase().includes(selectedTest.toLowerCase()) ||
+          test?.testName?.toLowerCase().includes(selectedTest.toLowerCase())
+      );
+      if (foundTest) {
+        handleSelect(foundTest.id);
+      }
+    }
+  }, [testsList, selectedTest]);
 
   // Function to get price with condition to handle negative price
   const getPriceWithCondition = (type, item) => {
@@ -138,11 +150,7 @@ const TestForm = () => {
   const handleSaveEdit = () => {
     send({
       query: "editTest",
-      data: {
-        ...editTest,
-        type: editTest.type || "single",
-        groupTest: editTest.groupTest || "[]",
-      },
+      data: { ...editTest },
       id: editTest?.id,
     })
       .then((resp) => {
@@ -167,6 +175,7 @@ const TestForm = () => {
       });
   };
 
+
   return (
     <div className="test-form">
       <Select
@@ -185,10 +194,8 @@ const TestForm = () => {
         options={
           testType === "CUSTOME"
             ? testsList?.map((el) => {
-                const testTypeLabel =
-                  el?.type === "groupTest" ? ` (${t("GroupTest")})` : "";
                 return {
-                  label: `${el?.name}${testTypeLabel}`,
+                  label: el?.name,
                   value: el?.id,
                   disabled: !!tests.find((item) => item?.id === el?.id),
                 };
@@ -268,84 +275,7 @@ const TestForm = () => {
                   )}
                 </Space>
                 <Divider type="vertical" style={{ margin: 0 }} />
-                <Space direction="vertical" size={4}>
-                  <Space>
-                    <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
-                    {el?.type === "groupTest" && (
-                      <Tag color="blue" size="small">
-                        {t("GroupTest")}
-                      </Tag>
-                    )}
-                  </Space>
-                  {el?.type === "groupTest" &&
-                    el?.groupTest &&
-                    el?.groupTest !== "[]" && (
-                      <div>
-                        {(() => {
-                          try {
-                            const groups = JSON.parse(el.groupTest);
-                            return (
-                              <Space size={[4, 4]} wrap>
-                                {groups.slice(0, 3).map((group, index) => (
-                                  <Popover
-                                    key={index}
-                                    content={
-                                      <div style={{ maxWidth: 300 }}>
-                                        <Text strong>{group.name}</Text>
-                                        <Divider style={{ margin: "8px 0" }} />
-                                        {group.tests?.map((test, testIndex) => (
-                                          <div
-                                            key={testIndex}
-                                            style={{ marginBottom: 4 }}
-                                          >
-                                            <Text style={{ fontSize: "12px" }}>
-                                              • {test.name}
-                                            </Text>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    }
-                                    title="Group Details"
-                                  >
-                                    <Tag
-                                      style={{
-                                        fontSize: "10px",
-                                        padding: "2px 4px",
-                                        cursor: "pointer",
-                                      }}
-                                      color="geekblue"
-                                    >
-                                      {group.name} ({group.tests?.length || 0})
-                                    </Tag>
-                                  </Popover>
-                                ))}
-                                {groups.length > 3 && (
-                                  <Tag
-                                    style={{
-                                      fontSize: "10px",
-                                      padding: "2px 4px",
-                                    }}
-                                    color="default"
-                                  >
-                                    +{groups.length - 3} more
-                                  </Tag>
-                                )}
-                              </Space>
-                            );
-                          } catch (error) {
-                            return (
-                              <Text
-                                type="secondary"
-                                style={{ fontSize: "11px" }}
-                              >
-                                Invalid group data
-                              </Text>
-                            );
-                          }
-                        })()}
-                      </div>
-                    )}
-                </Space>
+                <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
               </Space>
               <Text type="secondary">
                 {Number(getPriceWithCondition(testType, el)).toLocaleString(
