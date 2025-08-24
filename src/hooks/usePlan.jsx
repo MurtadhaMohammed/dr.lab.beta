@@ -5,6 +5,7 @@ import { message } from "antd";
 import { create } from "zustand";
 import useInitHeaderImage from "./useInitHeaderImage";
 import { send } from "../control/renderer";
+import { useEffect } from "react";
 
 const usePlanState = create((set) => ({
   planType: null,
@@ -47,10 +48,6 @@ export const usePlan = () => {
       if (resp.ok) {
         const userData = await resp.json();
         const newTests = userData?.testGroups;
-        console.log("API Response userData:", userData);
-        console.log("testGroups from userData:", newTests);
-        console.log("testGroups type:", typeof newTests);
-        console.log("testGroups isArray:", Array.isArray(newTests));
 
         // Parse testGroups if it's a JSON string
         let parsedTests = newTests;
@@ -116,6 +113,22 @@ export const usePlan = () => {
     }
   };
 
+  const fetchActionButtons = async () => {  
+    const actionButtons = await send({
+      query: "searchGroupTest",
+    });
+    console.log("actionButtonsssssssssssssss", actionButtons);
+    localStorage.setItem("actionButtons", JSON.stringify(actionButtons.data));
+  };
+
+  useEffect(() => {
+    const actionButtons = localStorage.getItem("actionButtons");
+    if (actionButtons?.length === 0 || !actionButtons) {
+      fetchActionButtons();
+    }
+    console.log("actionButtonsssssssssssssss", actionButtons);
+  }, []);
+
   const updateData = (userInfo) => {
     let { Plan, balance, whatsappMsgPrice, expiredAt, createdAt } =
       JSON.parse(userInfo) || {};
@@ -140,7 +153,6 @@ export const usePlan = () => {
       }
       if (userInfo) updateData(userInfo);
 
-      console.log({ userInfo });
       await fetchHeader(JSON.parse(userInfo) || {});
     }
   };

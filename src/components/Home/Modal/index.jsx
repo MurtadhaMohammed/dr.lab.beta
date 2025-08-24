@@ -14,6 +14,7 @@ export const PureModal = () => {
   const {
     isModal,
     setIsModal,
+    selectedTest,
     testType,
     discount,
     id,
@@ -39,7 +40,10 @@ export const PureModal = () => {
   };
 
   const isPatientValid =
-    patientRow?.name && patientRow?.gender && patientRow?.birth && patientRow?.phone;
+    patientRow?.name &&
+    patientRow?.gender &&
+    patientRow?.birth &&
+    patientRow?.phone;
 
   const isDoctorValid =
     (doctorRow &&
@@ -190,7 +194,7 @@ export const PureModal = () => {
     setDoctorRow();
     setIsModal(false);
     setIsReload(!isReload);
-    setTests([])
+    setTests([]);
     setStep(0);
   };
 
@@ -401,7 +405,7 @@ export const PureModal = () => {
             title: `${t("AddTests")}`,
           },
           {
-            title:  `${t("SelectPatient")}` ,
+            title: `${t("SelectPatient")}`,
           },
           {
             title: `${t("SelectDoctor")}`,

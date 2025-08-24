@@ -175,6 +175,19 @@ class LabDB {
     }
   }
 
+  async searchGroupTest() {
+    try {
+      const tests = this.db.prepare(
+        `SELECT * FROM tests ORDER BY id DESC LIMIT 8`
+      );
+
+      return tests.all();
+    } catch (error) {
+      console.error("Error searching group test:", error);
+      return [];
+    }
+  }
+
   async addNewData(data) {
     try {
       // Validate that data is an array
@@ -379,6 +392,7 @@ class LabDB {
     } catch (error) {
       console.error("Error importing tests from JSON:", error);
     }
+    this.searchGroupTest();
   }
 
   async addUniqueVisitNumber(visitId) {
@@ -971,32 +985,112 @@ class LabDB {
   }
 
   async getTotalVisits({ startDate, endDate }) {
-    const whereClauses = [
-      startDate
-        ? `DATE(v.createdAt) >= '${dayjs(startDate)
-            .startOf("day")
-            .toISOString()}'`
-        : "",
-      endDate
-        ? `DATE(v.createdAt) <= '${dayjs(endDate)
-            .startOf("day")
-            .toISOString()}'`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" AND ");
+    try {
+      let query = `SELECT COUNT(*) as total FROM visits v`;
+      let params = [];
 
-    const countStmt = await this.db.prepare(`
-      SELECT COUNT(*) as total
-      FROM visits v
-      JOIN patients p ON v.patientID = p.id
-      WHERE ${whereClauses}
-    `);
+      const whereClauses = [];
 
-    const countResult = countStmt.get();
-    const total = countResult?.total || 0;
+      if (startDate) {
+        whereClauses.push(`strftime('%Y-%m-%d', v.createdAt) >= ?`);
+        params.push(dayjs(startDate).format("YYYY-MM-DD"));
+      }
 
-    return { success: true, total };
+      if (endDate) {
+        whereClauses.push(`strftime('%Y-%m-%d', v.createdAt) <= ?`);
+        params.push(dayjs(endDate).format("YYYY-MM-DD"));
+      }
+
+      if (whereClauses.length > 0) {
+        query += ` WHERE ${whereClauses.join(" AND ")}`;
+      }
+
+      const countStmt = await this.db.prepare(query);
+      const countResult = countStmt.get(...params);
+      const total = countResult?.total || 0;
+
+      console.log("✅ getTotalVisits result:", { query, params, total });
+
+      return { success: true, total };
+    } catch (error) {
+      console.error("Error getting total visits:", error);
+      return { success: false, total: 0 };
+    }
+  }
+
+  async getTotalPatients() {
+    try {
+      // First, let's see what patients exist
+      const allPatientsStmt = await this.db.prepare(`
+        SELECT id, name FROM patients LIMIT 5
+      `);
+      const allPatients = allPatientsStmt.all();
+      console.log("🔍 Patients in DB:", allPatients);
+
+      const countStmt = await this.db.prepare(`
+        SELECT COUNT(*) as total FROM patients
+      `);
+
+      const countResult = countStmt.get();
+      const total = countResult?.total || 0;
+
+      console.log("✅ getTotalPatients result:", total);
+
+      return { success: true, total };
+    } catch (error) {
+      console.error("❌ Error getting total patients:", error);
+      return { success: false, total: 0 };
+    }
+  }
+
+  async getTodayVisits() {
+    try {
+      // Use strftime for proper date comparison in SQLite
+      const today = dayjs().format("YYYY-MM-DD");
+
+      const countStmt = await this.db.prepare(`
+        SELECT COUNT(*) as total
+        FROM visits v
+        WHERE strftime('%Y-%m-%d', v.createdAt) = ?
+      `);
+
+      const countResult = countStmt.get(today);
+      const total = countResult?.total || 0;
+
+      console.log("✅ getTodayVisits result:", { today, total });
+
+      return { success: true, total };
+    } catch (error) {
+      console.error("❌ Error getting today's visits:", error);
+      return { success: false, total: 0 };
+    }
+  }
+
+  async getPendingResults() {
+    try {
+      // First, let's see what visits exist and their statuses
+      const allVisitsStmt = await this.db.prepare(`
+        SELECT id, status, strftime('%Y-%m-%d', createdAt) as date FROM visits LIMIT 10
+      `);
+      const allVisits = allVisitsStmt.all();
+      console.log("🔍 Visits in DB:", allVisits);
+
+      const countStmt = await this.db.prepare(`
+        SELECT COUNT(*) as total
+        FROM visits v
+        WHERE v.status = 'PENDING'
+      `);
+
+      const countResult = countStmt.get();
+      const total = countResult?.total || 0;
+
+      console.log("✅ getPendingResults result:", total);
+
+      return { success: true, total };
+    } catch (error) {
+      console.error("❌ Error getting pending results:", error);
+      return { success: false, total: 0 };
+    }
   }
 
   async getVisitByPatient(patientId) {

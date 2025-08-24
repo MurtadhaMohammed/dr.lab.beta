@@ -28,7 +28,16 @@ import { useAppTheme } from "../../../hooks/useAppThem";
 const { Text } = Typography;
 
 const TestForm = () => {
-  const { testType, isModal, setTests, tests, discount, setDiscount } =
+  const {
+    testType,
+    isModal,
+    setTests,
+    tests,
+    discount,
+    setDiscount,
+    selectedTest,
+    setSelectedTest,
+  } =
     useHomeStore();
   const [testsList, setTestList] = useState([]);
   const [packageList, setPackageList] = useState([]);
@@ -84,6 +93,7 @@ const TestForm = () => {
         console.error("Error in IPC communication:", err);
       });
   };
+
 
   const handleSelect = (testID) => {
     let selectedObj =

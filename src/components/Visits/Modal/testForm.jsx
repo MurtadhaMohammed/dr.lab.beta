@@ -25,8 +25,15 @@ import { useAppTheme } from "../../../hooks/useAppThem";
 const { Text } = Typography;
 
 const TestForm = () => {
-  const { testType, isModal, setTests, tests, discount, setDiscount } =
-    useHomeStore();
+  const {
+    testType,
+    isModal,
+    setTests,
+    tests,
+    discount,
+    setDiscount,
+    selectedTest,
+  } = useHomeStore();
   const [testsList, setTestList] = useState([]);
   const [packageList, setPackageList] = useState([]);
   const [editTest, setEditTest] = useState(null);
@@ -48,6 +55,7 @@ const TestForm = () => {
       .then((resp) => {
         if (resp.success) {
           if (skip === 0) {
+            console.log("this is resp.data", resp.data);
             setTestList(resp.data);
           } else {
             setTestList((prev) => [...prev, ...resp.data]);
@@ -96,9 +104,26 @@ const TestForm = () => {
   };
 
   useEffect(() => {
-    if (isModal && testType === "CUSTOME") getTests();
-    else if (isModal && testType === "PACKAGE") getPackages();
-  }, [isModal, testType]);
+    if (isModal && testType === "CUSTOME") {
+      getTests(); // Always load all tests first
+    } else if (isModal && testType === "PACKAGE") {
+      getPackages();
+    }
+  }, [isModal, testType, selectedTest]);
+
+  // Auto-select test when testsList is updated and selectedTest exists
+  useEffect(() => {
+    if (selectedTest && testsList.length > 0) {
+      const foundTest = testsList.find(
+        (test) =>
+          test?.name?.toLowerCase().includes(selectedTest.toLowerCase()) ||
+          test?.testName?.toLowerCase().includes(selectedTest.toLowerCase())
+      );
+      if (foundTest) {
+        handleSelect(foundTest.id);
+      }
+    }
+  }, [testsList, selectedTest]);
 
   // Function to get price with condition to handle negative price
   const getPriceWithCondition = (type, item) => {
@@ -149,6 +174,7 @@ const TestForm = () => {
         message.error("Failed to communicate with server.");
       });
   };
+
 
   return (
     <div className="test-form">

@@ -295,7 +295,7 @@ export const PureTable = ({ isReport = false }) => {
         let list = record.tests;
         let numOfView = 2;
         let restCount =
-          list.length > numOfView ? list.length - numOfView : null;
+          list?.length > numOfView ? list?.length - numOfView : null;
         return (
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el, index) => (

@@ -4,7 +4,7 @@ const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
 const fs = require("fs");
 const path = require("path");
-const image = path.join(__dirname, "../../defaultheader.jpg");
+const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
 const Jimp = require("jimp");
@@ -23,9 +23,9 @@ function logPrintOperation(operation, data, result = null, error = null) {
     operation,
     data: data ? JSON.stringify(data, null, 2) : null,
     result: result ? JSON.stringify(result, null, 2) : null,
-    error: error ? error.toString() : null
+    error: error ? error.toString() : null,
   };
-  
+
   if (error) {
     log.error(`[PRINT_ERROR] ${operation}:`, logData);
   } else {
@@ -34,6 +34,12 @@ function logPrintOperation(operation, data, result = null, error = null) {
 }
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
+  console.log(
+    "🔍 DEBUG: Received query:",
+    arg.query,
+    "Type:",
+    typeof arg.query
+  );
   let labDB = await new LabDB();
   switch (arg.query) {
     case "getPatients": {
@@ -71,6 +77,22 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         const resp = await labDB.deletePatient(arg.id);
         event.reply("asynchronous-reply", { success: true, data: resp });
       } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "searchGroupTest": {
+      console.log("✅ DEBUG: searchGroupTest case matched!");
+      try {
+        const resp = await labDB.searchGroupTest();
+        console.log("✅ DEBUG: searchGroupTest response:", resp);
+        event.reply("asynchronous-reply", { success: true, data: resp });
+      } catch (error) {
+        console.log("❌ DEBUG: searchGroupTest error:", error);
         event.reply("asynchronous-reply", {
           success: false,
           error: error.message,
@@ -325,9 +347,52 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           startDate,
           endDate,
         });
-        event.reply("asynchronous-reply", resp);
+        console.log("📤 IPC sending getTotalVisits response:", resp);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
       } catch (error) {
-        event.reply("asynchronous-reply", {
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "getTotalPatients": {
+      try {
+        const resp = await labDB.getTotalPatients();
+        console.log("📤 IPC sending getTotalPatients response:", resp);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
+      } catch (error) {
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "getTodayVisits": {
+      try {
+        const resp = await labDB.getTodayVisits();
+        console.log("📤 IPC sending getTodayVisits response:", resp);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
+      } catch (error) {
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "getPendingResults": {
+      try {
+        const resp = await labDB.getPendingResults();
+        console.log("📤 IPC sending getPendingResults response:", resp);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
+      } catch (error) {
+        event.reply(`asynchronous-reply-${arg.query}`, {
           success: false,
           error: error.message,
         });
@@ -540,30 +605,42 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         dataType: typeof arg.data,
         isView: arg?.isView,
         patientName: arg.data?.patient || "unknown",
-        testsCount: arg.data?.tests?.length || 0
+        testsCount: arg.data?.tests?.length || 0,
       });
-      
+
       createPDF(arg.data, arg?.isView, (err, res, file) => {
         // If PDF creation failed, try to copy defaultheader.jpg to userData and retry
-        if (err && err.message && err.message.includes('ENOENT')) {
-          console.log("PDF creation failed, attempting to copy header image...");
+        if (err && err.message && err.message.includes("ENOENT")) {
+          console.log(
+            "PDF creation failed, attempting to copy header image..."
+          );
           const userDataPath = app.getPath("userData");
           const headerDestPath = path.join(userDataPath, "head.png");
-          
+
           try {
             // Ensure userData directory exists
             if (!fs.existsSync(userDataPath)) {
               fs.mkdirSync(userDataPath, { recursive: true });
             }
-            
+
             // Copy defaultheader.jpg to userData/head.png
             fs.copyFileSync(image, headerDestPath);
-            console.log("Header image copied successfully, retrying PDF creation...");
-            
+            console.log(
+              "Header image copied successfully, retrying PDF creation..."
+            );
+
             // Retry PDF creation
-            createPDF(arg.data, arg?.isView, (retryErr, retryRes, retryFile) => {
-              event.reply("asynchronous-reply", { err: retryErr, res: retryRes, file: retryFile });
-            });
+            createPDF(
+              arg.data,
+              arg?.isView,
+              (retryErr, retryRes, retryFile) => {
+                event.reply("asynchronous-reply", {
+                  err: retryErr,
+                  res: retryRes,
+                  file: retryFile,
+                });
+              }
+            );
           } catch (copyErr) {
             console.error("Failed to copy header image:", copyErr);
             event.reply("asynchronous-reply", { err, res, file });
@@ -579,29 +656,36 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         dataType: typeof arg.data,
         recordsCount: arg.data?.records?.length || 0,
         dateRange: arg.data?.date || "unknown",
-        total: arg.data?.total || 0
+        total: arg.data?.total || 0,
       });
-      
+
       printReport(arg.data, (err, res) => {
         // If report creation failed, try to copy defaultheader.jpg to userData and retry
-        if (err && err.message && err.message.includes('ENOENT')) {
-          console.log("Report creation failed, attempting to copy header image...");
+        if (err && err.message && err.message.includes("ENOENT")) {
+          console.log(
+            "Report creation failed, attempting to copy header image..."
+          );
           const userDataPath = app.getPath("userData");
           const headerDestPath = path.join(userDataPath, "head.png");
-          
+
           try {
             // Ensure userData directory exists
             if (!fs.existsSync(userDataPath)) {
               fs.mkdirSync(userDataPath, { recursive: true });
             }
-            
+
             // Copy defaultheader.jpg to userData/head.png
             fs.copyFileSync(image, headerDestPath);
-            console.log("Header image copied successfully, retrying report creation...");
-            
+            console.log(
+              "Header image copied successfully, retrying report creation..."
+            );
+
             // Retry report creation
             printReport(arg.data, (retryErr, retryRes) => {
-              return event.reply("asynchronous-reply", { err: retryErr, res: retryRes });
+              return event.reply("asynchronous-reply", {
+                err: retryErr,
+                res: retryRes,
+              });
             });
           } catch (copyErr) {
             console.error("Failed to copy header image:", copyErr);
@@ -633,30 +717,35 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       logPrintOperation("printParcode_start", {
         patientId: arg?.data?.id,
         patientName: arg?.data?.name,
-        selectedPrinter: arg?.selectedPrinter
+        selectedPrinter: arg?.selectedPrinter,
       });
-      
+
       const padding = 20;
 
       try {
         let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
         if (!visitNumber) {
           const error = "Failed to generate visit number";
-          logPrintOperation("printParcode_visitNumber_failed", {
-            patientId: arg?.data?.id,
-            patientName: arg?.data?.name
-          }, null, error);
-          
+          logPrintOperation(
+            "printParcode_visitNumber_failed",
+            {
+              patientId: arg?.data?.id,
+              patientName: arg?.data?.name,
+            },
+            null,
+            error
+          );
+
           event.reply("asynchronous-reply", {
             success: false,
-            error: error,
+            error: "Failed to generate visit number",
           });
           return;
         }
-        
+
         logPrintOperation("printParcode_visitNumber_generated", {
           patientId: arg?.data?.id,
-          visitNumber: visitNumber
+          visitNumber: visitNumber,
         });
 
         // Fetch the visit object
@@ -664,7 +753,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         logPrintOperation("printParcode_visit_fetched", {
           patientId: arg?.data?.id,
           visitFound: !!visit,
-          visitPatientName: visit?.patient?.name
+          visitPatientName: visit?.patient?.name,
         });
 
         bwipjs.toBuffer(
@@ -677,11 +766,16 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           },
           function (err, png) {
             if (err) {
-              logPrintOperation("printParcode_barcode_generation_failed", {
-                patientId: arg?.data?.id,
-                visitNumber: visitNumber
-              }, null, err);
-              
+              logPrintOperation(
+                "printParcode_barcode_generation_failed",
+                {
+                  patientId: arg?.data?.id,
+                  visitNumber: visitNumber,
+                },
+                null,
+                err
+              );
+
               event.reply("asynchronous-reply", {
                 success: false,
                 error: "Failed to generate barcode",
@@ -690,7 +784,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               logPrintOperation("printParcode_barcode_generated", {
                 patientId: arg?.data?.id,
                 visitNumber: visitNumber,
-                barcodeSize: png.length
+                barcodeSize: png.length,
               });
               sharp(png)
                 .metadata()
@@ -728,22 +822,30 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                     .png()
                     .toBuffer((err, outputBuffer) => {
                       if (err) {
-                        logPrintOperation("printParcode_image_composite_failed", {
-                          patientId: arg?.data?.id,
-                          visitNumber: visitNumber
-                        }, null, err);
-                        
+                        logPrintOperation(
+                          "printParcode_image_composite_failed",
+                          {
+                            patientId: arg?.data?.id,
+                            visitNumber: visitNumber,
+                          },
+                          null,
+                          err
+                        );
+
                         event.reply("asynchronous-reply", {
                           success: false,
                           error: "Failed to generate barcode image",
                         });
                       } else {
-                        logPrintOperation("printParcode_image_composite_success", {
-                          patientId: arg?.data?.id,
-                          visitNumber: visitNumber,
-                          imageSize: outputBuffer.length
-                        });
-                        
+                        logPrintOperation(
+                          "printParcode_image_composite_success",
+                          {
+                            patientId: arg?.data?.id,
+                            visitNumber: visitNumber,
+                            imageSize: outputBuffer.length,
+                          }
+                        );
+
                         const base64Image = outputBuffer.toString("base64");
 
                         const printWin = new BrowserWindow({
@@ -755,11 +857,11 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                             contextIsolation: false,
                           },
                         });
-                        
+
                         logPrintOperation("printParcode_window_created", {
                           patientId: arg?.data?.id,
                           visitNumber: visitNumber,
-                          selectedPrinter: arg?.selectedPrinter
+                          selectedPrinter: arg?.selectedPrinter,
                         });
 
                         const htmlContent = `
@@ -787,94 +889,48 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                           logPrintOperation("printParcode_content_loaded", {
                             patientId: arg?.data?.id,
                             visitNumber: visitNumber,
-                            selectedPrinter: arg?.selectedPrinter
+                            selectedPrinter: arg?.selectedPrinter,
                           });
-                          
+
                           // Check if printer is available before printing
-                          printWin.webContents.getPrintersAsync().then((printers) => {
-                            const availablePrinters = printers.map(p => p.name);
-                            const isPrinterAvailable = availablePrinters.includes(arg.selectedPrinter);
-                            
-                            logPrintOperation("printParcode_printer_check", {
-                              patientId: arg?.data?.id,
-                              selectedPrinter: arg?.selectedPrinter,
-                              isPrinterAvailable: isPrinterAvailable,
-                              availablePrinters: availablePrinters
-                            });
-                            
-                            if (!isPrinterAvailable && arg.selectedPrinter) {
-                              const error = `Selected printer "${arg.selectedPrinter}" is not available`;
-                              logPrintOperation("printParcode_printer_unavailable", {
+                          printWin.webContents
+                            .getPrintersAsync()
+                            .then((printers) => {
+                              const availablePrinters = printers.map(
+                                (p) => p.name
+                              );
+                              const isPrinterAvailable =
+                                availablePrinters.includes(arg.selectedPrinter);
+
+                              logPrintOperation("printParcode_printer_check", {
                                 patientId: arg?.data?.id,
                                 selectedPrinter: arg?.selectedPrinter,
-                                availablePrinters: availablePrinters
-                              }, null, error);
-                              
-                              event.reply("asynchronous-reply", {
-                                success: false,
-                                error: error,
+                                isPrinterAvailable: isPrinterAvailable,
+                                availablePrinters: availablePrinters,
                               });
-                              printWin.close();
-                              return;
-                            }
-                            
-                            const printOptions = {
-                              silent: true,
-                              printBackground: true,
-                              deviceName: arg.selectedPrinter,
-                              margins: {
-                                marginType: "none",
-                              },
-                              pageSize: {
-                                width: 35400,
-                                height: 17700,
-                              },
-                            };
-                            
-                            logPrintOperation("printParcode_print_start", {
-                              patientId: arg?.data?.id,
-                              visitNumber: visitNumber,
-                              printOptions: printOptions
-                            });
-                            
-                            printWin.webContents.print(
-                              printOptions,
-                              (success, failureReason) => {
-                                if (!success) {
-                                  logPrintOperation("printParcode_print_failed", {
+
+                              if (!isPrinterAvailable && arg.selectedPrinter) {
+                                const error = `Selected printer "${arg.selectedPrinter}" is not available`;
+                                logPrintOperation(
+                                  "printParcode_printer_unavailable",
+                                  {
                                     patientId: arg?.data?.id,
-                                    visitNumber: visitNumber,
                                     selectedPrinter: arg?.selectedPrinter,
-                                    failureReason: failureReason
-                                  }, null, failureReason);
-                                  
-                                  event.reply("asynchronous-reply", {
-                                    success: false,
-                                    error: failureReason,
-                                  });
-                                } else {
-                                  logPrintOperation("printParcode_print_success", {
-                                    patientId: arg?.data?.id,
-                                    visitNumber: visitNumber,
-                                    selectedPrinter: arg?.selectedPrinter
-                                  }, { success: true });
-                                  
-                                  event.reply("asynchronous-reply", {
-                                    success: true,
-                                  });
-                                }
+                                    availablePrinters: availablePrinters,
+                                  },
+                                  null,
+                                  error
+                                );
+
+                                event.reply("asynchronous-reply", {
+                                  success: false,
+                                  error: error,
+                                });
                                 printWin.close();
+                                return;
                               }
-                            );
-                          }).catch((printerError) => {
-                            logPrintOperation("printParcode_printer_list_failed", {
-                              patientId: arg?.data?.id,
-                              visitNumber: visitNumber
-                            }, null, printerError);
-                            
-                            // Continue with print attempt even if printer list fails
-                            printWin.webContents.print(
-                              {
+
+                              const printOptions = {
                                 silent: true,
                                 printBackground: true,
                                 deviceName: arg.selectedPrinter,
@@ -885,45 +941,130 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
                                   width: 35400,
                                   height: 17700,
                                 },
-                              },
-                              (success, failureReason) => {
-                                if (!success) {
-                                  logPrintOperation("printParcode_print_failed_fallback", {
-                                    patientId: arg?.data?.id,
-                                    visitNumber: visitNumber,
-                                    selectedPrinter: arg?.selectedPrinter,
-                                    failureReason: failureReason
-                                  }, null, failureReason);
-                                  
-                                  event.reply("asynchronous-reply", {
-                                    success: false,
-                                    error: failureReason,
-                                  });
-                                } else {
-                                  logPrintOperation("printParcode_print_success_fallback", {
-                                    patientId: arg?.data?.id,
-                                    visitNumber: visitNumber,
-                                    selectedPrinter: arg?.selectedPrinter
-                                  }, { success: true });
-                                  
-                                  event.reply("asynchronous-reply", {
-                                    success: true,
-                                  });
+                              };
+
+                              logPrintOperation("printParcode_print_start", {
+                                patientId: arg?.data?.id,
+                                visitNumber: visitNumber,
+                                printOptions: printOptions,
+                              });
+
+                              printWin.webContents.print(
+                                printOptions,
+                                (success, failureReason) => {
+                                  if (!success) {
+                                    logPrintOperation(
+                                      "printParcode_print_failed",
+                                      {
+                                        patientId: arg?.data?.id,
+                                        visitNumber: visitNumber,
+                                        selectedPrinter: arg?.selectedPrinter,
+                                        failureReason: failureReason,
+                                      },
+                                      null,
+                                      failureReason
+                                    );
+
+                                    event.reply("asynchronous-reply", {
+                                      success: false,
+                                      error: failureReason,
+                                    });
+                                  } else {
+                                    logPrintOperation(
+                                      "printParcode_print_success",
+                                      {
+                                        patientId: arg?.data?.id,
+                                        visitNumber: visitNumber,
+                                        selectedPrinter: arg?.selectedPrinter,
+                                      },
+                                      { success: true }
+                                    );
+
+                                    event.reply("asynchronous-reply", {
+                                      success: true,
+                                    });
+                                  }
+                                  printWin.close();
                                 }
-                                printWin.close();
-                              }
-                            );
-                          });
+                              );
+                            })
+                            .catch((printerError) => {
+                              logPrintOperation(
+                                "printParcode_printer_list_failed",
+                                {
+                                  patientId: arg?.data?.id,
+                                  visitNumber: visitNumber,
+                                },
+                                null,
+                                printerError
+                              );
+
+                              // Continue with print attempt even if printer list fails
+                              printWin.webContents.print(
+                                {
+                                  silent: true,
+                                  printBackground: true,
+                                  deviceName: arg.selectedPrinter,
+                                  margins: {
+                                    marginType: "none",
+                                  },
+                                  pageSize: {
+                                    width: 35400,
+                                    height: 17700,
+                                  },
+                                },
+                                (success, failureReason) => {
+                                  if (!success) {
+                                    logPrintOperation(
+                                      "printParcode_print_failed_fallback",
+                                      {
+                                        patientId: arg?.data?.id,
+                                        visitNumber: visitNumber,
+                                        selectedPrinter: arg?.selectedPrinter,
+                                        failureReason: failureReason,
+                                      },
+                                      null,
+                                      failureReason
+                                    );
+
+                                    event.reply("asynchronous-reply", {
+                                      success: false,
+                                      error: failureReason,
+                                    });
+                                  } else {
+                                    logPrintOperation(
+                                      "printParcode_print_success_fallback",
+                                      {
+                                        patientId: arg?.data?.id,
+                                        visitNumber: visitNumber,
+                                        selectedPrinter: arg?.selectedPrinter,
+                                      },
+                                      { success: true }
+                                    );
+
+                                    event.reply("asynchronous-reply", {
+                                      success: true,
+                                    });
+                                  }
+                                  printWin.close();
+                                }
+                              );
+                            });
                         });
                       }
                     });
                 })
                 .catch((error) => {
-                  logPrintOperation("printParcode_sharp_processing_failed", {
-                    patientId: arg?.data?.id,
-                    visitNumber: visitNumber
-                  }, null, error);
-                  
+                  logPrintOperation(
+                    "printParcode_sharp_processing_failed",
+                    {
+                      patientId: arg?.data?.id,
+                      visitNumber: visitNumber,
+                    },
+                    null,
+                    error
+                  );
+
                   event.reply("asynchronous-reply", {
                     success: false,
                     error: "Error processing image",
@@ -933,12 +1074,17 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           }
         );
       } catch (error) {
-        logPrintOperation("printParcode_general_error", {
-          patientId: arg?.data?.id,
-          patientName: arg?.data?.name,
-          selectedPrinter: arg?.selectedPrinter
-        }, null, error);
-        
+        logPrintOperation(
+          "printParcode_general_error",
+          {
+            patientId: arg?.data?.id,
+            patientName: arg?.data?.name,
+            selectedPrinter: arg?.selectedPrinter,
+          },
+          null,
+          error
+        );
+
         event.reply("asynchronous-reply", {
           success: false,
           error: error.message,
@@ -975,6 +1121,10 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     }
 
     default:
+      console.log(
+        "❌ DEBUG: Unknown query reached default case. Query was:",
+        arg.query
+      );
       event.reply("asynchronous-reply", { err: "Unknown query", res: null });
       break;
   }
@@ -983,30 +1133,32 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 ipcMain.handle("get-printers", async (event) => {
   try {
     logPrintOperation("get_printers_start", {});
-    
+
     const win = BrowserWindow.getFocusedWindow();
     if (!win) {
       const error = "No active window";
       logPrintOperation("get_printers_no_window", {}, null, error);
       throw new Error(error);
     }
-    
+
     const printers = await win.webContents.getPrintersAsync();
     const printerNames = printers.map((printer) => printer.name);
-    
+
     logPrintOperation("get_printers_success", {
       printersCount: printers.length,
       printerNames: printerNames,
-      printerDetails: printers.map(p => ({
+      printerDetails: printers.map((p) => ({
         name: p.name,
         status: p.status,
-        isDefault: p.isDefault
-      }))
+        isDefault: p.isDefault,
+      })),
     });
-    
+
     return printerNames;
   } catch (error) {
     logPrintOperation("get_printers_failed", {}, null, error);
     throw error;
   }
+  const printers = await win.webContents.getPrintersAsync();
+  return printers.map((printer) => printer.name);
 });
