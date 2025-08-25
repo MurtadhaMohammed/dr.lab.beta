@@ -138,28 +138,28 @@ class LabDB {
 
   async checkAndAddTestTypeColumnAndGroupTest() {
     try {
-      // Check if the visits table has the visitNumber column
+      // Check if the tests table has the type and groupTest columns
       const columnCheckStmt = this.db.prepare(`
         PRAGMA table_info(tests)
       `);
       const columns = columnCheckStmt.all();
 
-      const hasTestTypeColumn = columns.some(
-        (column) => column.name === "testType"
+      const hasTypeColumn = columns.some(
+        (column) => column.name === "type"
       );
 
       const hasGroupTestColumn = columns.some(
         (column) => column.name === "groupTest"
       );
 
-      if (!hasTestTypeColumn) {
-        // Alter the table to add the visitNumber column if it doesn't exist
+      if (!hasTypeColumn) {
+        // Alter the table to add the type column if it doesn't exist
         this.db.exec(`
-          ALTER TABLE tests ADD COLUMN testType VARCHAR(50)
+          ALTER TABLE tests ADD COLUMN type TEXT
         `);
-        console.log("testType column added successfully");
+        console.log("type column added successfully");
       } else {
-        console.log("testType column already exists");
+        console.log("type column already exists");
       }
 
       if (!hasGroupTestColumn) {
@@ -171,7 +171,7 @@ class LabDB {
         console.log("groupTest column already exists");
       }
     } catch (error) {
-      console.error("Error checking or adding testType column:", error);
+      console.error("Error checking or adding type column:", error);
     }
   }
 
