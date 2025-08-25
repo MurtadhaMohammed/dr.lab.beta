@@ -81,11 +81,14 @@ export const QuickActionsModal = () => {
 
   const handleSelectChange = (selectedTestNames) => {
     const newSelectedTests = selectedTestNames.map((testName) => {
+      // Find the test from the tests array to get the ID
+      const testFromList = tests.find((test) => test.name === testName);
       // Keep existing isPrimary status if test was already selected
       const existingTest = selectedTests.find((test) => test.name === testName);
       return {
         name: testName,
         isPrimary: existingTest?.isPrimary || false,
+        id: testFromList?.id || null,
       };
     });
     setSelectedTests(newSelectedTests);

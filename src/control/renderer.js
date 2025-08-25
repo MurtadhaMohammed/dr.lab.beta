@@ -11,6 +11,9 @@ export function send(doc) {
         "getTodayVisits",
         "getPendingResults",
         "getTotalVisits",
+        "testByID",
+        "getTests",
+        "getPackages",
       ].includes(queryName)
         ? `asynchronous-reply-${queryName}`
         : "asynchronous-reply";

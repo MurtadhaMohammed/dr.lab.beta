@@ -55,7 +55,6 @@ const TestForm = () => {
       .then((resp) => {
         if (resp.success) {
           if (skip === 0) {
-            console.log("this is resp.data", resp.data);
             setTestList(resp.data);
           } else {
             setTestList((prev) => [...prev, ...resp.data]);
@@ -109,21 +108,38 @@ const TestForm = () => {
     } else if (isModal && testType === "PACKAGE") {
       getPackages();
     }
-  }, [isModal, testType, selectedTest]);
+  }, [isModal, testType]);
+
+  const testByID = async (id) => {
+    const resp = await send({
+      query: "testByID",
+      data: { id: id },
+    });
+    if (resp.success) {
+      console.log("resp in testByID", resp);
+      return resp.data;
+    }
+    return null;
+  };
 
   // Auto-select test when testsList is updated and selectedTest exists
   useEffect(() => {
-    if (selectedTest && testsList.length > 0) {
-      const foundTest = testsList.find(
-        (test) =>
-          test?.name?.toLowerCase().includes(selectedTest.toLowerCase()) ||
-          test?.testName?.toLowerCase().includes(selectedTest.toLowerCase())
-      );
-      if (foundTest) {
-        handleSelect(foundTest.id);
-      }
+    if (selectedTest) {
+      const fetchTest = async () => {
+        const test = await testByID(selectedTest);
+        console.log("test", test);
+        if (test) {
+          setTests([...tests, test]);
+        }
+      };
+
+      fetchTest();
     }
-  }, [testsList, selectedTest]);
+  }, [selectedTest]);
+
+  useEffect(() => {
+    console.log("testsList", tests);
+  }, [tests]);
 
   // Function to get price with condition to handle negative price
   const getPriceWithCondition = (type, item) => {
@@ -184,8 +200,14 @@ const TestForm = () => {
         onSelect={handleSelect}
         style={{ width: "100%" }}
         onSearch={(input) => {
-          if (testType === "CUSTOME") getTests(input);
-          else if (testType === "PACKAGE") getPackages(input);
+          console.log("Select onSearch called with input:", input);
+          if (testType === "CUSTOME") {
+            console.log("Calling getTests from onSearch");
+            getTests(input);
+          } else if (testType === "PACKAGE") {
+            console.log("Calling getPackages from onSearch");
+            getPackages(input);
+          }
         }}
         filterOption={(input, option) =>
           (option?.label ?? "").toLowerCase().includes(input.toLowerCase())

@@ -662,6 +662,15 @@ class LabDB {
     return { success: true, total, data: tests };
   }
 
+  async testByID(id) {
+    const stmt = await this.db.prepare(`
+      SELECT * FROM tests WHERE id = ?
+    `);
+    const test = stmt.get(id);
+    console.log("test in db testByID", test);
+    return { success: true, data: test };
+  }
+
   async addPackage(data) {
     const { title, customePrice, tests } = data;
 

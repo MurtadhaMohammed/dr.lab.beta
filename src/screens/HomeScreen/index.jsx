@@ -135,6 +135,7 @@ const HomeScreen = () => {
   };
 
   const onClick = ({ key, id }) => {
+    console.log("onClick", key, id);
     // Always reset when clicking any quick action button
     setReset();
     setTestType("CUSTOME");
@@ -154,13 +155,13 @@ const HomeScreen = () => {
   );
 
   const actionButtons = [
+
     // Add other buttons from localStorage
     ...filteredActionButtons.map((item) => ({
       title: item.name,
       id: item.id,
       isPrimary: false,
       onClick: () => onClick({ key: item.name, id: item.id }),
-      id: item.id,
     })),
     // Add static "Other Tests" button first
     {
@@ -278,7 +279,9 @@ const HomeScreen = () => {
                     key={index}
                     title={button.title}
                     isPrimary={button.isPrimary}
-                    onClick={onClick}
+                    onClick={() =>
+                      onClick({ key: button.title, id: button.id })
+                    }
                   />
                 ))}
               </div>

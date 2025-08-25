@@ -229,9 +229,26 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       try {
         const resp = await labDB.getTests(arg.data);
         // console.log("Received data for getting tests:", arg.data);
-        event.reply("asynchronous-reply", resp);
+        event.reply("asynchronous-reply-getTests", resp);
       } catch (error) {
-        event.reply("asynchronous-reply", {
+        event.reply("asynchronous-reply-getTests", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "testByID": {
+      try {
+        const resp = await labDB.testByID(arg.data.id);
+        console.log("resp in main testByID", resp);
+        event.reply("asynchronous-reply-testByID", {
+          success: true,
+          data: resp.data,
+        });
+      } catch (error) {
+        event.reply("asynchronous-reply-testByID", {
           success: false,
           error: error.message,
         });
@@ -284,9 +301,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getPackages": {
       try {
         const resp = await labDB.getPackages(arg.data);
-        event.reply("asynchronous-reply", resp);
+        event.reply("asynchronous-reply-getPackages", resp);
       } catch (error) {
-        event.reply("asynchronous-reply", {
+        event.reply("asynchronous-reply-getPackages", {
           success: false,
           error: error.message,
         });
