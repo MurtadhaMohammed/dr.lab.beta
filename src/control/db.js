@@ -23,10 +23,10 @@ class LabDB {
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
       this.initializeDatabase();
-      this.initTestsFromJSON();
-      this.checkAndAddVisitNumberColumn();
-      this.migrateVisitsTableWithDoctorForeignKey();
       this.checkAndAddTestTypeColumnAndGroupTest();
+      this.checkAndAddVisitNumberColumn();
+      this.initTestsFromJSON();
+      this.migrateVisitsTableWithDoctorForeignKey();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
