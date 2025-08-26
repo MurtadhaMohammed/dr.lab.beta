@@ -40,7 +40,7 @@ export const usePlan = () => {
     try {
       const resp = await apiCall({
         method: "POST",
-        pathname: "/app/user",
+        pathname: "/app/user/v2",
         isFormData: false,
         auth: true,
       });
