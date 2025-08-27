@@ -128,6 +128,8 @@ export const useTestStore = create((set) => ({
   createdAt: null,
   isSelecte: false,
   options: ["positive", "negative"],
+  initialData: null,
+  setInitialData: (initialData) => set({ initialData }),
   setType: (type) => set({ type }),
   setGroupTest: (groupTest) => set({ groupTest }),
   setId: (id) => set({ id }),

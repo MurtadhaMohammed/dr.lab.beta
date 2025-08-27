@@ -40,6 +40,7 @@ import { signout } from "../../helper/signOut";
 import { usePlan } from "../../hooks/usePlan";
 import { useAppTheme } from "../../hooks/useAppThem";
 import useInitHeaderImage from "../../hooks/useInitHeaderImage";
+import { PDFSettings } from "./pdfSettings";
 
 const SettingsScreen = () => {
   // const [imagePath, setImagePath] = useState(null);
@@ -419,7 +420,13 @@ const SettingsScreen = () => {
         <Row gutter={[20, 20]} className="mt-[24px]">
           <Col span={12}>
             <section>
-              <div>
+             <div>
+               <p className="pl-[4px] opacity-60">{t("PDFSetting")}</p>
+              <Card className="mt-[6px]">
+                <PDFSettings />
+              </Card>
+             </div>
+              {/* <div>
                 <p className="pl-[4px] opacity-60">{t("PDFSetting")}</p>
                 <Card className="mt-[6px]">
                   <div className="flex justify-between items-center">
@@ -457,7 +464,7 @@ const SettingsScreen = () => {
                     </Select>
                   </div>
                 </Card>
-              </div>
+              </div> */}
 
               <div className="mt-[16px]">
                 <p className="pl-[4px]">

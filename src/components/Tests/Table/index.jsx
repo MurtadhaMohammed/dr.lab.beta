@@ -8,7 +8,6 @@ import {
   message,
   Tag,
   Typography,
-  Divider,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
@@ -19,23 +18,14 @@ import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useAppTheme } from "../../../hooks/useAppThem";
 import { formatRefText } from "../../../helper/refTextFormatter";
+import { MetaJsonModal } from "./metaJsonModal";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
-  const {
-    setIsModal,
-    setName,
-    setPrice,
-    setNormal,
-    setId,
-    setCreatedAt,
-    querySearch,
-    setOptions,
-    setIsSelecte,
-    setType,
-    setGroupTest,
-  } = useTestStore();
+  const { setIsModal, setInitialData, querySearch } = useTestStore();
   const [data, setData] = useState([]);
+  const [isMetaModal, setIsMetaModal] = useState(false);
+  const [record, setRecord] = useState(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -43,6 +33,8 @@ export const PureTable = () => {
   const { t } = useTranslation();
   const { setFlag, setTest } = useTrigger();
   const { appColors } = useAppTheme();
+
+  console.log(record)
 
   const columns = [
     {
@@ -95,7 +87,11 @@ export const PureTable = () => {
       title: t("NormalValue"),
       dataIndex: "ref_text",
       key: "ref_text",
-      render: (ref_text, record) => formatRefText(ref_text, record?.unit),
+      render: (ref_text, record) => (
+        <div className="max-w-[260px]">
+          {formatRefText(ref_text, record?.unit)}
+        </div>
+      ),
     },
 
     {
@@ -129,6 +125,17 @@ export const PureTable = () => {
       key: "action",
       render: (_, record) => (
         <Space size="small" className="custom-actions">
+          {record?.type !== "single" && <Button
+            size="small"
+            //icon={<EditOutlined />}
+            onClick={() => {
+              setRecord(record);
+              setIsMetaModal(true);
+            }}
+            type="primary"
+          >
+            Customize
+          </Button>}
           <Button
             size="small"
             icon={<EditOutlined />}
@@ -170,54 +177,9 @@ export const PureTable = () => {
       });
   };
 
-  const handleEdit = ({
-    id,
-    name,
-    normal,
-    price,
-    options,
-    isSelecte,
-    createdAt,
-    type,
-    groupTest,
-  }) => {
-    console.log("Edit Test Data:::::::::::::::::", {
-      id,
-      name,
-      normal,
-      price,
-      options,
-      isSelecte,
-      createdAt,
-      type,
-      groupTest,
-    });
-
-    let parsedOptions = options;
-
-    if (typeof options === "string") {
-      try {
-        parsedOptions = JSON.parse(options);
-      } catch (error) {
-        console.error("Error parsing options:", error);
-        parsedOptions = [];
-      }
-    }
-
-    if (isSelecte && parsedOptions.length === 0) {
-      parsedOptions = ["positive", "negative"];
-    }
-
-    setType(type);
-    setGroupTest(groupTest);
-    setId(id);
-    setName(name);
-    setPrice(price);
-    setNormal(normal);
+  const handleEdit = (row) => {
+    setInitialData(row);
     setIsModal(true);
-    setCreatedAt(createdAt);
-    setIsSelecte(isSelecte);
-    setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
 
   useEffect(() => {
@@ -246,41 +208,53 @@ export const PureTable = () => {
   }, [page, isReload, querySearch, limit]);
 
   return (
-    <Table
-      style={{
-        marginTop: 16,
-        border: `1px solid ${appColors.colorBorder}`,
-        borderRadius: 10,
-        overflow: "hidden",
-      }}
-      loading={loading}
-      columns={columns}
-      rowKey={(row) => row.id}
-      dataSource={data}
-      pagination={false}
-      size="small"
-      footer={() => (
-        <div className="table-footer app-flex-space ">
-          <div
-            className="pattern-isometric pattern-indigo-400 pattern-bg-white 
+    <>
+      <Table
+        style={{
+          marginTop: 16,
+          border: `1px solid ${appColors.colorBorder}`,
+          borderRadius: 10,
+          overflow: "hidden",
+        }}
+        loading={loading}
+        columns={columns}
+        rowKey={(row) => row.id}
+        dataSource={data}
+        pagination={false}
+        size="small"
+        footer={() => (
+          <div className="table-footer app-flex-space ">
+            <div
+              className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0 "
-          ></div>
-          <p>
-            <b>{total}</b> {t("results")}
-          </p>
-          <Pagination
-            className="flex flex-row justify-center items-center"
-            simple
-            current={page}
-            onChange={(_page) => {
-              setPage(_page);
-            }}
-            total={total}
-            pageSize={limit}
-            showSizeChanger={false}
-          />
-        </div>
-      )}
-    />
+            ></div>
+            <p>
+              <b>{total}</b> {t("results")}
+            </p>
+            <Pagination
+              className="flex flex-row justify-center items-center"
+              simple
+              current={page}
+              onChange={(_page) => {
+                setPage(_page);
+              }}
+              total={total}
+              pageSize={limit}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
+      />
+
+      <MetaJsonModal
+        open={isMetaModal}
+        type={record?.type} // "panel" | "composite" | "single"
+        initialMetaJson={record?.meta_json} // string أو object
+        onCancel={() => setIsMetaModal(false)}
+        onSubmit={(jsonString) => {
+          console.log(jsonString);
+        }}
+      />
+    </>
   );
 };

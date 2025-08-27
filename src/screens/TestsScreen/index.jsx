@@ -3,7 +3,6 @@ import "./style.css";
 import { PureModal, PureTable } from "../../components/Tests";
 import { useTestStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
-import useLang from "../../hooks/useLang";
 
 const { Search } = Input;
 

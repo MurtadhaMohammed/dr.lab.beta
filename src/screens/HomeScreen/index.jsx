@@ -20,6 +20,7 @@ import {
   Dropdown,
   Radio,
   Spin,
+  Tag,
 } from "antd";
 import "./style.css";
 import { PureModal, ResultsModal } from "../../components/Visits";
@@ -31,6 +32,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import { QuickActionsModal } from "../../components/Home/Modal/quickActionModal";
 import { useEffect, useState } from "react";
 import { send } from "../../control/renderer";
+import { PDFSettings } from "../SettingScreen/pdfSettings";
 
 function CardStatistics({ icon, title, value, loading }) {
   return (
@@ -53,21 +55,11 @@ function CardStatistics({ icon, title, value, loading }) {
   );
 }
 
-function ActionBtn({ title, isPrimary, onClick }) {
-  return (
-    <Button
-      className={"h-[100px] text-[16px] overflow-hidden text-ellipsis"}
-      size="large"
-      type={isPrimary ? "primary" : "default"}
-      onClick={() => onClick({ key: title })}
-      title={title} // Show full text on hover
-    >
-      <div className="overflow-hidden text-ellipsis whitespace-nowrap w-full">
-        {title}
-      </div>
-    </Button>
-  );
-}
+// function ActionBtn({ title, onClick }) {
+//   return (
+
+//   );
+// }
 
 const HomeScreen = () => {
   const {
@@ -149,16 +141,10 @@ const HomeScreen = () => {
     ? JSON.parse(localStorage.getItem("actionButtons"))
     : [];
 
-  // Filter out "Other Tests" from localStorage data since we'll add it statically
-  const filteredActionButtons = actionButtonsRow.filter(
-    (item) => item.name !== "Other Tests"
-  );
-
   const actionButtons = [
-
     // Add other buttons from localStorage
-    ...filteredActionButtons.map((item) => ({
-      title: item.name,
+    ...actionButtonsRow.map((item) => ({
+      title: item.name_en,
       id: item.id,
       isPrimary: false,
       onClick: () => onClick({ key: item.name, id: item.id }),
@@ -171,71 +157,38 @@ const HomeScreen = () => {
     },
   ];
 
-  const items = [
-    {
-      key: "today",
-      label: t("Today"),
-    },
-    {
-      key: "all",
-      label: t("All"),
-    },
-  ];
-
-  const types = [
-    {
-      key: "PACKAGE",
-      label: t("PackageTest"),
-    },
-    {
-      key: "CUSTOME",
-      label: t("CustomeTest"),
-    },
-  ];
 
   return (
     <div className="home-screen page pb-[50px]">
       <div className="border-none p-[2%]">
         <Row gutter={[16, 16]}>
-          <Col span={6}>
-            <CardStatistics
-              title={t("Pending Results")}
-              value={statistics.pendingResults}
-              loading={statisticsLoading}
-              icon={
-                <ClockCircleOutlined className="text-[#a343c9] text-[28px]" />
-              }
-            />
-          </Col>
-          <Col span={6}>
-            <CardStatistics
-              title={t("Today's Visits")}
-              value={statistics.todayVisits}
-              loading={statisticsLoading}
-              icon={
-                <UsergroupAddOutlined className="text-[#a343c9] text-[28px]" />
-              }
-            />
-          </Col>
-          <Col span={6}>
-            <CardStatistics
-              title={t("Total Patients")}
-              value={statistics.totalPatients}
-              loading={statisticsLoading}
-              icon={<UserOutlined className="text-[#a343c9] text-[28px]" />}
-            />
-          </Col>
-          <Col span={6}>
-            <CardStatistics
-              title={t("Total Visits")}
-              value={statistics.totalVisits}
-              loading={statisticsLoading}
-              icon={<FundOutlined className="text-[#a343c9] text-[28px]" />}
-            />
-          </Col>
-
           <Col span={16}>
+            <div className="grid grid-cols-3 gap-4">
+              <CardStatistics
+                title={t("Pending Results")}
+                value={statistics.pendingResults}
+                loading={statisticsLoading}
+                icon={
+                  <ClockCircleOutlined className="text-[#a343c9] text-[28px]" />
+                }
+              />
+              <CardStatistics
+                title={t("Today's Visits")}
+                value={statistics.todayVisits}
+                loading={statisticsLoading}
+                icon={
+                  <UsergroupAddOutlined className="text-[#a343c9] text-[28px]" />
+                }
+              />
+              <CardStatistics
+                title={t("Total Patients")}
+                value={statistics.totalPatients}
+                loading={statisticsLoading}
+                icon={<UserOutlined className="text-[#a343c9] text-[28px]" />}
+              />
+            </div>
             <Card
+              className="mt-4"
               styles={{ body: { padding: 0 } }}
               title={
                 <div className="app-flex-space w-full font-normal">
@@ -262,9 +215,18 @@ const HomeScreen = () => {
           </Col>
           <Col span={8}>
             <Card
+              //className="bg-gradient-to-r from-[#f6f6f6] to-[#f6f6f64c]"
+              // className="bg-[#f6f6f6]"
+              styles={{
+                title: {
+                  fontSize: 14,
+                  fontWeight: "normal",
+                  opacity: 0.8,
+                },
+              }}
               title={
                 <div className="app-flex-space w-full">
-                  <Typography.Text>{t("Quick Actions")}</Typography.Text>
+                  <Typography.Text>{t("Common Tests")}</Typography.Text>
                   <Button
                     size="small"
                     icon={<EditOutlined />}
@@ -273,33 +235,59 @@ const HomeScreen = () => {
                 </div>
               }
             >
-              <div className={"grid grid-cols-3 gap-4"}>
+              <Space wrap size={12}>
                 {actionButtons.map((button, index) => (
-                  <ActionBtn
+                  <div
                     key={index}
-                    title={button.title}
-                    isPrimary={button.isPrimary}
+                    className="px-4 py-2 rounded-md bg-[#f6f6f6] shadow-md cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                    style={
+                      button.isPrimary
+                        ? { background: "#9053e7", color: "#fff" }
+                        : {}
+                    }
                     onClick={() =>
                       onClick({ key: button.title, id: button.id })
                     }
-                  />
+                  >
+                    {button?.title}
+                  </div>
                 ))}
-              </div>
-              <Divider />
-              <Space wrap className="w-full app-flex-space">
-                <Button type="primary" className="flex-1">
-                  + New Patient
-                </Button>
-                {/* <Divider type="vertical" /> */}
-                <Radio.Group defaultValue={lang} onChange={handleLang}>
-                  <Radio.Button value="ar">عربي</Radio.Button>
-                  <Radio.Button value="ku">کوردی</Radio.Button>
-                  <Radio.Button value="en">English</Radio.Button>
-                </Radio.Group>
               </Space>
+            </Card>
+
+            <Card
+              styles={{
+                title: {
+                  fontSize: 14,
+                  fontWeight: "normal",
+                  opacity: 0.8,
+                },
+              }}
+              className="mt-4"
+              title={
+                <div className="app-flex-space w-full">
+                  <Typography.Text>{t("Quick Settings")}</Typography.Text>
+                </div>
+              }
+            >
+              <PDFSettings />
+              <Divider />
+
+              <div className="mt-4 bg-[#f6f6f6] p-4 rounded-[8px]">
+                <Space size={12} wrap>
+                  <Button className="flex-1">+ New Patient</Button>
+                  <Button className="flex-1">+ New Doctor</Button>
+                  <Radio.Group defaultValue={lang} onChange={handleLang}>
+                    <Radio.Button value="ar">عربي</Radio.Button>
+                    <Radio.Button value="ku">کوردی</Radio.Button>
+                    <Radio.Button value="en">English</Radio.Button>
+                  </Radio.Group>
+                </Space>
+              </div>
             </Card>
           </Col>
         </Row>
+
         <PureModal />
         <ResultsModal />
         <QuickActionsModal />

@@ -627,20 +627,44 @@ class LabDB {
   }
 
   async addTest(test) {
-    const { name, price, normal, options, isSelecte, type, groupTest } = test;
+    const {
+      code,
+      type = "single",
+      name_en,
+      name_ar,
+      sample_type,
+      unit,
+      ref_text,
+      meta_json = type === "single" ? { print: { layout: "single-line" } } : {},
+      price_iqd = 0,
+      is_active = true,
+      version = "v1.0.0",
+    } = test;
+
     const stmt = this.db.prepare(`
-      INSERT INTO tests (name, price, normal, options, isSelecte, type, groupTest)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `);
+    INSERT INTO tests_catalog (
+      code, type, name_en, name_ar,
+      sample_type, unit, ref_text,
+      meta_json, price_iqd, is_active, version
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
     const info = stmt.run(
-      name,
-      price,
-      normal,
-      JSON.stringify(options),
-      isSelecte ? 1 : 0,
-      type || "single",
-      groupTest || "[]"
+      code,
+      type,
+      name_en,
+      name_ar || null,
+      sample_type || null,
+      // 👇 فقط لو single نخلي unit/ref_text، غيرها null
+      type === "single" ? unit || null : null,
+      type === "single" ? ref_text || null : null,
+      typeof meta_json === "string" ? meta_json : JSON.stringify(meta_json),
+      price_iqd,
+      is_active ? 1 : 0,
+      version
     );
+
     return { id: info.lastInsertRowid };
   }
 
@@ -652,34 +676,74 @@ class LabDB {
     return { success: info.changes > 0 };
   }
 
-  async editTest(id, updates) {
-    const { name, price, normal, options, isSelecte, type, groupTest } =
-      updates;
+  async editTest(id, updates = {}) {
+    let {
+      code,
+      type, // 'single' | 'panel' | 'composite'
+      name_en,
+      name_ar,
+      sample_type,
+      unit,
+      ref_text,
+      price_iqd,
+      is_active, // boolean or 0/1
+      version,
+    } = updates;
 
-    const stmt = await this.db.prepare(`
-      UPDATE tests
-      SET 
-        name = COALESCE(?, name),
-        price = COALESCE(?, price),
-        normal = COALESCE(?, normal),
-        options = COALESCE(?, options), 
-        isSelecte = COALESCE(?, isSelecte),
-        type = COALESCE(?, type),
-        groupTest = COALESCE(?, groupTest),
-        updatedAt = CURRENT_TIMESTAMP
-        WHERE id = ?
-    `);
-    const info = stmt.run(
-      name,
-      price,
-      normal,
-      options ? JSON.stringify(options) : "",
-      isSelecte !== undefined ? (isSelecte ? 1 : 0) : null,
-      type,
-      groupTest,
-      id
-    );
-    return { success: info.changes > 0 };
+    let unitToSet = unit === undefined ? undefined : unit ?? null;
+    let refToSet = ref_text === undefined ? undefined : ref_text ?? null;
+
+    if (type !== undefined && type !== "single") {
+      if (unit === undefined) unitToSet = null;
+      if (ref_text === undefined) refToSet = null;
+    }
+
+    // is_active normalization
+    let isActiveToSet = undefined;
+    if (is_active !== undefined) {
+      isActiveToSet = is_active ? 1 : 0;
+    }
+
+    const sets = [];
+    const params = [];
+    const push = (clause, val) => {
+      sets.push(clause);
+      params.push(val);
+    };
+
+    if (code !== undefined) push("code = COALESCE(?, code)", code);
+    if (type !== undefined) push("type = COALESCE(?, type)", type);
+    if (name_en !== undefined) push("name_en = COALESCE(?, name_en)", name_en);
+    if (name_ar !== undefined)
+      push("name_ar = COALESCE(?, name_ar)", name_ar ?? null);
+    if (sample_type !== undefined)
+      push("sample_type = COALESCE(?, sample_type)", sample_type ?? null);
+    if (unitToSet !== undefined) push("unit = COALESCE(?, unit)", unitToSet);
+    if (refToSet !== undefined)
+      push("ref_text = COALESCE(?, ref_text)", refToSet);
+    if (price_iqd !== undefined)
+      push("price_iqd = COALESCE(?, price_iqd)", price_iqd);
+    if (isActiveToSet !== undefined)
+      push("is_active = COALESCE(?, is_active)", isActiveToSet);
+    if (version !== undefined)
+      push("version = COALESCE(?, version)", version ?? null);
+
+    if (sets.length === 0) {
+      return { success: true, changes: 0 };
+    }
+
+    sets.push("updated_at = CURRENT_TIMESTAMP");
+
+    const sql = `
+    UPDATE tests_catalog
+    SET ${sets.join(", ")}
+    WHERE id = ?
+  `;
+    params.push(id);
+
+    const stmt = this.db.prepare(sql);
+    const info = stmt.run(...params);
+    return { success: info.changes > 0, changes: info.changes };
   }
 
   async getTests({ q = "", skip = 0, limit = 10 }) {
@@ -697,7 +761,7 @@ class LabDB {
 
       const stmt = this.db.prepare(`
       SELECT id, code, type, name_en, name_ar, sample_type, unit,
-             ref_text, price_iqd, is_active, version, created_at, updated_at
+             ref_text, meta_json, price_iqd, is_active, version, created_at, updated_at
       FROM tests_catalog
       WHERE code LIKE ?
          OR name_en LIKE ?

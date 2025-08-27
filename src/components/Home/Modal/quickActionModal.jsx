@@ -8,11 +8,19 @@ import {
   Spin,
   Select,
   Tag,
+  Space,
 } from "antd";
-import { StarOutlined, StarFilled, DeleteOutlined } from "@ant-design/icons";
+import {
+  StarOutlined,
+  StarFilled,
+  DeleteOutlined,
+  XOutlined,
+  CloseOutlined,
+} from "@ant-design/icons";
 import { useHomeStore } from "../../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import { send } from "../../../control/renderer";
+import { FiTrash, FiXCircle } from "react-icons/fi";
 
 const { Text } = Typography;
 
@@ -30,7 +38,7 @@ export const QuickActionsModal = () => {
     try {
       const response = await send({
         query: "getTests",
-        data: { q: query, limit: 50, skip: 0 },
+        data: { q: query, limit: 1000, skip: 0 },
       });
 
       if (response.success) {
@@ -79,31 +87,20 @@ export const QuickActionsModal = () => {
     }
   }, [isQuickActionsModal]);
 
-  const handleSelectChange = (selectedTestNames) => {
-    const newSelectedTests = selectedTestNames.map((testName) => {
-      // Find the test from the tests array to get the ID
-      const testFromList = tests.find((test) => test.name === testName);
-      // Keep existing isPrimary status if test was already selected
-      const existingTest = selectedTests.find((test) => test.name === testName);
-      return {
-        name: testName,
-        isPrimary: existingTest?.isPrimary || false,
-        id: testFromList?.id || null,
-      };
-    });
-    setSelectedTests(newSelectedTests);
+  const handleSelectChange = (val) => {
+    const item = tests.find((test) => test.id === val);
+    setSelectedTests([
+      ...selectedTests,
+      {
+        name_en: item?.name_en,
+        isPrimary: false,
+        id: item?.id || null,
+      },
+    ]);
   };
 
-  const removeTest = (testName) => {
-    setSelectedTests((prev) => prev.filter((test) => test.name !== testName));
-  };
-
-  const togglePrimaryStatus = (testName) => {
-    setSelectedTests((prev) =>
-      prev.map((test) =>
-        test.name === testName ? { ...test, isPrimary: !test.isPrimary } : test
-      )
-    );
+  const removeTest = (testId) => {
+    setSelectedTests((prev) => prev.filter((test) => test.id !== testId));
   };
 
   const handleSave = () => {
@@ -146,20 +143,27 @@ export const QuickActionsModal = () => {
 
       <Spin spinning={loading}>
         <Select
-          mode="multiple"
           placeholder={t("Search and select tests...")}
           style={{ width: "100%", marginBottom: 16 }}
-          value={selectedTests.map((test) => test.name)}
+          //value={selectedTests?.map((test) => test.name_en)}
           onChange={handleSelectChange}
           showSearch
-          filterOption={(input, option) =>
-            option?.children?.toLowerCase().indexOf(input.toLowerCase()) >= 0
-          }
+          filterOption={(input, option) => {
+            // console.log({input, option})
+            return (
+              option?.key?.toLowerCase()?.indexOf(input.toLowerCase()) >= 0
+            );
+          }}
           maxTagCount="responsive"
         >
           {tests.map((test) => (
-            <Select.Option key={test.name} value={test.name}>
-              {test.name} - {t("Price")}: {test.price || 0}
+            <Select.Option
+              disabled={selectedTests?.find((el) => el?.id === test.id)}
+              key={test.name_en}
+              value={test.id}
+            >
+              {test.name_en} - {t("Price")}:{" "}
+              {Number(test.price_iqd).toLocaleString("en") || 0}
             </Select.Option>
           ))}
         </Select>
@@ -167,9 +171,26 @@ export const QuickActionsModal = () => {
 
       {selectedTests.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <Text strong>{t("Selected Tests")}:</Text>
+          <Text type="secondary">{t("Selected Tests")}:</Text>
           <div style={{ marginTop: 8 }}>
-            <List
+            <Space wrap size={8}>
+              {selectedTests?.map((el, i) => (
+                <div
+                  className="px-4 py-2 rounded-[8px] bg-[#f6f6f6] flex gap-4"
+                  key={i}
+                >
+                  <Text>{el?.name_en}</Text>
+                  <Button
+                    danger
+                    icon={<CloseOutlined />}
+                    size="small"
+                    type="text"
+                    onClick={() => removeTest(el.id)}
+                  />
+                </div>
+              ))}
+            </Space>
+            {/* <List
               dataSource={selectedTests}
               renderItem={(test) => (
                 <List.Item
@@ -200,7 +221,7 @@ export const QuickActionsModal = () => {
                 </List.Item>
               )}
               style={{ maxHeight: 300, overflowY: "auto" }}
-            />
+            /> */}
           </div>
         </div>
       )}

@@ -1,895 +1,372 @@
+import { useEffect, useState } from "react";
 import {
-  Button,
-  Checkbox,
-  Col,
-  Divider,
-  Input,
-  InputNumber,
   Modal,
-  Row,
-  Space,
-  Tag,
-  Typography,
-  message,
-  theme,
-  Select,
-  Card,
   Form,
-  Collapse,
-  Tooltip,
+  Input,
+  Select,
+  InputNumber,
+  Switch,
+  Space,
+  message,
+  Button,
 } from "antd";
-import { useAppStore, useTestStore, useTrigger } from "../../../libs/appStore";
+import { useAppStore, useTestStore } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
-import "./style.css";
-import { useEffect, useRef, useState } from "react";
-import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { useTranslation } from "react-i18next";
 
-const { Text } = Typography;
-const { Panel } = Collapse;
+const { TextArea } = Input;
 
 export const PureModal = () => {
-  const {
-    isModal,
-    setIsModal,
-    name,
-    price,
-    normal,
-    setName,
-    setPrice,
-    setNormal,
-    isSelecte,
-    setIsSelecte,
-    id,
-    createdAt,
-    setReset,
-    type,
-    setType,
-    groupTest,
-    setGroupTest,
-    options,
-    setOptions,
-  } = useTestStore();
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const { isModal, setIsModal, initialData, setInitialData } = useTestStore();
   const { setIsReload, isReload } = useAppStore();
-  const [inputVisible, setInputVisible] = useState(false);
-  const [inputValue, setInputValue] = useState("");
-  const { token } = theme.useToken();
-  const { t } = useTranslation();
-  const { setFlag } = useTrigger();
-  const inputRef = useRef(null);
-  const editInputRef = useRef(null);
+  const editing = Boolean(initialData && (initialData.id || initialData.code));
 
-  // New state for group tests
-  const [groups, setGroups] = useState([]);
-  const [editingGroup, setEditingGroup] = useState(null);
-  const [editingTest, setEditingTest] = useState(null);
-  const [expandedGroups, setExpandedGroups] = useState(new Set());
+  // 👇 نراقب النوع مباشرة من الفورم بدون ما نغيّر هيكل شغلك
+  const type = Form.useWatch("type", form);
 
   useEffect(() => {
-    if (inputVisible) {
-      inputRef.current?.focus();
+    if (!isModal) return; // ← كان open، خليناه isModal بدون ما نغيّر منطقك
+
+    if (editing) {
+      form.setFieldsValue({
+        code: initialData.code || "",
+        type: initialData.type || "single",
+        name_en: initialData.name_en || "",
+        name_ar: initialData.name_ar || "",
+        sample_type: initialData.sample_type || "",
+        unit: initialData.unit || "",
+        ref_text:
+          typeof initialData.ref_text === "string" ? initialData.ref_text : "",
+        price_iqd:
+          typeof initialData.price_iqd === "number" ? initialData.price_iqd : 0,
+        is_active: initialData.is_active ? true : false,
+        version: initialData.version || "",
+      });
+    } else {
+      form.resetFields();
+      form.setFieldsValue({
+        type: "single",
+        is_active: true,
+        price_iqd: 0,
+      });
     }
-  }, [inputVisible]);
+  }, [isModal, editing, initialData, form]);
 
-  // Initialize groups from groupTest if it exists
-  useEffect(() => {
-    if (type === "groupTest" && groupTest && groupTest !== "[]") {
-      try {
-        const parsedGroups = JSON.parse(groupTest);
-        if (Array.isArray(parsedGroups)) {
-          setGroups(parsedGroups);
+  const createTest = async (payload) => {
+    return await send({
+      query: "addTest",
+      data: { ...payload },
+    });
+  };
+  const updateTest = async (id, payload) => {
+    return await send({
+      query: "editTest",
+      id,
+      data: { ...payload },
+    });
+  };
+
+  const handleOk = async () => {
+    try {
+      const values = await form.validateFields();
+
+      const payload = {
+        // id: initialData?.id,
+        code: (values.code || "").trim(),
+        type: values.type, // "single" | "panel" | "composite"
+        name_en: (values.name_en || "").trim(),
+        name_ar: values.name_ar ? values.name_ar.trim() : null,
+        sample_type: values.sample_type ? values.sample_type.trim() : null,
+        // 👇 دول فقط للـ single
+        unit: values.type === "single" ? values.unit?.trim() : null,
+        ref_text: values.type === "single" ? values.ref_text?.trim() : null,
+        price_iqd: Number(values.price_iqd || 0),
+        is_active: values.is_active ? 1 : 0,
+        version: values.version ? values.version.trim() : null,
+      };
+
+      setLoading(true);
+
+      if (initialData && initialData?.id) {
+        let resp = await updateTest(initialData?.id, payload);
+        if (!resp.success) {
+          setLoading(false);
+          message.error("Update Error!.");
+          return;
         }
-      } catch (error) {
-        console.error("Error parsing groupTest:", error);
-        setGroups([]);
-      }
-    } else {
-      setGroups([]);
-    }
-  }, [type, groupTest]);
-
-  const handleIsSelecteChange = (e) => {
-    setIsSelecte(e.target.checked);
-    if (e.target.checked) {
-      setNormal("");
-      if (options.length === 0) {
-        setOptions(["positive", "negative"]);
-      }
-    } else {
-      setOptions([]);
-    }
-  };
-
-  useEffect(() => {
-    editInputRef.current?.focus();
-  }, [inputValue]);
-
-  const handleClose = (removedTag) => {
-    let newOptions = options.filter((option) => option !== removedTag);
-    setIsSelecte(false);
-    setTimeout(() => {
-      setOptions(newOptions);
-      setIsSelecte(true);
-    }, 10);
-  };
-
-  const showInput = () => {
-    setInputVisible(true);
-  };
-
-  const handleInputChange = (e) => {
-    setInputValue(e.target.value);
-  };
-
-  const handleInputConfirm = () => {
-    if (!Array.isArray(options)) {
-      console.error("Options is not an array. Resetting to an empty array.");
-      setOptions([]);
-    }
-
-    if (inputValue && options.indexOf(inputValue) === -1) {
-      setOptions([...options, inputValue]);
-    }
-    setInputVisible(false);
-    setInputValue("");
-  };
-
-  // Group management functions
-  const addGroup = () => {
-    const newGroup = {
-      id: Date.now(),
-      name: "",
-      tests: [],
-      isEditing: true,
-    };
-    setGroups([...groups, newGroup]);
-    setEditingGroup(newGroup.id);
-
-    // Automatically expand the new group and close others
-    const newExpanded = new Set();
-    newExpanded.add(newGroup.id);
-    setExpandedGroups(newExpanded);
-  };
-
-  const updateGroup = (groupId, field, value) => {
-    setGroups(
-      groups.map((group) =>
-        group.id === groupId ? { ...group, [field]: value } : group
-      )
-    );
-  };
-
-  const deleteGroup = (groupId) => {
-    setGroups(groups.filter((group) => group.id !== groupId));
-  };
-
-  const addTestToGroup = (groupId) => {
-    const newTest = {
-      id: Date.now(),
-      name: "",
-      normal: "",
-      isSelecte: false,
-      options: [],
-      isEditing: true,
-    };
-
-    setGroups(
-      groups.map((group) =>
-        group.id === groupId
-          ? { ...group, tests: [...group.tests, newTest] }
-          : group
-      )
-    );
-    setEditingTest(newTest.id);
-  };
-
-  const updateTestInGroup = (groupId, testId, field, value) => {
-    setGroups(
-      groups.map((group) =>
-        group.id === groupId
-          ? {
-              ...group,
-              tests: group.tests.map((test) =>
-                test.id === testId ? { ...test, [field]: value } : test
-              ),
-            }
-          : group
-      )
-    );
-  };
-
-  const deleteTestFromGroup = (groupId, testId) => {
-    setGroups(
-      groups.map((group) =>
-        group.id === groupId
-          ? {
-              ...group,
-              tests: group.tests.filter((test) => test.id !== testId),
-            }
-          : group
-      )
-    );
-  };
-
-  const handleTestIsSelecteChange = (groupId, testId, checked) => {
-    // Consolidate all updates into a single state update
-    setGroups((prevGroups) =>
-      prevGroups.map((group) =>
-        group.id === groupId
-          ? {
-              ...group,
-              tests: group.tests.map((test) =>
-                test.id === testId
-                  ? {
-                      ...test,
-                      isSelecte: checked,
-                      normal: checked ? "" : test.normal,
-                      options: checked ? ["positive", "negative"] : [],
-                    }
-                  : test
-              ),
-            }
-          : group
-      )
-    );
-  };
-
-  const addOptionToTest = (groupId, testId, option) => {
-    const group = groups.find((g) => g.id === groupId);
-    const test = group.tests.find((t) => t.id === testId);
-    if (test && test.options.indexOf(option) === -1) {
-      updateTestInGroup(groupId, testId, "options", [...test.options, option]);
-    }
-  };
-
-  const removeOptionFromTest = (groupId, testId, option) => {
-    const group = groups.find((g) => g.id === groupId);
-    const test = group.tests.find((t) => t.id === testId);
-    if (test) {
-      const newOptions = test.options.filter((opt) => opt !== option);
-      updateTestInGroup(groupId, testId, "options", newOptions);
-    }
-  };
-
-  const saveGroup = (groupId) => {
-    const group = groups.find((g) => g.id === groupId);
-    if (group) {
-      if (group.name.trim()) {
-        // If group has a name, save it
-        updateGroup(groupId, "isEditing", false);
-        setEditingGroup(null);
       } else {
-        // If group name is empty, delete the group
-        deleteGroup(groupId);
-        // Clear expanded state
-        const newExpanded = new Set(expandedGroups);
-        newExpanded.delete(groupId);
-        setExpandedGroups(newExpanded);
-      }
-    }
-  };
-
-  const saveTest = (groupId, testId) => {
-    const group = groups.find((g) => g.id === groupId);
-    const test = group.tests.find((t) => t.id === testId);
-    if (test && test.name.trim()) {
-      updateTestInGroup(groupId, testId, "isEditing", false);
-      setEditingTest(null);
-    }
-  };
-
-  const editGroup = (groupId) => {
-    setEditingGroup(groupId);
-    updateGroup(groupId, "isEditing", true);
-  };
-
-  const editTest = (groupId, testId) => {
-    setEditingTest(testId);
-    updateTestInGroup(groupId, testId, "isEditing", true);
-  };
-
-  const toggleGroupExpansion = (groupId) => {
-    const newExpanded = new Set();
-    // If the clicked group is not currently expanded, expand only this group
-    // If it's already expanded, close it (keep set empty)
-    if (!expandedGroups.has(groupId)) {
-      newExpanded.add(groupId);
-    }
-    setExpandedGroups(newExpanded);
-  };
-
-  useEffect(() => {
-    if (groups.length > 0 && groups[0]?.id) {
-      setExpandedGroups(new Set([groups[0].id]));
-    }
-  }, [groups]);
-
-  const tagInputStyle = {
-    width: 78,
-    verticalAlign: "top",
-  };
-  const tagPlusStyle = {
-    background: token.colorBgContainer,
-    borderStyle: "dashed",
-  };
-
-  const handleSubmit = () => {
-    let data = {
-      name,
-      price,
-      normal: isSelecte ? "" : normal,
-      isSelecte,
-      options: isSelecte ? options : [],
-      updatedAt: Date.now(),
-    };
-
-    // If it's a group test, convert groups to text and save
-    if (type === "groupTest") {
-      // Filter out empty groups and tests
-      const validGroups = groups
-        .filter((group) => group.name.trim() && group.tests.length > 0)
-        .map((group) => ({
-          ...group,
-          tests: group.tests.filter((test) => test.name.trim()),
-        }));
-
-      // Validate that we have at least one valid group
-      if (validGroups.length === 0) {
-        message.error(t("Please add at least one group with tests"));
-        return;
+        let resp = await createTest(payload);
+        if (!resp.success) {
+          setLoading(false);
+          message.error("Create Error!.");
+          return;
+        }
       }
 
-      // Validate that each group has at least one test
-      const invalidGroups = validGroups.filter(
-        (group) => group.tests.length === 0
-      );
-      if (invalidGroups.length > 0) {
-        message.error(t("Each group must contain at least one test"));
-        return;
+      console.log("payload:", payload);
+      message.success(editing ? "Saved" : "Created");
+      form.resetFields();
+      setIsReload(!isReload);
+      setInitialData(null);
+      setIsModal(false);
+    } catch (err) {
+      if (!err?.errorFields) {
+        message.error(err?.message || "Error");
       }
-
-      // Convert to JSON string for SQLite storage
-      data.groupTest = JSON.stringify(validGroups);
-      data.type = "groupTest";
-    } else {
-      data.groupTest = "[]";
-      data.type = "single";
-    }
-
-    if (!id) {
-      send({
-        query: "addTest",
-        data: { ...data },
-      })
-        .then((resp) => {
-          if (resp.success) {
-            console.log("Test added with ID:", resp.id);
-            message.success(t("Testaddedsuccessfully"));
-            setReset();
-            setIsModal(false);
-            setIsReload(!isReload);
-          } else {
-            console.error("Erroraddingtest:", resp.error);
-            message.error(t("Erroraddingtest:"));
-          }
-        })
-        .catch((err) => {
-          console.error("Error in IPC communication:", err);
-          message.error("Failed to communicate with server.");
-        });
-    } else {
-      send({
-        query: "editTest",
-        data: { ...data },
-        id,
-      })
-        .then((resp) => {
-          if (resp.success) {
-            message.success(t("Testupdatedsuccessfully"));
-            setReset();
-            setIsModal(false);
-            setIsReload(!isReload);
-            setFlag(true);
-          } else {
-            console.error("Error updating test:", resp.error);
-            message.error("Failed to update test.");
-          }
-        })
-        .catch((err) => {
-          console.error("Error in IPC communication:", err);
-          message.error("Failed to communicate with server.");
-        });
+    } finally {
+      setLoading(false);
     }
   };
+
+  const onCancel = () => setIsModal(false);
 
   return (
     <Modal
-      title={`${id ? t("Edit") : t("Create")} ${t("TestItem")}`}
+      title={`${editing ? "Edit" : "Create"} Test`}
       open={isModal}
-      width={800}
-      onCancel={() => {
-        setIsModal(false);
-      }}
-      footer={
-        <Space>
-          <Button
-            onClick={() => {
-              setIsModal(false);
-            }}
-          >
-            {t("Close")}
-          </Button>
-          <Button
-            disabled={
-              !name ||
-              price === "" ||
-              price === null ||
-              (type === "groupTest" && groups.length === 0)
-            }
-            type="primary"
-            onClick={handleSubmit}
-          >
-            {t("Save")}
-          </Button>
-        </Space>
-      }
-      centered
+      width={720}
+      okText={editing ? "Save" : "Create"}
+      onOk={handleOk}
+      confirmLoading={loading}
+      onCancel={onCancel}
+      destroyOnClose
     >
-      <div className="create-item-modal">
-        <Row gutter={[16, 18]}>
-          <Col span={9}>
-            <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("TestName")}</Text>
-              <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Vit D3"
-              />
-            </Space>
-          </Col>
-          <Col span={9}>
-            <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("Price")}</Text>
-              <InputNumber
-                value={price}
-                onChange={(val) => setPrice(val)}
-                placeholder="Ex: 10000"
-                style={{ width: "100%" }}
-                min={0}
-              />
-            </Space>
-          </Col>
-          <Col span={6}>
-            <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("Type")}</Text>
+      <Form
+        form={form}
+        layout="vertical"
+        // 👇 إذا المستخدم غيّر النوع إلى غير single نفرّغ Unit & ref_text
+        onValuesChange={(changed) => {
+          if (changed.type && changed.type !== "single") {
+            form.setFieldsValue({ unit: null, ref_text: null });
+          }
+        }}
+      >
+        <Space style={{ width: "100%" }} wrap>
+          <Form.Item
+            label="Code"
+            name="code"
+            style={{ flex: 1, minWidth: 220 }}
+            rules={[
+              { required: true, message: "Code is required" },
+              {
+                pattern: /^[A-Z0-9_]+$/i,
+                message: "Use letters/numbers/underscore",
+              },
+            ]}
+          >
+            <Input placeholder="e.g. FBS, LFT, STOOL" />
+          </Form.Item>
+
+          <Form.Item
+            label="Type"
+            name="type"
+            style={{ flex: 1, minWidth: 200 }}
+            rules={[{ required: true, message: "Type is required" }]}
+          >
+            <Select
+              options={[
+                { value: "single", label: "Single" },
+                { value: "panel", label: "Panel" },
+                { value: "composite", label: "Composite" },
+              ]}
+            />
+          </Form.Item>
+
+          <Form.Item
+            label="Active"
+            name="is_active"
+            valuePropName="checked"
+            style={{ width: 120 }}
+          >
+            <Switch />
+          </Form.Item>
+        </Space>
+
+        <Space style={{ width: "100%" }} wrap>
+          <Form.Item
+            label="Name (EN)"
+            name="name_en"
+            style={{ flex: 1, minWidth: 280 }}
+            rules={[{ required: true, message: "English name is required" }]}
+          >
+            <Input placeholder="Fasting Blood Sugar" />
+          </Form.Item>
+          <Form.Item
+            label="Name (AR)"
+            name="name_ar"
+            style={{ flex: 1, minWidth: 280 }}
+          >
+            <Input placeholder="سكر صائم" />
+          </Form.Item>
+        </Space>
+
+        <Space style={{ width: "100%" }} wrap>
+          <Form.Item
+            label="Sample Type"
+            name="sample_type"
+            style={{ flex: 1, minWidth: 220 }}
+          >
+            <Select
+              placeholder="Select sample type"
+              allowClear
+              options={[
+                { value: "Whole Blood (EDTA)", label: "Whole Blood (EDTA)" },
+                { value: "Serum", label: "Serum" },
+                { value: "Plasma", label: "Plasma" },
+                { value: "Urine", label: "Urine" },
+                { value: "Stool", label: "Stool" },
+                { value: "CSF", label: "CSF (Cerebrospinal Fluid)" },
+                { value: "Sputum", label: "Sputum" },
+                { value: "Swab", label: "Swab (Throat/Vaginal/Wound)" },
+                {
+                  value: "Body Fluid",
+                  label: "Body Fluid (Ascitic/Pleural/Synovial)",
+                },
+              ]}
+            />
+          </Form.Item>
+
+          {type === "single" && (
+            <Form.Item
+              label="Unit"
+              name="unit"
+              style={{ flex: 1, minWidth: 180 }}
+            >
+              <Input placeholder="mg/dL, U/L, %, ..." />
+            </Form.Item>
+          )}
+
+          <Form.Item
+            label="Price (IQD)"
+            name="price_iqd"
+            style={{ width: 180 }}
+          >
+            <InputNumber min={0} step={500} style={{ width: "100%" }} />
+          </Form.Item>
+        </Space>
+
+        {type === "single" && (
+          <Form.Item label="Reference (ref_text)" name="ref_text">
+            <RefTextField />
+          </Form.Item>
+        )}
+      </Form>
+    </Modal>
+  );
+};
+
+// نفس RefTextField تبعك بدون أي تغيير وظيفي
+const RefTextField = ({ value = "", onChange }) => {
+  const [isJsonMode, setIsJsonMode] = useState(() => {
+    try {
+      const parsed = JSON.parse(value);
+      return Array.isArray(parsed);
+    } catch {
+      return false;
+    }
+  });
+
+  const [ranges, setRanges] = useState(() => {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed;
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
+  const updateRanges = (newRanges) => {
+    setRanges(newRanges);
+    onChange(JSON.stringify(newRanges));
+  };
+
+  const handleAddRange = () => {
+    const newRanges = [
+      ...ranges,
+      { sex: null, low: null, high: null, unit: "" },
+    ];
+    updateRanges(newRanges);
+  };
+
+  const handleRangeChange = (idx, key, val) => {
+    const newRanges = ranges.map((r, i) =>
+      i === idx ? { ...r, [key]: val } : r
+    );
+    updateRanges(newRanges);
+  };
+
+  const handleRemoveRange = (idx) => {
+    const newRanges = ranges.filter((_, i) => i !== idx);
+    updateRanges(newRanges);
+  };
+
+  return (
+    <div>
+      <Space style={{ marginBottom: 8 }}>
+        <span>Use JSON mode</span>
+        <Switch
+          checked={isJsonMode}
+          onChange={(checked) => {
+            setIsJsonMode(checked);
+            if (!checked) {
+              onChange("");
+            } else {
+              onChange(JSON.stringify(ranges));
+            }
+          }}
+        />
+      </Space>
+
+      {!isJsonMode ? (
+        <TextArea
+          rows={3}
+          value={typeof value === "string" ? value : ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder='Plain text like "70-110" or "Negative"'
+        />
+      ) : (
+        <div>
+          {ranges.map((r, idx) => (
+            <Space key={idx} style={{ marginBottom: 8 }} wrap align="baseline">
               <Select
-                value={type}
-                onChange={(val) => setType(val)}
-                style={{ width: "100%" }}
+                placeholder="Sex"
+                value={r.sex}
+                onChange={(val) => handleRangeChange(idx, "sex", val)}
+                style={{ width: 100 }}
+                allowClear
                 options={[
-                  {
-                    label: t("single"),
-                    value: "single",
-                  },
-                  {
-                    label: t("GroupTest"),
-                    value: "groupTest",
-                  },
+                  { value: "M", label: "Male" },
+                  { value: "F", label: "Female" },
                 ]}
               />
+              <InputNumber
+                placeholder="Low"
+                value={r.low}
+                onChange={(val) => handleRangeChange(idx, "low", val)}
+              />
+              <InputNumber
+                placeholder="High"
+                value={r.high}
+                onChange={(val) => handleRangeChange(idx, "high", val)}
+              />
+              <Input
+                placeholder="Unit"
+                value={r.unit}
+                onChange={(e) => handleRangeChange(idx, "unit", e.target.value)}
+                style={{ width: 100 }}
+              />
+              <Button danger type="link" onClick={() => handleRemoveRange(idx)}>
+                Remove
+              </Button>
             </Space>
-          </Col>
-        </Row>
-
-        {type === "single" ? (
-          <>
-            <Row gutter={[16, 16]}>
-              <Col span={24}>
-                <Space style={{ width: "100%" }} direction="vertical" size={4}>
-                  <Text>{t("NormalValue")}</Text>
-                  <Input.TextArea
-                    value={normal}
-                    onChange={(e) => setNormal(e.target.value)}
-                    rows={2}
-                    placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
-                    style={{ width: "100%", direction: "ltr" }}
-                    disabled={isSelecte}
-                  />
-                </Space>
-              </Col>
-              <Col span={24}>
-                <Space style={{ width: "100%" }} direction="vertical" size={4}>
-                  <Checkbox
-                    checked={isSelecte}
-                    onChange={handleIsSelecteChange}
-                  >
-                    {t("IsSelect")}
-                  </Checkbox>
-                </Space>
-              </Col>
-              {isSelecte ? (
-                <Col span={24}>
-                  <Space size={[0, 6]} wrap>
-                    {Array.isArray(options) &&
-                      options.map((el, i) => (
-                        <Tag
-                          key={i}
-                          closable
-                          color="red"
-                          onClose={() => handleClose(el)}
-                        >
-                          {el}
-                        </Tag>
-                      ))}
-                    {inputVisible ? (
-                      <Input
-                        ref={inputRef}
-                        type="text"
-                        size="small"
-                        style={tagInputStyle}
-                        value={inputValue}
-                        onChange={handleInputChange}
-                        onBlur={handleInputConfirm}
-                        onPressEnter={handleInputConfirm}
-                      />
-                    ) : (
-                      <Tag style={tagPlusStyle} onClick={showInput}>
-                        <PlusOutlined /> {t("NewOption")}
-                      </Tag>
-                    )}
-                  </Space>
-                  <br />
-                </Col>
-              ) : null}
-            </Row>
-          </>
-        ) : (
-          <div
-            className="h-[330px] overflow-y-auto p-2"
-            style={{ marginTop: 16 }}
-          >
-            <Divider orientation="left">{t("GroupTests")}</Divider>
-
-            {/* Compact Tags Row */}
-            <div style={{ marginBottom: 16 }}>
-              <Space size={[4, 8]} wrap>
-                {groups.map((group) => (
-                  <Tag
-                    key={group.id}
-                    color={expandedGroups.has(group.id) ? "blue" : "default"}
-                    style={{
-                      cursor: "pointer",
-                      fontSize: "12px",
-                      padding: "2px 6px",
-                      margin: "2px",
-                      userSelect: "none",
-                      transition: "all 0.2s ease",
-                    }}
-                    onClick={() => toggleGroupExpansion(group.id)}
-                  >
-                    {group.name} ({group.tests.length})
-                  </Tag>
-                ))}
-
-                {/* Add Group Button as Small Tag */}
-                <Tag
-                  style={{
-                    cursor: "pointer",
-                    fontSize: "12px",
-                    padding: "2px 6px",
-                    margin: "2px",
-                    borderStyle: "dashed",
-                    backgroundColor: "#fafafa",
-                  }}
-                  onClick={addGroup}
-                >
-                  <PlusOutlined style={{ fontSize: "10px" }} /> {t("AddGroup")}
-                </Tag>
-              </Space>
-
-              {groups.length === 0 && (
-                <div
-                  style={{
-                    textAlign: "center",
-                    padding: "16px",
-                    color: "#999",
-                    marginTop: 8,
-                  }}
-                >
-                  <Text type="secondary" style={{ fontSize: "12px" }}>
-                    {t("ClickAddGroupToStart")}
-                  </Text>
-                </div>
-              )}
-            </div>
-
-            {/* Action Buttons for Selected Group */}
-            {groups.some((group) => expandedGroups.has(group.id)) && (
-              <div style={{ marginBottom: 12 }}>
-                {groups
-                  .filter((group) => expandedGroups.has(group.id))
-                  .map((group) => (
-                    <div
-                      key={`actions-${group.id}`}
-                      style={{
-                        padding: "8px 12px",
-                        backgroundColor: "#f8f9fa",
-                        border: "1px solid #e9ecef",
-                        borderRadius: "4px",
-                        marginBottom: 8,
-                      }}
-                    >
-                      <Space
-                        size="small"
-                        style={{
-                          width: "100%",
-                          justifyContent: "space-between",
-                        }}
-                      >
-                        {group.isEditing ? (
-                          <Input
-                            value={group.name}
-                            onChange={(e) =>
-                              updateGroup(group.id, "name", e.target.value)
-                            }
-                            placeholder="Enter group name"
-                            onPressEnter={() => saveGroup(group.id)}
-                            onBlur={() => saveGroup(group.id)}
-                            autoFocus
-                            style={{ width: "200px" }}
-                          />
-                        ) : (
-                          <Text
-                            strong
-                            style={{ fontSize: "14px", color: "#1890ff" }}
-                          >
-                            {group.name || "Unnamed Group"}
-                          </Text>
-                        )}
-                        <Space size="small">
-                          <Tooltip title="Edit group name">
-                            <Button
-                              type="text"
-                              size="small"
-                              icon={<EditOutlined />}
-                              onClick={() => editGroup(group.id)}
-                            />
-                          </Tooltip>
-                          <Tooltip title="Delete group">
-                            <Button
-                              type="text"
-                              size="small"
-                              danger
-                              icon={<DeleteOutlined />}
-                              onClick={() => deleteGroup(group.id)}
-                            />
-                          </Tooltip>
-                          <Button
-                            type="primary"
-                            size="small"
-                            icon={<PlusOutlined />}
-                            onClick={() => addTestToGroup(group.id)}
-                          >
-                            {t("AddTest")}
-                          </Button>
-                        </Space>
-                      </Space>
-                    </div>
-                  ))}
-              </div>
-            )}
-
-            {/* Expandable Content */}
-            {groups.map(
-              (group) =>
-                expandedGroups.has(group.id) && (
-                  <div
-                    key={`content-${group.id}`}
-                    style={{
-                      marginBottom: 16,
-                      padding: "12px",
-                      backgroundColor: "#fafafa",
-                      border: "1px solid #e8e8e8",
-                      borderRadius: "6px",
-                      animation: "slideDown 0.3s ease-out",
-                    }}
-                  >
-                    {group.tests.length === 0 ? (
-                      <div
-                        style={{
-                          textAlign: "center",
-                          padding: "16px",
-                          color: "#999",
-                        }}
-                      >
-                        <Text type="secondary">{t("NoTestsInGroup")}</Text>
-                        <br />
-                        <Text type="secondary" style={{ fontSize: "12px" }}>
-                          {t("ClickAddTestToStart")}
-                        </Text>
-                      </div>
-                    ) : (
-                      group.tests.map((test) => (
-                        <Card
-                          key={test.id}
-                          size="small"
-                          style={{ marginBottom: 8 }}
-                          title={
-                            test.isEditing ? (
-                              <Input
-                                value={test.name}
-                                onChange={(e) =>
-                                  updateTestInGroup(
-                                    group.id,
-                                    test.id,
-                                    "name",
-                                    e.target.value
-                                  )
-                                }
-                                placeholder="Enter test name"
-                                onPressEnter={() => saveTest(group.id, test.id)}
-                                onBlur={() => saveTest(group.id, test.id)}
-                                autoFocus
-                              />
-                            ) : (
-                              <Space>
-                                <Text>{test.name}</Text>
-                                <Tooltip title="Edit test name">
-                                  <Button
-                                    type="text"
-                                    size="small"
-                                    icon={<EditOutlined />}
-                                    onClick={() => editTest(group.id, test.id)}
-                                  />
-                                </Tooltip>
-                                <Tooltip title="Delete test">
-                                  <Button
-                                    type="text"
-                                    size="small"
-                                    danger
-                                    icon={<DeleteOutlined />}
-                                    onClick={() =>
-                                      deleteTestFromGroup(group.id, test.id)
-                                    }
-                                  />
-                                </Tooltip>
-                                <div>
-                                  <Checkbox
-                                    checked={Boolean(test.isSelecte)}
-                                    onChange={(e) => {
-                                      handleTestIsSelecteChange(
-                                        group.id,
-                                        test.id,
-                                        e.target.checked
-                                      );
-                                    }}
-                                  >
-                                    {t("IsSelect")}
-                                  </Checkbox>
-                                  <Text
-                                    type="secondary"
-                                    style={{
-                                      fontSize: "10px",
-                                      marginLeft: "8px",
-                                    }}
-                                  ></Text>
-                                </div>
-                              </Space>
-                            )
-                          }
-                        >
-                          <Row gutter={[16, 16]}>
-                            <Col span={12}>
-                              <Space
-                                direction="vertical"
-                                size={4}
-                                style={{ width: "100%" }}
-                              >
-                                <Text type="secondary">{t("NormalValue")}</Text>
-                                <Input.TextArea
-                                  value={test.normal}
-                                  onChange={(e) =>
-                                    updateTestInGroup(
-                                      group.id,
-                                      test.id,
-                                      "normal",
-                                      e.target.value
-                                    )
-                                  }
-                                  rows={2}
-                                  placeholder="Ex: Male (4.0-7.0) mg\dl, Female (3.0-5.5) mg\dl"
-                                  disabled={test.isSelecte}
-                                />
-                              </Space>
-                            </Col>
-                            <Col span={12}>
-                              <Space
-                                direction="vertical"
-                                size={4}
-                                style={{ width: "100%" }}
-                              ></Space>
-                            </Col>
-                            {test.isSelecte && (
-                              <Col span={24}>
-                                <Space
-                                  direction="vertical"
-                                  size={4}
-                                  style={{ width: "100%" }}
-                                >
-                                  <Text type="secondary">{t("Options")}</Text>
-                                  <Space size={[0, 6]} wrap>
-                                    {test.options.map((option, index) => (
-                                      <Tag
-                                        key={index}
-                                        closable
-                                        color="blue"
-                                        onClose={() =>
-                                          removeOptionFromTest(
-                                            group.id,
-                                            test.id,
-                                            option
-                                          )
-                                        }
-                                      >
-                                        {option}
-                                      </Tag>
-                                    ))}
-                                    {inputVisible && editingTest === test.id ? (
-                                      <Input
-                                        ref={inputRef}
-                                        type="text"
-                                        size="small"
-                                        style={tagInputStyle}
-                                        value={inputValue}
-                                        onChange={handleInputChange}
-                                        onBlur={() => {
-                                          if (inputValue) {
-                                            addOptionToTest(
-                                              group.id,
-                                              test.id,
-                                              inputValue
-                                            );
-                                          }
-                                          setInputVisible(false);
-                                          setInputValue("");
-                                        }}
-                                        onPressEnter={() => {
-                                          if (inputValue) {
-                                            addOptionToTest(
-                                              group.id,
-                                              test.id,
-                                              inputValue
-                                            );
-                                          }
-                                          setInputVisible(false);
-                                          setInputValue("");
-                                        }}
-                                      />
-                                    ) : (
-                                      <Tag
-                                        style={tagPlusStyle}
-                                        onClick={() => {
-                                          setInputVisible(true);
-                                          setEditingTest(test.id);
-                                        }}
-                                      >
-                                        <PlusOutlined /> {t("NewOption")}
-                                      </Tag>
-                                    )}
-                                  </Space>
-                                </Space>
-                              </Col>
-                            )}
-                          </Row>
-                        </Card>
-                      ))
-                    )}
-                  </div>
-                )
-            )}
-          </div>
-        )}
-      </div>
-    </Modal>
+          ))}
+          <Button type="dashed" onClick={handleAddRange} block>
+            + Add Range
+          </Button>
+        </div>
+      )}
+    </div>
   );
 };
