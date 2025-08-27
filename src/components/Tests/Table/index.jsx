@@ -3,11 +3,12 @@ import {
   Button,
   Pagination,
   Popconfirm,
-  Popover,
   Space,
   Table,
   message,
   Tag,
+  Typography,
+  Divider,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
@@ -17,6 +18,7 @@ import { useAppStore, useTestStore, useTrigger } from "../../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useAppTheme } from "../../../hooks/useAppThem";
+import { formatRefText } from "../../../helper/refTextFormatter";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -37,93 +39,75 @@ export const PureTable = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const limit = usePageLimit(60, 35);
+  const limit = usePageLimit(65, 35);
   const { t } = useTranslation();
   const { setFlag, setTest } = useTrigger();
   const { appColors } = useAppTheme();
+
   const columns = [
     {
       title: t("TestName"),
-      dataIndex: "name",
-      key: "name",
-      render: (name) => <b>{name}</b>,
+      dataIndex: "name_en",
+      key: "name_en",
+      render: (name_en, row) => (
+        <div>
+          <Typography.Text className="text-[14px] font-bold">
+            {name_en}
+          </Typography.Text>
+
+          {row?.type !== "single" && (
+            <Space size={2}>
+              <Typography.Text className="ml-1">-</Typography.Text>
+              <Typography.Text type="secondary" className="text-[12px]">
+                {row?.name_ar}
+              </Typography.Text>
+            </Space>
+          )}
+        </div>
+      ),
+    },
+
+    {
+      title: t("Unit"),
+      dataIndex: "unit",
+      key: "unit",
+      render: (unit) => <Typography.Text type="secondary" className="text-[12px]">{unit}</Typography.Text>,
     },
     {
-      title: t("Type"),
+      title: t("View"),
       dataIndex: "type",
       key: "type",
-      render: (type) => (
-        <Tag color={type === "groupTest" ? "blue" : "green"}>
-          {type === "groupTest" ? t("GroupTest") : t("single")}
-        </Tag>
-      ),
+      render: (type) => <Tag>{type}</Tag>,
     },
     {
       title: t("NormalValue"),
-      dataIndex: "normal",
-      key: "normal",
-      render: (normal, record) => {
-        if (record.type === "groupTest") {
-          try {
-            const groups = JSON.parse(record.groupTest || "[]");
-            if (groups.length > 0) {
-              return (
-                <Popover
-                  content={
-                    <div className="max-w-[300px]">
-                      <div>
-                        <strong>{t("GroupTests")}:</strong>
-                      </div>
-                      {groups.map((group, idx) => (
-                        <div key={idx} style={{ marginBottom: 8 }}>
-                          <div>
-                            <strong>{group.name}:</strong>
-                          </div>
-                          <div style={{ marginLeft: 16 }}>
-                            {group.tests.map((test, testIdx) => (
-                              <div key={testIdx}>• {test.name}</div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  }
-                >
-                  <Tag color="blue">
-                    {groups.length} {t("Groups")}
-                  </Tag>
-                </Popover>
-              );
-            }
-            return <Tag color="default">{t("NoGroups")}</Tag>;
-          } catch (error) {
-            return <Tag color="red">{t("Error")}</Tag>;
-          }
-        }
+      dataIndex: "ref_text",
+      key: "ref_text",
+      render: (ref_text, record) => formatRefText(ref_text, record?.unit),
+    },
 
-        return normal?.length > 30 ? (
-          <Popover content={<div className="max-w-[260px]">{normal}</div>}>
-            {normal.substr(0, 30)}...
-          </Popover>
-        ) : (
-          normal || ". . ."
-        );
-      },
+    {
+      title: t("Sample Type"),
+      dataIndex: "sample_type",
+      key: "sample_type",
+      render: (sample_type) => <Tag>{sample_type}</Tag>,
     },
     {
       title: t("Price"),
-      dataIndex: "price",
-      key: "price",
-      render: (price) => <b>{Number(price).toLocaleString("en")} IQD</b>,
+      dataIndex: "price_iqd",
+      key: "price_iqd",
+      render: (price_iqd) => (
+        <b>{Number(price_iqd).toLocaleString("en")} IQD</b>
+      ),
     },
 
     {
       title: t("LastUpdate"),
-      dataIndex: "updatedAt",
-      key: "updatedAt",
-      render: (updatedAt) => (
+      dataIndex: "updated_at",
+      key: "updated_at",
+      render: (updated_at) => (
         <span style={{ color: "#666" }}>
-          {dayjs(updatedAt).add(3, "hour").format("DD/MM/YYYY hh:mm A")}
+          {dayjs(updated_at).add(3, "hour").format("DD/MM/YYYY hh:mm A")}
         </span>
       ),
     },

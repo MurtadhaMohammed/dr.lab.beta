@@ -23,6 +23,7 @@ class LabDB {
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
       this.initializeDatabase();
+      this.seedTestsCatalogIfEmpty();
       this.checkAndAddTestTypeColumnAndGroupTest();
       this.checkAndAddVisitNumberColumn();
       this.initTestsFromJSON();
@@ -107,7 +108,52 @@ class LabDB {
         FOREIGN KEY (testID) REFERENCES tests(id) ON DELETE CASCADE
       );
 
+      CREATE TABLE IF NOT EXISTS tests_catalog (
+        id          INTEGER PRIMARY KEY,
+        code        TEXT    NOT NULL UNIQUE,                     
+        type        TEXT    NOT NULL CHECK (type IN ('single','panel','composite')),
+        name_en     TEXT    NOT NULL,                           
+        name_ar     TEXT,                                     
+        sample_type TEXT,                                         
+        unit        TEXT,                                        
+        ref_text    TEXT,                                        
+        meta_json   TEXT    NOT NULL DEFAULT '{}',               
+        price_iqd   INTEGER NOT NULL DEFAULT 0,                  
+        is_active   INTEGER NOT NULL DEFAULT 1,                  
+        version     TEXT,                                        
+        created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+        updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+      );
+
     `);
+  }
+
+  seedTestsCatalogIfEmpty() {
+    const table = this.db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='tests_catalog'"
+      )
+      .get();
+    if (!table) {
+      console.log("ℹ️ tests_catalog table not found yet.");
+      return;
+    }
+    const { count } = this.db
+      .prepare("SELECT COUNT(*) AS count FROM tests_catalog")
+      .get();
+    if (count > 0) {
+      console.log("ℹ️ tests_catalog already has data. Skipping seed.sql");
+      return;
+    }
+
+    try {
+      const seedPath = path.join(__dirname, "seed.sql");
+      const sql = fs.readFileSync(seedPath, "utf8");
+      this.db.exec(sql);
+      console.log(`✅ Seed executed successfully from: ${seedPath}`);
+    } catch (err) {
+      console.error("❌ Failed to execute seed.sql:", err);
+    }
   }
 
   async checkAndAddVisitNumberColumn() {
@@ -144,9 +190,7 @@ class LabDB {
       `);
       const columns = columnCheckStmt.all();
 
-      const hasTypeColumn = columns.some(
-        (column) => column.name === "type"
-      );
+      const hasTypeColumn = columns.some((column) => column.name === "type");
 
       const hasGroupTestColumn = columns.some(
         (column) => column.name === "groupTest"
@@ -639,27 +683,36 @@ class LabDB {
   }
 
   async getTests({ q = "", skip = 0, limit = 10 }) {
-    // Prepare the query to count the total number of tests
-    const countStmt = await this.db.prepare(`
+    try {
+      const countStmt = this.db.prepare(`
       SELECT COUNT(*) as total
-      FROM tests
-      WHERE name LIKE ?
+      FROM tests_catalog
+      WHERE code LIKE ?
+         OR name_en LIKE ?
+         OR name_ar LIKE ?
     `);
 
-    const countResult = countStmt.get(`%${q}%`);
-    const total = countResult?.total || 0;
+      const countResult = countStmt.get(`%${q}%`, `%${q}%`, `%${q}%`);
+      const total = countResult?.total || 0;
 
-    // Prepare the query to get the paginated results
-    const stmt = await this.db.prepare(`
-      SELECT * FROM tests
-      WHERE name LIKE ?
-      ORDER BY createdAt DESC
+      const stmt = this.db.prepare(`
+      SELECT id, code, type, name_en, name_ar, sample_type, unit,
+             ref_text, price_iqd, is_active, version, created_at, updated_at
+      FROM tests_catalog
+      WHERE code LIKE ?
+         OR name_en LIKE ?
+         OR name_ar LIKE ?
+      ORDER BY created_at DESC
       LIMIT ? OFFSET ?
     `);
 
-    const tests = stmt.all(`%${q}%`, limit, skip);
+      const tests = stmt.all(`%${q}%`, `%${q}%`, `%${q}%`, limit, skip);
 
-    return { success: true, total, data: tests };
+      return { success: true, total, data: tests };
+    } catch (error) {
+      console.error("❌ Error in getCatalogTests:", error);
+      return { success: false, total: 0, data: [] };
+    }
   }
 
   async testByID(id) {
