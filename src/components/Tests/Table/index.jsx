@@ -68,16 +68,28 @@ export const PureTable = () => {
     },
 
     {
-      title: t("Unit"),
-      dataIndex: "unit",
-      key: "unit",
-      render: (unit) => <Typography.Text type="secondary" className="text-[12px]">{unit}</Typography.Text>,
-    },
-    {
       title: t("View"),
       dataIndex: "type",
       key: "type",
-      render: (type) => <Tag>{type}</Tag>,
+      render: (type) => {
+        const colors = {
+          single: "geekblue",
+          panel: "magenta",
+          composite: "purple",
+        };
+
+        return <Tag color={colors[type]}>{type}</Tag>;
+      },
+    },
+    {
+      title: t("Unit"),
+      dataIndex: "unit",
+      key: "unit",
+      render: (unit) => (
+        <Typography.Text type="secondary" className="text-[12px]">
+          {unit}
+        </Typography.Text>
+      ),
     },
     {
       title: t("NormalValue"),
@@ -87,7 +99,7 @@ export const PureTable = () => {
     },
 
     {
-      title: t("Sample Type"),
+      title: t("Sample"),
       dataIndex: "sample_type",
       key: "sample_type",
       render: (sample_type) => <Tag>{sample_type}</Tag>,
