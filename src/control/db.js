@@ -1764,8 +1764,8 @@ class LabDB {
 
       const countStmt = await this.db.prepare(`
         SELECT COUNT(*) as total
-        FROM visits v
-        WHERE strftime('%Y-%m-%d', v.createdAt) = ?
+        FROM visit_v2 v
+        WHERE strftime('%Y-%m-%d', v.created_at) = ?
       `);
 
       const countResult = countStmt.get(today);
@@ -1791,7 +1791,7 @@ class LabDB {
 
       const countStmt = await this.db.prepare(`
         SELECT COUNT(*) as total
-        FROM visits v
+        FROM visit_v2 v
         WHERE v.status = 'PENDING'
       `);
 

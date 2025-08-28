@@ -1,26 +1,20 @@
 import React, { useState, useEffect } from "react";
 import {
   Modal,
-  List,
   Button,
   Typography,
   message,
   Spin,
   Select,
-  Tag,
   Space,
 } from "antd";
 import {
-  StarOutlined,
-  StarFilled,
-  DeleteOutlined,
-  XOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-import { useHomeStore } from "../../../libs/appStore";
+
 import { useTranslation } from "react-i18next";
-import { send } from "../../../control/renderer";
-import { FiTrash, FiXCircle } from "react-icons/fi";
+import { send } from "../../control/renderer";
+import { useHomeStore } from "../../libs/appStore";
 
 const { Text } = Typography;
 

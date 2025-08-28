@@ -22,7 +22,6 @@ import {
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
-import { getTotalPrice } from "../../../helper/price";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import {
@@ -39,7 +38,11 @@ import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 import { usePlan } from "../../../hooks/usePlan";
 import { useAppTheme } from "../../../hooks/useAppThem";
 
-export const PureTable = ({ isReport = false }) => {
+export const PureTable = ({
+  isReport = false,
+  ignore = [],
+  borderd = true,
+}) => {
   const { isReload, setIsReload, isOnline } = useAppStore();
   const { canSendWhatsapp, initUser } = usePlan();
   const {
@@ -260,33 +263,42 @@ export const PureTable = ({ isReport = false }) => {
     </div>
   );
 
-  const columns = [
+  const rawColumns = [
     {
       title: t("Name"),
       dataIndex: "name",
       key: "name",
       render: (_, record) => (
-        <Space size={0} direction="vertical">
-          <b>{record?.patient?.name}</b>
-          {record?.doctor && (
-            <small className="block -mt-[2px] opacity-60">
-              {t("FROM")} {record?.doctor?.name}
-            </small>
+        <Space size={16}>
+          {record?.patient?.gender === "male" ? (
+            <ManOutlined style={{ color: "#0000ff", fontSize: 16 }} />
+          ) : (
+            <WomanOutlined
+              style={{ color: "rgb(235, 47, 150)", fontSize: 16 }}
+            />
           )}
+          <Space size={0} direction="vertical">
+            <b>{record?.patient?.name}</b>
+            {record?.doctor && (
+              <small className="block -mt-[2px] opacity-60">
+                {t("FROM")} {record?.doctor?.name}
+              </small>
+            )}
+          </Space>
         </Space>
       ),
     },
-    {
-      title: t("Gender"),
-      dataIndex: "gender",
-      key: "gender",
-      render: (_, record) =>
-        record?.patient?.gender === "male" ? (
-          <ManOutlined style={{ color: "#0000ff", fontSize: 16 }} />
-        ) : (
-          <WomanOutlined style={{ color: "rgb(235, 47, 150)", fontSize: 16 }} />
-        ),
-    },
+    // {
+    //   title: t("Gender"),
+    //   dataIndex: "gender",
+    //   key: "gender",
+    //   render: (_, record) =>
+    //     record?.patient?.gender === "male" ? (
+    //       <ManOutlined style={{ color: "#0000ff", fontSize: 16 }} />
+    //     ) : (
+    //       <WomanOutlined style={{ color: "rgb(235, 47, 150)", fontSize: 16 }} />
+    //     ),
+    // },
     {
       title: t("Tests"),
       dataIndex: "tests",
@@ -332,7 +344,7 @@ export const PureTable = ({ isReport = false }) => {
         );
       },
     },
-    {
+    !ignore?.includes("price") && {
       title: t("Price"),
       dataIndex: "grossPrice",
       key: "grossPrice",
@@ -355,7 +367,7 @@ export const PureTable = ({ isReport = false }) => {
         );
       },
     },
-    {
+    !ignore?.includes("endPrice") && {
       title: t("EndPrice"),
       dataIndex: "endPrice",
       key: "endPrice",
@@ -365,7 +377,7 @@ export const PureTable = ({ isReport = false }) => {
         </b>
       ),
     },
-    {
+    !ignore?.includes("discount") && {
       title: t("Discount"),
       dataIndex: "discount",
       key: "discount",
@@ -383,8 +395,8 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "createdAt",
       key: "createdAt",
       render: (createdAt) => (
-        <span style={{ color: "#666" }}>
-          <span style={{ fontSize: 14 }}>
+        <span style={{ color: "#666", fontSize: 14 }}>
+          <span style={{ fontSize: 12 }}>
             {dayjs(createdAt).format("DD/MM/YYYY")}
           </span>{" "}
           {dayjs(createdAt).add(3, "hours").format("hh:mm A")}
@@ -483,6 +495,8 @@ export const PureTable = ({ isReport = false }) => {
       }),
     },
   ];
+
+  const columns = rawColumns.filter(Boolean);
 
   //commit
 
@@ -609,12 +623,16 @@ export const PureTable = ({ isReport = false }) => {
   return (
     <>
       <Table
-        style={{
-          marginTop: 16,
-          border: `1px solid ${appColors.colorBorder}`,
-          borderRadius: 10,
-          overflow: "hidden",
-        }}
+        style={
+          borderd
+            ? {
+                marginTop: 16,
+                border: `1px solid ${appColors.colorBorder}`,
+                borderRadius: 10,
+                overflow: "hidden",
+              }
+            : {marginTop: 4}
+        }
         columns={columns}
         rowKey={(row) => row.id}
         dataSource={data}
@@ -644,7 +662,6 @@ export const PureTable = ({ isReport = false }) => {
         )}
       />
       <ResultsModal
-        // open, visit, onCancel, onSubmit
         open={isResultsModal}
         visit={record}
         onCancel={() => setIsResultsModal(false)}

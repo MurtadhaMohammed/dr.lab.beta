@@ -1,10 +1,6 @@
 import {
-  ArrowRightOutlined,
   ClockCircleOutlined,
-  DownOutlined,
   EditOutlined,
-  FundOutlined,
-  TaobaoOutlined,
   UsergroupAddOutlined,
   UserOutlined,
 } from "@ant-design/icons";
@@ -17,23 +13,19 @@ import {
   Card,
   Divider,
   Button,
-  Dropdown,
   Radio,
   Spin,
-  Tag,
 } from "antd";
 import "./style.css";
-import { PureModal, ResultsModal } from "../../components/Visits";
-import { PureTable } from "../../components/Home";
+import { PureModal, PureTable } from "../../components/Visits";
 import { useHomeStore, useLanguage, useAppStore } from "../../libs/appStore";
-const { Search } = Input;
 import { useTranslation } from "react-i18next";
-import { FiArrowLeft } from "react-icons/fi";
-import { QuickActionsModal } from "../../components/Home/Modal/quickActionModal";
+import { QuickActionsModal } from "./quickActionModal";
 import { useEffect, useState } from "react";
 import { send } from "../../control/renderer";
 import { PDFSettings } from "../SettingScreen/pdfSettings";
 
+const { Search } = Input;
 function CardStatistics({ icon, title, value, loading }) {
   return (
     <Card styles={{ body: { padding: "12px 18px" } }}>
@@ -55,23 +47,12 @@ function CardStatistics({ icon, title, value, loading }) {
   );
 }
 
-// function ActionBtn({ title, onClick }) {
-//   return (
-
-//   );
-// }
 
 const HomeScreen = () => {
   const {
     setIsModal,
-    testType,
-    setTestType,
     setQuerySearch,
-    id,
     setReset,
-    setIsToday,
-    isToday,
-    selectedTest,
     setSelectedTest,
     setIsQuickActionsModal,
   } = useHomeStore();
@@ -93,19 +74,18 @@ const HomeScreen = () => {
   const fetchStatistics = async () => {
     setStatisticsLoading(true);
     try {
-      const [pendingRes, todayRes, totalPatientsRes, totalVisitsRes] =
+      const [pendingRes, todayRes, totalPatientsRes] =
         await Promise.all([
           send({ query: "getPendingResults" }),
           send({ query: "getTodayVisits" }),
           send({ query: "getTotalPatients" }),
-          send({ query: "getTotalVisits", data: {} }),
+          // send({ query: "getTotalVisits", data: {} }),
         ]);
 
       setStatistics({
         pendingResults: pendingRes.success ? pendingRes.total : 0,
         todayVisits: todayRes.success ? todayRes.total : 0,
-        totalPatients: totalPatientsRes.success ? totalPatientsRes.total : 0,
-        totalVisits: totalVisitsRes.success ? totalVisitsRes.total : 0,
+        totalPatients: totalPatientsRes.success ? totalPatientsRes.total : 0
       });
     } catch (error) {
       console.error("Error fetching statistics:", error);
@@ -127,10 +107,7 @@ const HomeScreen = () => {
   };
 
   const onClick = ({ key, id }) => {
-    console.log("onClick", key, id);
-    // Always reset when clicking any quick action button
     setReset();
-    setTestType("CUSTOME");
     if (key !== "Other Tests") {
       setSelectedTest(id);
     }
@@ -157,12 +134,11 @@ const HomeScreen = () => {
     },
   ];
 
-
   return (
     <div className="home-screen page pb-[50px]">
       <div className="border-none p-[2%]">
         <Row gutter={[16, 16]}>
-          <Col span={16}>
+          <Col span={17}>
             <div className="grid grid-cols-3 gap-4">
               <CardStatistics
                 title={t("Pending Results")}
@@ -188,7 +164,7 @@ const HomeScreen = () => {
               />
             </div>
             <Card
-              className="mt-4"
+              className="mt-4 overflow-hidden"
               styles={{ body: { padding: 0 } }}
               title={
                 <div className="app-flex-space w-full font-normal">
@@ -210,10 +186,13 @@ const HomeScreen = () => {
                 </div>
               }
             >
-              <PureTable />
+              <PureTable
+                ignore={["price", "endPrice", "discount"]}
+                borderd={false}
+              />
             </Card>
           </Col>
-          <Col span={8}>
+          <Col span={7}>
             <Card
               //className="bg-gradient-to-r from-[#f6f6f6] to-[#f6f6f64c]"
               // className="bg-[#f6f6f6]"
@@ -226,7 +205,7 @@ const HomeScreen = () => {
               }}
               title={
                 <div className="app-flex-space w-full">
-                  <Typography.Text>{t("Common Tests")}</Typography.Text>
+                  <Typography.Text>{t("Quick Actions")}</Typography.Text>
                   <Button
                     size="small"
                     icon={<EditOutlined />}
@@ -253,23 +232,8 @@ const HomeScreen = () => {
                   </div>
                 ))}
               </Space>
-            </Card>
 
-            <Card
-              styles={{
-                title: {
-                  fontSize: 14,
-                  fontWeight: "normal",
-                  opacity: 0.8,
-                },
-              }}
-              className="mt-4"
-              title={
-                <div className="app-flex-space w-full">
-                  <Typography.Text>{t("Quick Settings")}</Typography.Text>
-                </div>
-              }
-            >
+              <Divider />
               <PDFSettings />
               <Divider />
 
@@ -289,7 +253,7 @@ const HomeScreen = () => {
         </Row>
 
         <PureModal />
-        <ResultsModal />
+        {/* <ResultsModal /> */}
         <QuickActionsModal />
       </div>
     </div>

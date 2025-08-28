@@ -1,6 +1,6 @@
 import { Button, DatePicker, Divider, Popover, Select, Space } from "antd";
 import "./style.css";
-import { PureTable as HomeTable } from "../../components/Home";
+import { PureTable as HomeTable } from "../../components/Visits";
 import { useAppStore, useReportsStore } from "../../libs/appStore";
 import { getTotalVisits, getSubTotalAmount } from "../../components/Reports";
 import dayjs from "dayjs";
@@ -9,7 +9,6 @@ import { getTotalPrice } from "../../helper/price";
 import Info from "../../components/Reports/Info";
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import PopOverContent from "../SettingScreen/PopOverContent";
 import { usePlan } from "../../hooks/usePlan";
 
 const ReportsScreen = () => {
