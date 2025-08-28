@@ -57,9 +57,7 @@ export const DoctorHistory = () => {
               : {}
           }
         >
-          {Number(
-            getTotalPrice(record?.testType, record?.tests)
-          ).toLocaleString("en")}
+          {Number(getTotalPrice(record?.tests)).toLocaleString("en")}
         </span>
       ),
     },
@@ -71,7 +69,7 @@ export const DoctorHistory = () => {
       render: (_, record) => (
         <b style={{ whiteSpace: "nowrap" }}>
           {Number(
-            getTotalPrice(record?.testType, record?.tests) - record?.discount
+            getTotalPrice(record?.tests) - record?.discount
           ).toLocaleString("en")}{" "}
           IQD
         </b>
@@ -140,7 +138,7 @@ export const DoctorHistory = () => {
                   data?.reduce((acc, item) => {
                     return (
                       acc +
-                      (getTotalPrice(item?.testType, item?.tests) -
+                      (getTotalPrice(item?.tests) -
                         item?.discount)
                     );
                   }, 0)

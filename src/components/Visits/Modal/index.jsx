@@ -39,7 +39,10 @@ export const PureModal = () => {
   };
 
   const isPatientValid =
-    patientRow?.name && patientRow?.gender && patientRow?.birth && patientRow?.phone;
+    patientRow?.name &&
+    patientRow?.gender &&
+    patientRow?.birth &&
+    patientRow?.phone;
 
   const isDoctorValid =
     (doctorRow &&
@@ -61,11 +64,24 @@ export const PureModal = () => {
     }
   };
 
-  const addVisit = async (patientID, doctorID) => {
+  console.log({ tests });
+
+  const addVisit = async (patient_id, doctor_id) => {
     try {
+      // patient_id: 1,
+      // doctor_id: 2,
+      // tests: [{ id: 1 }, { id: 5 }, { id: 12 }],
+      // discount_iqd: 2000,
+      // notes: "زيارة صباحية"
       const resp = await send({
         query: "addVisit",
-        data: { status, testType, tests, discount, patientID, doctorID },
+        data: {
+          tests: tests?.map((el) => ({ id: el.id })),
+          discount_iqd: discount,
+          patient_id,
+          doctor_id: doctor_id || null,
+          notes: "",
+        },
       });
       return resp;
     } catch (error) {
@@ -190,7 +206,7 @@ export const PureModal = () => {
     setDoctorRow();
     setIsModal(false);
     setIsReload(!isReload);
-    setTests([])
+    setTests([]);
     setStep(0);
   };
 
@@ -401,7 +417,7 @@ export const PureModal = () => {
             title: `${t("AddTests")}`,
           },
           {
-            title:  `${t("SelectPatient")}` ,
+            title: `${t("SelectPatient")}`,
           },
           {
             title: `${t("SelectDoctor")}`,

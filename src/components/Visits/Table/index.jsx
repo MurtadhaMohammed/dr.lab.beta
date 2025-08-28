@@ -34,7 +34,7 @@ import {
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
 import { apiCall } from "../../../libs/api";
-import { parseTests } from "../ResultsModal";
+import { parseTests, ResultsModal } from "../ResultsModal";
 import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 import { usePlan } from "../../../hooks/usePlan";
 import { useAppTheme } from "../../../hooks/useAppThem";
@@ -50,8 +50,6 @@ export const PureTable = ({ isReport = false }) => {
     setTests,
     setCreatedAt,
     querySearch,
-    setIsResultsModal,
-    setRecord,
     isToday,
     setPatientRow,
     setDoctorRow,
@@ -59,6 +57,8 @@ export const PureTable = ({ isReport = false }) => {
   const { filterDate, visitStatus } = useReportsStore();
 
   const [data, setData] = useState([]);
+  const [record, setRecord] = useState(null);
+  const [isResultsModal, setIsResultsModal] = useState(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [msgLoading, setMsgLoading] = useState(false);
@@ -87,6 +87,7 @@ export const PureTable = ({ isReport = false }) => {
   const statusColor = {
     PENDING: "orange",
     COMPLETED: "green",
+    REPORTED: "blue",
   };
 
   const handlePrintBarcode = async (record) => {
@@ -291,26 +292,33 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-        let testType = record.testType.replace(/^"|"$/g, "");
-        let list = record.tests;
-        let numOfView = 2;
-        let restCount =
-          list?.length > numOfView ? list?.length - numOfView : null;
+        const list = Array.isArray(record.tests) ? record.tests : [];
+        const numOfView = 2;
+        const restCount =
+          list.length > numOfView ? list.length - numOfView : null;
+
+        const getLabel = (item) =>
+          item?.name_en || item?.name_ar || item?.code || "";
+
         return (
           <Space wrap size={[0, "small"]}>
-            {list?.slice(0, numOfView).map((el, index) => (
-              <Tag key={`${el.id || ""}-${index}`}>
-                {el[testType === "CUSTOME" ? "name" : "title"]}
+            {list.slice(0, numOfView).map((el) => (
+              <Tag key={el.visit_item_id || el.test_id || el.code}>
+                {getLabel(el)}
               </Tag>
             ))}
-            {restCount && (
+            {restCount ? (
               <Popover
                 content={
-                  <div style={{ maxWidth: "300" }}>
+                  <div style={{ maxWidth: 300 }}>
                     <Space wrap>
-                      {list?.map((el, index) => (
-                        <Tag key={`${el.id || ""}-${index}`}>
-                          {el[testType === "CUSTOME" ? "name" : "title"]}
+                      {list.map((el) => (
+                        <Tag
+                          key={`all-${
+                            el.visit_item_id || el.test_id || el.code
+                          }`}
+                        >
+                          {getLabel(el)}
                         </Tag>
                       ))}
                     </Space>
@@ -319,43 +327,41 @@ export const PureTable = ({ isReport = false }) => {
               >
                 <Tag>+{restCount}</Tag>
               </Popover>
-            )}
+            ) : null}
           </Space>
         );
       },
     },
     {
       title: t("Price"),
-      dataIndex: "id",
-      key: "id",
-      render: (_, record) => (
-        <span
-          style={
-            record?.discount
-              ? {
-                  textDecoration: "line-through",
-                  opacity: 0.3,
-                  fontStyle: "italic",
-                }
-              : {}
-          }
-        >
-          {Number(
-            getTotalPrice(record?.testType, record?.tests)
-          ).toLocaleString("en")}
-        </span>
-      ),
+      dataIndex: "grossPrice",
+      key: "grossPrice",
+      render: (_, record) => {
+        const hasDiscount = Number(record?.discount) > 0;
+        return (
+          <span
+            style={
+              hasDiscount
+                ? {
+                    textDecoration: "line-through",
+                    opacity: 0.3,
+                    fontStyle: "italic",
+                  }
+                : {}
+            }
+          >
+            {Number(record?.grossPrice || 0).toLocaleString("en")} IQD
+          </span>
+        );
+      },
     },
     {
       title: t("EndPrice"),
-      dataIndex: "id",
-      key: "id",
+      dataIndex: "endPrice",
+      key: "endPrice",
       render: (_, record) => (
-        <b style={{ whiteSpace: "nowarp" }}>
-          {Number(
-            getTotalPrice(record?.testType, record?.tests) - record?.discount
-          ).toLocaleString("en")}{" "}
-          IQD
+        <b style={{ whiteSpace: "nowrap" }}>
+          {Number(record?.endPrice || 0).toLocaleString("en")} IQD
         </b>
       ),
     },
@@ -364,10 +370,10 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "discount",
       key: "discount",
       render: (_, record) =>
-        record?.discount ? (
-          <Tag color="geekblue">{`${Number(record?.discount).toLocaleString(
-            "en"
-          )} IQD`}</Tag>
+        Number(record?.discount) ? (
+          <Tag color="geekblue">
+            {Number(record?.discount).toLocaleString("en")} IQD
+          </Tag>
         ) : (
           ". . ."
         ),
@@ -396,7 +402,7 @@ export const PureTable = ({ isReport = false }) => {
         title: "",
         key: "action",
         render: (_, record) => (
-          <Space Space size="small" className="custom-actions">
+          <Space size="small" className="custom-actions">
             <Button
               onClick={() => handleResults(record)}
               style={{ fontSize: 12 }}
@@ -404,6 +410,7 @@ export const PureTable = ({ isReport = false }) => {
             >
               {t("PrintResults")}
             </Button>
+
             <Tooltip title={t("PrintBarcode")}>
               <Button
                 onClick={() => handlePrintBarcode(record)}
@@ -413,52 +420,54 @@ export const PureTable = ({ isReport = false }) => {
                 disabled={userType === "FREE"}
               />
             </Tooltip>
+
             <Divider type="vertical" />
-            {
-              <Popover
-                onOpenChange={(isOpen) => {
-                  if (isOpen) setDestPhone(record?.patient?.phone);
-                  else setIsConfirm(false);
-                }}
-                placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
-                content={
-                  userType === "FREE" ? (
-                    <PopOverContent
-                      website={"https://www.puretik.com/ar"}
-                      email={"puretik@gmail.com"}
-                      phone={"07710553120"}
-                    />
-                  ) : (
-                    whatsapContnet(record)
-                  )
+
+            <Popover
+              onOpenChange={(isOpen) => {
+                if (isOpen) setDestPhone(record?.patient?.phone);
+                else setIsConfirm(false);
+              }}
+              placement={direction === "ltr" ? "bottomRight" : "bottomLeft"}
+              content={
+                userType === "FREE" ? (
+                  <PopOverContent
+                    website={"https://www.puretik.com/ar"}
+                    email={"puretik@gmail.com"}
+                    phone={"07710553120"}
+                  />
+                ) : (
+                  whatsapContnet(record)
+                )
+              }
+              open={
+                userType === "FREE"
+                  ? undefined
+                  : record?.status === "PENDING"
+                  ? false
+                  : undefined
+              }
+            >
+              <Button
+                size="small"
+                className=" sticky"
+                icon={<WhatsAppOutlined />}
+                loading={msgLoading}
+                disabled={
+                  record?.status === "PENDING" ||
+                  userType === "FREE" ||
+                  !canSendWhatsapp()
                 }
-                open={
-                  userType === "FREE"
-                    ? undefined
-                    : record?.status == "PENDING"
-                    ? false
-                    : undefined
-                }
-              >
-                <Button
-                  size="small"
-                  className=" sticky"
-                  icon={<WhatsAppOutlined />}
-                  loading={msgLoading}
-                  disabled={
-                    record?.status == "PENDING" ||
-                    userType === "FREE" ||
-                    !canSendWhatsapp()
-                  }
-                />
-              </Popover>
-            }
+              />
+            </Popover>
+
             <Button
               size="small"
               disabled={record?.status === "COMPLETED"}
               icon={<EditOutlined />}
               onClick={() => handleEdit(record)}
-            ></Button>
+            />
+
             <Popconfirm
               title={t("DeleteTheRecord")}
               description={t("DeleteThisRecord")}
@@ -467,13 +476,14 @@ export const PureTable = ({ isReport = false }) => {
               cancelText={t("No")}
               placement="leftBottom"
             >
-              <Button danger size="small" icon={<DeleteOutlined />}></Button>
+              <Button danger size="small" icon={<DeleteOutlined />} />
             </Popconfirm>
           </Space>
         ),
       }),
     },
   ];
+
   //commit
 
   const handleResults = (record) => {
@@ -577,41 +587,69 @@ export const PureTable = ({ isReport = false }) => {
     flag,
   ]);
 
+  const handleSaveResult = async (data) => {
+    try {
+      const resp = await send({
+        query: "updateVisit",
+        data,
+      });
+
+      if (resp?.success) {
+        message.success("Results Saved.!");
+        setRecord(null);
+        setIsReload(!isReload);
+        setIsResultsModal(false);
+      } else message.error("Error!.");
+    } catch (error) {
+      message.error("Error!.");
+      console.log(error);
+    }
+  };
+
   return (
-    <Table
-      style={{
-        marginTop: 16,
-        border: `1px solid ${appColors.colorBorder}`,
-        borderRadius: 10,
-        overflow: "hidden",
-      }}
-      columns={columns}
-      rowKey={(row) => row.id}
-      dataSource={data}
-      loading={loading}
-      pagination={false}
-      size="small"
-      footer={() => (
-        <div className="table-footer app-flex-space">
-          <div
-            className="pattern-isometric pattern-indigo-400 pattern-bg-white 
+    <>
+      <Table
+        style={{
+          marginTop: 16,
+          border: `1px solid ${appColors.colorBorder}`,
+          borderRadius: 10,
+          overflow: "hidden",
+        }}
+        columns={columns}
+        rowKey={(row) => row.id}
+        dataSource={data}
+        loading={loading}
+        pagination={false}
+        size="small"
+        footer={() => (
+          <div className="table-footer app-flex-space">
+            <div
+              className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
-          ></div>
-          <p>
-            <b>{total}</b> {t("results")}
-          </p>
-          <Pagination
-            simple
-            current={page}
-            onChange={(_page) => {
-              setPage(_page);
-            }}
-            total={total}
-            pageSize={limit}
-            showSizeChanger={false}
-          />
-        </div>
-      )}
-    />
+            ></div>
+            <p>
+              <b>{total}</b> {t("results")}
+            </p>
+            <Pagination
+              simple
+              current={page}
+              onChange={(_page) => {
+                setPage(_page);
+              }}
+              total={total}
+              pageSize={limit}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
+      />
+      <ResultsModal
+        // open, visit, onCancel, onSubmit
+        open={isResultsModal}
+        visit={record}
+        onCancel={() => setIsResultsModal(false)}
+        onSubmit={handleSaveResult}
+      />
+    </>
   );
 };

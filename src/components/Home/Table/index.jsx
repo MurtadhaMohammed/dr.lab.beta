@@ -291,26 +291,33 @@ export const PureTable = ({ isReport = false }) => {
       dataIndex: "tests",
       key: "tests",
       render: (_, record) => {
-        let testType = record?.testType?.replace(/^"|"$/g, "");
-        let list = record.tests;
-        let numOfView = 1;
-        let restCount =
-          list?.length > numOfView ? list?.length - numOfView : null;
+        const list = Array.isArray(record.tests) ? record.tests : [];
+        const numOfView = 2;
+        const restCount =
+          list.length > numOfView ? list.length - numOfView : null;
+
+        const getLabel = (item) =>
+          item?.name_en || item?.name_ar || item?.code || "";
+
         return (
           <Space wrap size={[0, "small"]}>
-            {list?.slice(0, numOfView).map((el, index) => (
-              <Tag key={`${el.id || ""}-${index}`}>
-                {el[testType === "CUSTOME" ? "name" : "title"]}
+            {list.slice(0, numOfView).map((el) => (
+              <Tag key={el.visit_item_id || el.test_id || el.code}>
+                {getLabel(el)}
               </Tag>
             ))}
-            {restCount && (
+            {restCount ? (
               <Popover
                 content={
-                  <div style={{ maxWidth: "300" }}>
+                  <div style={{ maxWidth: 300 }}>
                     <Space wrap>
-                      {list?.map((el, index) => (
-                        <Tag key={`${el.id || ""}-${index}`}>
-                          {el[testType === "CUSTOME" ? "name" : "title"]}
+                      {list.map((el) => (
+                        <Tag
+                          key={`all-${
+                            el.visit_item_id || el.test_id || el.code
+                          }`}
+                        >
+                          {getLabel(el)}
                         </Tag>
                       ))}
                     </Space>
@@ -319,38 +326,12 @@ export const PureTable = ({ isReport = false }) => {
               >
                 <Tag>+{restCount}</Tag>
               </Popover>
-            )}
+            ) : null}
           </Space>
         );
       },
     },
 
-    // {
-    //   title: t("EndPrice"),
-    //   dataIndex: "id",
-    //   key: "id",
-    //   render: (_, record) => (
-    //     <b style={{ whiteSpace: "nowarp" }}>
-    //       {Number(
-    //         getTotalPrice(record?.testType, record?.tests) - record?.discount
-    //       ).toLocaleString("en")}{" "}
-    //       IQD
-    //     </b>
-    //   ),
-    // },
-    // {
-    //   title: t("Discount"),
-    //   dataIndex: "discount",
-    //   key: "discount",
-    //   render: (_, record) =>
-    //     record?.discount ? (
-    //       <Tag color="geekblue">{`${Number(record?.discount).toLocaleString(
-    //         "en"
-    //       )} IQD`}</Tag>
-    //     ) : (
-    //       ". . ."
-    //     ),
-    // },
     {
       title: t("CreatedAt"),
       dataIndex: "createdAt",

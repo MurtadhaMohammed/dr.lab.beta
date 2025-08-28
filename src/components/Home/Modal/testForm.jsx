@@ -21,7 +21,7 @@ import { useHomeStore } from "../../../libs/appStore";
 import "./style.css";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
-import { getPrice, getTotalPrice } from "../../../helper/price";
+import { getTotalPrice } from "../../../helper/price";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "../../../hooks/useAppThem";
 
@@ -115,18 +115,18 @@ const TestForm = () => {
 
   // Function to get price with condition to handle negative price
   const getPriceWithCondition = (type, item) => {
-    const price = getPrice(type, item);
+    const price = item?.price_iqd;
     return price > 0 ? price : 0;
   };
 
   // Function to get total price with condition to handle negative total
-  const getTotalPriceWithCondition = (type, items) => {
+  const getTotalPriceWithCondition = (items) => {
     if (editTest)
       items = items?.map((el) => {
         if (el?.id === editTest?.id) return editTest;
         else return el;
       });
-    const totalPrice = getTotalPrice(type, items);
+    const totalPrice = getTotalPrice(items);
     return totalPrice > 0 ? totalPrice : 0;
   };
 

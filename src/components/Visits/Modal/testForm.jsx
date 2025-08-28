@@ -18,7 +18,7 @@ import { useHomeStore } from "../../../libs/appStore";
 import "./style.css";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
-import { getPrice, getTotalPrice } from "../../../helper/price";
+import { getTotalPrice } from "../../../helper/price";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "../../../hooks/useAppThem";
 
@@ -35,14 +35,9 @@ const TestForm = () => {
     selectedTest,
   } = useHomeStore();
   const [testsList, setTestList] = useState([]);
-  const [packageList, setPackageList] = useState([]);
   const [editTest, setEditTest] = useState(null);
   const { t } = useTranslation();
   const { appTheme, appColors } = useAppTheme();
-  const testLabel = {
-    CUSTOME: t("Custom"),
-    PACKAGE: t("Package"),
-  };
 
   let skip = 0; // Initialize skip (offset)
   const limit = 10; // Set the limit for the number of tests per batch
@@ -72,28 +67,9 @@ const TestForm = () => {
       });
   };
 
-  const getPackages = (querySearch = "") => {
-    send({
-      query: "getPackages",
-      data: { q: querySearch },
-    })
-      .then((resp) => {
-        if (resp.success) {
-          setPackageList(resp.data);
-        } else {
-          console.error("Error retrieving packages:", resp.error);
-        }
-      })
-      .catch((err) => {
-        console.error("Error in IPC communication:", err);
-      });
-  };
-
   const handleSelect = (testID) => {
-    let selectedObj =
-      testType === "CUSTOME"
-        ? testsList.find((el) => el?.id === testID)
-        : packageList.find((el) => el?.id === testID);
+    let selectedObj = testsList.find((el) => el?.id === testID);
+
     if (!selectedObj) return;
     setTests([...tests, selectedObj]);
   };
@@ -103,12 +79,8 @@ const TestForm = () => {
   };
 
   useEffect(() => {
-    if (isModal && testType === "CUSTOME") {
-      getTests(); // Always load all tests first
-    } else if (isModal && testType === "PACKAGE") {
-      getPackages();
-    }
-  }, [isModal, testType]);
+    if (isModal) getTests();
+  }, [isModal]);
 
   const testByID = async (id) => {
     const resp = await send({
@@ -137,24 +109,20 @@ const TestForm = () => {
     }
   }, [selectedTest]);
 
-  useEffect(() => {
-    console.log("testsList", tests);
-  }, [tests]);
-
   // Function to get price with condition to handle negative price
-  const getPriceWithCondition = (type, item) => {
-    const price = getPrice(type, item);
+  const getPriceWithCondition = (item) => {
+    const price = item?.price_iqd;
     return price > 0 ? price : 0;
   };
 
   // Function to get total price with condition to handle negative total
-  const getTotalPriceWithCondition = (type, items) => {
+  const getTotalPriceWithCondition = (items) => {
     if (editTest)
       items = items?.map((el) => {
         if (el?.id === editTest?.id) return editTest;
         else return el;
       });
-    const totalPrice = getTotalPrice(type, items);
+    const totalPrice = getTotalPrice(items);
     return totalPrice > 0 ? totalPrice : 0;
   };
 
@@ -195,45 +163,29 @@ const TestForm = () => {
     <div className="test-form">
       <Select
         showSearch
-        placeholder={t("SelectCustomTest", { custom: testLabel[testType] })}
+        placeholder={t("SelectCustomTest")}
         optionFilterProp="children"
         onSelect={handleSelect}
         style={{ width: "100%" }}
         onSearch={(input) => {
           console.log("Select onSearch called with input:", input);
-          if (testType === "CUSTOME") {
-            console.log("Calling getTests from onSearch");
-            getTests(input);
-          } else if (testType === "PACKAGE") {
-            console.log("Calling getPackages from onSearch");
-            getPackages(input);
-          }
+          getTests(input);
         }}
         filterOption={(input, option) =>
           (option?.label ?? "").toLowerCase().includes(input.toLowerCase())
         }
-        options={
-          testType === "CUSTOME"
-            ? testsList?.map((el) => {
-                return {
-                  label: el?.name,
-                  value: el?.id,
-                  disabled: !!tests.find((item) => item?.id === el?.id),
-                };
-              })
-            : packageList?.map((el) => {
-                return {
-                  label: el?.title,
-                  value: el?.id,
-                  disabled: !!tests.find((item) => item?.id === el?.id),
-                };
-              })
-        }
+        options={testsList?.map((el) => {
+          return {
+            label: `${el?.name_en} - ${el?.name_ar}`,
+            value: el?.id,
+            disabled: !!tests.find((item) => item?.id === el?.id),
+          };
+        })}
       />
 
       <div className="test-list">
         {tests?.map((el, i) =>
-          editTest && editTest?.id === el?.id && testType === "CUSTOME" ? (
+          editTest && editTest?.id === el?.id ? (
             <div key={i} className="test-item app-flex-space">
               <Space>
                 <Space size={4}>
@@ -286,20 +238,19 @@ const TestForm = () => {
                     className="text-[#a5a5a5]"
                     icon={<DeleteOutlined />}
                   />
-                  {testType === "CUSTOME" && (
-                    <Button
-                      onClick={() => setEditTest(el)}
-                      size="small"
-                      type="text"
-                      icon={<EditOutlined />}
-                    />
-                  )}
+
+                  <Button
+                    onClick={() => setEditTest(el)}
+                    size="small"
+                    type="text"
+                    icon={<EditOutlined />}
+                  />
                 </Space>
                 <Divider type="vertical" style={{ margin: 0 }} />
-                <Text>{testType === "CUSTOME" ? el?.name : el?.title}</Text>
+                <Text>{el?.name_en}</Text>
               </Space>
               <Text type="secondary">
-                {Number(getPriceWithCondition(testType, el)).toLocaleString(
+                {Number(getPriceWithCondition(el)).toLocaleString(
                   "en"
                 )}{" "}
                 IQD
@@ -352,9 +303,7 @@ const TestForm = () => {
                   : { fontSize: 18, fontWeight: "bold" }
               }
             >
-              {Number(
-                getTotalPriceWithCondition(testType, tests)
-              ).toLocaleString("en")}{" "}
+              {Number(getTotalPriceWithCondition(tests)).toLocaleString("en")}{" "}
               IQD
             </Text>
           </div>
@@ -364,8 +313,8 @@ const TestForm = () => {
               <Text style={{ fontSize: 18 }}>
                 <b>
                   {Number(
-                    getTotalPriceWithCondition(testType, tests) - discount > 0
-                      ? getTotalPriceWithCondition(testType, tests) - discount
+                    getTotalPriceWithCondition(tests) - discount > 0
+                      ? getTotalPriceWithCondition(tests) - discount
                       : 0
                   ).toLocaleString("en")}{" "}
                   IQD

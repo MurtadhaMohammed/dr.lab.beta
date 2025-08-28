@@ -58,10 +58,10 @@ const ReportsScreen = () => {
           return {
             name: record?.patient?.name,
             price: Number(
-              getTotalPrice(record?.testType, record?.tests)
+              getTotalPrice(record?.tests)
             ).toLocaleString("en"),
             endPrice: Number(
-              getTotalPrice(record?.testType, record?.tests) - record?.discount
+              getTotalPrice(record?.tests) - record?.discount
             ).toLocaleString("en"),
             tests: list
               .map((el) => el[record.testType === "CUSTOME" ? "name" : "title"])

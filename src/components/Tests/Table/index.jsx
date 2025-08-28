@@ -34,8 +34,6 @@ export const PureTable = () => {
   const { setFlag, setTest } = useTrigger();
   const { appColors } = useAppTheme();
 
-  console.log(record)
-
   const columns = [
     {
       title: t("TestName"),
@@ -125,17 +123,19 @@ export const PureTable = () => {
       key: "action",
       render: (_, record) => (
         <Space size="small" className="custom-actions">
-          {record?.type !== "single" && <Button
-            size="small"
-            //icon={<EditOutlined />}
-            onClick={() => {
-              setRecord(record);
-              setIsMetaModal(true);
-            }}
-            type="primary"
-          >
-            Customize
-          </Button>}
+          {record?.type !== "single" && (
+            <Button
+              size="small"
+              //icon={<EditOutlined />}
+              onClick={() => {
+                setRecord(record);
+                setIsMetaModal(true);
+              }}
+              type="primary"
+            >
+              Customize
+            </Button>
+          )}
           <Button
             size="small"
             icon={<EditOutlined />}
@@ -207,6 +207,26 @@ export const PureTable = () => {
       });
   }, [page, isReload, querySearch, limit]);
 
+  const sendUpdateMetaJson = async (row) => {
+    try {
+      let resp = await send({
+        query: "editMetaJson",
+        id: record?.id,
+        data: row,
+      });
+
+      if (resp.success) {
+        setRecord(null);
+        setIsMetaModal(false);
+        setIsReload(!isReload);
+        message.success("Updated.");
+      }
+    } catch (error) {
+      message.error("ERROR!.");
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <Table
@@ -249,11 +269,10 @@ export const PureTable = () => {
       <MetaJsonModal
         open={isMetaModal}
         type={record?.type} // "panel" | "composite" | "single"
+        name={record?.name_en}
         initialMetaJson={record?.meta_json} // string أو object
         onCancel={() => setIsMetaModal(false)}
-        onSubmit={(jsonString) => {
-          console.log(jsonString);
-        }}
+        onSubmit={sendUpdateMetaJson}
       />
     </>
   );

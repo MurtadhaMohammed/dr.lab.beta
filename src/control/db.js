@@ -125,6 +125,94 @@ class LabDB {
         updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
       );
 
+
+      PRAGMA foreign_keys = ON;
+
+      
+      CREATE TABLE IF NOT EXISTS visit_v2 (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        visit_number     TEXT UNIQUE,                        
+        patient_id       INTEGER NOT NULL,                  
+        doctor_id        INTEGER,                           
+        status           TEXT NOT NULL DEFAULT 'PENDING'
+                        CHECK (status IN ('PENDING','PARTIAL','COMPLETED','CANCELLED')),
+        notes            TEXT,
+
+        gross_price_iqd  INTEGER NOT NULL DEFAULT 0,          
+        discount_iqd     INTEGER NOT NULL DEFAULT 0,         
+        end_price_iqd    INTEGER NOT NULL DEFAULT 0,         
+
+        paid_iqd         INTEGER NOT NULL DEFAULT 0,
+        payment_status   TEXT NOT NULL DEFAULT 'UNPAID'
+                        CHECK (payment_status IN ('UNPAID','PARTIAL','PAID')),
+
+        created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at       TEXT NOT NULL DEFAULT (datetime('now')),
+
+        FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+        FOREIGN KEY (doctor_id)  REFERENCES doctors(id)  ON DELETE SET NULL  ON UPDATE CASCADE
+      );
+
+      CREATE TABLE IF NOT EXISTS visit_item_v2 (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        visit_id         INTEGER NOT NULL,                   
+        test_id          INTEGER NOT NULL,                   
+
+    
+        code             TEXT NOT NULL,                     
+        type             TEXT NOT NULL CHECK (type IN ('single','panel','composite')),
+        name_en          TEXT NOT NULL,
+        name_ar          TEXT,
+        sample_type      TEXT,
+        unit             TEXT,                                
+        ref_text         TEXT,                                
+        price_iqd        INTEGER NOT NULL DEFAULT 0,
+        is_active_catalog INTEGER NOT NULL DEFAULT 1,
+        meta_json        TEXT NOT NULL DEFAULT '{}',         
+
+        result_value     TEXT,                              
+        result_numeric   REAL,                            
+        result_unit      TEXT,                             
+        result_json      TEXT,                               
+        is_abnormal      INTEGER NOT NULL DEFAULT 0,
+
+        item_status      TEXT NOT NULL DEFAULT 'PENDING'
+                        CHECK (item_status IN ('PENDING','READY','VERIFIED','PRINTED')),
+        technician_name  TEXT,
+        method           TEXT,
+        completed_at     TEXT,
+        printed_at       TEXT,
+
+        created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at       TEXT NOT NULL DEFAULT (datetime('now')),
+
+        FOREIGN KEY (visit_id) REFERENCES visit_v2(id)     ON DELETE CASCADE  ON UPDATE CASCADE,
+        FOREIGN KEY (test_id)  REFERENCES tests_catalog(id) ON DELETE RESTRICT ON UPDATE CASCADE
+      );
+
+
+      CREATE TABLE IF NOT EXISTS visit_result_v2 (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        visit_item_id    INTEGER NOT NULL,                    
+
+        path             TEXT,                              
+        code             TEXT,                              
+        label_en         TEXT,
+        label_ar         TEXT,
+
+        value_text       TEXT,
+        value_num        REAL,
+        unit             TEXT,
+        ref_text         TEXT,                               
+        flag             TEXT,                             
+        note             TEXT,
+
+        created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at       TEXT NOT NULL DEFAULT (datetime('now')),
+
+        FOREIGN KEY (visit_item_id) REFERENCES visit_item_v2(id) ON DELETE CASCADE ON UPDATE CASCADE
+      );
+
     `);
   }
 
@@ -670,7 +758,7 @@ class LabDB {
 
   async deleteTest(id) {
     const stmt = await this.db.prepare(`
-      DELETE FROM tests WHERE id = ?
+      DELETE FROM tests_catalog WHERE id = ?
     `);
     const info = stmt.run(id);
     return { success: info.changes > 0 };
@@ -746,6 +834,43 @@ class LabDB {
     return { success: info.changes > 0, changes: info.changes };
   }
 
+  async editTestMetaJson(id, meta) {
+    const row = this.db
+      .prepare(`SELECT id, type FROM tests_catalog WHERE id = ?`)
+      .get(id);
+    if (!row) {
+      throw new Error(`Test with id=${id} not found`);
+    }
+    if (row.type === "single") {
+      throw new Error(
+        `meta_json is not applicable for type 'single' (id=${id})`
+      );
+    }
+
+    let jsonString;
+    if (typeof meta === "string") {
+      try {
+        JSON.parse(meta);
+        jsonString = meta;
+      } catch (e) {
+        throw new Error("meta_json must be a valid JSON string");
+      }
+    } else {
+      // (object/array/undefined/null) → stringify
+      jsonString = JSON.stringify(meta ?? {});
+    }
+
+    // 3) نفّذ التحديث
+    const stmt = this.db.prepare(`
+    UPDATE tests_catalog
+    SET meta_json = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+    const info = stmt.run(jsonString, id);
+
+    return { success: info.changes > 0, changes: info.changes };
+  }
+
   async getTests({ q = "", skip = 0, limit = 10 }) {
     try {
       const countStmt = this.db.prepare(`
@@ -781,7 +906,7 @@ class LabDB {
 
   async testByID(id) {
     const stmt = await this.db.prepare(`
-      SELECT * FROM tests WHERE id = ?
+      SELECT * FROM tests_catalog WHERE id = ?
     `);
     const test = stmt.get(id);
     console.log("test in db testByID", test);
@@ -977,6 +1102,156 @@ class LabDB {
     }
   }
 
+  /**
+   * Register a new visit (head + items) with pricing from tests_catalog only
+   * tests: [{ id: number }, ...]
+   */
+
+  _generateUniqueVisitNumber() {
+    // يحتاج dayjs (موجود عندك بالأعلى)
+    const today = dayjs().format("YYMMDD");
+
+    // جرّب أرقام عشوائية، وتأكد من عدم وجودها
+    for (let i = 0; i < 5; i++) {
+      const rand = Math.floor(100000 + Math.random() * 900000).toString(); // 6 أرقام
+      const vn = `${today}-${rand}`;
+      const exists = this.db
+        .prepare(`SELECT 1 FROM visit_v2 WHERE visit_number = ? LIMIT 1`)
+        .get(vn);
+      if (!exists) return vn;
+    }
+
+    // Fallback: استخدم id القادم كجزء من الرقم
+    const nextIdRow = this.db
+      .prepare(`SELECT IFNULL(MAX(id), 0) + 1 AS n FROM visit_v2`)
+      .get();
+    const seq = String(nextIdRow.n).padStart(6, "0");
+    return `${today}-${seq}`;
+  }
+
+  async registerVisitV2({
+    patient_id,
+    doctor_id = null, // optional
+    tests = [],
+    discount_iqd = 0,
+    notes = null,
+  }) {
+    if (!Array.isArray(tests) || tests.length === 0) {
+      throw new Error("No tests provided.");
+    }
+
+    // validate patient
+    const p = this.db
+      .prepare(`SELECT id FROM patients WHERE id = ?`)
+      .get(patient_id);
+    if (!p) throw new Error(`Patient ${patient_id} not found`);
+
+    // doctor_id is optional → نتجاهل إذا ما موجود
+    if (doctor_id != null) {
+      const d = this.db
+        .prepare(`SELECT id FROM doctors WHERE id = ?`)
+        .get(doctor_id);
+      if (!d) throw new Error(`Doctor ${doctor_id} not found`);
+    }
+
+    // fetch all required tests_catalog rows
+    const ids = tests.map((t) => t.id);
+    const ph = ids.map(() => "?").join(",");
+    const fetched = this.db
+      .prepare(`SELECT * FROM tests_catalog WHERE id IN (${ph})`)
+      .all(...ids);
+
+    if (fetched.length !== ids.length) {
+      throw new Error("Some test IDs not found in catalog");
+    }
+
+    // resolve items
+    const resolved = fetched.map((row) => ({
+      row,
+      unit: row.type === "single" ? row.unit ?? null : null,
+      ref_text: row.type === "single" ? row.ref_text ?? null : null,
+      meta_json: row.meta_json || "{}",
+      price_iqd: Number(row.price_iqd ?? 0),
+    }));
+
+    const gross = resolved.reduce((s, x) => s + x.price_iqd, 0);
+    const discount = Math.max(0, Number(discount_iqd || 0));
+    const endPrice = Math.max(0, gross - discount);
+    const visit_number = this._generateUniqueVisitNumber();
+
+    const trx = this.db.transaction(() => {
+      // insert visit head
+      const vInfo = this.db
+        .prepare(
+          `
+      INSERT INTO visit_v2
+        (visit_number, patient_id, doctor_id, status, notes,
+         gross_price_iqd, discount_iqd, end_price_iqd,
+         paid_iqd, payment_status, created_at, updated_at)
+      VALUES
+        (?, ?, ?, 'PENDING', ?, ?, ?, ?, 0, 'UNPAID', datetime('now'), datetime('now'))
+    `
+        )
+        .run(
+          visit_number,
+          patient_id,
+          doctor_id,
+          notes,
+          gross,
+          discount,
+          endPrice
+        );
+      const visit_id = vInfo.lastInsertRowid;
+
+      // insert items
+      const insItem = this.db.prepare(`
+      INSERT INTO visit_item_v2
+        (visit_id, test_id, code, type, name_en, name_ar, sample_type,
+         unit, ref_text, price_iqd, is_active_catalog, meta_json,
+         item_status, created_at, updated_at)
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', datetime('now'), datetime('now'))
+    `);
+
+      const createdItems = [];
+      for (const x of resolved) {
+        const t = x.row;
+        const info = insItem.run(
+          visit_id,
+          t.id,
+          t.code,
+          t.type,
+          t.name_en,
+          t.name_ar,
+          t.sample_type,
+          x.unit,
+          x.ref_text,
+          x.price_iqd,
+          t.is_active ?? 1,
+          x.meta_json
+        );
+        createdItems.push({
+          visit_item_id: info.lastInsertRowid,
+          test_id: t.id,
+          code: t.code,
+          type: t.type,
+          price_iqd: x.price_iqd,
+        });
+      }
+
+      return {
+        visit_id,
+        visit_number,
+        gross_price_iqd: gross,
+        discount_iqd: discount,
+        end_price_iqd: endPrice,
+        items: createdItems,
+      };
+    });
+
+    return { success: true, ...trx() };
+  }
+
   async deleteVisit(id) {
     const stmt = await this.db.prepare(`
       DELETE FROM visits WHERE id = ?
@@ -1079,6 +1354,319 @@ class LabDB {
     });
 
     return { success: true, total, data: results };
+  }
+
+  async getVisitsV2({
+    q = "",
+    skip = 0,
+    limit = 10,
+    startDate,
+    endDate,
+    status,
+  } = {}) {
+    // 1) بناء where مثل دالتك القديمة
+    const whereClauses = [
+      `(p.name LIKE ? OR v.visit_number LIKE ?)`,
+      startDate
+        ? `DATE(v.created_at) >= '${dayjs(startDate)
+            .startOf("day")
+            .format("YYYY-MM-DD")}'`
+        : "",
+      endDate
+        ? `DATE(v.created_at) <= '${dayjs(endDate)
+            .endOf("day")
+            .format("YYYY-MM-DD")}'`
+        : "",
+      status ? `v.status = ?` : "",
+    ]
+      .filter(Boolean)
+      .join(" AND ");
+
+    // 2) العدّ الكلي
+    const countSql = `
+    SELECT COUNT(*) as total
+    FROM visit_v2 v
+    JOIN patients p ON v.patient_id = p.id
+    LEFT JOIN doctors d ON v.doctor_id = d.id
+    WHERE ${whereClauses}
+  `;
+
+    const countParams = [`%${q}%`, `%${q}%`];
+    if (status) countParams.push(status);
+
+    const countStmt = this.db.prepare(countSql);
+    const countResult = countStmt.get(...countParams);
+    const total = countResult?.total || 0;
+
+    // 3) جلب الزيارات (الهيدر) مع بيانات المريض والطبيب
+    const rowsSql = `
+    SELECT 
+      v.*,
+      p.name  AS patientName,
+      p.gender AS patientGender,
+      p.phone AS patientPhone,
+      p.email AS patientEmail,
+      p.birth AS patientBirth,
+      d.id    AS doctorID,
+      d.name  AS doctorName,
+      d.gender AS doctorGender,
+      d.phone  AS doctorPhone,
+      d.email  AS doctorEmail,
+      d.address AS doctorAddress,
+      d.type    AS doctorType
+    FROM visit_v2 v
+    JOIN patients p ON v.patient_id = p.id
+    LEFT JOIN doctors d ON v.doctor_id = d.id
+    WHERE ${whereClauses}
+    ORDER BY v.created_at DESC
+    LIMIT ${limit} OFFSET ${skip}
+  `;
+
+    const rowsParams = [`%${q}%`, `%${q}%`];
+    if (status) rowsParams.push(status);
+
+    const stmt = this.db.prepare(rowsSql);
+    const visitsHdr = stmt.all(...rowsParams);
+
+    // 4) جلب عناصر الاختبارات لكل زيارة من visit_item_v2 + إرجاعها كأري
+    let itemsMap = {};
+    const visitIds = visitsHdr.map((v) => v.id);
+    if (visitIds.length > 0) {
+      const placeholders = visitIds.map(() => "?").join(",");
+      const items = this.db
+        .prepare(
+          `
+        SELECT 
+          i.visit_id,
+          i.id AS visit_item_id,
+          i.test_id,
+          i.code,
+          i.type,
+          i.name_en,
+          i.name_ar,
+          i.sample_type,
+          i.unit,
+          i.ref_text,
+          i.price_iqd,
+          i.meta_json,
+          i.item_status,
+          i.result_json,     -- لو مسوي عمود نتائج JSON بالعناصر
+          i.created_at,
+          i.updated_at
+        FROM visit_item_v2 i
+        WHERE i.visit_id IN (${placeholders})
+        ORDER BY i.id ASC
+      `
+        )
+        .all(...visitIds);
+
+      itemsMap = items.reduce((acc, it) => {
+        if (!acc[it.visit_id]) acc[it.visit_id] = [];
+        acc[it.visit_id].push({
+          visit_item_id: it.visit_item_id,
+          test_id: it.test_id,
+          code: it.code,
+          type: it.type, // single | panel | composite
+          name_en: it.name_en,
+          name_ar: it.name_ar,
+          sample_type: it.sample_type,
+          unit: it.unit,
+          ref_text: it.ref_text,
+          price_iqd: it.price_iqd,
+          meta_json: it.meta_json,
+          status: it.item_status, // PENDING / REPORTED ...
+          result_json: it.result_json ? JSON.parse(it.result_json) : null,
+          created_at: it.created_at,
+          updated_at: it.updated_at,
+        });
+        return acc;
+      }, {});
+    }
+
+    // 5) تحويل النتيجة إلى نفس الشكل تقريباً
+    const results = visitsHdr.map((el) => {
+      const doctorData = el?.doctorID
+        ? {
+            id: el.doctorID,
+            name: el.doctorName,
+            gender: el.doctorGender,
+            phone: el.doctorPhone,
+            email: el.doctorEmail,
+            address: el.doctorAddress,
+            type: el.doctorType,
+          }
+        : null;
+
+      return {
+        id: el.id,
+        visitNumber: el.visit_number,
+        status: el.status,
+        notes: el.notes,
+        grossPrice: el.gross_price_iqd,
+        discount: el.discount_iqd,
+        endPrice: el.end_price_iqd,
+        paid: el.paid_iqd,
+        paymentStatus: el.payment_status,
+
+        createdAt: el.created_at,
+        updatedAt: el.updated_at,
+
+        patient: {
+          id: el.patient_id,
+          name: el.patientName,
+          gender: el.patientGender,
+          phone: el.patientPhone,
+          email: el.patientEmail,
+          birth: el.patientBirth,
+        },
+
+        doctor: doctorData,
+
+        tests: itemsMap[el.id] || [],
+      };
+    });
+
+    return { success: true, total, data: results };
+  }
+
+  async saveVisitResults(items) {
+    // items: [{ visit_item_id, result_json, item_status }, ...]
+    if (!Array.isArray(items) || items.length === 0) {
+      return { success: true, updated: 0 };
+    }
+
+    // 1) infer visit_id from first item
+    const firstId = items[0].visit_item_id;
+    const row = this.db
+      .prepare(`SELECT visit_id FROM visit_item_v2 WHERE id = ?`)
+      .get(firstId);
+    if (!row) throw new Error(`visit_item_v2 not found: ${firstId}`);
+    const visit_id = row.visit_id;
+
+    // 2) ensure all items belong to the same visit (guard)
+    const inClause = items.map(() => "?").join(",");
+    const parentCheck = this.db
+      .prepare(
+        `SELECT COUNT(*) AS c FROM visit_item_v2 WHERE id IN (${inClause}) AND visit_id = ?`
+      )
+      .get(...items.map((i) => i.visit_item_id), visit_id);
+    if (parentCheck.c !== items.length) {
+      throw new Error(
+        `Some items do not belong to the same visit (${visit_id}).`
+      );
+    }
+
+    // 3) batch update
+    const upd = this.db.prepare(`
+    UPDATE visit_item_v2
+       SET result_json = ?, 
+           updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?
+  `);
+
+    const tx = this.db.transaction((rows) => {
+      rows.forEach(({ visit_item_id, result_json }) => {
+        const payload = JSON.stringify(result_json || {});
+        upd.run(payload, visit_item_id);
+      });
+    });
+
+    tx(items);
+
+    // 4) recalc parent status
+    await this.updateVisitStatusV2(visit_id);
+
+    return { success: true, updated: items.length, visit_id };
+  }
+
+  // helper: نتيجة ذات معنى؟
+  _isMeaningfulResultJSON(val) {
+    if (!val || typeof val !== "object") return false;
+
+    // single
+    if ("result" in val) {
+      return String(val.result ?? "").trim() !== "";
+    }
+
+    // panel
+    if ("items" in val && val.items && typeof val.items === "object") {
+      const cells = Object.values(val.items);
+      return cells.some((c) => String(c?.result ?? "").trim() !== "");
+    }
+
+    // composite
+    if ("sections" in val && val.sections && typeof val.sections === "object") {
+      const secs = Object.values(val.sections);
+      return secs.some((fields) =>
+        Object.values(fields || {}).some((v) => String(v ?? "").trim() !== "")
+      );
+    }
+
+    return false;
+  }
+
+  async updateVisitStatusV2(visit_id) {
+    // 1) جيب كل الآيتمات للزيارة
+    const items = this.db
+      .prepare(
+        `
+    SELECT id, type, result_json
+    FROM visit_item_v2
+    WHERE visit_id = ?
+  `
+      )
+      .all(visit_id);
+
+    const total = items.length;
+    if (total === 0) {
+      // ماكو تحاليل → نعتبرها PENDING
+      this.db
+        .prepare(
+          `
+      UPDATE visit_v2
+         SET status = 'PENDING',
+             updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+    `
+        )
+        .run(visit_id);
+      return { success: true, status: "PENDING", total, completed: 0 };
+    }
+
+    // 2) عدّ التحاليل اللي عدها نتيجة ذات معنى
+    let completed = 0;
+    for (const it of items) {
+      let parsed = null;
+      if (it.result_json && typeof it.result_json === "string") {
+        try {
+          parsed = JSON.parse(it.result_json);
+        } catch {
+          parsed = null;
+        }
+      } else if (it.result_json && typeof it.result_json === "object") {
+        parsed = it.result_json;
+      }
+      if (this._isMeaningfulResultJSON(parsed)) completed += 1;
+    }
+
+    // 3) حدد حالة الزيارة
+    let status = "PENDING";
+    if (completed === 0) status = "PENDING";
+    else if (completed === total) status = "COMPLETED";
+    else status = "PARTIAL";
+
+    // 4) حدّث الزيارة
+    this.db
+      .prepare(
+        `
+    UPDATE visit_v2
+       SET status = ?, updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?
+  `
+      )
+      .run(status, visit_id);
+
+    return { success: true, status, total, completed };
   }
 
   async getTestNormalValues(testType, testsFromVisit) {

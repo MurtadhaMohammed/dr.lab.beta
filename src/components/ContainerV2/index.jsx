@@ -197,12 +197,12 @@ const MainContainerV2 = ({ children }) => {
                   label: <p className="text-[15px]">{t("Tests")}</p>,
                   onClick: () => navigate("/tests", { replace: true }),
                 },
-                {
-                  key: "/package",
-                  icon: <LuPackage2 size={18} />,
-                  label: <p className="text-[15px]">{t("Package")}</p>,
-                  onClick: () => navigate("/groups", { replace: true }),
-                },
+                // {
+                //   key: "/package",
+                //   icon: <LuPackage2 size={18} />,
+                //   label: <p className="text-[15px]">{t("Package")}</p>,
+                //   onClick: () => navigate("/groups", { replace: true }),
+                // },
                 {
                   key: "/reports",
                   icon: <TbReportSearch size={18} />,

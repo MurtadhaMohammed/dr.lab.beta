@@ -211,6 +211,18 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+    case "editMetaJson": {
+      try {
+        const resp = await labDB.editTestMetaJson(arg.id, arg.data);
+        event.reply("asynchronous-reply", { success: resp.success });
+      } catch (error) {
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
 
     case "addNewData": {
       try {
@@ -313,7 +325,22 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "addVisit": {
       try {
-        const resp = await labDB.addVisit(arg.data);
+        console.log(arg.data)
+        const resp = await labDB.registerVisitV2(arg.data);
+        event.reply("asynchronous-reply", { success: true, id: resp.id });
+      } catch (error) {
+        console.error("Error adding visit:", error.message);
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+    case "updateVisit": {
+      try {
+        console.log(arg.data)
+        const resp = await labDB.saveVisitResults(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
         console.error("Error adding visit:", error.message);
@@ -340,7 +367,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getVisits": {
       const { q, skip, limit, startDate, endDate, status } = arg.data;
       try {
-        const resp = await labDB.getVisits({
+        const resp = await labDB.getVisitsV2({
           q,
           skip,
           limit,

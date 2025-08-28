@@ -21,6 +21,7 @@ const { Title } = Typography;
 export const MetaJsonModal = ({
   open,
   type, // "panel" | "composite"
+  name,
   initialMetaJson, // string or object
   onCancel,
   onSubmit,
@@ -64,7 +65,6 @@ export const MetaJsonModal = ({
 
   const handleOk = () => {
     try {
-      // فحص بسيط
       if (isPanel && panelItems.length === 0) {
         message.warning("Please add at least one item.");
         return;
@@ -73,19 +73,20 @@ export const MetaJsonModal = ({
         message.warning("Please add at least one section.");
         return;
       }
-      const jsonString = JSON.stringify(builderJson);
-      onSubmit?.(jsonString);
+      //   const jsonString = JSON.stringify(builderJson);
+      onSubmit?.(builderJson);
     } catch (e) {
       message.error("Error building JSON");
     }
   };
+
 
   // لا نعرض شيء إذا النوع single
   if (!(isPanel || isComposite)) return null;
 
   return (
     <Modal
-      title={`Edit meta_json (${type})`}
+      title={`${name} (${type})`}
       open={open}
       onCancel={onCancel}
       onOk={handleOk}

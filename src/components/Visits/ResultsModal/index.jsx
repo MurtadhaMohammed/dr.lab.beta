@@ -1,405 +1,469 @@
+import { useEffect, useMemo, useState } from "react";
 import {
-  Button,
-  Input,
   Modal,
-  Popover,
-  Radio,
-  Select,
+  Tabs,
   Space,
-  Tooltip,
+  Input,
+  InputNumber,
+  Select,
   Typography,
+  Divider,
+  Tag,
   message,
+  Button,
 } from "antd";
-import "./style.css";
-import { useAppStore, useHomeStore } from "../../../libs/appStore";
-import { send } from "../../../control/renderer";
-import dayjs from "dayjs";
-import { useTranslation } from "react-i18next";
-import { useEffect, useState } from "react";
-import { usePlan } from "../../../hooks/usePlan";
-import { useAppTheme } from "../../../hooks/useAppThem";
+import { formatRefText } from "../../../helper/refTextFormatter";
 
-export const parseTests = (record) => {
-  let tests = [];
-  if (record?.testType === "CUSTOME") {
-    tests = [
-      {
-        title: "",
-        rows: record.tests.map((el) => {
-          return {
-            name: el.name,
-            result: el.result || "",
-            normal: el.normal || "",
-          };
-        }),
-      },
-    ];
-  } else if (record?.testType === "PACKAGE") {
-    tests = record.tests.map((group) => {
-      return {
-        title: group.title,
-        rows: group.tests.map((el) => {
-          return {
-            name: el.name,
-            result: el.result || "",
-            normal: el.normal || "",
-          };
-        }),
-      };
-    });
-  }
-  return tests;
-};
+const { Text } = Typography;
 
-export const ResultsModal = () => {
-  const { isReload, setIsReload, setPrintFontSize, printFontSize } =
-    useAppStore();
-  const { canPrint, setPrintUsed } = usePlan();
+/**
+ * Result entry modal for visit_v2
+ * props:
+ *  - open: boolean
+ *  - visit: {
+ *      id, visitNumber, patient{...}, doctor{...},
+ *      tests: [{ visit_item_id, type, code, name_en, name_ar, unit, ref_text, result_json, ... }]
+ *    }
+ *  - onCancel: fn
+ *  - onSubmit: async (changesArray) => void  // [{visit_item_id, result_json, item_status}]
+ */
+export function ResultsModal({ open, visit, onCancel, onSubmit }) {
+  const [activeKey, setActiveKey] = useState("0");
+  const [drafts, setDrafts] = useState({}); // visit_item_id -> result_json object
+  const tests = Array.isArray(visit?.tests) ? visit.tests : [];
 
-  const {
-    setIsResultsModal,
-    isResultsModal,
-    record,
-    setRecord,
-    isBarcode,
-    setIsBarcode,
-  } = useHomeStore();
-  const { t } = useTranslation();
-  const { isOnline } = useAppStore();
-  const { appColors } = useAppTheme();
-  const printer = useState(localStorage.getItem("selectedPrinter"));
-
+  // init from visit
   useEffect(() => {
-    if (isResultsModal && record) {
-      if (record?.testType === "CUSTOME") {
-        record?.tests?.forEach((row) => {
-          console.log(`Options for ${row?.name}:`, row?.options);
-        });
-      } else if (record?.testType === "PACKAGE") {
-        record?.tests?.forEach((group) => {
-          group?.tests?.forEach((row) => {
-            console.log(`Options for ${row?.name}:`, row?.options);
-          });
-        });
-      }
-    }
-  }, [isResultsModal, record]);
-
-  const handleChange = (val, row) => {
-    let newRecord = [];
-    if (record?.testType === "CUSTOME") {
-      newRecord = {
-        ...record,
-        tests: record?.tests.map((el) => {
-          if (el.id === row?.id) return { ...el, result: val };
-          return el;
-        }),
-      };
-    } else if (record?.testType === "PACKAGE") {
-      newRecord = {
-        ...record,
-        tests: record?.tests?.map((group) => {
-          return {
-            ...group,
-            tests: group?.tests?.map((el) => {
-              if (el.id === row?.id) return { ...el, result: val };
-              return el;
-            }),
-          };
-        }),
-      };
-    }
-    setRecord(newRecord);
-  };
-  const PlanType = JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type;
-  let printResults = (newTests) => {
-    record.tests = newTests;
-    let data = {
-      patient: record.patient.name,
-      age: dayjs().diff(dayjs(record.patient.birth), "y"),
-      date: dayjs(record.createdAt).format("YYYY-MM-DD"),
-      tests: parseTests(record),
-      isHeader: true,
-      fontSize: printFontSize,
-      isFree: PlanType === "FREE",
-    };
-
-    send({
-      query: "print",
-      data,
-    }).then(({ err, res }) => {
-      setPrintUsed();
-      console.log(err, res);
+    if (!open) return;
+    const next = {};
+    tests.forEach((t) => {
+      next[t.visit_item_id] = normalizeInitialResult(t);
     });
-  };
+    setDrafts(next);
+    setActiveKey("0");
+  }, [open, visit?.id]); // re-init when visit changes
 
-  let handleSubmit = () => {
-    let data = { ...record, status: "COMPLETED", updatedAt: Date.now() };
-    send({
-      doc: "visits",
-      query: "updateVisit",
-      data: { ...data },
-      id: record.id,
-    }).then(({ err, newTests }) => {
-      if (err) message.error("Error !");
-      else {
-        message.success(t("Saved Successfully"));
-
-        try {
-          if (isOnline && window.gtag) {
-            window.gtag("event", "click", {
-              event_category: "button",
-              event_label: "print-result-button",
-              value: 1,
-            });
+  // Tabs items
+  const items = useMemo(() => {
+    return tests.map((t, idx) => ({
+      key: String(idx),
+      label: (
+        <span>
+          <b>{t.name_en || t.name_ar || t.code}</b>{" "}
+          <Tag style={{ marginInlineStart: 6 }}>{t.type}</Tag>
+        </span>
+      ),
+      children: (
+        <TestEditor
+          test={t}
+          value={drafts[t.visit_item_id]}
+          onChange={(val) =>
+            setDrafts((prev) => ({ ...prev, [t.visit_item_id]: val }))
           }
-        } catch (e) {
-          throw new Error(e.message);
-        }
+        />
+      ),
+    }));
+  }, [tests, drafts]);
 
-        setRecord(null);
-        setIsResultsModal(false);
-        setIsReload(!isReload);
-        setTimeout(() => {
-          if (PlanType === "FREE" && !canPrint()) {
-            Modal.warning({
-              centered: true,
-              title: t("printLimitTitle"),
-              content: t("printLimitMessage"),
-            });
-            // message.error(t("printLimitMessage"));
-            return;
-          }
-          printResults(newTests);
-        }, 1000);
-      }
-    });
-  };
-
-  const handleBarcode = async (record) => {
-    const resp = await send({
-      query: "printParcode",
-      data: {
-        name: record?.patient?.name,
-        id: record?.id,
-      },
-      selectedPrinter: localStorage.getItem("selectedPrinter"),
-    });
-
-    if (resp.success) {
-      setIsReload(!isReload);
-      setIsResultsModal(false);
-      setIsBarcode(false);
-      console.log(resp.success);
+  const handleOk = async () => {
+    try {
+      // Build changes
+      const changes = tests.map((t) => ({
+        visit_item_id: t.visit_item_id,
+        result_json: drafts[t.visit_item_id] ?? null,
+      }));
+      await Promise.resolve(onSubmit?.(changes));
+    } catch (e) {
+      message.error(e?.message || "Failed to save results");
     }
-
-    setIsBarcode(false);
-  };
-
-  let renderTable = {
-    CUSTOME: (
-      <div className="test-section">
-        <Space direction="vertical" size={0} style={{ width: "100%" }}>
-          <div
-            className="py-2 px-3"
-            style={{ background: appColors.colorPrimaryHover }}
-          >
-            <Typography.Text type="secondary">
-              {t("CustomTest")}
-            </Typography.Text>
-          </div>
-          <div className="test-list">
-            {record?.tests?.map((row) => {
-              // Check and parse options if necessary
-              if (typeof row.options === "string") {
-                try {
-                  row.options = JSON.parse(row.options);
-                } catch (error) {
-                  console.error("Error parsing options:", error);
-                  row.options = [];
-                }
-              }
-
-              return (
-                <div className="test-item" key={row?.id}>
-                  <p>
-                    <b>{row?.name}</b>
-                  </p>
-                  {row?.isSelecte ? (
-                    <Select
-                      style={{ width: "100%" }}
-                      value={row?.result}
-                      onChange={(selctedVal) => handleChange(selctedVal, row)}
-                      placeholder={t("ChooseResult")}
-                    >
-                      {Array.isArray(row?.options) && row.options.length > 0
-                        ? row.options.map((option, i) => (
-                            <Select.Option key={i} value={option}>
-                              {option}
-                            </Select.Option>
-                          ))
-                        : null}
-                    </Select>
-                  ) : (
-                    <Input
-                      value={row?.result}
-                      onChange={(e) => handleChange(e.target.value, row)}
-                      style={{ width: "100%" }}
-                      placeholder={t("WriteResult")}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </Space>
-      </div>
-    ),
-
-    PACKAGE: record?.tests?.map((group, i) => (
-      <div className="test-section" key={i}>
-        <Space direction="vertical" size={0} style={{ width: "100%" }}>
-          <div
-            className="py-2 px-3"
-            style={{ background: appColors.colorPrimaryHover }}
-          >
-            <Typography.Text type="secondary"># {group.title}</Typography.Text>
-          </div>
-          <div className="test-list">
-            {group?.tests?.map((row) => {
-              // Check and parse options if necessary
-              if (typeof row.options === "string") {
-                try {
-                  row.options = JSON.parse(row.options);
-                } catch (error) {
-                  console.error("Error parsing options:", error);
-                  row.options = [];
-                }
-              }
-
-              return (
-                <div className="test-item" key={row?.id}>
-                  <p>
-                    <b>{row?.name}</b>
-                  </p>
-                  {row?.isSelecte ? (
-                    <Select
-                      style={{ width: "100%" }}
-                      value={row?.result}
-                      onChange={(selctedVal) => handleChange(selctedVal, row)}
-                      placeholder={t("ChooseResult")}
-                    >
-                      {Array.isArray(row?.options) && row.options.length > 0
-                        ? row.options.map((option, i) => (
-                            <Select.Option key={i} value={option}>
-                              {option}
-                            </Select.Option>
-                          ))
-                        : null}
-                    </Select>
-                  ) : (
-                    <Input
-                      value={row?.result}
-                      onChange={(e) => handleChange(e.target.value, row)}
-                      style={{ width: "100%" }}
-                      placeholder={t("WriteResult")}
-                    />
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </Space>
-      </div>
-    )),
   };
 
   return (
     <Modal
+      open={open}
+      onCancel={onCancel}
+      onOk={handleOk}
+      width={700}
       title={
-        <Typography.Text type="secondary">
-          {t("BarcodeResultTitle")} <b>{record?.patient?.name}</b>
-        </Typography.Text>
-      }
-      open={isResultsModal}
-      width={600}
-      onCancel={() => {
-        setIsResultsModal(false);
-        setRecord(null);
-        setIsBarcode(false);
-      }}
-      footer={
-        <div className={"results-modal-footer"}>
-          {isBarcode ? null : (
-            <Space>
-              <b>{t("FontSize")}</b>
-              <Radio.Group
-                value={printFontSize}
-                onChange={(e) => setPrintFontSize(e.target.value)}
-              >
-                <Tooltip title="12px">
-                  <Radio value={12}>SM</Radio>
-                </Tooltip>
-                <Tooltip title="14px">
-                  <Radio value={14}>MD</Radio>
-                </Tooltip>
-                <Tooltip title="16px">
-                  <Radio value={16}>LG</Radio>
-                </Tooltip>
-              </Radio.Group>
-            </Space>
+        <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
+          <span>Enter Results</span>
+          {visit?.visitNumber && (
+            <Tag color="geekblue">#{visit.visitNumber}</Tag>
           )}
-          <Space direction="">
-            <Button
-              onClick={() => {
-                setIsResultsModal(false);
-                setRecord(null);
-                setIsBarcode(false);
-              }}
-            >
-              {t("Close")}
-            </Button>
-            {isBarcode ? (
-              <>
-                {printer[0] ? (
-                  <Button
-                    type="primary"
-                    onClick={() => handleBarcode(record)}
-                    disabled={!printer[0]}
-                  >
-                    {t("printBarcode")}
-                  </Button>
-                ):(
-                  <Popover content={t("NoPrinterSelected")}>
-                    <Button
-                      type="primary"
-                      onClick={() => handleBarcode(record)}
-                      disabled={!printer[0]}
-                    >
-                      {t("printBarcode")}
-                    </Button>
-                  </Popover>
-                )}
-              </>
-            ) : (
-              <Button type="primary" onClick={handleSubmit}>
-                {t("SavePrint")}
-              </Button>
-            )}
-          </Space>
+          {visit?.patient?.name && (
+            <Text type="secondary">— {visit.patient.name}</Text>
+          )}
         </div>
       }
-      centered
+      okText="Save"
+      destroyOnClose
     >
-      {isBarcode ? (
-        <div className="py-4">
-          {t("printBarcodeMessage")} {record?.patient?.name}
-        </div>
+      {tests.length === 0 ? (
+        <EmptyNote text="No tests for this visit." />
       ) : (
-        <div className="results-modal" id="printJS-form">
-          {record && renderTable[record?.testType]}
-        </div>
+        <Tabs
+          activeKey={activeKey}
+          onChange={setActiveKey}
+          items={items}
+          tabPosition="top"
+        />
       )}
+      <div className="pt-10"></div>
     </Modal>
   );
-};
+}
+
+/* ---------------------- Per-test editor ---------------------- */
+function TestEditor({ test, value, onChange }) {
+  console.log(test);
+  const meta = safeParse(test?.meta_json);
+  const type = test?.type;
+
+  if (type === "single") {
+    return (
+      <SingleEditor
+        unit={test?.unit}
+        refText={test?.ref_text}
+        value={value}
+        onChange={onChange}
+      />
+    );
+  }
+
+  if (type === "panel") {
+    const rows = Array.isArray(meta?.items) ? meta.items : [];
+    return <PanelEditor rows={rows} value={value} onChange={onChange} />;
+  }
+
+  if (type === "composite") {
+    const sections = Array.isArray(meta?.sections) ? meta.sections : [];
+    return (
+      <CompositeEditor sections={sections} value={value} onChange={onChange} />
+    );
+  }
+
+  return <EmptyNote text="Unsupported test type" />;
+}
+
+/* ---------------------- Single ---------------------- */
+function SingleEditor({ unit, refText, value, onChange }) {
+  // value shape: { result: string|number }
+  const current = value && typeof value === "object" ? value : {};
+  const set = (val) => onChange({ ...(current || {}), result: val });
+
+  return (
+    <div>
+      <Space direction="vertical" size={8} style={{ width: "100%" }}>
+        <Space align="baseline" wrap>
+          <Text strong>Result:</Text>
+          <Input
+            style={{ width: 240 }}
+            value={current.result ?? ""}
+            onChange={(e) => set(e.target.value)}
+            placeholder="Enter result"
+          />
+          {unit ? <Tag>{unit}</Tag> : null}
+        </Space>
+
+        {(unit || refText) && <Divider style={{ margin: "10px 0" }} />}
+
+        {unit ? (
+          <Text type="secondary">
+            <b>Unit:</b> {unit}
+          </Text>
+        ) : null}
+        {refText ? (
+          <Text type="secondary">
+            <b>Ref:</b> {formatRefText(refText)}
+          </Text>
+        ) : null}
+      </Space>
+    </div>
+  );
+}
+
+/* ---------------------- Panel ---------------------- */
+function PanelEditor({ rows, value, onChange }) {
+  // value shape: { items: { [code]: { result: string } } }
+  const current = value && typeof value === "object" ? value : { items: {} };
+
+  const setCell = (code, val) => {
+    onChange({
+      items: {
+        ...(current.items || {}),
+        [code]: { result: val },
+      },
+    });
+  };
+
+  return (
+    <div>
+      {rows.length === 0 ? (
+        <EmptyNote text="No items in panel." />
+      ) : (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1.2fr 1fr 1.2fr",
+            gap: 8,
+          }}
+        >
+          {/* <HeaderCell>Code</HeaderCell> */}
+          <HeaderCell>Name</HeaderCell>
+          <HeaderCell>Result</HeaderCell>
+          <HeaderCell>Ref / Unit</HeaderCell>
+
+          {rows
+            .slice()
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .map((r, idx) => {
+              const cellVal = current.items?.[r.code]?.result ?? "";
+              return (
+                <RowFragment key={`${r.code}-${idx}`}>
+                  {/* <Cell mono>{r.code}</Cell> */}
+                  <Cell>{r.name_en}</Cell>
+                  <Cell>
+                    <Input
+                      value={cellVal}
+                      onChange={(e) => setCell(r.code, e.target.value)}
+                      placeholder="Result"
+                    />
+                  </Cell>
+                  <Cell dim>
+                    {compactRef(r.ref)} {r.unit ? ` ${r.unit}` : ""}
+                  </Cell>
+                </RowFragment>
+              );
+            })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------- Composite ---------------------- */
+function CompositeEditor({ sections, value, onChange }) {
+  // value: { sections: { [sectionCode]: { [fieldCode]: any } } }
+  const current = value && typeof value === "object" ? value : { sections: {} };
+
+  const setField = (sCode, fCode, val) => {
+    onChange({
+      sections: {
+        ...(current.sections || {}),
+        [sCode]: {
+          ...(current.sections?.[sCode] || {}),
+          [fCode]: val,
+        },
+      },
+    });
+  };
+
+  return (
+    <div>
+      {sections.length === 0 ? (
+        <EmptyNote text="No sections defined." />
+      ) : (
+        sections
+          .slice()
+          .sort((a, b) => (a.order || 0) - (b.order || 0))
+          .map((sec, sIdx) => (
+            <div
+              key={`${sec.code}-${sIdx}`}
+              style={{
+                padding: 12,
+                border: "1px solid #eee",
+                borderRadius: 8,
+                marginBottom: 12,
+                background:
+                  "linear-gradient(135deg, rgba(163,67,201,0.08), rgba(67,170,201,0.08))",
+              }}
+            >
+              <Text strong>
+                {sec.name_en} {sec.name_ar ? ` / ${sec.name_ar}` : ""}{" "}
+                <Tag style={{ marginInlineStart: 6 }}>{sec.code}</Tag>
+              </Text>
+              <Divider style={{ margin: "8px 0 12px" }} />
+
+              <Space direction="vertical" size={8} style={{ width: "100%" }}>
+                {(sec.fields || [])
+                  .slice()
+                  .sort((a, b) => (a.order || 0) - (b.order || 0))
+                  .map((f, fIdx) => {
+                    const fieldVal =
+                      current.sections?.[sec.code]?.[f.code] ?? "";
+
+                    if (f.type === "choice") {
+                      const choices = Array.isArray(f.choices) ? f.choices : [];
+                      return (
+                        <Space
+                          key={`${sec.code}-${f.code}-${fIdx}`}
+                          align="baseline"
+                          wrap
+                          style={{ width: "100%" }}
+                        >
+                          <Text style={{ width: 220 }}>
+                            {f.label_en} {f.label_ar ? ` / ${f.label_ar}` : ""}
+                          </Text>
+                          <Select
+                            style={{ minWidth: 220 }}
+                            value={fieldVal || undefined}
+                            onChange={(v) => setField(sec.code, f.code, v)}
+                            allowClear
+                            options={choices.map((c) => ({
+                              value: c,
+                              label: c,
+                            }))}
+                          />
+                        </Space>
+                      );
+                    }
+
+                    if (f.type === "presence") {
+                      const opts = f.choices || ["Present", "Absent"];
+                      return (
+                        <Space
+                          key={`${sec.code}-${f.code}-${fIdx}`}
+                          align="baseline"
+                          wrap
+                          style={{ width: "100%" }}
+                        >
+                          <Text style={{ width: 220 }}>
+                            {f.label_en} {f.label_ar ? ` / ${f.label_ar}` : ""}
+                          </Text>
+                          <Select
+                            style={{ minWidth: 220 }}
+                            value={fieldVal || undefined}
+                            onChange={(v) => setField(sec.code, f.code, v)}
+                            allowClear
+                            options={opts.map((c) => ({
+                              value: c,
+                              label: c,
+                            }))}
+                          />
+                        </Space>
+                      );
+                    }
+
+                    // default: text
+                    return (
+                      <Space
+                        key={`${sec.code}-${f.code}-${fIdx}`}
+                        align="baseline"
+                        wrap
+                        style={{ width: "100%" }}
+                      >
+                        <Text style={{ width: 220 }}>
+                          {f.label_en} {f.label_ar ? ` / ${f.label_ar}` : ""}
+                        </Text>
+                        <Input
+                          style={{ minWidth: 220 }}
+                          value={fieldVal}
+                          onChange={(e) =>
+                            setField(sec.code, f.code, e.target.value)
+                          }
+                          placeholder="Enter value"
+                        />
+                      </Space>
+                    );
+                  })}
+              </Space>
+            </div>
+          ))
+      )}
+    </div>
+  );
+}
+
+/* ---------------------- UI helpers ---------------------- */
+function HeaderCell({ children }) {
+  return <div style={{ fontWeight: 600, color: "#555" }}>{children}</div>;
+}
+function RowFragment({ children }) {
+  return <>{children}</>;
+}
+function Cell({ children, mono = false, dim = false }) {
+  return (
+    <div
+      style={{
+        padding: "6px 4px",
+        fontFamily: mono ? "ui-monospace, Menlo, monospace" : undefined,
+        color: dim ? "#777" : undefined,
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+      title={typeof children === "string" ? children : undefined}
+    >
+      {children}
+    </div>
+  );
+}
+function EmptyNote({ text = "Nothing to show." }) {
+  return (
+    <div
+      style={{
+        padding: 12,
+        background:
+          "linear-gradient(135deg, rgba(163,67,201,0.06), rgba(67,170,201,0.06))",
+        border: "1px dashed #ddd",
+        borderRadius: 8,
+        color: "#666",
+        fontSize: 13,
+      }}
+    >
+      {text}
+    </div>
+  );
+}
+
+/* ---------------------- logic helpers ---------------------- */
+function safeParse(val) {
+  if (!val) return null;
+  if (typeof val === "string") {
+    try {
+      return JSON.parse(val);
+    } catch {
+      return null;
+    }
+  }
+  if (typeof val === "object") return val;
+  return null;
+}
+
+function normalizeInitialResult(test) {
+  // لو موجود result_json من الداتا رجعه كما هو
+  if (test?.result_json && typeof test.result_json === "object") {
+    return test.result_json;
+  }
+  // تهيئة أولية لكل نوع
+  if (test?.type === "single") {
+    return { result: "" };
+  }
+  if (test?.type === "panel") {
+    const meta = safeParse(test?.meta_json);
+    const items = {};
+    (meta?.items || []).forEach((it) => {
+      items[it.code] = { result: "" };
+    });
+    return { items };
+  }
+  if (test?.type === "composite") {
+    const meta = safeParse(test?.meta_json);
+    const sections = {};
+    (meta?.sections || []).forEach((sec) => {
+      const fvals = {};
+      (sec.fields || []).forEach((f) => {
+        fvals[f.code] = "";
+      });
+      sections[sec.code] = fvals;
+    });
+    return { sections };
+  }
+  return {};
+}
+
+function compactRef(ref) {
+  if (!ref) return "";
+  const s = String(ref).trim();
+  return s.length > 40 ? s.slice(0, 40) + "…" : s;
+}
