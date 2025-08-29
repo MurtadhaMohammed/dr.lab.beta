@@ -29,8 +29,7 @@ export const PureModal = () => {
   const isPatientValid =
     patientRow?.name &&
     patientRow?.gender &&
-    patientRow?.birth &&
-    patientRow?.phone;
+    patientRow?.birth
 
   const isDoctorValid =
     (doctorRow &&

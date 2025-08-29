@@ -1,4 +1,3 @@
-import { DeleteOutlined } from "@ant-design/icons";
 import {
   Button,
   Card,
@@ -16,6 +15,7 @@ import { useAppStore, usePatientStore } from "../../../libs/appStore";
 import "./style.css";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
+import dayjs from "dayjs";
 
 const { Text } = Typography;
 
@@ -23,14 +23,12 @@ export const PureModal = () => {
   const { setIsReload, isReload } = useAppStore();
   const {
     id,
-    uID,
     name,
     birth,
     phone,
     email,
     gender,
     setName,
-    createdAt,
     setBirth,
     setPhone,
     setEmail,
@@ -49,49 +47,50 @@ export const PureModal = () => {
       phone,
       birth: birth.toString(),
     };
-  
+
     if (id) {
       send({
         query: "updatePatient",
         id,
-        data: { ...data }
-      }).then(resp => {
-        if (resp.success) {
-          message.success(t("Patientupdatedsuccessfully"));
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error updating patient:", resp.error);
-          message.error(t("Failedtoupdatepatient"));
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-        message.error("Failed to communicate with server.");
-      });
-  
+        data: { ...data },
+      })
+        .then((resp) => {
+          if (resp.success) {
+            message.success(t("Patientupdatedsuccessfully"));
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Error updating patient:", resp.error);
+            message.error(t("Failedtoupdatepatient"));
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     } else {
       send({
         query: "addPatient",
         data: { ...data, createdAt: Date.now() },
-      }).then(resp => {
-        if (resp.success) {
-          message.success(t("Patientaddedsuccessfully"));
-          setReset();
-          setIsModal(false);
-          setIsReload(!isReload);
-        } else {
-          console.error("Error adding patient:", resp.error);
-          message.error(t("Failedtoaddpatient"));
-        }
-      }).catch(err => {
-        console.error("Error in IPC communication:", err);
-        message.error("Failed to communicate with server.");
-      });
+      })
+        .then((resp) => {
+          if (resp.success) {
+            message.success(t("Patientaddedsuccessfully"));
+            setReset();
+            setIsModal(false);
+            setIsReload(!isReload);
+          } else {
+            console.error("Error adding patient:", resp.error);
+            message.error(t("Failedtoaddpatient"));
+          }
+        })
+        .catch((err) => {
+          console.error("Error in IPC communication:", err);
+          message.error("Failed to communicate with server.");
+        });
     }
   };
-  
-
 
   return (
     <Modal
@@ -138,20 +137,36 @@ export const PureModal = () => {
           </Col>
           <Col span={10}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>{t("BirthDate")}</Text>
-              <DatePicker
+              <Text>{t("Age")}</Text>
+              <Input
+                type="number"
+                min={0}
+                value={birth ? dayjs().diff(dayjs(birth), "year") : ""}
+                onChange={(e) => {
+                  const age = parseInt(e.target.value, 10);
+                  if (!isNaN(age) && age >= 0) {
+                    const birthDate = dayjs()
+                      .subtract(age, "year")
+                      .startOf("year");
+                    setBirth(birthDate);
+                  } else {
+                    setBirth(null);
+                  }
+                }}
+                placeholder={t("EnterAge")}
+                style={{ width: "100%" }}
+              />
+              {/* <DatePicker
                 picker={t("year")}
                 value={birth}
                 onChange={(val) => setBirth(val)}
                 style={{ width: "100%" }}
-              />
+              /> */}
             </Space>
           </Col>
           <Col span={14}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
-              <Text>
-                {t("PhoneNumber")}
-              </Text>
+              <Text>{t("PhoneNumber")}</Text>
               <Input
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -196,3 +211,5 @@ export const PureModal = () => {
     </Modal>
   );
 };
+
+export const PatientModal = PureModal;

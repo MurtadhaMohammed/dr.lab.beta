@@ -2,7 +2,6 @@ import {
   Button,
   Card,
   Col,
-  DatePicker,
   Divider,
   Input,
   Modal,
@@ -24,14 +23,12 @@ export const PureModal = () => {
   const {
     id,
     name,
-    birth,
     phone,
     email,
     gender,
     address,
     type,
     setName,
-    setBirth,
     setPhone,
     setEmail,
     setGender,
@@ -140,7 +137,7 @@ export const PureModal = () => {
               />
             </Space>
           </Col>
-          
+
           <Col span={12}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
@@ -170,7 +167,8 @@ export const PureModal = () => {
           <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
-                {t("DoctorAddress")} <Text type="secondary">{t("Optional")}</Text>
+                {t("DoctorAddress")}{" "}
+                <Text type="secondary">{t("Optional")}</Text>
               </Text>
               <Input
                 value={address}
@@ -215,3 +213,5 @@ export const PureModal = () => {
     </Modal>
   );
 };
+
+export const DoctorModal = PureModal;

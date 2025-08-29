@@ -18,13 +18,21 @@ import {
 } from "antd";
 import "./style.css";
 import { PureModal, PureTable } from "../../components/Visits";
-import { useHomeStore, useLanguage, useAppStore } from "../../libs/appStore";
+import {
+  useHomeStore,
+  useLanguage,
+  useAppStore,
+  usePatientStore,
+  useDoctorStore,
+} from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import { QuickActionsModal } from "./quickActionModal";
 import { useEffect, useState } from "react";
 import { send } from "../../control/renderer";
 import { PDFSettings } from "../SettingScreen/pdfSettings";
 import { useAppTheme } from "../../hooks/useAppThem";
+import { PatientModal } from "../../components/Patients/Modal";
+import { DoctorModal } from "../../components/Doctors/Modal";
 
 const { Search } = Input;
 function CardStatistics({ icon, title, value, loading }) {
@@ -37,9 +45,7 @@ function CardStatistics({ icon, title, value, loading }) {
         <Divider type="vertical" />
         <div>
           <Typography.Text type="secondary">{title}</Typography.Text>
-          <b className="text-[32px] block">
-            {value.toLocaleString()}
-          </b>
+          <b className="text-[32px] block">{value.toLocaleString()}</b>
         </div>
       </Space>
     </Card>
@@ -56,6 +62,9 @@ const HomeScreen = () => {
     setSelectedTest,
     setIsQuickActionsModal,
   } = useHomeStore();
+
+  const { setIsModal: openPatientModal } = usePatientStore();
+  const { setIsModal: openDoctorModal } = useDoctorStore();
 
   const { isReload } = useAppStore();
   const { t, i18n } = useTranslation();
@@ -126,8 +135,8 @@ const HomeScreen = () => {
       if (test) {
         setTests([{ ...test }]);
       }
-      setIsModal(true);
     }
+    setIsModal(true);
   };
 
   const actionButtonsRow = localStorage.getItem("actionButtons")
@@ -266,8 +275,18 @@ const HomeScreen = () => {
                 }}
               >
                 <Space size={12} wrap>
-                  <Button className="flex-1">+ New Patient</Button>
-                  <Button className="flex-1">+ New Doctor</Button>
+                  <Button
+                    className="flex-1"
+                    onClick={() => openPatientModal(true)}
+                  >
+                    + New Patient
+                  </Button>
+                  <Button
+                    className="flex-1"
+                    onClick={() => openDoctorModal(true)}
+                  >
+                    + New Doctor
+                  </Button>
                   <Radio.Group defaultValue={lang} onChange={handleLang}>
                     <Radio.Button value="ar">عربي</Radio.Button>
                     <Radio.Button value="ku">کوردی</Radio.Button>
@@ -280,6 +299,8 @@ const HomeScreen = () => {
         </Row>
 
         <PureModal />
+        <PatientModal />
+        <DoctorModal />
         {/* <ResultsModal /> */}
         <QuickActionsModal />
       </div>

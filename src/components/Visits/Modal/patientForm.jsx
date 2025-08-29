@@ -100,21 +100,41 @@ const PatientForm = () => {
         </Col>
         <Col span={10}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
-            <Text>{t("BirthDate")}</Text>
-            <DatePicker
+            <Text>{t("Age")}</Text>
+            <Input
+              type="number"
+              min={0}
+              value={
+                patientRow?.birth
+                  ? dayjs().diff(dayjs(patientRow.birth), "year")
+                  : ""
+              }
+              onChange={(e) => {
+                const age = parseInt(e.target.value, 10);
+                if (!isNaN(age) && age >= 0) {
+                  const birthDate = dayjs()
+                    .subtract(age, "year")
+                    .startOf("year");
+                  setPatientRow({ ...patientRow, birth: birthDate });
+                } else {
+                  setPatientRow({ ...patientRow, birth: null });
+                }
+              }}
+              placeholder={t("EnterAge")}
+              style={{ width: "100%" }}
+            />
+            {/* <DatePicker
               picker={t("year")}
               value={patientRow?.birth}
               name={"birth"}
               onChange={(val) => handleChangeInput(val, "birth")}
               style={{ width: "100%" }}
-            />
+            /> */}
           </Space>
         </Col>
         <Col span={14}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
-            <Text>
-              {t("PhoneNumber")}
-            </Text>
+            <Text>{t("PhoneNumber")}</Text>
             <Input
               value={patientRow?.phone}
               name={"phone"}
