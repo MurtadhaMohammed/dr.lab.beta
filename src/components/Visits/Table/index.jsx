@@ -37,6 +37,7 @@ import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 import { usePlan } from "../../../hooks/usePlan";
 import { useAppTheme } from "../../../hooks/useAppThem";
 import { BarcodeModal } from "../BarcodeModal/barcodeModal";
+import { apiCall } from "../../../libs/api";
 // import { sendWhatsApp } from "../../../helper/whatsapp";
 
 export const PureTable = ({
@@ -45,12 +46,11 @@ export const PureTable = ({
   borderd = true,
   noTodayFilter = false,
 }) => {
-  const { isReload, setIsReload, isOnline } = useAppStore();
+  const { isReload, setIsReload } = useAppStore();
   const { canSendWhatsapp, initUser } = usePlan();
   const {
     setIsModal,
     setId,
-    setTestType,
     setDiscount,
     setTests,
     setCreatedAt,
@@ -78,7 +78,6 @@ export const PureTable = ({
   const { flag, setFlag } = useTrigger();
 
   const limit = usePageLimit();
-  const { setIsBarcode } = useHomeStore();
   const { t, i18n } = useTranslation();
   const { appColors } = useAppTheme();
 
@@ -121,31 +120,78 @@ export const PureTable = ({
   };
 
   const handleSandWhatsap = async (record) => {
+    setMsgLoading(true);
     try {
-      if (destPhone !== record?.phone) await updatePatient(record, destPhone);
+      if (destPhone !== record?.patient?.phone)
+        await updatePatient(record, destPhone);
       let phone = destPhone;
       if (!phoneValidate(phone)) {
         message.error("رقم الهاتف غير صحيح!");
         return;
       } else if (phone[0] === "0") phone = phone.substr(1);
-      
+
+      const { success, file } = await send({
+        query: "printVisit",
+        data: {
+          isView: false,
+          visit: record,
+        },
+      });
+
+      if (!success || !file) {
+        message.error("Error when createing pdf");
+        setMsgLoading(false);
+        return;
+      }
+
+      let pdf = new Blob(file.arrayBuffer, { type: "application/pdf" });
+      const formData = new FormData();
+      formData.append("phone", phone);
+      formData.append("file", pdf, "report.pdf");
+      const uploadResp = await apiCall({
+        method: "POST",
+        pathname: "/app/upload-pdf",
+        isFormData: true,
+        data: formData,
+        auth: true,
+      });
+
+      if (uploadResp?.status !== 200) {
+        message.error("Error Uploading file .!");
+        setMsgLoading(false);
+        return;
+      }
+
+      const { pdfUrl } = await uploadResp.json();
+
+      if (!pdfUrl) {
+        message.error("Error Uploading file .!");
+        setMsgLoading(false);
+        return;
+      }
+
+      setMsgLoading(false);
       const resp = await send({
         query: "sendWhatsapp",
         data: {
           phone: destPhone,
-          text: "Hello Guys",
-          link: "https://cdn.pixabay.com/photo/2024/05/26/10/15/bird-8788491_1280.jpg",
+          text: "السلام عليكم،\nنرفق لكم رابط نتائج التحاليل الخاصة بكم،\nمع تمنياتنا لكم بالصحة والعافية.",
+          link: pdfUrl,
           cc: "964",
         },
       });
 
       if (!resp.success) {
         message.error("Error Sending message!.");
+        setMsgLoading(false);
         console.error("Error updating patient:", resp.error);
       }
     } catch (error) {
+      setMsgLoading(false);
       message.error("Error Sending message!.");
       console.error("Error in IPC communication:", error);
+    } finally {
+      setMsgLoading(false);
     }
   };
 

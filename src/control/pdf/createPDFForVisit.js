@@ -12,6 +12,7 @@ const { renderSingle } = require("./templates/single");
 const { renderPanel } = require("./templates/panel");
 const { renderComposite } = require("./templates/composite");
 const electron = require("electron");
+const { LocalFileData } = require("get-file-object-from-local-path");
 
 async function createPDFForVisit({
   visit,
@@ -19,7 +20,7 @@ async function createPDFForVisit({
   headerDataUrl,
   watermarkBase64,
 }) {
-  const { app, shell, LocalFileData } = electron || {};
+  const { app, shell } = electron || {};
   try {
     const doc = new jsPDF(PDF_CFG.page);
     addFontIfNeeded(doc);

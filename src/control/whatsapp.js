@@ -21,7 +21,7 @@ function normalizePhone(phone, defaultCountryCode = "964") {
  */
 
 async function sendWhatsApp({ phone, text = "", link = "", cc = "964" } = {}) {
-  const msg = [text, link].filter(Boolean).join(" ").trim();
+  const msg = [text, link].filter(Boolean).join("\n\n").trim();
   const encMsg = encodeURIComponent(msg);
   let normalized = phone ? phone.replace(/\D+/g, "") : "";
 
