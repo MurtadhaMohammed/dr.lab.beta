@@ -37,7 +37,7 @@ function CardStatistics({ icon, title, value, loading }) {
         <Divider type="vertical" />
         <div>
           <Typography.Text type="secondary">{title}</Typography.Text>
-          <b className="text-[32px] block" cla>
+          <b className="text-[32px] block">
             {value.toLocaleString()}
           </b>
         </div>
