@@ -1,8 +1,7 @@
 import { Button, Modal, Space, Steps, message } from "antd";
 import { useAppStore, useHomeStore } from "../../../libs/appStore";
 import "./style.css";
-import PureSteps from "../../Global/Steps";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
 import TestForm from "./testForm";
 import PatientForm from "./patientForm";
@@ -14,12 +13,10 @@ export const PureModal = () => {
   const {
     isModal,
     setIsModal,
-    testType,
     discount,
     id,
     tests,
     setTests,
-    status,
     patientRow,
     setPatientRow,
     setDoctorRow,
@@ -28,15 +25,6 @@ export const PureModal = () => {
   const [step, setStep] = useState(0);
 
   const { t, i18n } = useTranslation();
-  // const testLabel = {
-  //   [t("CUSTOME")]: "Custome",
-  //   [t("PACKAGE")]: "Package",
-  // };
-
-  const testLabel = {
-    CUSTOME: t("Custome"),
-    PACKAGE: t("Packages"),
-  };
 
   const isPatientValid =
     patientRow?.name &&
@@ -50,29 +38,27 @@ export const PureModal = () => {
       Object.keys(doctorRow).length === 0) ||
     (doctorRow?.name != null && doctorRow?.name != "");
 
-  const updateVisit = async (doctorID) => {
+
+  const updateVisit = async (patient_id, doctor_id) => {
     try {
-      const resp = await send({
-        query: "updateVisit",
+      return await send({
+        query: "updateVisitInfo",
         id,
-        data: { status, testType, tests, discount, doctorID },
+        data: {
+          tests: tests?.map((el) => ({ id: el.id })),
+          discount_iqd: discount,
+          patient_id,
+          doctor_id: doctor_id || null,
+        },
       });
-      return resp;
     } catch (error) {
       console.log(error);
-      return;
+      return { success: false };
     }
   };
 
-  console.log({ tests });
-
   const addVisit = async (patient_id, doctor_id) => {
     try {
-      // patient_id: 1,
-      // doctor_id: 2,
-      // tests: [{ id: 1 }, { id: 5 }, { id: 12 }],
-      // discount_iqd: 2000,
-      // notes: "زيارة صباحية"
       const resp = await send({
         query: "addVisit",
         data: {
@@ -181,14 +167,14 @@ export const PureModal = () => {
     }
 
     if (id) {
-      let visitResp = await updateVisit(doctorID);
+      let visitResp = await updateVisit(patientID, doctorID);
       if (!visitResp || !visitResp.success) {
         message.error(t("Errorupdatingvisit"));
         return;
       }
 
-      message.success(t("Visitupdatedsuccessfully"));
       resetSate();
+      message.success(t("Visitupdatedsuccessfully"));
     } else {
       let visitResp = await addVisit(patientID, doctorID);
       if (!visitResp || !visitResp.success) {
@@ -196,144 +182,19 @@ export const PureModal = () => {
         return;
       }
 
-      message.success(t("Visitaddedsuccessfully"));
       resetSate();
+      message.success(t("Visitaddedsuccessfully"));
     }
   };
 
   const resetSate = () => {
-    setPatientRow();
-    setDoctorRow();
+    setPatientRow({});
+    setDoctorRow({});
     setIsModal(false);
     setIsReload(!isReload);
     setTests([]);
     setStep(0);
   };
-
-  // const handleSubmit = () => {
-  //   let data = {
-  //     patient: {
-  //       name: patientRow?.name,
-  //       gender: patientRow?.gender,
-  //       email: patientRow?.email,
-  //       phone: patientRow?.phone,
-  //       birth: patientRow?.birth?.toString(),
-  //     },
-  //     doctor: {
-  //       name: doctorRow?.name,
-  //       gender: doctorRow?.gender,
-  //       email: doctorRow?.email,
-  //       phone: doctorRow?.phone,
-  //       address: doctorRow?.address,
-  //       type: doctorRow?.type,
-  //     },
-  //     status,
-  //     testType,
-  //     tests,
-  //     discount,
-  //   };
-
-  //   if (id) {
-  //     send({
-  //       query: "updateVisit",
-  //       id,
-  //       data: { ...data },
-  //     })
-  //       .then((resp) => {
-  //         if (resp.success) {
-  //           message.success(t("Visitupdatedsuccessfully"));
-  //           send({
-  //             query: "updatePatient",
-  //             id: patientRow?.id,
-  //             data: { ...data.patient },
-  //           }).then((resp) => {
-  //             if (resp.success) {
-  //               // message.success(t("Patientupdatedsuccess"));
-  //               setPatientRow();
-  //               setDoctorRow();
-  //               setIsModal(false);
-  //               setIsReload(!isReload);
-  //               setStep(0);
-  //             } else {
-  //               message.error(t("Errorupdatingpatient"));
-  //             }
-  //           });
-  //         } else {
-  //           message.error(t("Errorupdatingvisit"));
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.error("Error in IPC communication:", err);
-  //       });
-  //   } else {
-  //     if (patientRow?.id) {
-  //       send({
-  //         query: "updatePatient",
-  //         id: patientRow?.id,
-  //         data: { ...data.patient },
-  //       }).then((resp) => {
-  //         if (resp.success) {
-  //           send({
-  //             query: "addVisit",
-  //             data: {
-  //               ...data,
-  //               patientID: patientRow?.id,
-  //             },
-  //           })
-  //             .then((resp) => {
-  //               if (resp.success) {
-  //                 message.success(t("Visitaddedsuccessfully"));
-  //                 setPatientRow();
-  //                 setDoctorRow();
-  //                 setIsModal(false);
-  //                 setIsReload(!isReload);
-  //                 setStep(0);
-  //               } else {
-  //                 message.error(t("Erroraddingvisit"));
-  //               }
-  //             })
-  //             .catch((err) => {
-  //               console.error("Error in IPC communication:", err);
-  //             });
-  //         } else {
-  //           message.error(t("Errorupdatingpatient"));
-  //         }
-  //       });
-  //     } else {
-  //       send({
-  //         query: "addPatient",
-  //         data: { ...data.patient },
-  //       })
-  //         .then((resp) => {
-  //           if (resp.success) {
-  //             send({
-  //               query: "addVisit",
-  //               data: { ...data, patientID: resp.id },
-  //             })
-  //               .then((resp) => {
-  //                 if (resp.success) {
-  //                   // message.success(t("Visitaddedsuccess"));
-  //                   setReset();
-  //                   setIsModal(false);
-  //                   setIsReload(!isReload);
-  //                   setStep(0);
-  //                 } else {
-  //                   message.error(t("Erroraddingvisit"));
-  //                 }
-  //               })
-  //               .catch((err) => {
-  //                 console.error("Error in IPC communication:", err);
-  //               });
-  //           } else {
-  //             message.error(t("Erroraddingpatient"));
-  //           }
-  //         })
-  //         .catch((err) => {
-  //           console.error("Error in IPC communication:", err);
-  //         });
-  //     }
-  //   }
-  // };
 
   const pageStep = [<TestForm />, <PatientForm />, <DoctorForm />];
 
@@ -385,8 +246,8 @@ export const PureModal = () => {
         id
           ? t("Edit")
           : i18n.language === "ar"
-          ? `${t("Add")} ${t("Test")} ${testLabel[testType]} ${t("forPatient")}`
-          : `${t("Add")} ${testLabel[testType]} ${t("Test For Patient")}`
+          ? `${t("Add")} ${t("Test")} ${t("forPatient")}`
+          : `${t("Add")} ${t("Test For Patient")}`
       }
       open={isModal}
       width={460}

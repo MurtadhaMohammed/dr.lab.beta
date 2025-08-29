@@ -13,7 +13,12 @@ export function send(doc) {
         "getTotalVisits",
         "testByID",
         "getTests",
+        "editTest",
+        "deleteTest",
+        "printVisit",
         "getPackages",
+        "getVisitTotals",
+        "updateVisitInfo"
       ].includes(queryName)
         ? `asynchronous-reply-${queryName}`
         : "asynchronous-reply";

@@ -25,22 +25,14 @@ import { useAppTheme } from "../../../hooks/useAppThem";
 const { Text } = Typography;
 
 const TestForm = () => {
-  const {
-    testType,
-    isModal,
-    setTests,
-    tests,
-    discount,
-    setDiscount,
-    selectedTest,
-  } = useHomeStore();
+  const { isModal, setTests, tests, discount, setDiscount } = useHomeStore();
   const [testsList, setTestList] = useState([]);
   const [editTest, setEditTest] = useState(null);
   const { t } = useTranslation();
   const { appTheme, appColors } = useAppTheme();
 
   let skip = 0; // Initialize skip (offset)
-  const limit = 10; // Set the limit for the number of tests per batch
+  const limit = 10000; // Set the limit for the number of tests per batch
 
   const getTests = (querySearch = "") => {
     send({
@@ -82,33 +74,6 @@ const TestForm = () => {
     if (isModal) getTests();
   }, [isModal]);
 
-  const testByID = async (id) => {
-    const resp = await send({
-      query: "testByID",
-      data: { id: id },
-    });
-    if (resp.success) {
-      console.log("resp in testByID", resp);
-      return resp.data;
-    }
-    return null;
-  };
-
-  // Auto-select test when testsList is updated and selectedTest exists
-  useEffect(() => {
-    if (selectedTest) {
-      const fetchTest = async () => {
-        const test = await testByID(selectedTest);
-        console.log("test", test);
-        if (test) {
-          setTests([...tests, test]);
-        }
-      };
-
-      fetchTest();
-    }
-  }, [selectedTest]);
-
   // Function to get price with condition to handle negative price
   const getPriceWithCondition = (item) => {
     const price = item?.price_iqd;
@@ -134,7 +99,7 @@ const TestForm = () => {
   const handleSaveEdit = () => {
     send({
       query: "editTest",
-      data: { ...editTest },
+      data: editTest,
       id: editTest?.id,
     })
       .then((resp) => {
@@ -207,16 +172,16 @@ const TestForm = () => {
                 <Input
                   size="small"
                   className="w-[170]"
-                  value={editTest?.name}
-                  onChange={(e) => handleEditChange("name", e.target.value)}
+                  value={editTest?.name_en}
+                  onChange={(e) => handleEditChange("name_en", e.target.value)}
                 />
               </Space>
               <Space>
                 <InputNumber
                   size="small"
                   className="w-[80px]"
-                  value={editTest?.price}
-                  onChange={(value) => handleEditChange("price", value)}
+                  value={editTest?.price_iqd}
+                  onChange={(value) => handleEditChange("price_iqd", value)}
                 />
                 <Text type="secondary">IQD</Text>
               </Space>
@@ -250,10 +215,7 @@ const TestForm = () => {
                 <Text>{el?.name_en}</Text>
               </Space>
               <Text type="secondary">
-                {Number(getPriceWithCondition(el)).toLocaleString(
-                  "en"
-                )}{" "}
-                IQD
+                {Number(getPriceWithCondition(el)).toLocaleString("en")} IQD
               </Text>
             </div>
           )
@@ -307,7 +269,7 @@ const TestForm = () => {
               IQD
             </Text>
           </div>
-          {discount && (
+          {discount > 0 && (
             <div className="app-flex-space">
               <Text type="secondary">{t("FinalPrice")}</Text>
               <Text style={{ fontSize: 18 }}>

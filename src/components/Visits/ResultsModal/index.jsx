@@ -13,6 +13,8 @@ import {
   Button,
 } from "antd";
 import { formatRefText } from "../../../helper/refTextFormatter";
+import { PrinterOutlined, SaveOutlined } from "@ant-design/icons";
+import { send } from "../../../control/renderer";
 
 const { Text } = Typography;
 
@@ -65,7 +67,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
     }));
   }, [tests, drafts]);
 
-  const handleOk = async () => {
+  const handleSave = async () => {
     try {
       // Build changes
       const changes = tests.map((t) => ({
@@ -78,11 +80,48 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
     }
   };
 
+  const handlPrint = async () => {
+    try {
+      const resp = await send({
+        query: "printVisit",
+        data: {
+          isView: true,
+          visit,
+        },
+      });
+
+      console.log(resp);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Modal
       open={open}
       onCancel={onCancel}
-      onOk={handleOk}
+      //onOk={handleOk}
+      footer={
+        <div className="flex items-center justify-between w-full">
+          <Typography.Text type="secondary">
+            Save results befor print.
+          </Typography.Text>
+          <Space>
+            <Button onClick={() => onCancel(false)}>Cancel</Button>
+            <Divider type="vertical" />
+            <Button
+              onClick={handlPrint}
+              disabled={visit?.status !== "COMPLETED"}
+              icon={<PrinterOutlined />}
+            >
+              Print
+            </Button>
+            <Button onClick={handleSave} type="primary" icon={<SaveOutlined />}>
+              Save
+            </Button>
+          </Space>
+        </div>
+      }
       width={700}
       title={
         <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>

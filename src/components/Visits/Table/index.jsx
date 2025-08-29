@@ -32,16 +32,18 @@ import {
 } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
-import { apiCall } from "../../../libs/api";
-import { parseTests, ResultsModal } from "../ResultsModal";
+import { ResultsModal } from "../ResultsModal";
 import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 import { usePlan } from "../../../hooks/usePlan";
 import { useAppTheme } from "../../../hooks/useAppThem";
+import { BarcodeModal } from "../BarcodeModal/barcodeModal";
+// import { sendWhatsApp } from "../../../helper/whatsapp";
 
 export const PureTable = ({
   isReport = false,
   ignore = [],
   borderd = true,
+  noTodayFilter = false,
 }) => {
   const { isReload, setIsReload, isOnline } = useAppStore();
   const { canSendWhatsapp, initUser } = usePlan();
@@ -68,6 +70,7 @@ export const PureTable = ({
   const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isBarcodeModal, setIsBarcodeModal] = useState(false);
 
   const [userType] = useState(
     JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type
@@ -95,8 +98,7 @@ export const PureTable = ({
 
   const handlePrintBarcode = async (record) => {
     setRecord(record);
-    setIsBarcode(true);
-    setIsResultsModal(true);
+    setIsBarcodeModal(true);
   };
 
   const updatePatient = async (record, phone) => {
@@ -119,117 +121,146 @@ export const PureTable = ({
   };
 
   const handleSandWhatsap = async (record) => {
-    setMsgLoading(true);
-    if (destPhone !== record?.phone) await updatePatient(record, destPhone);
-    let phone = destPhone;
-    if (!phoneValidate(phone)) {
-      message.error("رقم الهاتف غير صحيح!");
-      return;
-    } else if (phone[0] === "0") phone = phone.substr(1);
-
     try {
-      let pdf;
+      if (destPhone !== record?.phone) await updatePatient(record, destPhone);
+      let phone = destPhone;
+      if (!phoneValidate(phone)) {
+        message.error("رقم الهاتف غير صحيح!");
+        return;
+      } else if (phone[0] === "0") phone = phone.substr(1);
+      
+      const resp = await send({
+        query: "sendWhatsapp",
+        data: {
+          phone: destPhone,
+          text: "Hello Guys",
+          link: "https://cdn.pixabay.com/photo/2024/05/26/10/15/bird-8788491_1280.jpg",
+          cc: "964",
+        },
+      });
 
-      let printResults = () => {
-        return new Promise((resolve, reject) => {
-          const planType = JSON.parse(localStorage?.getItem("lab-user"))?.Plan
-            ?.type;
-          let data = {
-            patient: record.patient.name,
-            age: dayjs().diff(dayjs(record.patient.birth), "y"),
-            date: dayjs(record.createdAt).format("YYYY-MM-DD"),
-            tests: parseTests(record),
-            isHeader: true,
-            fontSize: 12,
-            isFree: planType === "FREE",
-          };
-
-          send({
-            query: "print",
-            data,
-            isView: false,
-          }).then(({ err, res, file }) => {
-            if (err) {
-              console.error("Error generating PDF:", err);
-              reject(err);
-            }
-            if (file) {
-              resolve(file);
-            } else {
-              reject(new Error("No file returned"));
-            }
-            console.log(err, res, file);
-          });
-        });
-      };
-
-      let handleSubmit = async () => {
-        let data = { ...record, status: "COMPLETED", updatedAt: Date.now() };
-
-        send({
-          doc: "visits",
-          query: "updateVisit",
-          data: { ...data },
-          id: record?.id,
-        }).then(({ err }) => {
-          if (err) message.error("Error !");
-          else {
-            setRecord(null);
-            setIsResultsModal(false);
-            setIsReload(!isReload);
-            setTimeout(async () => {
-              try {
-                const res = await printResults();
-                pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
-                const formData = new FormData();
-                formData.append("name", record?.patient?.name);
-                formData.append("phone", phone);
-                formData.append("file", pdf, "report.pdf");
-                const resp = await apiCall({
-                  method: "POST",
-                  pathname: "/app/whatsapp-message",
-                  isFormData: true,
-                  data: formData,
-                  auth: true,
-                });
-
-                if (resp?.ok) {
-                  const response = await resp.json();
-                  setMsgLoading(false);
-                  await initUser();
-                  message.success(response?.message);
-
-                  try {
-                    if (isOnline && window.gtag) {
-                      window.gtag("event", "click", {
-                        event_category: "button",
-                        event_label: "whatsapp-message-button",
-                        value: 1,
-                      });
-                    }
-                  } catch (e) {
-                    throw new Error(e.message);
-                  }
-                } else {
-                  message.error(response?.error);
-                }
-              } catch (error) {
-                console.error("Error generating PDF:", error);
-                message.error("Error!.");
-                setMsgLoading(false);
-              }
-            }, 100);
-          }
-        });
-      };
-
-      await handleSubmit();
+      if (!resp.success) {
+        message.error("Error Sending message!.");
+        console.error("Error updating patient:", resp.error);
+      }
     } catch (error) {
-      console.error("Error generating PDF or sending data:", error);
-      message.error(t("erroroccurred"));
-      setMsgLoading(false);
+      message.error("Error Sending message!.");
+      console.error("Error in IPC communication:", error);
     }
   };
+
+  // const handleSandWhatsap = async (record) => {
+  //   setMsgLoading(true);
+  //   if (destPhone !== record?.phone) await updatePatient(record, destPhone);
+  //   let phone = destPhone;
+  //   if (!phoneValidate(phone)) {
+  //     message.error("رقم الهاتف غير صحيح!");
+  //     return;
+  //   } else if (phone[0] === "0") phone = phone.substr(1);
+
+  //   try {
+  //     let pdf;
+
+  //     let printResults = () => {
+  //       return new Promise((resolve, reject) => {
+  //         const planType = JSON.parse(localStorage?.getItem("lab-user"))?.Plan
+  //           ?.type;
+  //         let data = {
+  //           patient: record.patient.name,
+  //           age: dayjs().diff(dayjs(record.patient.birth), "y"),
+  //           date: dayjs(record.createdAt).format("YYYY-MM-DD"),
+  //           tests: parseTests(record),
+  //           isHeader: true,
+  //           fontSize: 12,
+  //           isFree: planType === "FREE",
+  //         };
+
+  //         send({
+  //           query: "print",
+  //           data,
+  //           isView: false,
+  //         }).then(({ err, res, file }) => {
+  //           if (err) {
+  //             console.error("Error generating PDF:", err);
+  //             reject(err);
+  //           }
+  //           if (file) {
+  //             resolve(file);
+  //           } else {
+  //             reject(new Error("No file returned"));
+  //           }
+  //           console.log(err, res, file);
+  //         });
+  //       });
+  //     };
+
+  //     let handleSubmit = async () => {
+  //       let data = { ...record, status: "COMPLETED", updatedAt: Date.now() };
+
+  //       send({
+  //         doc: "visits",
+  //         query: "updateVisit",
+  //         data: { ...data },
+  //         id: record?.id,
+  //       }).then(({ err }) => {
+  //         if (err) message.error("Error !");
+  //         else {
+  //           setRecord(null);
+  //           setIsResultsModal(false);
+  //           setIsReload(!isReload);
+  //           setTimeout(async () => {
+  //             try {
+  //               const res = await printResults();
+  //               pdf = new Blob(res.arrayBuffer, { type: "application/pdf" });
+  //               const formData = new FormData();
+  //               formData.append("name", record?.patient?.name);
+  //               formData.append("phone", phone);
+  //               formData.append("file", pdf, "report.pdf");
+  //               const resp = await apiCall({
+  //                 method: "POST",
+  //                 pathname: "/app/whatsapp-message",
+  //                 isFormData: true,
+  //                 data: formData,
+  //                 auth: true,
+  //               });
+
+  //               if (resp?.ok) {
+  //                 const response = await resp.json();
+  //                 setMsgLoading(false);
+  //                 await initUser();
+  //                 message.success(response?.message);
+
+  //                 try {
+  //                   if (isOnline && window.gtag) {
+  //                     window.gtag("event", "click", {
+  //                       event_category: "button",
+  //                       event_label: "whatsapp-message-button",
+  //                       value: 1,
+  //                     });
+  //                   }
+  //                 } catch (e) {
+  //                   throw new Error(e.message);
+  //                 }
+  //               } else {
+  //                 message.error(response?.error);
+  //               }
+  //             } catch (error) {
+  //               console.error("Error generating PDF:", error);
+  //               message.error("Error!.");
+  //               setMsgLoading(false);
+  //             }
+  //           }, 100);
+  //         }
+  //       });
+  //     };
+
+  //     await handleSubmit();
+  //   } catch (error) {
+  //     console.error("Error generating PDF or sending data:", error);
+  //     message.error(t("erroroccurred"));
+  //     setMsgLoading(false);
+  //   }
+  // };
 
   const whatsapContnet = (record) => (
     <div div className="whatsap-content">
@@ -523,21 +554,13 @@ export const PureTable = ({
       });
   };
 
-  const handleEdit = ({
-    id,
-    patient,
-    doctor,
-    testType,
-    discount,
-    tests,
-    createdAt,
-  }) => {
+  const handleEdit = ({ id, patient, doctor, discount, tests, createdAt }) => {
     patient.birth = dayjs(patient.birth);
+    console.log(tests?.map((el) => ({ ...el, id: el?.visit_item_id })));
     setPatientRow(patient);
     setDoctorRow(doctor);
     setId(id);
-    setTests(tests);
-    setTestType(testType);
+    setTests(tests?.map((el) => ({ ...el, id: el?.test_id })));
     setDiscount(discount);
     setIsModal(true);
     setCreatedAt(createdAt);
@@ -554,19 +577,19 @@ export const PureTable = ({
 
   useEffect(() => {
     setLoading(true);
-    let startDate = filterDate
-      ? dayjs(filterDate[0]).startOf("day").toISOString()
-      : "";
-    let endDate = filterDate
-      ? dayjs(filterDate[1]).endOf("day").toISOString()
-      : "";
+    let startDate = "";
+    let endDate = "";
 
-    if (!isReport && isToday) {
+    if (!noTodayFilter && !isReport && isToday) {
       startDate = dayjs().startOf("day").toISOString();
       endDate = dayjs().endOf("day").toISOString();
-    } else if (!isReport && !isToday) {
-      startDate = "";
-      endDate = "";
+    } else if (isReport) {
+      startDate = filterDate
+        ? dayjs(filterDate[0]).startOf("day").toISOString()
+        : "";
+      endDate = filterDate
+        ? dayjs(filterDate[1]).endOf("day").toISOString()
+        : "";
     }
 
     send({
@@ -631,7 +654,7 @@ export const PureTable = ({
                 borderRadius: 10,
                 overflow: "hidden",
               }
-            : {marginTop: 4}
+            : { marginTop: 4 }
         }
         columns={columns}
         rowKey={(row) => row.id}
@@ -666,6 +689,11 @@ export const PureTable = ({
         visit={record}
         onCancel={() => setIsResultsModal(false)}
         onSubmit={handleSaveResult}
+      />
+      <BarcodeModal
+        open={isBarcodeModal}
+        onCancel={() => setIsBarcodeModal(false)}
+        record={record}
       />
     </>
   );

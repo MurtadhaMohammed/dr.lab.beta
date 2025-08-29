@@ -163,11 +163,9 @@ export const PureTable = () => {
     })
       .then((resp) => {
         if (resp.success) {
-          console.log("Success deleting test");
           message.success(t("Testdeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
-          console.error("Error deleting Test:", resp.error);
           message.error(t("Failedtodeletetest"));
         }
       })

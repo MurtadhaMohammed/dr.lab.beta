@@ -24,6 +24,7 @@ import { QuickActionsModal } from "./quickActionModal";
 import { useEffect, useState } from "react";
 import { send } from "../../control/renderer";
 import { PDFSettings } from "../SettingScreen/pdfSettings";
+import { useAppTheme } from "../../hooks/useAppThem";
 
 const { Search } = Input;
 function CardStatistics({ icon, title, value, loading }) {
@@ -47,19 +48,22 @@ function CardStatistics({ icon, title, value, loading }) {
   );
 }
 
-
 const HomeScreen = () => {
   const {
     setIsModal,
+    tests,
+    setTests,
     setQuerySearch,
     setReset,
     setSelectedTest,
     setIsQuickActionsModal,
   } = useHomeStore();
+
   const { isReload } = useAppStore();
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
   const { lang, setLang } = useLanguage();
+  const { appColors } = useAppTheme();
 
   // Statistics state
   const [statistics, setStatistics] = useState({
@@ -74,18 +78,17 @@ const HomeScreen = () => {
   const fetchStatistics = async () => {
     setStatisticsLoading(true);
     try {
-      const [pendingRes, todayRes, totalPatientsRes] =
-        await Promise.all([
-          send({ query: "getPendingResults" }),
-          send({ query: "getTodayVisits" }),
-          send({ query: "getTotalPatients" }),
-          // send({ query: "getTotalVisits", data: {} }),
-        ]);
+      const [pendingRes, todayRes, totalPatientsRes] = await Promise.all([
+        send({ query: "getPendingResults" }),
+        send({ query: "getTodayVisits" }),
+        send({ query: "getTotalPatients" }),
+        // send({ query: "getTotalVisits", data: {} }),
+      ]);
 
       setStatistics({
         pendingResults: pendingRes.success ? pendingRes.total : 0,
         todayVisits: todayRes.success ? todayRes.total : 0,
-        totalPatients: totalPatientsRes.success ? totalPatientsRes.total : 0
+        totalPatients: totalPatientsRes.success ? totalPatientsRes.total : 0,
       });
     } catch (error) {
       console.error("Error fetching statistics:", error);
@@ -106,12 +109,27 @@ const HomeScreen = () => {
     document.documentElement.dir = newLanguage === "en" ? "ltr" : "rtl";
   };
 
-  const onClick = ({ key, id }) => {
-    setReset();
-    if (key !== "Other Tests") {
-      setSelectedTest(id);
+  const testByID = async (id) => {
+    const resp = await send({
+      query: "testByID",
+      data: { id },
+    });
+    if (resp.success) {
+      console.log("resp in testByID", resp);
+      return resp.data;
     }
-    setIsModal(true);
+    return null;
+  };
+
+  const onClick = async ({ id }) => {
+    setReset();
+    if (id) {
+      const test = await testByID(id);
+      if (test) {
+        setTests([{ ...test }]);
+      }
+      setIsModal(true);
+    }
   };
 
   const actionButtonsRow = localStorage.getItem("actionButtons")
@@ -124,13 +142,13 @@ const HomeScreen = () => {
       title: item.name_en,
       id: item.id,
       isPrimary: false,
-      onClick: () => onClick({ key: item.name, id: item.id }),
+      onClick: () => onClick({ id: item.id }),
     })),
     // Add static "Other Tests" button first
     {
       title: "Other Tests",
       isPrimary: true,
-      onClick: () => onClick({ key: "Other Tests", id: null }),
+      onClick: () => onClick({ id: null }),
     },
   ];
 
@@ -189,13 +207,17 @@ const HomeScreen = () => {
               <PureTable
                 ignore={["price", "endPrice", "discount"]}
                 borderd={false}
+                noTodayFilter={true}
               />
             </Card>
           </Col>
           <Col span={7}>
             <Card
-              //className="bg-gradient-to-r from-[#f6f6f6] to-[#f6f6f64c]"
-              // className="bg-[#f6f6f6]"
+              style={{
+                background: appColors?.colorPrimaryHover,
+              }}
+              className="shadow-md"
+              //className="relative bg-gradient-to-r from-purple-500/20 to-blue-500/10 backdrop-purple-md"
               styles={{
                 title: {
                   fontSize: 14,
@@ -218,15 +240,17 @@ const HomeScreen = () => {
                 {actionButtons.map((button, index) => (
                   <div
                     key={index}
-                    className="px-4 py-2 rounded-md bg-[#f6f6f6] shadow-md cursor-pointer hover:scale-105 active:scale-95 transition-all"
+                    className="px-4 py-2 rounded-md  cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all"
                     style={
                       button.isPrimary
                         ? { background: "#9053e7", color: "#fff" }
-                        : {}
+                        : {
+                            background: appColors?.bgColor,
+                            border: "1px solid",
+                            borderColor: appColors?.colorBorder,
+                          }
                     }
-                    onClick={() =>
-                      onClick({ key: button.title, id: button.id })
-                    }
+                    onClick={() => onClick({ id: button.id })}
                   >
                     {button?.title}
                   </div>
@@ -237,7 +261,12 @@ const HomeScreen = () => {
               <PDFSettings />
               <Divider />
 
-              <div className="mt-4 bg-[#f6f6f6] p-4 rounded-[8px]">
+              <div
+                className="mt-4 p-4 rounded-[8px] shadow-lg"
+                style={{
+                  background: appColors?.bgColor,
+                }}
+              >
                 <Space size={12} wrap>
                   <Button className="flex-1">+ New Patient</Button>
                   <Button className="flex-1">+ New Doctor</Button>

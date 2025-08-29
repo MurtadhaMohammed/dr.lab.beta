@@ -1252,13 +1252,19 @@ class LabDB {
     return { success: true, ...trx() };
   }
 
-  async deleteVisit(id) {
-    const stmt = await this.db.prepare(`
-      DELETE FROM visits WHERE id = ?
-    `);
 
-    const info = stmt.run(id);
-    return { success: info.changes > 0 };
+  async deleteVisit(id) {
+    try {
+      // make sure FK cascades are enforced
+      this.db.prepare(`PRAGMA foreign_keys = ON`).run();
+
+      const stmt = this.db.prepare(`DELETE FROM visit_v2 WHERE id = ?`);
+      const info = stmt.run(id);
+
+      return { success: info.changes > 0, deleted: info.changes };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   }
 
   async getVisits({
@@ -1669,6 +1675,84 @@ class LabDB {
     return { success: true, status, total, completed };
   }
 
+  async getVisitTotals({ startDate, endDate, status, gender, testId } = {}) {
+    // normalize gender if passed as M/F
+    let genderNorm = undefined;
+    if (typeof gender === "string" && gender.trim()) {
+      const g = gender.trim().toLowerCase();
+      genderNorm =
+        g === "m" || g === "male"
+          ? "male"
+          : g === "f" || g === "female"
+          ? "female"
+          : g; // fallback as-is
+    }
+
+    const where = [];
+    const params = [];
+
+    // date range on visit created_at
+    if (startDate) {
+      where.push("datetime(v.created_at) >= datetime(?)");
+      params.push(startDate);
+    }
+    if (endDate) {
+      where.push("datetime(v.created_at) <= datetime(?)");
+      params.push(endDate);
+    }
+
+    // status
+    if (status) {
+      where.push("v.status = ?");
+      params.push(status);
+    }
+
+    // gender (joins patients)
+    const needPatientJoin = !!genderNorm;
+
+    if (genderNorm) {
+      where.push("LOWER(p.gender) = LOWER(?)");
+      params.push(genderNorm);
+    }
+
+    // testId filter: visit must contain at least one item with this test_id
+    if (Number.isFinite(testId)) {
+      where.push(`
+      EXISTS (
+        SELECT 1
+        FROM visit_item_v2 vi
+        WHERE vi.visit_id = v.id
+          AND vi.test_id = ?
+      )
+    `);
+      params.push(Number(testId));
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    const sql = `
+    SELECT
+      COALESCE(SUM(v.gross_price_iqd), 0) AS subTotalAmount,
+      COALESCE(SUM(v.discount_iqd), 0)    AS totalDiscount,
+      COALESCE(SUM(v.end_price_iqd), 0)   AS totalAmount,
+      COUNT(*)                            AS totalVisits
+    FROM visit_v2 v
+    ${needPatientJoin ? "JOIN patients p ON p.id = v.patient_id" : ""}
+    ${whereSql}
+  `;
+
+    const stmt = this.db.prepare(sql);
+    const row = stmt.get(...params) || {};
+
+    return {
+      success: true,
+      subTotalAmount: Number(row.subTotalAmount || 0),
+      totalDiscount: Number(row.totalDiscount || 0),
+      totalAmount: Number(row.totalAmount || 0),
+      totalVisits: Number(row.totalVisits || 0),
+    };
+  }
+
   async getTestNormalValues(testType, testsFromVisit) {
     let testIds =
       testType === "PACKAGE"
@@ -1945,36 +2029,154 @@ class LabDB {
     return { success: true, data: results };
   }
 
-  async updateVisit(id, data) {
-    const { patientID, doctorID, status, testType, tests, discount } = data;
+  async updateVisitV2(id, updates = {}) {
+    const {
+      patient_id,
+      doctor_id,
+      discount_iqd,
+      tests, // optional: [{id}, ...] => replace items
+    } = updates;
+    try {
+      // تأكد الزيارة موجودة
+      const visitRow = this.db
+        .prepare(`SELECT * FROM visit_v2 WHERE id = ?`)
+        .get(id);
+      if (!visitRow) {
+        throw new Error(`visit_v2 not found: ${id}`);
+      }
 
-    let newTests = await this.getTestNormalValues(testType, tests);
+      const tx = this.db.transaction(() => {
+        // 1) إذا انطيت tests، نستبدل قائمة التحاليل بالكامل (diff add/remove)
+        if (Array.isArray(tests)) {
+          const incomingIds = tests
+            .map((t) => Number(t?.id))
+            .filter((n) => Number.isFinite(n));
 
-    const testsStr = JSON.stringify(newTests);
+          // التحاليل الحالية
+          const current = this.db
+            .prepare(`SELECT test_id FROM visit_item_v2 WHERE visit_id = ?`)
+            .all(id)
+            .map((r) => r.test_id);
 
-    const stmt = this.db.prepare(`
-      UPDATE visits
-      SET 
-        patientID = COALESCE(?, patientID),
-        doctorID = COALESCE(?, doctorID),
-        status = COALESCE(?, status),
-        testType = COALESCE(?, testType),
-        tests = COALESCE(?, tests),
-        discount = COALESCE(?, discount),
-        updatedAt = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    const info = stmt.run(
-      patientID,
-      doctorID,
-      status,
-      testType,
-      testsStr,
-      discount,
-      id
-    );
+          const toAdd = incomingIds.filter((x) => !current.includes(x));
+          const toDel = current.filter((x) => !incomingIds.includes(x));
 
-    return { success: info.changes > 0, newTests };
+          // احذف الزائد
+          if (toDel.length) {
+            const qMarks = toDel.map(() => "?").join(",");
+            this.db
+              .prepare(
+                `DELETE FROM visit_item_v2 WHERE visit_id = ? AND test_id IN (${qMarks})`
+              )
+              .run(id, ...toDel);
+          }
+
+          // أضف الجديد: ناخذ سنابشوت من tests_catalog
+          if (toAdd.length) {
+            const qMarks = toAdd.map(() => "?").join(",");
+            const tcRows = this.db
+              .prepare(
+                `SELECT id AS test_id, code, type, name_en, name_ar, sample_type, unit, ref_text, price_iqd, is_active AS is_active_catalog, meta_json
+             FROM tests_catalog
+            WHERE id IN (${qMarks})`
+              )
+              .all(...toAdd);
+
+            const ins = this.db.prepare(`
+              INSERT INTO visit_item_v2
+              (visit_id, test_id, code, type, name_en, name_ar, sample_type, unit, ref_text,
+              price_iqd, is_active_catalog, meta_json,
+              result_value, result_numeric, result_unit, result_json, is_abnormal,
+              technician_name, method, completed_at, printed_at)
+              VALUES
+              (?,?,?,?,?,?,?,?,?,
+              ?,?,?,?,?,?,?,
+              0,
+              NULL,NULL,NULL,NULL)
+            `);
+
+            tcRows.forEach((r) => {
+              ins.run(
+                id, // visit_id
+                r.test_id, // test_id
+                r.code, // code
+                r.type, // type
+                r.name_en, // name_en
+                r.name_ar || null, // name_ar
+                r.sample_type || null, // sample_type
+                r.unit || null, // unit
+                r.ref_text || null, // ref_text
+
+                Number(r.price_iqd || 0), // price_iqd
+                Number(r.is_active_catalog || 1), // is_active_catalog
+                r.meta_json || "{}", // meta_json
+                null, // result_value
+                null, // result_numeric
+                null, // result_unit
+                null // result_json
+                // ثم الثوابت: 0, NULL, NULL, NULL, NULL
+              );
+            });
+          }
+        }
+
+        // 2) أعد حساب الأسعار (gross/end)
+        const sumRow = this.db
+          .prepare(
+            `SELECT COALESCE(SUM(price_iqd),0) AS gross FROM visit_item_v2 WHERE visit_id = ?`
+          )
+          .get(id);
+        const gross = Number(sumRow?.gross || 0);
+        const discount =
+          discount_iqd !== undefined
+            ? Math.max(0, Number(discount_iqd) || 0)
+            : Number(visitRow.discount_iqd || 0);
+        const endPrice = Math.max(0, gross - discount);
+
+        // 3) نبني UPDATE ديناميكي للزيارة
+        const sets = [];
+        const params = [];
+        const push = (clause, val) => {
+          sets.push(clause);
+          params.push(val);
+        };
+
+        if (patient_id !== undefined)
+          push(`patient_id = COALESCE(?, patient_id)`, patient_id);
+        if (doctor_id !== undefined)
+          push(`doctor_id  = ?`, doctor_id === null ? null : doctor_id);
+
+        // الأسعار دائمًا تتحدث بعد أي تغيير
+        push(`gross_price_iqd = ?`, gross);
+        push(`discount_iqd    = ?`, discount);
+        push(`end_price_iqd   = ?`, endPrice);
+
+        sets.push(`updated_at = CURRENT_TIMESTAMP`);
+
+        const sql = `UPDATE visit_v2 SET ${sets.join(", ")} WHERE id = ?`;
+        this.db.prepare(sql).run(...params, id);
+
+        return { gross, discount, endPrice };
+      });
+
+      const res = tx();
+      await this.updateVisitStatusV2(id);
+
+      return {
+        success: true,
+        totals: {
+          gross: res.gross,
+          discount: res.discount,
+          endPrice: res.endPrice,
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: "Update failed !.",
+      };
+    }
   }
 
   async getVisitDetails(visitId) {
@@ -1987,7 +2189,7 @@ class LabDB {
 
       const stmt = await this.db.prepare(`
         SELECT v.*, p.name as patientName
-        FROM visits v
+        FROM visits_v2 v
         JOIN patients p ON v.patientID = p.id
         WHERE v.id = ?
       `);

@@ -10,6 +10,8 @@ const sharp = require("sharp");
 const Jimp = require("jimp");
 const nodeHtmlToImage = require("node-html-to-image");
 const log = require("electron-log");
+const { createPDFForVisit } = require("./pdf/createPDFForVisit");
+const { sendWhatsApp } = require("./whatsapp");
 
 // Configure logging for print operations
 log.transports.file.level = "info";
@@ -202,9 +204,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "editTest": {
       try {
         const resp = await labDB.editTest(arg.id, arg.data);
-        event.reply("asynchronous-reply", { success: resp.success });
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
       } catch (error) {
-        event.reply("asynchronous-reply", {
+        event.reply(`asynchronous-reply-${arg.query}`, {
           success: false,
           error: error.message,
         });
@@ -214,9 +216,11 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "editMetaJson": {
       try {
         const resp = await labDB.editTestMetaJson(arg.id, arg.data);
-        event.reply("asynchronous-reply", { success: resp.success });
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: resp.success,
+        });
       } catch (error) {
-        event.reply("asynchronous-reply", {
+        event.reply(`asynchronous-reply-${arg.query}`, {
           success: false,
           error: error.message,
         });
@@ -241,9 +245,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       try {
         const resp = await labDB.getTests(arg.data);
         // console.log("Received data for getting tests:", arg.data);
-        event.reply("asynchronous-reply-getTests", resp);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
       } catch (error) {
-        event.reply("asynchronous-reply-getTests", {
+        event.reply(`asynchronous-reply-${arg.query}`, {
           success: false,
           error: error.message,
         });
@@ -325,7 +329,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "addVisit": {
       try {
-        console.log(arg.data)
+        console.log(arg.data);
         const resp = await labDB.registerVisitV2(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
@@ -339,7 +343,6 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     }
     case "updateVisit": {
       try {
-        console.log(arg.data)
         const resp = await labDB.saveVisitResults(arg.data);
         event.reply("asynchronous-reply", { success: true, id: resp.id });
       } catch (error) {
@@ -384,6 +387,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       }
       break;
     }
+
     case "getTotalVisits": {
       const { startDate, endDate } = arg.data;
       try {
@@ -430,6 +434,20 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    case "getVisitTotals": {
+      try {
+        const resp = await labDB.getVisitTotals(arg.data);
+        console.log("📤 IPC sending getVisitTotals response:", resp);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
+      } catch (error) {
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
     case "getPendingResults": {
       try {
         const resp = await labDB.getPendingResults();
@@ -444,15 +462,38 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
-    case "updateVisit": {
+    case "updateVisitInfo": {
       try {
-        const resp = await labDB.updateVisit(arg.id, arg.data);
-        event.reply("asynchronous-reply", {
-          success: resp.success,
-          newTests: resp?.newTests,
-        });
+        const resp = await labDB.updateVisitV2(arg.id, arg.data);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
       } catch (error) {
-        event.reply("asynchronous-reply", {
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "printVisit": {
+      try {
+        const resp = await createPDFForVisit(arg.data);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
+      } catch (error) {
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "sendWhatsapp": {
+      try {
+        const resp = await sendWhatsApp(arg.data);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
+      } catch (error) {
+        event.reply(`asynchronous-reply-${arg.query}`, {
           success: false,
           error: error.message,
         });
@@ -767,38 +808,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       const padding = 20;
 
       try {
-        let visitNumber = await labDB.addUniqueVisitNumber(arg?.data?.id);
-        if (!visitNumber) {
-          const error = "Failed to generate visit number";
-          logPrintOperation(
-            "printParcode_visitNumber_failed",
-            {
-              patientId: arg?.data?.id,
-              patientName: arg?.data?.name,
-            },
-            null,
-            error
-          );
-
-          event.reply("asynchronous-reply", {
-            success: false,
-            error: "Failed to generate visit number",
-          });
-          return;
-        }
-
-        logPrintOperation("printParcode_visitNumber_generated", {
-          patientId: arg?.data?.id,
-          visitNumber: visitNumber,
-        });
-
         // Fetch the visit object
         const visit = await labDB.getVisitDetails(arg.data.id);
-        logPrintOperation("printParcode_visit_fetched", {
-          patientId: arg?.data?.id,
-          visitFound: !!visit,
-          visitPatientName: visit?.patient?.name,
-        });
+        let visitNumber = visit?.visit_number;
 
         bwipjs.toBuffer(
           {
