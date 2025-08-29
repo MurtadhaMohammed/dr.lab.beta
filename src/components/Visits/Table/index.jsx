@@ -46,8 +46,8 @@ export const PureTable = ({
   borderd = true,
   noTodayFilter = false,
 }) => {
-  const { isReload, setIsReload } = useAppStore();
-  const { canSendWhatsapp, initUser } = usePlan();
+  const { isReload, setIsReload, user } = useAppStore();
+  const { canSendWhatsapp } = usePlan();
   const {
     setIsModal,
     setId,
@@ -175,7 +175,7 @@ export const PureTable = ({
         query: "sendWhatsapp",
         data: {
           phone: destPhone,
-          text: "السلام عليكم،\nنرفق لكم رابط نتائج التحاليل الخاصة بكم،\nمع تمنياتنا لكم بالصحة والعافية.",
+          text: `يهديكم ${user?.labName} تحياته\nنرفق لكم رابط نتائج التحاليل الخاصة بكم،\nمع تمنياتنا لكم بالصحة والعافية.`,
           link: pdfUrl,
           cc: "964",
         },

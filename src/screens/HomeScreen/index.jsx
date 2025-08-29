@@ -30,18 +30,16 @@ const { Search } = Input;
 function CardStatistics({ icon, title, value, loading }) {
   return (
     <Card styles={{ body: { padding: "12px 18px" } }}>
-      <Space align="center">
+      <Space align="center" size={12}>
         <div className="w-[60px] h-[60px] rounded-[12px] bg-[#a343c91c] flex items-center justify-center">
           {icon}
         </div>
         <Divider type="vertical" />
         <div>
           <Typography.Text type="secondary">{title}</Typography.Text>
-          {loading ? (
-            <Spin size="small" />
-          ) : (
-            <b className="text-[32px] block">{value.toLocaleString()}</b>
-          )}
+          <b className="text-[32px] block" cla>
+            {value.toLocaleString()}
+          </b>
         </div>
       </Space>
     </Card>
@@ -160,24 +158,24 @@ const HomeScreen = () => {
             <div className="grid grid-cols-3 gap-4">
               <CardStatistics
                 title={t("Pending Results")}
-                value={statistics.pendingResults}
-                loading={statisticsLoading}
+                value={statistics?.pendingResults || 0}
+                // loading={statisticsLoading}
                 icon={
                   <ClockCircleOutlined className="text-[#a343c9] text-[28px]" />
                 }
               />
               <CardStatistics
                 title={t("Today's Visits")}
-                value={statistics.todayVisits}
-                loading={statisticsLoading}
+                value={statistics?.todayVisits || 0}
+                // loading={statisticsLoading}
                 icon={
                   <UsergroupAddOutlined className="text-[#a343c9] text-[28px]" />
                 }
               />
               <CardStatistics
                 title={t("Total Patients")}
-                value={statistics.totalPatients}
-                loading={statisticsLoading}
+                value={statistics?.totalPatients || 0}
+                // loading={statisticsLoading}
                 icon={<UserOutlined className="text-[#a343c9] text-[28px]" />}
               />
             </div>

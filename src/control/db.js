@@ -12,9 +12,6 @@ class LabDB {
   }
 
   async init() {
-    // const isMac = os.platform() === "darwin";
-    // const dbPath = app.getPath("userData") + "drlab.db";
-    // const dbPath = path.join(app.getPath("userData"), "drlab.db");
     try {
       await this.handlePendingImport();
       this.db = new Database(this.dbPath, {
@@ -24,10 +21,6 @@ class LabDB {
       console.log("Database opened successfully");
       this.initializeDatabase();
       this.seedTestsCatalogIfEmpty();
-      this.checkAndAddTestTypeColumnAndGroupTest();
-      this.checkAndAddVisitNumberColumn();
-      this.initTestsFromJSON();
-      this.migrateVisitsTableWithDoctorForeignKey();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
@@ -65,49 +58,6 @@ class LabDB {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
-      CREATE TABLE IF NOT EXISTS visits (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        patientID INTEGER,
-        doctorID INTEGER,
-        visitNumber VARCHAR(6),
-        status TEXT DEFAULT "PENDING" NOT NULL,
-        testType VARCHAR(50),
-        tests TEXT,
-        discount INTEGER,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(patientID) REFERENCES patients(id)
-        FOREIGN KEY(doctorID) REFERENCES doctors(id)
-      );
-
-      CREATE TABLE IF NOT EXISTS tests(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name VARCHAR(50),
-      price INTEGER, 
-      type TEXT,
-      groupTest TEXT DEFAULT "[]",
-      normal TEXT,
-      options TEXT,
-      isSelecte INTEGER DEFAULT 0,
-      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-     );
-      CREATE TABLE IF NOT EXISTS packages(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title VARCHAR(100),
-        customePrice INTEGER,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-
-       CREATE TABLE IF NOT EXISTS test_to_packages(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        packageID INTEGER,
-        testID INTEGER,
-        FOREIGN KEY (packageID) REFERENCES packages(id) ON DELETE CASCADE,
-        FOREIGN KEY (testID) REFERENCES tests(id) ON DELETE CASCADE
-      );
-
       CREATE TABLE IF NOT EXISTS tests_catalog (
         id          INTEGER PRIMARY KEY,
         code        TEXT    NOT NULL UNIQUE,                     
@@ -125,9 +75,7 @@ class LabDB {
         updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
       );
 
-
       PRAGMA foreign_keys = ON;
-
       
       CREATE TABLE IF NOT EXISTS visit_v2 (
         id               INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -244,69 +192,6 @@ class LabDB {
     }
   }
 
-  async checkAndAddVisitNumberColumn() {
-    try {
-      // Check if the visits table has the visitNumber column
-      const columnCheckStmt = this.db.prepare(`
-        PRAGMA table_info(visits)
-      `);
-      const columns = columnCheckStmt.all();
-
-      const hasVisitNumberColumn = columns.some(
-        (column) => column.name === "visitNumber"
-      );
-
-      if (!hasVisitNumberColumn) {
-        // Alter the table to add the visitNumber column if it doesn't exist
-        this.db.exec(`
-          ALTER TABLE visits ADD COLUMN visitNumber VARCHAR(6)
-        `);
-        console.log("visitNumber column added successfully");
-      } else {
-        console.log("visitNumber column already exists");
-      }
-    } catch (error) {
-      console.error("Error checking or adding visitNumber column:", error);
-    }
-  }
-
-  async checkAndAddTestTypeColumnAndGroupTest() {
-    try {
-      // Check if the tests table has the type and groupTest columns
-      const columnCheckStmt = this.db.prepare(`
-        PRAGMA table_info(tests)
-      `);
-      const columns = columnCheckStmt.all();
-
-      const hasTypeColumn = columns.some((column) => column.name === "type");
-
-      const hasGroupTestColumn = columns.some(
-        (column) => column.name === "groupTest"
-      );
-
-      if (!hasTypeColumn) {
-        // Alter the table to add the type column if it doesn't exist
-        this.db.exec(`
-          ALTER TABLE tests ADD COLUMN type TEXT
-        `);
-        console.log("type column added successfully");
-      } else {
-        console.log("type column already exists");
-      }
-
-      if (!hasGroupTestColumn) {
-        this.db.exec(`
-          ALTER TABLE tests ADD COLUMN groupTest TEXT DEFAULT "[]"
-        `);
-        console.log("groupTest column added successfully");
-      } else {
-        console.log("groupTest column already exists");
-      }
-    } catch (error) {
-      console.error("Error checking or adding type column:", error);
-    }
-  }
-
   async searchGroupTest() {
     try {
       const tests = this.db.prepare(
@@ -388,175 +273,6 @@ class LabDB {
       );
     } catch (error) {
       console.error("Error checking or importing new test groups:", error);
-    }
-  }
-
-  async migrateVisitsTableWithDoctorForeignKey() {
-    try {
-      // Step 1: Enable foreign keys
-      this.db.prepare(`PRAGMA foreign_keys = ON;`).run();
-
-      // Step 2: Check if doctorID column already exists
-      const columns = this.db.prepare(`PRAGMA table_info(visits);`).all();
-      const hasDoctorID = columns.some((col) => col.name === "doctorID");
-
-      if (hasDoctorID) {
-        console.log("✅ doctorID column already exists, skipping migration.");
-        return;
-      }
-
-      this.db.transaction(() => {
-        // Step 3: Rename the existing table
-        this.db.prepare(`ALTER TABLE visits RENAME TO visits_old;`).run();
-
-        // Step 4: Create the new table with foreign key constraint
-        this.db
-          .prepare(
-            `
-            CREATE TABLE visits (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              patientID INTEGER,
-              doctorID INTEGER,
-              visitNumber VARCHAR(6),
-              status TEXT DEFAULT "PENDING" NOT NULL,
-              testType VARCHAR(50),
-              tests TEXT,
-              discount INTEGER,
-              updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-              createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY(patientID) REFERENCES patients(id),
-              FOREIGN KEY(doctorID) REFERENCES doctors(id)
-            );
-        `
-          )
-          .run();
-
-        // Step 5: Copy data from the old table
-        const oldColumns = columns.map((col) => col.name).join(", ");
-        const newColumns = oldColumns + ", NULL"; // doctorID is not in the old table
-
-        this.db
-          .prepare(
-            `
-          INSERT INTO visits (
-            id, patientID, doctorID, visitNumber, status, testType, tests, discount, updatedAt, createdAt
-          )
-          SELECT
-            id, patientID, NULL, visitNumber, status, testType, tests, discount, updatedAt, createdAt
-          FROM visits_old;
-        `
-          )
-          .run();
-
-        // Step 6: Drop old table
-        this.db.prepare(`DROP TABLE visits_old;`).run();
-
-        console.log("✅ visits table migrated with doctorID foreign key.");
-      })();
-    } catch (err) {
-      console.error("❌ Migration failed:", err.message);
-    }
-  }
-
-  async initTestsFromJSON() {
-    try {
-      const testCountStet = this.db.prepare(`
-        SELECT COUNT(*) as total FROM tests
-      `);
-      const { total } = testCountStet.get();
-
-      if (total === 0) {
-        const jsonPath = path.join(__dirname, "tests.json");
-        const jsonGroupPath = path.join(__dirname, "groups.json");
-
-        if (!fs.existsSync(jsonPath) || !fs.existsSync(jsonGroupPath)) {
-          throw new Error("One or both JSON files are missing");
-        }
-
-        const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-        const jsonGroupData = JSON.parse(
-          fs.readFileSync(jsonGroupPath, "utf-8")
-        );
-
-        // Updated insert statement to include type and groupTest fields
-        const insertStmt = this.db.prepare(`
-          INSERT INTO tests (name, price, normal, options, isSelecte, type, groupTest)
-          VALUES (?, ?, ?, ?, ?, ?, ?)
-        `);
-
-        const insertTransaction = this.db.transaction((data) => {
-          for (const item of data) {
-            const normalValue = item.normal
-              ? item.normal.replace(/\\n/g, "\n")
-              : null;
-
-            // Set default values for missing fields
-            const type = item.type || "single";
-            const groupTest = item.groupTest || "[]";
-            const isSelecte = item.isSelecte !== undefined ? item.isSelecte : 0;
-
-            insertStmt.run(
-              item.name,
-              Number(item.price),
-              normalValue,
-              item.options || "[]",
-              Number(isSelecte),
-              type,
-              groupTest
-            );
-          }
-        });
-
-        insertTransaction(jsonData);
-
-        for (const item of jsonGroupData) {
-          await this.addPackage({
-            title: item?.groupname,
-            customePrice: 0,
-            tests: item?.testIds?.map((id) => ({ id })),
-          });
-        }
-
-        console.log("Tests imported from tests.json");
-      } else {
-        console.log("Tests table is not empty, skipping import");
-      }
-    } catch (error) {
-      console.error("Error importing tests from JSON:", error);
-    }
-    this.searchGroupTest();
-  }
-
-  async addUniqueVisitNumber(visitId) {
-    try {
-      // First, check if the visitNumber already exists for the given visitId
-      const selectStmt = this.db.prepare(`
-        SELECT visitNumber FROM visits WHERE id = ?
-      `);
-      const result = selectStmt.get(visitId);
-
-      // If visitNumber exists, return it
-      if (result && result.visitNumber) {
-        return result.visitNumber;
-      }
-
-      // If visitNumber doesn't exist, generate a unique 6-digit number
-      const visitNumber = Math.floor(
-        100000 + Math.random() * 900000
-      ).toString();
-
-      // Update the visit record with the generated visitNumber
-      const updateStmt = this.db.prepare(`
-        UPDATE visits
-        SET visitNumber = ?
-        WHERE id = ?
-      `);
-      updateStmt.run(visitNumber, visitId);
-
-      return visitNumber;
-    } catch (error) {
-      console.error("Error updating visit with visitNumber:", error);
-      return null;
     }
   }
 
