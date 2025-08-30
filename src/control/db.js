@@ -192,18 +192,18 @@ class LabDB {
     }
   }
 
-  async searchGroupTest() {
-    try {
-      const tests = this.db.prepare(
-        `SELECT * FROM tests ORDER BY id DESC LIMIT 8`
-      );
+  // async searchGroupTest() {
+  //   try {
+  //     const tests = this.db.prepare(
+  //       `SELECT * FROM tests ORDER BY id DESC LIMIT 8`
+  //     );
 
-      return tests.all();
-    } catch (error) {
-      console.error("Error searching group test:", error);
-      return [];
-    }
-  }
+  //     return tests.all();
+  //   } catch (error) {
+  //     console.error("Error searching group test:", error);
+  //     return [];
+  //   }
+  // }
 
   async addNewData(data) {
     try {

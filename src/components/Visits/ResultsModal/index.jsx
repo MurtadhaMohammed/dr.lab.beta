@@ -223,7 +223,6 @@ function SingleEditor({ unit, refText, value, onChange }) {
 
 /* ---------------------- Panel ---------------------- */
 function PanelEditor({ rows, value, onChange }) {
-  // value shape: { items: { [code]: { result: string } } }
   const current = value && typeof value === "object" ? value : { items: {} };
 
   const setCell = (code, val) => {
@@ -233,6 +232,16 @@ function PanelEditor({ rows, value, onChange }) {
         [code]: { result: val },
       },
     });
+  };
+
+  const inferChoices = (r) => {
+    if (Array.isArray(r?.choices) && r.choices.length) return r.choices;
+    // fallback بسيط: إذا الـ ref يحتوي Negative/Positive اعتبرها choices
+    const ref = (r?.ref || "").toLowerCase();
+    const hasNeg = ref.includes("negative");
+    const hasPos = ref.includes("positive");
+    if (hasNeg || hasPos) return ["Negative", "Positive"];
+    return null;
   };
 
   return (
@@ -247,7 +256,6 @@ function PanelEditor({ rows, value, onChange }) {
             gap: 8,
           }}
         >
-          {/* <HeaderCell>Code</HeaderCell> */}
           <HeaderCell>Name</HeaderCell>
           <HeaderCell>Result</HeaderCell>
           <HeaderCell>Ref / Unit</HeaderCell>
@@ -257,16 +265,28 @@ function PanelEditor({ rows, value, onChange }) {
             .sort((a, b) => (a.order || 0) - (b.order || 0))
             .map((r, idx) => {
               const cellVal = current.items?.[r.code]?.result ?? "";
+              const choices = inferChoices(r);
+
               return (
                 <RowFragment key={`${r.code}-${idx}`}>
-                  {/* <Cell mono>{r.code}</Cell> */}
-                  <Cell>{r.name_en}</Cell>
+                  <Cell>{r.name_en || r.code}</Cell>
                   <Cell>
-                    <Input
-                      value={cellVal}
-                      onChange={(e) => setCell(r.code, e.target.value)}
-                      placeholder="Result"
-                    />
+                    {Array.isArray(choices) ? (
+                      <Select
+                        style={{ width: "100%" }}
+                        value={cellVal || undefined}
+                        onChange={(v) => setCell(r.code, v)}
+                        allowClear
+                        options={choices.map((c) => ({ value: c, label: c }))}
+                        placeholder="Select"
+                      />
+                    ) : (
+                      <Input
+                        value={cellVal}
+                        onChange={(e) => setCell(r.code, e.target.value)}
+                        placeholder="Result"
+                      />
+                    )}
                   </Cell>
                   <Cell dim>
                     {compactRef(r.ref)} {r.unit ? ` ${r.unit}` : ""}
@@ -279,6 +299,7 @@ function PanelEditor({ rows, value, onChange }) {
     </div>
   );
 }
+
 
 /* ---------------------- Composite ---------------------- */
 function CompositeEditor({ sections, value, onChange }) {

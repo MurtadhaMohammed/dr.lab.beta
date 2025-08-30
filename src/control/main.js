@@ -4,7 +4,7 @@ const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
 const fs = require("fs");
 const path = require("path");
-const image = path.join(__dirname, "../../defaultHeader.jpg");
+const image = path.join(__dirname, "../../defaultHeader.png");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
 const Jimp = require("jimp");
@@ -87,21 +87,21 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
-    case "searchGroupTest": {
-      console.log("✅ DEBUG: searchGroupTest case matched!");
-      try {
-        const resp = await labDB.searchGroupTest();
-        console.log("✅ DEBUG: searchGroupTest response:", resp);
-        event.reply("asynchronous-reply", { success: true, data: resp });
-      } catch (error) {
-        console.log("❌ DEBUG: searchGroupTest error:", error);
-        event.reply("asynchronous-reply", {
-          success: false,
-          error: error.message,
-        });
-      }
-      break;
-    }
+    // case "searchGroupTest": {
+    //   console.log("✅ DEBUG: searchGroupTest case matched!");
+    //   try {
+    //     const resp = await labDB.searchGroupTest();
+    //     console.log("✅ DEBUG: searchGroupTest response:", resp);
+    //     event.reply("asynchronous-reply", { success: true, data: resp });
+    //   } catch (error) {
+    //     console.log("❌ DEBUG: searchGroupTest error:", error);
+    //     event.reply("asynchronous-reply", {
+    //       success: false,
+    //       error: error.message,
+    //     });
+    //   }
+    //   break;
+    // }
 
     case "updatePatient": {
       try {
@@ -708,7 +708,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       });
 
       createPDF(arg.data, arg?.isView, (err, res, file) => {
-        // If PDF creation failed, try to copy defaultheader.jpg to userData and retry
+        // If PDF creation failed, try to copy defaultHeader.png to userData and retry
         if (err && err.message && err.message.includes("ENOENT")) {
           console.log(
             "PDF creation failed, attempting to copy header image..."
@@ -722,7 +722,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               fs.mkdirSync(userDataPath, { recursive: true });
             }
 
-            // Copy defaultheader.jpg to userData/head.png
+            // Copy defaultHeader.png to userData/head.png
             fs.copyFileSync(image, headerDestPath);
             console.log(
               "Header image copied successfully, retrying PDF creation..."
@@ -759,7 +759,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       });
 
       printReport(arg.data, (err, res) => {
-        // If report creation failed, try to copy defaultheader.jpg to userData and retry
+        // If report creation failed, try to copy defaultHeader.png to userData and retry
         if (err && err.message && err.message.includes("ENOENT")) {
           console.log(
             "Report creation failed, attempting to copy header image..."
@@ -773,7 +773,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               fs.mkdirSync(userDataPath, { recursive: true });
             }
 
-            // Copy defaultheader.jpg to userData/head.png
+            // Copy defaultHeader.png to userData/head.png
             fs.copyFileSync(image, headerDestPath);
             console.log(
               "Header image copied successfully, retrying report creation..."

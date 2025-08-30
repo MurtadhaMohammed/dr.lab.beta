@@ -40,7 +40,7 @@ export const usePlan = () => {
     try {
       const resp = await apiCall({
         method: "POST",
-        pathname: "/app/user/v2",
+        pathname: "/app/user",
         isFormData: false,
         auth: true,
       });
@@ -100,19 +100,19 @@ export const usePlan = () => {
     }
   };
 
-  const fetchActionButtons = async () => {  
-    const actionButtons = await send({
-      query: "searchGroupTest",
-    });
-    localStorage.setItem("actionButtons", JSON.stringify(actionButtons.data));
-  };
+  // const fetchActionButtons = async () => {
+  //   const actionButtons = await send({
+  //     query: "searchGroupTest",
+  //   });
+  //   localStorage.setItem("actionButtons", JSON.stringify(actionButtons.data));
+  // };
 
-  useEffect(() => {
-    const actionButtons = localStorage.getItem("actionButtons");
-    if (actionButtons?.length === 0 || !actionButtons) {
-      fetchActionButtons();
-    }
-  }, []);
+  // useEffect(() => {
+  //   const actionButtons = localStorage.getItem("actionButtons");
+  //   if (actionButtons?.length === 0 || !actionButtons) {
+  //     fetchActionButtons();
+  //   }
+  // }, []);
 
   const updateData = (userInfo) => {
     let { Plan, balance, whatsappMsgPrice, expiredAt, createdAt } =
@@ -138,7 +138,7 @@ export const usePlan = () => {
       }
       if (userInfo) updateData(userInfo);
 
-      await fetchHeader(JSON.parse(userInfo) || {});
+      await fetchHeader();
     }
   };
 

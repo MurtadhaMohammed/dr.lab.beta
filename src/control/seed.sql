@@ -199,25 +199,28 @@ VALUES
   ]
 }',20000,'v1.0.0');
 
--- TORCH
-INSERT INTO tests_catalog (code,type,name_en,name_ar,meta_json,price_iqd,version)
-VALUES
-('TORCH','panel','TORCH Panel','لوحة TORCH',
-'{
-  "print":{"layout":"table"},
-  "items":[
-    {"code":"TOXO_IGM","name_en":"Toxoplasma IgM","ref":"Negative","order":1},
-    {"code":"TOXO_IGG","name_en":"Toxoplasma IgG","ref":"Negative","order":2},
-    {"code":"RUB_IGM","name_en":"Rubella IgM","ref":"Negative","order":3},
-    {"code":"RUB_IGG","name_en":"Rubella IgG","ref":"Negative","order":4},
-    {"code":"CMV_IGM","name_en":"CMV IgM","ref":"Negative","order":5},
-    {"code":"CMV_IGG","name_en":"CMV IgG","ref":"Negative","order":6},
-    {"code":"HSV1_IGM","name_en":"HSV-1 IgM","ref":"Negative","order":7},
-    {"code":"HSV1_IGG","name_en":"HSV-1 IgG","ref":"Negative","order":8},
-    {"code":"HSV2_IGM","name_en":"HSV-2 IgM","ref":"Negative","order":9},
-    {"code":"HSV2_IGG","name_en":"HSV-2 IgG","ref":"Negative","order":10}
-  ]
-}',60000,'v1.0.0');
+INSERT INTO tests_catalog 
+(id, code, type, name_en, name_ar, meta_json, price_iqd, version)
+VALUES (
+  (SELECT id FROM tests_catalog WHERE code='TORCH'),
+  'TORCH','panel','TORCH Panel','لوحة TORCH',
+  '{
+    "print":{"layout":"table"},
+    "items":[
+      {"code":"TOXO_IGM","name_en":"Toxoplasma IgM","ref":"Negative","order":1,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"TOXO_IGG","name_en":"Toxoplasma IgG","ref":"Negative","order":2,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"RUB_IGM","name_en":"Rubella IgM","ref":"Negative","order":3,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"RUB_IGG","name_en":"Rubella IgG","ref":"Negative","order":4,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"CMV_IGM","name_en":"CMV IgM","ref":"Negative","order":5,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"CMV_IGG","name_en":"CMV IgG","ref":"Negative","order":6,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"HSV1_IGM","name_en":"HSV-1 IgM","ref":"Negative","order":7,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"HSV1_IGG","name_en":"HSV-1 IgG","ref":"Negative","order":8,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"HSV2_IGM","name_en":"HSV-2 IgM","ref":"Negative","order":9,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"HSV2_IGG","name_en":"HSV-2 IgG","ref":"Negative","order":10,"type":"choice","choices":["Negative","Positive"]}
+    ]
+  }',
+  60000,'v1.0.0'
+);
 
 -- Coagulation
 INSERT INTO tests_catalog (code,type,name_en,name_ar,meta_json,price_iqd,version)
@@ -304,19 +307,23 @@ VALUES
 }',35000,'v1.0.0');
 
 -- Viral Markers
-INSERT INTO tests_catalog (code,type,name_en,name_ar,meta_json,price_iqd,version)
-VALUES
-('VIRAL','panel','Viral Markers','الفيروسات',
-'{
-  "print":{"layout":"table"},
-  "items":[
-    {"code":"HBsAg","name_en":"HBsAg","ref":"Negative","order":1},
-    {"code":"AntiHCV","name_en":"Anti-HCV","ref":"Negative","order":2},
-    {"code":"HIVAb","name_en":"HIV Ab","ref":"Negative","order":3},
-    {"code":"HBeAg","name_en":"HBeAg","ref":"Negative","order":4},
-    {"code":"HBsAb","name_en":"HBsAb","ref":"Positive","order":5}
-  ]
-}',60000,'v1.0.0');
+INSERT INTO tests_catalog 
+(id, code, type, name_en, name_ar, meta_json, price_iqd, version)
+VALUES (
+  (SELECT id FROM tests_catalog WHERE code='VIRAL'),
+  'VIRAL','panel','Viral Markers','الفيروسات',
+  '{
+    "print":{"layout":"table"},
+    "items":[
+      {"code":"HBsAg","name_en":"HBsAg","ref":"Negative","order":1,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"AntiHCV","name_en":"Anti-HCV","ref":"Negative","order":2,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"HIVAb","name_en":"HIV Ab","ref":"Negative","order":3,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"HBeAg","name_en":"HBeAg","ref":"Negative","order":4,"type":"choice","choices":["Negative","Positive"]},
+      {"code":"HBsAb","name_en":"HBsAb","ref":"Positive","order":5,"type":"choice","choices":["Negative","Positive"]}
+    ]
+  }',
+  60000,'v1.0.0'
+);
 
 
 -- OGTT (Oral Glucose Tolerance Test)

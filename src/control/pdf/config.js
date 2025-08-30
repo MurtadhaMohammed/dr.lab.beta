@@ -1,6 +1,6 @@
 // Basic design tokens (tweak to your brand)
 const PDF_CFG = {
-  page: { unit: "mm", format: "a4", orientation: "p" },
+  page: { unit: "mm", format: "a4", orientation: "p", compress: true },
   margin: { left: 12, right: 12, top: 12, bottom: 16 },
   table: {
     headFill: [238,238,238],     // #EEE

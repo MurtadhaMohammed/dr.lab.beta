@@ -13,11 +13,9 @@ import {
   Popover,
   Radio,
   Row,
-  Select,
   Space,
   Tag,
   Modal,
-  Spin,
 } from "antd";
 import {
   UserOutlined,
@@ -26,7 +24,6 @@ import {
   CrownFilled,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
-import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
 import { useAppStore, useLanguage } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
@@ -44,7 +41,7 @@ import { PDFSettings } from "./pdfSettings";
 
 const SettingsScreen = () => {
   // const [imagePath, setImagePath] = useState(null);
-  const [imagePathLoading, setImagePathLoading] = useState(false);
+  // const [imagePathLoading, setImagePathLoading] = useState(false);
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
@@ -52,10 +49,7 @@ const SettingsScreen = () => {
   const { appColors } = useAppTheme();
   const {
     user,
-    setPrintFontSize,
-    printFontSize,
     setIsLogin,
-    imagePath,
     setImagePath,
   } = useAppStore();
   const [form] = Form.useForm();
@@ -67,14 +61,13 @@ const SettingsScreen = () => {
   const [selectedPrinter, setSelectedPrinter] = useState(
     localStorage.getItem("selectedPrinter") || ""
   );
-  const { generateHeader, fetchHeader } = useInitHeaderImage();
+  // const { generateHeader } = useInitHeaderImage();
 
   const {
     getPrintUsed,
     printLimit,
     subscriptionExpire,
     registerAt,
-    whatsappLimit,
     planType,
   } = usePlan();
 
@@ -107,10 +100,10 @@ const SettingsScreen = () => {
     if (labUserRow) form.setFieldsValue(labUserRow);
   }, []);
 
-  const handleSizeChange = (val) => {
-    localStorage.setItem("lab-print-size", val);
-    setPrintFontSize(val);
-  };
+  // const handleSizeChange = (val) => {
+  //   localStorage.setItem("lab-print-size", val);
+  //   setPrintFontSize(val);
+  // };
 
   const handelCancel = () => {
     const labUserRow = JSON.parse(localStorage.getItem("lab-user"));
@@ -120,42 +113,42 @@ const SettingsScreen = () => {
     }
   };
 
-  const handleChangeFile = async () => {
-    try {
-      const files = await fileDialog();
-      if (!files || files.length === 0) return;
+  // const handleChangeFile = async () => {
+  //   try {
+  //     const files = await fileDialog();
+  //     if (!files || files.length === 0) return;
 
-      const selectedFile = files[0];
-      const fileName = selectedFile.name.toLowerCase();
+  //     const selectedFile = files[0];
+  //     const fileName = selectedFile.name.toLowerCase();
 
-      const validExtensions = [".png", ".jpg", ".jpeg", ".webp"];
-      const isImageFile = validExtensions.some((ext) => fileName.endsWith(ext));
+  //     const validExtensions = [".png", ".jpg", ".jpeg", ".webp"];
+  //     const isImageFile = validExtensions.some((ext) => fileName.endsWith(ext));
 
-      if (!isImageFile) {
-        message.error(t("PleaseSelectImageFile"));
-        return;
-      }
+  //     if (!isImageFile) {
+  //       message.error(t("PleaseSelectImageFile"));
+  //       return;
+  //     }
 
-      setImagePathLoading(true);
-      const saveResponse = await send({
-        query: "saveHeadImage",
-        file: selectedFile.path,
-      });
+  //     setImagePathLoading(true);
+  //     const saveResponse = await send({
+  //       query: "saveHeadImage",
+  //       file: selectedFile.path,
+  //     });
 
-      if (saveResponse.success) {
-        setImagePathLoading(true);
-        setImagePath(null);
-        await fetchHeader(user);
-        setImagePathLoading(false);
-        message.success(t("ImageUploadedSuccessfully"));
-      } else {
-        throw new Error(saveResponse.error);
-      }
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      message.error(t("ErrorUploadingImage"));
-    }
-  };
+  //     if (saveResponse.success) {
+  //       setImagePathLoading(true);
+  //       setImagePath(null);
+  //       await fetchHeader(user);
+  //       setImagePathLoading(false);
+  //       message.success(t("ImageUploadedSuccessfully"));
+  //     } else {
+  //       throw new Error(saveResponse.error);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error uploading image:", error);
+  //     message.error(t("ErrorUploadingImage"));
+  //   }
+  // };
 
   const handleUpdateClient = async (values) => {
     form.validateFields().then((values) => {
@@ -186,27 +179,27 @@ const SettingsScreen = () => {
           message.success(t("UpdateSuccess"));
           setIsUpdate(false);
 
-          modal.confirm({
-            title: "Confirm",
-            icon: <ExclamationCircleOutlined />,
-            content: "هل تريد اعادة انشاء صورة الغلاف حسب المعلومات الجديدة ؟",
-            okText: "نعم",
-            cancelText: "لا",
-            onOk: async () => {
-              try {
-                setImagePathLoading(true);
-                await generateHeader(values);
-                setImagePath(null);
-                // const imageURL = await loadImage();
-                // if (imageURL) setImagePath(imageURL);
-                setImagePathLoading(false);
-                message.success("تم إنشاء صورة الغلاف بنجاح");
-              } catch (err) {
-                message.error("حدث خطأ أثناء إنشاء صورة الغلاف");
-                console.error(err);
-              }
-            },
-          });
+          // modal.confirm({
+          //   title: "Confirm",
+          //   icon: <ExclamationCircleOutlined />,
+          //   content: "هل تريد اعادة انشاء صورة الغلاف حسب المعلومات الجديدة ؟",
+          //   okText: "نعم",
+          //   cancelText: "لا",
+          //   onOk: async () => {
+          //     try {
+          //       //setImagePathLoading(true);
+          //       await generateHeader(values);
+          //       setImagePath(null);
+          //       // const imageURL = await loadImage();
+          //       // if (imageURL) setImagePath(imageURL);
+          //      // setImagePathLoading(false);
+          //       message.success("تم إنشاء صورة الغلاف بنجاح");
+          //     } catch (err) {
+          //       message.error("حدث خطأ أثناء إنشاء صورة الغلاف");
+          //       console.error(err);
+          //     }
+          //   },
+          // });
         } else {
           let errorData = await resp.json();
           console.error("Update failed:", errorData);
@@ -546,14 +539,14 @@ const SettingsScreen = () => {
                     </div>
                   )}
 
-                  <div className="w-full flex justify-between inter px-1">
+                  {/* <div className="w-full flex justify-between inter px-1">
                     <p className="font-normal text-sm">{t("whatsappLimit")}</p>
                     <p className="text-[#A5A5A5] font-normal text-sm">
                       {whatsappLimit === 0
                         ? t("noMessagesAvailable")
                         : whatsappLimit}
                     </p>
-                  </div>
+                  </div> */}
 
                   <div className="w-full flex justify-between inter px-1">
                     <p className="font-normal text-sm">{t("printLimit")}</p>
