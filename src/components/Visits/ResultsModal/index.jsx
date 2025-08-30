@@ -11,6 +11,7 @@ import {
   Tag,
   message,
   Button,
+  Popover,
 } from "antd";
 import { formatRefText } from "../../../helper/refTextFormatter";
 import { PrinterOutlined, SaveOutlined } from "@ant-design/icons";
@@ -122,7 +123,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
           </Space>
         </div>
       }
-      width={700}
+      width={1000}
       title={
         <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
           <span>Enter Results</span>
@@ -154,7 +155,6 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
 
 /* ---------------------- Per-test editor ---------------------- */
 function TestEditor({ test, value, onChange }) {
-  console.log(test);
   const meta = safeParse(test?.meta_json);
   const type = test?.type;
 
@@ -252,7 +252,7 @@ function PanelEditor({ rows, value, onChange }) {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "1.2fr 1fr 1.2fr",
+            gridTemplateColumns: "auto 1fr 2fr",
             gap: 8,
           }}
         >
@@ -289,7 +289,9 @@ function PanelEditor({ rows, value, onChange }) {
                     )}
                   </Cell>
                   <Cell dim>
-                    {compactRef(r.ref)} {r.unit ? ` ${r.unit}` : ""}
+                    <Popover content={formatRefText(r.ref)}>
+                      {formatRefText(r.ref)} {r.unit ? ` ${r.unit}` : ""}
+                    </Popover>
                   </Cell>
                 </RowFragment>
               );
@@ -299,7 +301,6 @@ function PanelEditor({ rows, value, onChange }) {
     </div>
   );
 }
-
 
 /* ---------------------- Composite ---------------------- */
 function CompositeEditor({ sections, value, onChange }) {
@@ -319,7 +320,7 @@ function CompositeEditor({ sections, value, onChange }) {
   };
 
   return (
-    <div>
+    <div className="grid grid-cols-2 gap-4">
       {sections.length === 0 ? (
         <EmptyNote text="No sections defined." />
       ) : (
@@ -333,7 +334,7 @@ function CompositeEditor({ sections, value, onChange }) {
                 padding: 12,
                 border: "1px solid #eee",
                 borderRadius: 8,
-                marginBottom: 12,
+                // marginBottom: 12,
                 background:
                   "linear-gradient(135deg, rgba(163,67,201,0.08), rgba(67,170,201,0.08))",
               }}
