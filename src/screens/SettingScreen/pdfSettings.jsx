@@ -78,21 +78,22 @@ export const PDFSettings = () => {
           <></>
         )}
       </div>
-      <Divider />
-      <div className="flex justify-between items-center">
-        <b className="text-[14px]">{t("FontSize")}</b>
+      {/* <Divider /> */}
+      {/* <div className="flex gap-2 items-center">
+        <b className="text-[12px]">{t("FontSize")}</b>
         <Select
           value={printFontSize}
           variant="borderless"
           onChange={handleSizeChange}
           popupMatchSelectWidth={false}
           style={{ width: 100, textAlign: "center" }}
+          size="small"
         >
           <Select.Option value={12}>Small</Select.Option>
           <Select.Option value={14}>Medium</Select.Option>
           <Select.Option value={16}>Large</Select.Option>
         </Select>
-      </div>
+      </div> */}
     </div>
   );
 };

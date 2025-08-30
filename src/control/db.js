@@ -1116,8 +1116,11 @@ class LabDB {
     startDate,
     endDate,
     status,
+    minAge,
+    maxAge,
+    testId,
+    gender,
   } = {}) {
-    // 1) بناء where مثل دالتك القديمة
     const whereClauses = [
       `(p.name LIKE ? OR v.visit_number LIKE ?)`,
       startDate
@@ -1131,11 +1134,27 @@ class LabDB {
             .format("YYYY-MM-DD")}'`
         : "",
       status ? `v.status = ?` : "",
+      gender ? `p.gender = '${gender}'` : "",
+      minAge
+        ? `(CAST(strftime('%Y','now') AS INT) - CAST(strftime('%Y',p.birth) AS INT)) >= ${Number(
+            minAge
+          )}`
+        : "",
+      maxAge
+        ? `(CAST(strftime('%Y','now') AS INT) - CAST(strftime('%Y',p.birth) AS INT)) <= ${Number(
+            maxAge
+          )}`
+        : "",
+      testId
+        ? `EXISTS (SELECT 1 FROM visit_item_v2 vi WHERE vi.visit_id = v.id AND vi.test_id = ${Number(
+            testId
+          )})`
+        : "",
     ]
       .filter(Boolean)
       .join(" AND ");
 
-    // 2) العدّ الكلي
+    // Count
     const countSql = `
     SELECT COUNT(*) as total
     FROM visit_v2 v
@@ -1143,7 +1162,6 @@ class LabDB {
     LEFT JOIN doctors d ON v.doctor_id = d.id
     WHERE ${whereClauses}
   `;
-
     const countParams = [`%${q}%`, `%${q}%`];
     if (status) countParams.push(status);
 
@@ -1151,7 +1169,7 @@ class LabDB {
     const countResult = countStmt.get(...countParams);
     const total = countResult?.total || 0;
 
-    // 3) جلب الزيارات (الهيدر) مع بيانات المريض والطبيب
+    // Visits
     const rowsSql = `
     SELECT 
       v.*,
@@ -1174,14 +1192,12 @@ class LabDB {
     ORDER BY v.created_at DESC
     LIMIT ${limit} OFFSET ${skip}
   `;
-
     const rowsParams = [`%${q}%`, `%${q}%`];
     if (status) rowsParams.push(status);
 
-    const stmt = this.db.prepare(rowsSql);
-    const visitsHdr = stmt.all(...rowsParams);
+    const visitsHdr = this.db.prepare(rowsSql).all(...rowsParams);
 
-    // 4) جلب عناصر الاختبارات لكل زيارة من visit_item_v2 + إرجاعها كأري
+    // Items
     let itemsMap = {};
     const visitIds = visitsHdr.map((v) => v.id);
     if (visitIds.length > 0) {
@@ -1202,8 +1218,7 @@ class LabDB {
           i.ref_text,
           i.price_iqd,
           i.meta_json,
-          i.item_status,
-          i.result_json,     -- لو مسوي عمود نتائج JSON بالعناصر
+          i.result_json,
           i.created_at,
           i.updated_at
         FROM visit_item_v2 i
@@ -1219,7 +1234,7 @@ class LabDB {
           visit_item_id: it.visit_item_id,
           test_id: it.test_id,
           code: it.code,
-          type: it.type, // single | panel | composite
+          type: it.type,
           name_en: it.name_en,
           name_ar: it.name_ar,
           sample_type: it.sample_type,
@@ -1227,7 +1242,6 @@ class LabDB {
           ref_text: it.ref_text,
           price_iqd: it.price_iqd,
           meta_json: it.meta_json,
-          status: it.item_status, // PENDING / REPORTED ...
           result_json: it.result_json ? JSON.parse(it.result_json) : null,
           created_at: it.created_at,
           updated_at: it.updated_at,
@@ -1236,7 +1250,7 @@ class LabDB {
       }, {});
     }
 
-    // 5) تحويل النتيجة إلى نفس الشكل تقريباً
+    // Result
     const results = visitsHdr.map((el) => {
       const doctorData = el?.doctorID
         ? {
@@ -1274,7 +1288,6 @@ class LabDB {
         },
 
         doctor: doctorData,
-
         tests: itemsMap[el.id] || [],
       };
     });
@@ -1422,23 +1435,37 @@ class LabDB {
     return { success: true, status, total, completed };
   }
 
-  async getVisitTotals({ startDate, endDate, status, gender, testId } = {}) {
-    // normalize gender if passed as M/F
-    let genderNorm = undefined;
-    if (typeof gender === "string" && gender.trim()) {
+  async getVisitTotals({
+    startDate,
+    endDate,
+    status,
+    gender, // 'male' | 'female' | 'm' | 'f' | ['male','female']
+    minAge, // أقدم عمر (سنوات)
+    maxAge, // أصغر عمر (سنوات)
+    testId,
+  } = {}) {
+    // --- Normalize gender to array of 'male'/'female'
+    let genderList = [];
+    if (Array.isArray(gender)) {
+      genderList = gender
+        .map((g) => String(g).trim().toLowerCase())
+        .map((g) => (g === "m" ? "male" : g === "f" ? "female" : g))
+        .filter((g) => g === "male" || g === "female");
+    } else if (typeof gender === "string" && gender.trim()) {
       const g = gender.trim().toLowerCase();
-      genderNorm =
-        g === "m" || g === "male"
-          ? "male"
-          : g === "f" || g === "female"
-          ? "female"
-          : g; // fallback as-is
+      const norm = g === "m" ? "male" : g === "f" ? "female" : g;
+      if (norm === "male" || norm === "female") genderList = [norm];
     }
+
+    const needPatientJoin =
+      genderList.length > 0 ||
+      Number.isFinite(minAge) ||
+      Number.isFinite(maxAge);
 
     const where = [];
     const params = [];
 
-    // date range on visit created_at
+    // Date range on visit.created_at
     if (startDate) {
       where.push("datetime(v.created_at) >= datetime(?)");
       params.push(startDate);
@@ -1448,21 +1475,31 @@ class LabDB {
       params.push(endDate);
     }
 
-    // status
+    // Visit status
     if (status) {
       where.push("v.status = ?");
       params.push(status);
     }
 
-    // gender (joins patients)
-    const needPatientJoin = !!genderNorm;
-
-    if (genderNorm) {
-      where.push("LOWER(p.gender) = LOWER(?)");
-      params.push(genderNorm);
+    // Gender filter
+    if (genderList.length > 0) {
+      const ph = genderList.map(() => "?").join(",");
+      where.push(`LOWER(p.gender) IN (${ph})`);
+      params.push(...genderList);
     }
 
-    // testId filter: visit must contain at least one item with this test_id
+    // Age filters (using precise day-based calc via julianday)
+    // NOTE: إذا عندك p.birth = NULL راح تُستبعد عندما تطلب عمر
+    if (Number.isFinite(minAge)) {
+      where.push(`( (julianday('now') - julianday(p.birth)) / 365.25 ) >= ?`);
+      params.push(Number(minAge));
+    }
+    if (Number.isFinite(maxAge)) {
+      where.push(`( (julianday('now') - julianday(p.birth)) / 365.25 ) <= ?`);
+      params.push(Number(maxAge));
+    }
+
+    // testId filter
     if (Number.isFinite(testId)) {
       where.push(`
       EXISTS (
@@ -1488,8 +1525,7 @@ class LabDB {
     ${whereSql}
   `;
 
-    const stmt = this.db.prepare(sql);
-    const row = stmt.get(...params) || {};
+    const row = this.db.prepare(sql).get(...params) || {};
 
     return {
       success: true,
@@ -1958,25 +1994,6 @@ class LabDB {
     } catch (error) {
       console.error("Error fetching visit details:", error);
       return null;
-    }
-  }
-
-  async exportAllData() {
-    try {
-      const patients = await this.getPatients({ q: "", skip: 0, limit: 1000 });
-      const visits = await this.getVisits({ q: "", skip: 0, limit: 1000 });
-      const tests = await this.getTests({ q: "", skip: 0, limit: 1000 });
-      const packages = await this.getPackages({ q: "", skip: 0, limit: 1000 });
-
-      return {
-        patients: patients,
-        visits: visits,
-        tests: tests,
-        packages: packages,
-      };
-    } catch (error) {
-      console.error("Error exporting all data:", error);
-      throw error;
     }
   }
 
