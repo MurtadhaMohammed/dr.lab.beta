@@ -48,7 +48,7 @@ function drawHeader(doc, { patient, dateText, ageText }) {
     }
   }
 
-  const topY = headerHeight > 0 ? headerHeight + 5 : margin.top + 5;
+  const topY = headerHeight > 0 ? headerHeight + 10 : margin.top + 10;
 
   doc.setFont(undefined, "normal");
   doc.text(`التاريخ : ${dateText || "-"}`, margin.left, topY, { lang: "ar" });

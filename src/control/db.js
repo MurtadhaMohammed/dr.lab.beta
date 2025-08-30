@@ -40,7 +40,7 @@ class LabDB {
         name TEXT NOT NULL,
         gender TEXT NOT NULL,
         email TEXT,
-        phone TEXT NOT NULL,
+        phone TEXT,
         birth DATE NOT NULL,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -1614,11 +1614,11 @@ class LabDB {
   async getPendingResults() {
     try {
       // First, let's see what visits exist and their statuses
-      const allVisitsStmt = await this.db.prepare(`
-        SELECT id, status, strftime('%Y-%m-%d', createdAt) as date FROM visits LIMIT 10
-      `);
-      const allVisits = allVisitsStmt.all();
-      console.log("🔍 Visits in DB:", allVisits);
+      // const allVisitsStmt = await this.db.prepare(`
+      //   SELECT id, status, strftime('%Y-%m-%d', created_at) as date FROM visit_v2 LIMIT 10
+      // `);
+      // const allVisits = allVisitsStmt.all();
+      // console.log("🔍 Visits in DB:", allVisits);
 
       const countStmt = await this.db.prepare(`
         SELECT COUNT(*) as total
