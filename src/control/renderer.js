@@ -13,6 +13,7 @@ export function send(doc) {
         "getTotalVisits",
         "testByID",
         "getTests",
+        "getTestsModal",
         "editTest",
         "deleteTest",
         "printVisit",

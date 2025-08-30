@@ -255,6 +255,20 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
+    case "getTestsModal": {
+      try {
+        const resp = await labDB.getTestsModal(arg.data);
+        // console.log("Received data for getting tests:", arg.data);
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
+      } catch (error) {
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
     case "testByID": {
       try {
         const resp = await labDB.testByID(arg.data.id);

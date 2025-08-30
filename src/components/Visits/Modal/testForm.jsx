@@ -36,7 +36,7 @@ const TestForm = () => {
 
   const getTests = (querySearch = "") => {
     send({
-      query: "getTests",
+      query: "getTestsModal",
       data: { q: querySearch, skip, limit }, // Send skip and limit to backend
     })
       .then((resp) => {

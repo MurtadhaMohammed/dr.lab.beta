@@ -620,6 +620,38 @@ class LabDB {
     }
   }
 
+  async getTestsModal({ q = "", skip = 0, limit = 10000 }) {
+    try {
+      const countStmt = this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM tests_catalog
+      WHERE code LIKE ?
+         OR name_en LIKE ?
+         OR name_ar LIKE ?
+    `);
+
+      const countResult = countStmt.get(`%${q}%`, `%${q}%`, `%${q}%`);
+      const total = countResult?.total || 0;
+
+      const stmt = this.db.prepare(`
+      SELECT id, type, code, name_en, name_ar, price_iqd, created_at
+      FROM tests_catalog
+      WHERE code LIKE ?
+         OR name_en LIKE ?
+         OR name_ar LIKE ?
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `);
+
+      const tests = stmt.all(`%${q}%`, `%${q}%`, `%${q}%`, limit, skip);
+
+      return { success: true, total, data: tests };
+    } catch (error) {
+      console.error("❌ Error in getCatalogTests:", error);
+      return { success: false, total: 0, data: [] };
+    }
+  }
+
   async testByID(id) {
     const stmt = await this.db.prepare(`
       SELECT * FROM tests_catalog WHERE id = ?
@@ -967,7 +999,6 @@ class LabDB {
 
     return { success: true, ...trx() };
   }
-
 
   async deleteVisit(id) {
     try {

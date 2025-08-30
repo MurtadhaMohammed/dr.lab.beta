@@ -1,7 +1,7 @@
 import { Button, Modal, Space, Steps, message } from "antd";
 import { useAppStore, useHomeStore } from "../../../libs/appStore";
 import "./style.css";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { send } from "../../../control/renderer";
 import TestForm from "./testForm";
 import PatientForm from "./patientForm";
