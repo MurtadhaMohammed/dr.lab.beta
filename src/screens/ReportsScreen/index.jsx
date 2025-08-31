@@ -12,7 +12,6 @@ import {
 } from "antd";
 import "./style.css";
 import { PureTable as HomeTable } from "../../components/Visits";
-import {  useReportsStore } from "../../libs/appStore";
 import dayjs from "dayjs";
 import { send } from "../../control/renderer";
 import { getTotalPrice } from "../../helper/price";
@@ -21,9 +20,13 @@ import { useTranslation } from "react-i18next";
 import { UserOutlined } from "@ant-design/icons";
 
 const ReportsScreen = () => {
-  const { filterDate, setFilterDate,visitStatus, setVisitStatus } = useReportsStore();
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState({});
+  const [status, setStatus] = useState(null);
+  const [gender, setGender] = useState(null);
+  const [testId, setTestId] = useState(null);
+  const [testList, setTestList] = useState([]);
+  const [filterDate, setFilterDate] = useState([dayjs(), dayjs()]);
   const { t } = useTranslation();
 
   const loadData = (cb) => {
@@ -33,7 +36,9 @@ const ReportsScreen = () => {
         q: "",
         startDate: dayjs(filterDate[0]).startOf("day").toISOString(),
         endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
-        status: visitStatus,
+        status,
+        testId,
+        gender
       },
     }).then(({ success, data }) => {
       if (success) cb(data);
@@ -79,10 +84,32 @@ const ReportsScreen = () => {
     });
   };
 
+  // Load tests from database
+  const loadTests = async (query = "") => {
+    setLoading(true);
+    try {
+      const response = await send({
+        query: "getTests",
+        data: { q: query, limit: 1000, skip: 0 },
+      });
+
+      if (response.success) {
+        setTestList(response.data || []);
+      } else {
+        message.error("Failed to load tests");
+      }
+    } catch (error) {
+      console.error("Error loading tests:", error);
+      message.error("Error loading tests");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     loadReports();
-  }, [filterDate, visitStatus]);
+    loadTests()
+  }, [filterDate, status, gender, testId]);
 
   const loadReports = async () => {
     try {
@@ -92,9 +119,9 @@ const ReportsScreen = () => {
         data: {
           startDate: dayjs(filterDate[0]).startOf("day").toISOString(),
           endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
-          status: visitStatus,
-          gender: null,
-          testId: null,
+          status,
+          gender,
+          testId,
         },
       });
 
@@ -109,7 +136,12 @@ const ReportsScreen = () => {
     }
   };
 
-  const homeTable = useMemo(() => <HomeTable isReport />, [data, visitStatus]);
+  const homeTable = useMemo(
+    () => (
+      <HomeTable isReport filter={{ status, gender, filterDate, testId }} />
+    ),
+    [data, status, gender, filterDate, testId]
+  );
 
   return (
     <div className={`reports-screen page relative`}>
@@ -125,12 +157,46 @@ const ReportsScreen = () => {
             <Select
               placeholder="Visit Status"
               allowClear
-              value={visitStatus}
-              onChange={setVisitStatus}
+              value={status}
+              onChange={setStatus}
             >
               <Option value="PENDING">PENDING</Option>
               <Option value="PARTIAL">PARTIAL</Option>
               <Option value="COMPLETED">COMPLETED</Option>
+            </Select>
+
+            <Select
+              placeholder="Gender"
+              allowClear
+              style={{ width: 140 }}
+              value={gender}
+              onChange={setGender}
+            >
+              <Option value="male">Male</Option>
+              <Option value="female">Female</Option>
+            </Select>
+
+            <Select
+              placeholder={t("Select test")}
+              style={{ width: "100%", minWidth: 120 }}
+              onChange={setTestId}
+              showSearch
+              allowClear
+              filterOption={(input, option) => {
+                // console.log({input, option})
+                return (
+                  option?.key?.toLowerCase()?.indexOf(input.toLowerCase()) >= 0
+                );
+              }}
+              //maxTagCount="responsive"
+              popupMatchSelectWidth={false}
+            >
+              {testList?.map((test) => (
+                <Select.Option key={test.name_en} value={test.id}>
+                  {test.name_en} - {t("Price")}:{" "}
+                  {Number(test.price_iqd).toLocaleString("en") || 0}
+                </Select.Option>
+              ))}
             </Select>
           </Space>
           <Space>

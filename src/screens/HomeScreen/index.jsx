@@ -296,7 +296,7 @@ const HomeScreen = () => {
                 {quickList?.map((button, index) => (
                   <div
                     key={index}
-                    className="px-4 py-2 rounded-md  cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all"
+                    className="px-3 py-1.5 text-[14px] rounded-md  cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all"
                     style={
                       button.isPrimary
                         ? { background: "#9053e7", color: "#fff" }

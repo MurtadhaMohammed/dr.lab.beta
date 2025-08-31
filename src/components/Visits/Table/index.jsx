@@ -24,17 +24,11 @@ import "./style.css";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { send } from "../../../control/renderer";
-import {
-  useAppStore,
-  useHomeStore,
-  useReportsStore,
-  useTrigger,
-} from "../../../libs/appStore";
+import { useAppStore, useHomeStore, useTrigger } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useTranslation } from "react-i18next";
 import { ResultsModal } from "../ResultsModal";
 import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
-import { usePlan } from "../../../hooks/usePlan";
 import { useAppTheme } from "../../../hooks/useAppThem";
 import { BarcodeModal } from "../BarcodeModal/barcodeModal";
 import { apiCall } from "../../../libs/api";
@@ -45,9 +39,9 @@ export const PureTable = ({
   ignore = [],
   borderd = true,
   noTodayFilter = false,
+  filter,
 }) => {
   const { isReload, setIsReload, user } = useAppStore();
-  const { canSendWhatsapp } = usePlan();
   const {
     setIsModal,
     setId,
@@ -59,7 +53,6 @@ export const PureTable = ({
     setPatientRow,
     setDoctorRow,
   } = useHomeStore();
-  const { filterDate, visitStatus } = useReportsStore();
 
   const [data, setData] = useState([]);
   const [record, setRecord] = useState(null);
@@ -542,10 +535,7 @@ export const PureTable = ({
                 className=" sticky"
                 icon={<WhatsAppOutlined />}
                 loading={msgLoading}
-                disabled={
-                  record?.status === "PENDING" ||
-                  userType === "FREE"
-                }
+                disabled={record?.status === "PENDING" || userType === "FREE"}
               />
             </Popover>
 
@@ -628,12 +618,12 @@ export const PureTable = ({
     if (!noTodayFilter && !isReport && isToday) {
       startDate = dayjs().startOf("day").toISOString();
       endDate = dayjs().endOf("day").toISOString();
-    } else if (isReport) {
-      startDate = filterDate
-        ? dayjs(filterDate[0]).startOf("day").toISOString()
+    } else if (isReport && filter?.filterDate) {
+      startDate = filter?.filterDate
+        ? dayjs(filter?.filterDate[0]).startOf("day").toISOString()
         : "";
-      endDate = filterDate
-        ? dayjs(filterDate[1]).endOf("day").toISOString()
+      endDate = filter?.filterDate
+        ? dayjs(filter?.filterDate[1]).endOf("day").toISOString()
         : "";
     }
 
@@ -645,7 +635,9 @@ export const PureTable = ({
         limit,
         startDate,
         endDate,
-        status: visitStatus,
+        status: filter?.status || null,
+        gender: filter?.gender || null,
+        testId: filter?.testId || null,
       },
     }).then((resp) => {
       if (resp.success) {
@@ -658,16 +650,7 @@ export const PureTable = ({
       setLoading(false);
       setFlag(false);
     });
-  }, [
-    page,
-    isReload,
-    querySearch,
-    isToday,
-    filterDate,
-    visitStatus,
-    limit,
-    flag,
-  ]);
+  }, [page, isReload, querySearch, isToday, limit, flag, filter]);
 
   const handleSaveResult = async (data) => {
     try {
