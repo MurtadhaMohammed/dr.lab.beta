@@ -87,21 +87,18 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
       break;
     }
 
-    // case "searchGroupTest": {
-    //   console.log("✅ DEBUG: searchGroupTest case matched!");
-    //   try {
-    //     const resp = await labDB.searchGroupTest();
-    //     console.log("✅ DEBUG: searchGroupTest response:", resp);
-    //     event.reply("asynchronous-reply", { success: true, data: resp });
-    //   } catch (error) {
-    //     console.log("❌ DEBUG: searchGroupTest error:", error);
-    //     event.reply("asynchronous-reply", {
-    //       success: false,
-    //       error: error.message,
-    //     });
-    //   }
-    //   break;
-    // }
+    case "getTopTests": {
+      try {
+        const resp = await labDB.getTopTests();
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
+      } catch (error) {
+        event.reply(`asynchronous-reply-${arg.query}`, {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
 
     case "updatePatient": {
       try {

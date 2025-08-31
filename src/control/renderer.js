@@ -19,7 +19,8 @@ export function send(doc) {
         "printVisit",
         "getPackages",
         "getVisitTotals",
-        "updateVisitInfo"
+        "updateVisitInfo",
+        "getTopTests",
       ].includes(queryName)
         ? `asynchronous-reply-${queryName}`
         : "asynchronous-reply";

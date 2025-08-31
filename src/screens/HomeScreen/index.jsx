@@ -71,6 +71,7 @@ const HomeScreen = () => {
   const direction = i18n.dir();
   const { lang, setLang } = useLanguage();
   const { appColors } = useAppTheme();
+  const [quickList, setQuickList] = useState([]);
 
   // Statistics state
   const [statistics, setStatistics] = useState({
@@ -139,25 +140,73 @@ const HomeScreen = () => {
     setIsModal(true);
   };
 
-  const actionButtonsRow = localStorage.getItem("actionButtons")
-    ? JSON.parse(localStorage.getItem("actionButtons"))
-    : [];
+  // const actionButtonsRow = localStorage.getItem("actionButtons")
+  //   ? JSON.parse(localStorage.getItem("actionButtons"))
+  //   : [];
 
-  const actionButtons = [
-    // Add other buttons from localStorage
-    ...actionButtonsRow.map((item) => ({
-      title: item.name_en,
-      id: item.id,
-      isPrimary: false,
-      onClick: () => onClick({ id: item.id }),
-    })),
-    // Add static "Other Tests" button first
-    {
-      title: "Other Tests",
-      isPrimary: true,
-      onClick: () => onClick({ id: null }),
-    },
-  ];
+  // const actionButtons = [
+  //   // Add other buttons from localStorage
+  //   ...actionButtonsRow.map((item) => ({
+  //     title: item.name_en,
+  //     id: item.id,
+  //     isPrimary: false,
+  //     onClick: () => onClick({ id: item.id }),
+  //   })),
+  //   // Add static "Other Tests" button first
+  //   {
+  //     title: "Other Tests",
+  //     isPrimary: true,
+  //     onClick: () => onClick({ id: null }),
+  //   },
+  // ];
+
+  const fetchActionButtons = async () => {
+    try {
+      const resp = await send({
+        query: "getTopTests",
+      });
+
+      if (resp?.success) {
+        const list = resp?.data?.map((item) => ({
+          ...item,
+          onClick: () => onClick({ id: item.id }),
+        }));
+
+        localStorage.setItem("actionButtons", JSON.stringify(list));
+        setQuickList([
+          ...list,
+          {
+            title: "Other Tests",
+            isPrimary: true,
+            onClick: () => onClick({ id: null }),
+          },
+        ]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    const quickListString = localStorage.getItem("actionButtons");
+    if (!quickListString) {
+      fetchActionButtons();
+    } else {
+      const quickListRow = JSON.parse(quickListString) || [];
+      const list = [
+        ...quickListRow?.map((item) => ({
+          ...item,
+          onClick: () => onClick({ id: item.id }),
+        })),
+        {
+          title: "Other Tests",
+          isPrimary: true,
+          onClick: () => onClick({ id: null }),
+        },
+      ];
+      setQuickList(list);
+    }
+  }, []);
 
   return (
     <div className="home-screen page pb-[50px]">
@@ -244,7 +293,7 @@ const HomeScreen = () => {
               }
             >
               <Space wrap size={12}>
-                {actionButtons.map((button, index) => (
+                {quickList?.map((button, index) => (
                   <div
                     key={index}
                     className="px-4 py-2 rounded-md  cursor-pointer shadow-md hover:scale-105 active:scale-95 transition-all"

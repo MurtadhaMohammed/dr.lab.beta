@@ -86,7 +86,7 @@ export const QuickActionsModal = () => {
     setSelectedTests([
       ...selectedTests,
       {
-        name_en: item?.name_en,
+        title: item?.name_en,
         isPrimary: false,
         id: item?.id || null,
       },
@@ -173,7 +173,7 @@ export const QuickActionsModal = () => {
                   className="px-4 py-2 rounded-[8px] bg-[#f6f6f6] flex gap-4"
                   key={i}
                 >
-                  <Text>{el?.name_en}</Text>
+                  <Text>{el?.title}</Text>
                   <Button
                     danger
                     icon={<CloseOutlined />}

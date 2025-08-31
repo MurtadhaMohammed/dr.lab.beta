@@ -100,19 +100,7 @@ export const usePlan = () => {
     }
   };
 
-  // const fetchActionButtons = async () => {
-  //   const actionButtons = await send({
-  //     query: "searchGroupTest",
-  //   });
-  //   localStorage.setItem("actionButtons", JSON.stringify(actionButtons.data));
-  // };
 
-  // useEffect(() => {
-  //   const actionButtons = localStorage.getItem("actionButtons");
-  //   if (actionButtons?.length === 0 || !actionButtons) {
-  //     fetchActionButtons();
-  //   }
-  // }, []);
 
   const updateData = (userInfo) => {
     let { Plan, balance, whatsappMsgPrice, expiredAt, createdAt } =

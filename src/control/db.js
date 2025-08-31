@@ -192,18 +192,43 @@ class LabDB {
     }
   }
 
-  // async searchGroupTest() {
-  //   try {
-  //     const tests = this.db.prepare(
-  //       `SELECT * FROM tests ORDER BY id DESC LIMIT 8`
-  //     );
+  async getTopTests() {
+    try {
+      // fixed, curated list (keeps working for new users)
+      const ids = [
+        53, // Lipid Profile
+        52, // Renal Function Test
+        67, // Stool Examination
+        68, // Urine Examination
+        69, // Culture Report
+        55, // TORCH Panel
+        51, // Liver Function Test
+        70, // Semen Analysis
+        59, // Vitamin Profile
+        57, // Hormonal Panel
+        50, // Complete Blood Count
+        54, // Thyroid Function Test
+      ];
 
-  //     return tests.all();
-  //   } catch (error) {
-  //     console.error("Error searching group test:", error);
-  //     return [];
-  //   }
-  // }
+      // Build an ordered inline table (id, ord)
+      const values = ids.map((id, i) => `(${id},${i})`).join(",");
+      const sql = `
+      WITH wanted(id, ord) AS (VALUES ${values})
+      SELECT
+        t.id,
+        t.name_en as title
+      FROM tests_catalog t
+      JOIN wanted w ON w.id = t.id
+      ORDER BY w.ord
+    `;
+
+      const rows = this.db.prepare(sql).all();
+      return { success: true, data: rows };
+    } catch (err) {
+      console.error("Error in getTopTraditionalTests:", err);
+      return { success: false, error: err.message };
+    }
+  }
 
   async addNewData(data) {
     try {

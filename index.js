@@ -23,7 +23,7 @@ function createWindow() {
       allowRendererProcessReuse: false,
     },
     autoHideMenuBar: true,
-    width: 1300,
+    width: 1400,
     height: 800,
     minWidth: 1024,  
     minHeight: 750,  
@@ -97,6 +97,7 @@ function createWindow() {
 
   win.once("ready-to-show", () => {
     splash.close();
+    win.maximize(); 
     win.show();
     win.webContents.send("hello");
 
