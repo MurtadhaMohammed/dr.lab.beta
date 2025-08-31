@@ -20,11 +20,6 @@ const VisitsScreen = () => {
   const { t, i18n } = useTranslation();
   const direction = i18n.dir();
 
-  const onClick = ({ key }) => {
-    (id || testType !== key) && setReset();
-    setTestType(key);
-    setIsModal(true);
-  };
   const items = [
     {
       key: "today",
@@ -33,17 +28,6 @@ const VisitsScreen = () => {
     {
       key: "all",
       label: t("All"),
-    },
-  ];
-
-  const types = [
-    {
-      key: "PACKAGE",
-      label: t("PackageTest"),
-    },
-    {
-      key: "CUSTOME",
-      label: t("CustomeTest"),
     },
   ];
 
@@ -83,16 +67,9 @@ const VisitsScreen = () => {
             </span>
           </Space>
 
-          <Dropdown
-            menu={{
-              items: types,
-              onClick,
-            }}
-          >
-            <Button type="primary" onClick={(e) => e.preventDefault()}>
-              + {t("CreateTest")}
-            </Button>
-          </Dropdown>
+          <Button type="primary" onClick={(e) => setIsModal(true)}>
+            + {t("CreateTest")}
+          </Button>
         </section>
         <PureTable />
         <PureModal />
