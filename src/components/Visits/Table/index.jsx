@@ -544,8 +544,7 @@ export const PureTable = ({
                 loading={msgLoading}
                 disabled={
                   record?.status === "PENDING" ||
-                  userType === "FREE" ||
-                  !canSendWhatsapp()
+                  userType === "FREE"
                 }
               />
             </Popover>

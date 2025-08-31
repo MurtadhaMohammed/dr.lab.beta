@@ -9,11 +9,7 @@ import { useTranslation } from "react-i18next";
 const VisitsScreen = () => {
   const {
     setIsModal,
-    testType,
-    setTestType,
     setQuerySearch,
-    id,
-    setReset,
     setIsToday,
     isToday,
   } = useHomeStore();
