@@ -144,25 +144,24 @@ export const DoctorHistory = () => {
                     Number(data[0]?.doctor?.doctor_fee) || 0;
                   const doctorFeeAmount =
                     (totalAmount * doctorFeePercentage) / 100;
-                  const totalWithDoctorFee = totalAmount + doctorFeeAmount;
-                                      return (
-                      <>
-                        <span>
-                          {Number(totalAmount).toLocaleString("en")} IQD
-                        </span>
-                        {doctorFeePercentage > 0 && (
-                          <>
-                            <span>|</span>
-                            <span>
-                              <strong>
-                                With Doctor Fee:{" "}
-                                {Number(totalWithDoctorFee).toLocaleString("en")} IQD
-                              </strong>
-                            </span>
-                          </>
-                        )}
-                      </>
-                    );
+                  return (
+                    <>
+                      <span>
+                        {Number(totalAmount).toLocaleString("en")} IQD
+                      </span>
+                      {doctorFeePercentage > 0 && (
+                        <>
+                          <span>|</span>
+                          <span>
+                            <strong>
+                              Doctor Fee :{" "}
+                              {Number(doctorFeeAmount).toLocaleString("en")} IQD
+                            </strong>
+                          </span>
+                        </>
+                      )}
+                    </>
+                  );
                 })()
               : "0 IQD"}
           </p>
