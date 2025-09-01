@@ -20,7 +20,6 @@ export const PureTable = () => {
     setIsModal,
     setId,
     setName,
-    setBirth,
     setGender,
     setEmail,
     setPhone,
@@ -91,6 +90,12 @@ export const PureTable = () => {
         ) : (
           <span style={{ color: "#c6c6c6" }}>{t("HasNoPhone")}</span>
         ),
+    },
+    {
+      title: t("DoctoreFee"),
+      dataIndex: "doctor_fee",
+      key: "doctor_fee",
+      render: (doctor_fee) => <b>{doctor_fee}%</b>,
     },
     {
       title: t("CreatedAt"),
@@ -202,6 +207,8 @@ export const PureTable = () => {
         setLoading(false);
       });
   }, [page, isReload, querySearch, limit]);
+
+
 
   return (
     <Table
