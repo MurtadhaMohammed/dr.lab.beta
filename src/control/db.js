@@ -21,6 +21,7 @@ class LabDB {
       console.log("Database opened successfully");
       this.initializeDatabase();
       this.seedTestsCatalogIfEmpty();
+      this.alterDoctorTableIfNeeded();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
@@ -162,6 +163,29 @@ class LabDB {
       );
 
     `);
+  }
+
+  async alterDoctorTableIfNeeded() {
+    // check schema info
+    const pragma = this.db.prepare(`PRAGMA table_info(doctors)`).all();
+
+    const colNames = pragma.map((c) => c.name);
+
+    const toAdd = [];
+    if (!colNames.includes("doctor_fee")) {
+      toAdd.push(`ADD COLUMN doctor_fee INTEGER DEFAULT 0`);
+    }
+    if (!colNames.includes("note")) {
+      toAdd.push(`ADD COLUMN note TEXT`);
+    }
+
+    if (toAdd.length > 0) {
+      toAdd.forEach((sql) =>
+        this.db.prepare(`ALTER TABLE doctors ${sql}`).run()
+      );
+    }
+
+    return { success: true, message: "Doctor table updated if needed" };
   }
 
   seedTestsCatalogIfEmpty() {
@@ -341,7 +365,7 @@ class LabDB {
 
   async deletePatient(id) {
     const checkVisitsStmt = await this.db.prepare(`
-      DELETE FROM visits WHERE patientID = ?
+      DELETE FROM visit_v2 WHERE patientId = ?
     `);
     const visits = await checkVisitsStmt.run(id);
 
@@ -409,7 +433,7 @@ class LabDB {
   async addDoctor(doctors) {
     try {
       const stmt = await this.db.prepare(`
-        INSERT INTO doctors (name, gender, email, phone, address, type)
+        INSERT INTO doctors (name, gender, email, phone, address, type,  doctor_fee, note)
         VALUES (?, ?, ?, ?, ?, ?)
       `);
       const info = stmt.run(
@@ -418,7 +442,9 @@ class LabDB {
         doctors.email,
         doctors.phone,
         doctors.address,
-        doctors.type
+        doctors.type,
+        doctors.doctor_fee,
+        doctors.note
       );
       return { id: info.lastInsertRowid };
     } catch (error) {
@@ -437,7 +463,8 @@ class LabDB {
   }
 
   async updateDoctor(id, updates) {
-    const { name, gender, email, phone, address, type } = updates;
+    const { name, gender, email, phone, address, type, doctor_fee, note } =
+      updates;
     const stmt = await this.db.prepare(`
     UPDATE doctors
     SET 
@@ -447,10 +474,22 @@ class LabDB {
     phone = COALESCE(?, phone),
     address = COALESCE(?, address),
     type = COALESCE(?, type),
+    doctor_fee = COALESCE(?, doctor_fee),
+    note = COALESCE(?, note),
     updatedAt = CURRENT_TIMESTAMP
     WHERE id = ?
     `);
-    const info = stmt.run(name, gender, email, phone, address, type, id);
+    const info = stmt.run(
+      name,
+      gender,
+      email,
+      phone,
+      address,
+      type,
+      doctor_fee,
+      note,
+      id
+    );
 
     return { data: info.changes > 0 };
   }
@@ -1089,7 +1128,7 @@ class LabDB {
         d.type as doctorType
       FROM visits v
       JOIN patients p ON v.patientID = p.id
-      LEFT JOIN doctors d ON v.doctorID = d.id
+      LEFT JOIN doctors d ON v.doctorId = d.id
       WHERE ${whereClauses}
       ORDER BY v.createdAt DESC
       LIMIT ${limit} OFFSET ${skip}
@@ -1717,7 +1756,7 @@ class LabDB {
         d.type as doctorType
       FROM visits v
       JOIN patients p ON v.patientID = p.id
-      LEFT JOIN doctors d ON v.doctorID = d.id
+      LEFT JOIN doctors d ON v.doctorId = d.id
       WHERE v.patientID = ?
       ORDER BY v.createdAt DESC
     `);
@@ -1762,79 +1801,135 @@ class LabDB {
   }
 
   async getVisitByDoctor(doctorId, startDate = null, endDate = null) {
-    const whereClauses = [
-      `v.doctorID = ?`, // always filter by doctorId
-      startDate
-        ? `DATE(v.createdAt) >= '${dayjs(startDate)
-            .startOf("day")
-            .toISOString()}'`
-        : "",
-      endDate
-        ? `DATE(v.createdAt) <= '${dayjs(endDate).endOf("day").toISOString()}'`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" AND ");
+    try {
+      const where = [`v.doctor_id = ?`]; // always filter by doctor_id
+      const params = [doctorId];
 
-    const stmt = await this.db.prepare(`
-    SELECT 
-      v.*, 
-      p.name as patientName, 
-      p.gender as patientGender, 
-      p.phone as patientPhone, 
-      p.email as patientEmail,  
-      p.birth as patientBirth,
-      d.id as doctorID,
-      d.name as doctorName, 
-      d.gender as doctorGender, 
-      d.phone as doctorPhone, 
-      d.email as doctorEmail, 
-      d.address as doctorAddress, 
-      d.type as doctorType
-    FROM visits v
-    JOIN patients p ON v.patientID = p.id
-    LEFT JOIN doctors d ON v.doctorID = d.id
-    WHERE ${whereClauses}
-    ORDER BY v.createdAt DESC
-  `);
+      if (startDate) {
+        where.push(`DATE(v.created_at) >= DATE(?)`);
+        params.push(dayjs(startDate).startOf("day").format("YYYY-MM-DD"));
+      }
+      if (endDate) {
+        where.push(`DATE(v.created_at) <= DATE(?)`);
+        params.push(dayjs(endDate).endOf("day").format("YYYY-MM-DD"));
+      }
 
-    const visits = stmt.all(doctorId);
+      const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
-    const results = visits?.map((el) => {
-      const doctorData = el?.doctorID
-        ? {
-            id: el?.doctorID,
-            name: el?.doctorName,
-            gender: el?.doctorGender,
-            phone: el?.doctorPhone,
-            email: el?.doctorEmail,
-            address: el?.doctorAddress,
-            type: el?.doctorType,
-          }
-        : null;
+      // 1) نجيب الزيارات مع معلومات المريض والدكتور
+      const stmt = this.db.prepare(`
+      SELECT 
+        v.*,
+        p.name   AS patientName, 
+        p.gender AS patientGender, 
+        p.phone  AS patientPhone, 
+        p.email  AS patientEmail,  
+        p.birth  AS patientBirth,
+        d.id     AS doctorID,
+        d.name   AS doctorName, 
+        d.gender AS doctorGender, 
+        d.phone  AS doctorPhone, 
+        d.email  AS doctorEmail, 
+        d.address AS doctorAddress, 
+        d.type    AS doctorType
+      FROM visit_v2 v
+      JOIN patients p ON v.patient_id = p.id
+      LEFT JOIN doctors d ON v.doctor_id = d.id
+      ${whereSql}
+      ORDER BY v.created_at DESC
+    `);
 
-      return {
-        id: el?.id,
-        tests: JSON.parse(el?.tests) || [],
-        testType: el?.testType,
-        status: el?.status,
-        discount: el?.discount,
-        createdAt: el?.createdAt,
-        updatedAt: el?.updatedAt,
-        visitNumber: el?.visitNumber,
-        patient: {
-          id: el?.patientID,
-          name: el?.patientName,
-          gender: el?.patientGender,
-          phone: el?.patientPhone,
-          email: el?.patientEmail,
-          birth: el?.patientBirth,
-        },
-        doctor: doctorData,
-      };
-    });
+      const visitsHdr = stmt.all(...params);
 
-    return { success: true, data: results };
+      // 2) نجيب الاختبارات لكل زيارة
+      let itemsMap = {};
+      const visitIds = visitsHdr.map((v) => v.id);
+      if (visitIds.length > 0) {
+        const placeholders = visitIds.map(() => "?").join(",");
+        const items = this.db
+          .prepare(
+            `
+          SELECT 
+            i.visit_id,
+            i.id AS visit_item_id,
+            i.test_id,
+            i.code,
+            i.type,
+            i.name_en,
+            i.name_ar,
+            i.sample_type,
+            i.unit,
+            i.ref_text,
+            i.price_iqd,
+            i.meta_json,
+            i.result_json,
+            i.created_at,
+            i.updated_at
+          FROM visit_item_v2 i
+          WHERE i.visit_id IN (${placeholders})
+          ORDER BY i.id ASC
+        `
+          )
+          .all(...visitIds);
+
+        itemsMap = items.reduce((acc, it) => {
+          if (!acc[it.visit_id]) acc[it.visit_id] = [];
+          acc[it.visit_id].push({
+            visit_item_id: it.visit_item_id,
+            test_id: it.test_id,
+            code: it.code,
+            type: it.type,
+            name_en: it.name_en,
+            name_ar: it.name_ar,
+            sample_type: it.sample_type,
+            unit: it.unit,
+            ref_text: it.ref_text,
+            price_iqd: it.price_iqd,
+            meta_json: it.meta_json,
+            result_json: it.result_json ? JSON.parse(it.result_json) : null,
+            created_at: it.created_at,
+            updated_at: it.updated_at,
+          });
+          return acc;
+        }, {});
+      }
+
+      // 3) نكوّن النتيجة النهائية
+      const results = visitsHdr.map((el) => {
+        const doctorData = el?.doctorID
+          ? {
+              id: el?.doctorID,
+              name: el?.doctorName,
+              gender: el?.doctorGender,
+              phone: el?.doctorPhone,
+              email: el?.doctorEmail,
+              address: el?.doctorAddress,
+              type: el?.doctorType,
+            }
+          : null;
+
+        return {
+          ...el,
+
+          patient: {
+            id: el.patient_id,
+            name: el.patientName,
+            gender: el.patientGender,
+            phone: el.patientPhone,
+            email: el.patientEmail,
+            birth: el.patientBirth,
+          },
+
+          doctor: doctorData,
+
+          tests: itemsMap[el.id] || [],
+        };
+      });
+
+      return { success: true, data: results };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   }
 
   async updateVisitV2(id, updates = {}) {
@@ -1997,8 +2092,8 @@ class LabDB {
 
       const stmt = await this.db.prepare(`
         SELECT v.*, p.name as patientName
-        FROM visits_v2 v
-        JOIN patients p ON v.patientID = p.id
+        FROM visit_v2 v
+        JOIN patients p ON v.patientId = p.id
         WHERE v.id = ?
       `);
 

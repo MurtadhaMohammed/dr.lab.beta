@@ -48,7 +48,7 @@ export const DoctorHistory = () => {
       render: (_, record) => (
         <span
           style={
-            record?.discount
+            record?.discount_iqd
               ? {
                   textDecoration: "line-through",
                   opacity: 0.3,
@@ -69,7 +69,7 @@ export const DoctorHistory = () => {
       render: (_, record) => (
         <b style={{ whiteSpace: "nowrap" }}>
           {Number(
-            getTotalPrice(record?.tests) - record?.discount
+            getTotalPrice(record?.tests) - record?.discount_iqd
           ).toLocaleString("en")}{" "}
           IQD
         </b>
@@ -77,11 +77,11 @@ export const DoctorHistory = () => {
     },
     {
       title: t("Discount"),
-      dataIndex: "discount",
-      key: "discount",
+      dataIndex: "discount_iqd",
+      key: "discount_iqd",
       render: (_, record) =>
-        record?.discount ? (
-          <Tag color="geekblue">{`${Number(record?.discount).toLocaleString(
+        record?.discount_iqd ? (
+          <Tag color="geekblue">{`${Number(record?.discount_iqd).toLocaleString(
             "en"
           )} IQD`}</Tag>
         ) : (
@@ -130,7 +130,6 @@ export const DoctorHistory = () => {
           onChange={setFilterDate}
         />
         <div className="flex justify-between items-center gap-2">
-          {" "}
           <p> {t("DoctorTotal")}</p>
           <p>
             {data?.length > 0
@@ -139,7 +138,7 @@ export const DoctorHistory = () => {
                     return (
                       acc +
                       (getTotalPrice(item?.tests) -
-                        item?.discount)
+                        item?.discount_iqd)
                     );
                   }, 0)
                 ).toLocaleString("en")}
