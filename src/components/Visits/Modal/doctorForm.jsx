@@ -4,6 +4,7 @@ import {
   Col,
   Divider,
   Input,
+  InputNumber,
   Radio,
   Row,
   Select,
@@ -55,6 +56,9 @@ const DoctorForm = () => {
 
   const handleChangeInput = (e) => {
     let { name, value } = e.target;
+    setDoctorRow({ ...doctorRow, [name]: value });
+  };
+  const handleChangeInputNumber = (name, value) => {
     setDoctorRow({ ...doctorRow, [name]: value });
   };
 
@@ -133,7 +137,7 @@ const DoctorForm = () => {
             />
           </Space>
         </Col>
-        <Col span={24}>
+        <Col span={14}>
           <Space style={{ width: "100%" }} direction="vertical" size={4}>
             <Text>
               {t("DoctorType")} <Text type="secondary">{t("Optional")}</Text>
@@ -146,6 +150,32 @@ const DoctorForm = () => {
             />
           </Space>
         </Col>
+        <Col span={10}>
+          <Space style={{ width: "100%" }} direction="vertical" size={4}>
+            <Text>
+              {t("DoctorFee")} <Text type="secondary">{t("Optional")}</Text>
+            </Text>
+            <InputNumber
+              name="doctor_fee"
+              value={doctorRow?.doctor_fee}
+              onChange={(val) => handleChangeInputNumber("doctor_fee", val)}
+              style={{ width: "100%" }}
+            />
+          </Space>
+        </Col>
+        {/* <Col span={10}>
+          <Space style={{ width: "100%" }} direction="vertical" size={4}>
+            <Text>
+              {t("Note")} <Text type="secondary">{t("Optional")}</Text>
+            </Text>
+            <Input
+              name="fee"
+              value={doctorRow?.fee}
+              onChange={handleChangeInput}
+              style={{ width: "100%" }}
+            />
+          </Space>
+        </Col> */}
 
         <Col span={24}>
           <Space style={{ width: "100%" }} direction="vertical" size={0}>

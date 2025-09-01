@@ -27,16 +27,13 @@ export const PureModal = () => {
   const { t, i18n } = useTranslation();
 
   const isPatientValid =
-    patientRow?.name &&
-    patientRow?.gender &&
-    patientRow?.birth
+    patientRow?.name && patientRow?.gender && patientRow?.birth;
 
   const isDoctorValid =
     (doctorRow &&
       typeof doctorRow === "object" &&
       Object.keys(doctorRow).length === 0) ||
     (doctorRow?.name != null && doctorRow?.name != "");
-
 
   const updateVisit = async (patient_id, doctor_id) => {
     try {

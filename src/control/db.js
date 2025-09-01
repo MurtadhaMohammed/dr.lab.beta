@@ -434,7 +434,7 @@ class LabDB {
     try {
       const stmt = await this.db.prepare(`
         INSERT INTO doctors (name, gender, email, phone, address, type,  doctor_fee, note)
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `);
       const info = stmt.run(
         doctors.name,
