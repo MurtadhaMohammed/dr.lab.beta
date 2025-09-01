@@ -131,18 +131,39 @@ export const DoctorHistory = () => {
         />
         <div className="flex justify-between items-center gap-2">
           <p> {t("DoctorTotal")}</p>
-          <p>
+          <p className="flex items-center gap-2">
             {data?.length > 0
-              ? `${Number(
-                  data?.reduce((acc, item) => {
+              ? (() => {
+                  const totalAmount = data?.reduce((acc, item) => {
                     return (
-                      acc +
-                      (getTotalPrice(item?.tests) -
-                        item?.discount_iqd)
+                      acc + (getTotalPrice(item?.tests) - item?.discount_iqd)
                     );
-                  }, 0)
-                ).toLocaleString("en")}
-            IQD`
+                  }, 0);
+
+                  const doctorFeePercentage =
+                    Number(data[0]?.doctor?.doctor_fee) || 0;
+                  const doctorFeeAmount =
+                    (totalAmount * doctorFeePercentage) / 100;
+                  const totalWithDoctorFee = totalAmount + doctorFeeAmount;
+                                      return (
+                      <>
+                        <span>
+                          {Number(totalAmount).toLocaleString("en")} IQD
+                        </span>
+                        {doctorFeePercentage > 0 && (
+                          <>
+                            <span>|</span>
+                            <span>
+                              <strong>
+                                With Doctor Fee:{" "}
+                                {Number(totalWithDoctorFee).toLocaleString("en")} IQD
+                              </strong>
+                            </span>
+                          </>
+                        )}
+                      </>
+                    );
+                })()
               : "0 IQD"}
           </p>
         </div>

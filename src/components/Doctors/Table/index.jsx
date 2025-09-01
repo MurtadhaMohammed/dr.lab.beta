@@ -28,6 +28,8 @@ export const PureTable = () => {
     setAddress,
     setType,
     setIsHistory,
+    setDoctorFee,
+    setNote,
   } = useDoctorStore();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
@@ -173,6 +175,8 @@ export const PureTable = () => {
     address,
     type,
     createdAt,
+    doctor_fee,
+    note,
   }) => {
     setId(id);
     setName(name);
@@ -181,6 +185,8 @@ export const PureTable = () => {
     setGender(gender);
     setAddress(address);
     setType(type);
+    setDoctorFee(doctor_fee || 0);
+    setNote(note || "");
     setIsModal(true);
     setCreatedAt(createdAt);
   };

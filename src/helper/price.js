@@ -12,7 +12,7 @@ export const getTotalPrice = (tests) => {
   }
 
   //total price record for visit
-  let totalPrice = tests.map((el) => el?.price_iqd)?.reduce((a, b) => a + b, 0);
+  let totalPrice = tests?.map((el) => el?.price_iqd)?.reduce((a, b) => a + b, 0);
 
   return totalPrice || 0;
 };

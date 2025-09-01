@@ -1831,7 +1831,8 @@ class LabDB {
         d.phone  AS doctorPhone, 
         d.email  AS doctorEmail, 
         d.address AS doctorAddress, 
-        d.type    AS doctorType
+        d.type    AS doctorType,
+        d.doctor_fee AS doctorFee
       FROM visit_v2 v
       JOIN patients p ON v.patient_id = p.id
       LEFT JOIN doctors d ON v.doctor_id = d.id
@@ -1905,6 +1906,7 @@ class LabDB {
               email: el?.doctorEmail,
               address: el?.doctorAddress,
               type: el?.doctorType,
+              doctor_fee: el?.doctorFee || 0,
             }
           : null;
 
