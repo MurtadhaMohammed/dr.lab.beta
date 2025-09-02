@@ -12,6 +12,7 @@ import {
   message,
   Button,
   Popover,
+  AutoComplete,
 } from "antd";
 import { formatRefText } from "../../../helper/refTextFormatter";
 import { PrinterOutlined, SaveOutlined } from "@ant-design/icons";
@@ -272,13 +273,21 @@ function PanelEditor({ rows, value, onChange }) {
                   <Cell>{r.name_en || r.code}</Cell>
                   <Cell>
                     {Array.isArray(choices) ? (
-                      <Select
+                      // <Select
+                      //   style={{ width: "100%" }}
+                      //   value={cellVal || undefined}
+                      //   onChange={(v) => setCell(r.code, v)}
+                      //   allowClear
+                      //   options={choices.map((c) => ({ value: c, label: c }))}
+                      //   placeholder="Select"
+                      // />
+                      <WritableSelect
                         style={{ width: "100%" }}
                         value={cellVal || undefined}
                         onChange={(v) => setCell(r.code, v)}
                         allowClear
                         options={choices.map((c) => ({ value: c, label: c }))}
-                        placeholder="Select"
+                        placeholder="Select or write"
                       />
                     ) : (
                       <Input
@@ -365,7 +374,7 @@ function CompositeEditor({ sections, value, onChange }) {
                           <Text style={{ width: 220 }}>
                             {f.label_en} {f.label_ar ? ` / ${f.label_ar}` : ""}
                           </Text>
-                          <Select
+                          {/* <Select
                             style={{ minWidth: 220 }}
                             value={fieldVal || undefined}
                             onChange={(v) => setField(sec.code, f.code, v)}
@@ -374,6 +383,12 @@ function CompositeEditor({ sections, value, onChange }) {
                               value: c,
                               label: c,
                             }))}
+                          /> */}
+                          <WritableSelect
+                            style={{ minWidth: 220 }}
+                            value={fieldVal || ""}
+                            onChange={(v) => setField(sec.code, f.code, v)}
+                            options={Array.isArray(f.choices) ? f.choices : []}
                           />
                         </Space>
                       );
@@ -391,7 +406,7 @@ function CompositeEditor({ sections, value, onChange }) {
                           <Text style={{ width: 220 }}>
                             {f.label_en} {f.label_ar ? ` / ${f.label_ar}` : ""}
                           </Text>
-                          <Select
+                          {/* <Select
                             style={{ minWidth: 220 }}
                             value={fieldVal || undefined}
                             onChange={(v) => setField(sec.code, f.code, v)}
@@ -400,6 +415,16 @@ function CompositeEditor({ sections, value, onChange }) {
                               value: c,
                               label: c,
                             }))}
+                          /> */}
+                          <WritableSelect
+                            style={{ minWidth: 220 }}
+                            value={fieldVal || ""}
+                            onChange={(v) => setField(sec.code, f.code, v)}
+                            options={
+                              Array.isArray(f.choices) && f.choices.length
+                                ? f.choices
+                                : ["Present", "Absent"]
+                            }
                           />
                         </Space>
                       );
@@ -432,6 +457,29 @@ function CompositeEditor({ sections, value, onChange }) {
           ))
       )}
     </div>
+  );
+}
+
+/* tiny helper: single-value, writable select with suggestions */
+function WritableSelect({ value, options = [], onChange, ...props }) {
+  const opts = (options || []).map((c) =>
+    typeof c === "string" ? { value: c, label: c } : c
+  );
+  return (
+    <AutoComplete
+      value={value ?? ""}
+      options={opts}
+      placeholder="Select or write result"
+      onChange={(val) => onChange?.(val)}
+      filterOption={(input, option) =>
+        (option?.value || "")
+          .toString()
+          .toLowerCase()
+          .includes(input.toLowerCase())
+      }
+      allowClear
+      {...props}
+    />
   );
 }
 

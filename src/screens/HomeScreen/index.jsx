@@ -55,11 +55,11 @@ function CardStatistics({ icon, title, value, loading }) {
 const HomeScreen = () => {
   const {
     setIsModal,
-    tests,
+    // tests,
     setTests,
     setQuerySearch,
     setReset,
-    setSelectedTest,
+    // setSelectedTest,
     setIsQuickActionsModal,
   } = useHomeStore();
 
@@ -84,7 +84,7 @@ const HomeScreen = () => {
 
   // Fetch statistics function
   const fetchStatistics = async () => {
-    setStatisticsLoading(true);
+    // setStatisticsLoading(true);
     try {
       const [pendingRes, todayRes, totalPatientsRes] = await Promise.all([
         send({ query: "getPendingResults" }),
@@ -101,7 +101,7 @@ const HomeScreen = () => {
     } catch (error) {
       console.error("Error fetching statistics:", error);
     } finally {
-      setStatisticsLoading(false);
+      // setStatisticsLoading(false);
     }
   };
 
@@ -351,7 +351,18 @@ const HomeScreen = () => {
         <PatientModal />
         <DoctorModal />
         {/* <ResultsModal /> */}
-        <QuickActionsModal />
+        <QuickActionsModal
+          onSave={(list) =>
+            setQuickList([
+              ...list,
+              {
+                title: "Other Tests",
+                isPrimary: true,
+                onClick: () => onClick({ id: null }),
+              },
+            ])
+          }
+        />
       </div>
     </div>
   );

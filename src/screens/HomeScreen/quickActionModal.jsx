@@ -18,7 +18,7 @@ import { useHomeStore } from "../../libs/appStore";
 
 const { Text } = Typography;
 
-export const QuickActionsModal = () => {
+export const QuickActionsModal = ({onSave}) => {
   const { isQuickActionsModal, setIsQuickActionsModal } = useHomeStore();
   const { t } = useTranslation();
 
@@ -101,6 +101,7 @@ export const QuickActionsModal = () => {
     try {
       localStorage.setItem("actionButtons", JSON.stringify(selectedTests));
       message.success(t("Quick actions saved successfully"));
+      onSave(selectedTests)
       setIsQuickActionsModal(false);
     } catch (error) {
       console.error("Error saving quick actions:", error);
