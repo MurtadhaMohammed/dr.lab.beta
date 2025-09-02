@@ -213,6 +213,7 @@ export const PureTable = () => {
         data: row,
       });
 
+
       if (resp.success) {
         setRecord(null);
         setIsMetaModal(false);
