@@ -273,13 +273,21 @@ function PanelEditor({ rows, value, onChange }) {
                   <Cell>{r.name_en || r.code}</Cell>
                   <Cell>
                     {Array.isArray(choices) ? (
-                      <Select
+                      // <Select
+                      //   style={{ width: "100%" }}
+                      //   value={cellVal || undefined}
+                      //   onChange={(v) => setCell(r.code, v)}
+                      //   allowClear
+                      //   options={choices.map((c) => ({ value: c, label: c }))}
+                      //   placeholder="Select"
+                      // />
+                      <WritableSelect
                         style={{ width: "100%" }}
                         value={cellVal || undefined}
                         onChange={(v) => setCell(r.code, v)}
                         allowClear
                         options={choices.map((c) => ({ value: c, label: c }))}
-                        placeholder="Select"
+                        placeholder="Select or write"
                       />
                     ) : (
                       <Input
