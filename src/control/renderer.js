@@ -21,6 +21,7 @@ export function send(doc) {
         "getVisitTotals",
         "updateVisitInfo",
         "getTopTests",
+        "editMetaJson",
       ].includes(queryName)
         ? `asynchronous-reply-${queryName}`
         : "asynchronous-reply";

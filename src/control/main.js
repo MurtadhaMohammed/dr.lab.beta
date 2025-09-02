@@ -213,9 +213,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "editMetaJson": {
       try {
         const resp = await labDB.editTestMetaJson(arg.id, arg.data);
-        event.reply(`asynchronous-reply-${arg.query}`, {
-          success: resp.success,
-        });
+        event.reply(`asynchronous-reply-${arg.query}`, resp);
       } catch (error) {
         event.reply(`asynchronous-reply-${arg.query}`, {
           success: false,
