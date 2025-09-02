@@ -94,7 +94,7 @@ export const PureTable = () => {
         ),
     },
     {
-      title: t("DoctoreFee"),
+      title: t("DoctorFee"),
       dataIndex: "doctor_fee",
       key: "doctor_fee",
       render: (doctor_fee) => <b>{doctor_fee}%</b>,
