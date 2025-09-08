@@ -316,5 +316,18 @@
   "NoTestsInGroup": "هیچ تاقیکردنەوەیەک لەم گروپەدا نییە",
   "ClickAddTestToStart": "کلیک لەسەر 'زیادکردنی تاقیکردنەوە' بۆ زیادکردنی تاقیکردنەوە بۆ ئەم گروپە",
   "Extra Small": "Extra Small",
-  "Extra Large": "Extra Large"
+  "Extra Large": "Extra Large",
+  "Visits": "سەردانەکان",
+  "Doctor": "دکتۆر",
+  "RecentVisits": "سەردانەکانی ئێستا",
+  "QuickActions": "گەڕانەوەکانی سریع",
+  "PendingResults": "ئەنجامەکانی پێشکەوتن",
+  "Today'sVisits": "سەردانەکانی ئێستا",
+  "TotalPatients": "کۆی نەخۆشەکان",
+  "DoctorFee": "درەختی دکتۆر",
+  "Searchandselecttests": "گەڕان بەدوای تاقیکردنەوە",
+  "Chooseteststhatwillappearasquickactionbuttons": "گەڕان بەدوای تاقیکردنەوەی سریع",
+  "SelectTestsforQuickActions": "گەڕان بەدوای تاقیکردنەوەی سریع",
+  "SelectedTests": "تاقیکردنەوەکانی گەڕانەوە"
+
 }
