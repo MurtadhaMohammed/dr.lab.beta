@@ -174,7 +174,7 @@ const MainContainerV2 = ({ children }) => {
                 {
                   key: "/visits",
                   icon: <FiFileText size={18} />,
-                  label: <p className="text-[15px]">{t("Vistis")}</p>,
+                  label: <p className="text-[15px]">{t("Visits")}</p>,
                   onClick: () => navigate("/visits", { replace: true }),
                 },
                 {

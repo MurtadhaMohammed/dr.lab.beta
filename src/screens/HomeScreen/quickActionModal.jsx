@@ -115,7 +115,7 @@ export const QuickActionsModal = ({onSave}) => {
 
   return (
     <Modal
-      title={t("Quick Actions")}
+      title={t("QuickActions")}
       open={isQuickActionsModal}
       onCancel={handleCancel}
       destroyOnHidden
@@ -130,15 +130,15 @@ export const QuickActionsModal = ({onSave}) => {
       ]}
     >
       <div style={{ marginBottom: 16 }}>
-        <Text strong>{t("Select Tests for Quick Actions")}:</Text>
+        <Text strong>{t("SelectTestsforQuickActions")}:</Text>
         <Text type="secondary" style={{ display: "block", marginTop: 4 }}>
-          {t("Choose tests that will appear as quick action buttons")}
+          {t("Chooseteststhatwillappearasquickactionbuttons")}
         </Text>
       </div>
 
       <Spin spinning={loading}>
         <Select
-          placeholder={t("Search and select tests...")}
+          placeholder={t("Searchandselecttests")}
           style={{ width: "100%", marginBottom: 16 }}
           //value={selectedTests?.map((test) => test.name_en)}
           onChange={handleSelectChange}
@@ -166,7 +166,7 @@ export const QuickActionsModal = ({onSave}) => {
 
       {selectedTests.length > 0 && (
         <div style={{ marginBottom: 16 }}>
-          <Text type="secondary">{t("Selected Tests")}:</Text>
+          <Text type="secondary">{t("SelectedTests")}:</Text>
           <div style={{ marginTop: 8 }}>
             <Space wrap size={8}>
               {selectedTests?.map((el, i) => (

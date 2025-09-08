@@ -1754,14 +1754,67 @@ class LabDB {
         d.email as doctorEmail, 
         d.address as doctorAddress, 
         d.type as doctorType
-      FROM visits v
-      JOIN patients p ON v.patientID = p.id
-      LEFT JOIN doctors d ON v.doctorId = d.id
-      WHERE v.patientID = ?
-      ORDER BY v.createdAt DESC
+      FROM visit_v2 v
+      JOIN patients p ON v.patient_id = p.id
+      LEFT JOIN doctors d ON v.doctor_id = d.id
+      WHERE v.patient_id = ?
+      ORDER BY v.created_at DESC
     `);
 
     const visits = stmt.all(patientId);
+
+    let itemsMap = {};
+    const visitIds = visits.map((v) => v.id);
+    if (visitIds.length > 0) {
+      const placeholders = visitIds.map(() => "?").join(",");
+      const items = this.db
+        .prepare(
+          `
+        SELECT 
+          i.visit_id,
+          i.id AS visit_item_id,
+          i.test_id,
+          i.code,
+          i.type,
+          i.name_en,
+          i.name_ar,
+          i.sample_type,
+          i.unit,
+          i.ref_text,
+          i.price_iqd,
+          i.meta_json,
+          i.result_json,
+          i.created_at,
+          i.updated_at
+        FROM visit_item_v2 i
+        WHERE i.visit_id IN (${placeholders})
+        ORDER BY i.id ASC
+      `
+        )
+        .all(...visitIds);
+
+      itemsMap = items.reduce((acc, it) => {
+        if (!acc[it.visit_id]) acc[it.visit_id] = [];
+        acc[it.visit_id].push({
+          id: it.test_id,
+          visit_item_id: it.visit_item_id,
+          code: it.code,
+          type: it.type,
+          title: it.name_en,
+          name_en: it.name_en,
+          name_ar: it.name_ar,
+          sample_type: it.sample_type,
+          unit: it.unit,
+          ref_text: it.ref_text,
+          price_iqd: it.price_iqd,
+          meta_json: it.meta_json,
+          result_json: it.result_json ? JSON.parse(it.result_json) : null,
+          created_at: it.created_at,
+          updated_at: it.updated_at,
+        });
+        return acc;
+      }, {});
+    }
 
     const results = visits?.map((el) => {
       const doctorData = el?.doctorID
@@ -1778,15 +1831,15 @@ class LabDB {
 
       return {
         id: el?.id,
-        tests: JSON.parse(el?.tests) || [],
-        testType: el?.testType,
+        tests: itemsMap[el.id] || [],
+        testType: "CUSTOME", // Default to CUSTOME for new v2 visits
         status: el?.status,
-        discount: el?.discount,
-        createdAt: el?.createdAt,
-        updatedAt: el?.updatedAt,
-        visitNumber: el?.visitNumber,
+        discount: el?.discount_iqd,
+        createdAt: el?.created_at,
+        updatedAt: el?.updated_at,
+        visitNumber: el?.visit_number,
         patient: {
-          id: el?.patientID,
+          id: el?.patient_id,
           name: el?.patientName,
           gender: el?.patientGender,
           phone: el?.patientPhone,

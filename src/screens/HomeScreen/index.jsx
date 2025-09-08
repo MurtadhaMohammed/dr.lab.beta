@@ -215,7 +215,7 @@ const HomeScreen = () => {
           <Col span={17}>
             <div className="grid grid-cols-3 gap-4">
               <CardStatistics
-                title={t("Pending Results")}
+                title={t("PendingResults")}
                 value={statistics?.pendingResults || 0}
                 // loading={statisticsLoading}
                 icon={
@@ -223,7 +223,7 @@ const HomeScreen = () => {
                 }
               />
               <CardStatistics
-                title={t("Today's Visits")}
+                title={t("Today'sVisits")}
                 value={statistics?.todayVisits || 0}
                 // loading={statisticsLoading}
                 icon={
@@ -231,7 +231,7 @@ const HomeScreen = () => {
                 }
               />
               <CardStatistics
-                title={t("Total Patients")}
+                title={t("TotalPatients")}
                 value={statistics?.totalPatients || 0}
                 // loading={statisticsLoading}
                 icon={<UserOutlined className="text-[#a343c9] text-[28px]" />}
@@ -243,7 +243,7 @@ const HomeScreen = () => {
               title={
                 <div className="app-flex-space w-full font-normal">
                   <Typography.Text className="font-bold">
-                    {t("Recent Visits")}
+                    {t("RecentVisits")}
                   </Typography.Text>
                   <Space size={16}>
                     <Search
@@ -283,7 +283,7 @@ const HomeScreen = () => {
               }}
               title={
                 <div className="app-flex-space w-full">
-                  <Typography.Text>{t("Quick Actions")}</Typography.Text>
+                  <Typography.Text>{t("QuickActions")}</Typography.Text>
                   <Button
                     size="small"
                     icon={<EditOutlined />}

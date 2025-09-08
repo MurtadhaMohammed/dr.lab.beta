@@ -41,7 +41,7 @@ export const PatientHistory = () => {
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
               <Tag key={el.id}>
-                {el[record.testType === "CUSTOME" ? "name" : "title"]}
+                {el?.title || el?.name_en || el?.name || "Unknown Test"}
               </Tag>
             ))}
             {restCount && (
@@ -51,7 +51,7 @@ export const PatientHistory = () => {
                     <Space wrap>
                       {list?.map((el) => (
                         <Tag key={el.id}>
-                          {el[record.testType === "CUSTOME" ? "name" : "title"]}
+                          {el?.title || el?.name_en || el?.name || "Unknown Test"}
                         </Tag>
                       ))}
                     </Space>
