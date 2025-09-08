@@ -5,6 +5,7 @@ const { LabDB } = require("./db");
 const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.png");
+const logoPath = path.join(__dirname, "../../src/assets/logo3.png");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
 const Jimp = require("jimp");
@@ -33,6 +34,18 @@ function logPrintOperation(operation, data, result = null, error = null) {
   } else {
     log.info(`[PRINT_INFO] ${operation}:`, logData);
   }
+}
+
+// Helper function to get watermark base64 for free users
+function getWatermarkBase64() {
+  try {
+    if (fs.existsSync(logoPath)) {
+      return fs.readFileSync(logoPath, { encoding: "base64" });
+    }
+  } catch (error) {
+    console.error("Error reading watermark logo:", error);
+  }
+  return null;
 }
 
 ipcMain.on("asynchronous-message", async (event, arg) => {
@@ -478,11 +491,17 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "printVisit": {
       try {
+        // Determine if watermark should be shown for free users
+        const shouldShowWatermark = arg.data.planType === "FREE";
+        const watermarkBase64 = shouldShowWatermark
+          ? getWatermarkBase64()
+          : null;
+
         const resp = await createPDFForVisit({
           visit: arg.data.visit,
           isView: arg.data.isView,
           headerDataUrl: arg.data.headerDataUrl,
-          watermarkBase64: arg.data.watermarkBase64,
+          watermarkBase64: watermarkBase64,
           fontSize: arg.data.fontSize || 10,
         });
         event.reply(`asynchronous-reply-${arg.query}`, resp);

@@ -32,6 +32,7 @@ import PopOverContent from "../../../screens/SettingScreen/PopOverContent";
 import { useAppTheme } from "../../../hooks/useAppThem";
 import { BarcodeModal } from "../BarcodeModal/barcodeModal";
 import { apiCall } from "../../../libs/api";
+import { usePlan } from "../../../hooks/usePlan";
 // import { sendWhatsApp } from "../../../helper/whatsapp";
 
 export const PureTable = ({
@@ -69,6 +70,7 @@ export const PureTable = ({
     JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type
   );
   const { flag, setFlag } = useTrigger();
+  const { planType } = usePlan();
 
   const limit = usePageLimit();
   const { t, i18n } = useTranslation();
@@ -133,6 +135,7 @@ export const PureTable = ({
           isView: false,
           visit: record,
           fontSize,
+          planType,
         },
       });
 

@@ -17,6 +17,7 @@ import {
 import { formatRefText } from "../../../helper/refTextFormatter";
 import { PrinterOutlined, SaveOutlined } from "@ant-design/icons";
 import { send } from "../../../control/renderer";
+import { usePlan } from "../../../hooks/usePlan";
 
 const { Text } = Typography;
 
@@ -35,6 +36,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
   const [activeKey, setActiveKey] = useState("0");
   const [drafts, setDrafts] = useState({}); // visit_item_id -> result_json object
   const tests = Array.isArray(visit?.tests) ? visit.tests : [];
+  const { planType } = usePlan();
 
   // init from visit
   useEffect(() => {
@@ -94,6 +96,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
           isView: true,
           visit,
           fontSize,
+          planType,
         },
       });
 

@@ -14,7 +14,7 @@ const PDF_CFG = {
     size: 10, // Default size, will be overridden
   },
   brand: {
-    watermarkOpacity: 0.03,
+    watermarkOpacity: 0.06,
     watermarkMaxWidth: 180, // mm
   },
 };
