@@ -478,7 +478,13 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "printVisit": {
       try {
-        const resp = await createPDFForVisit(arg.data);
+        const resp = await createPDFForVisit({
+          visit: arg.data.visit,
+          isView: arg.data.isView,
+          headerDataUrl: arg.data.headerDataUrl,
+          watermarkBase64: arg.data.watermarkBase64,
+          fontSize: arg.data.fontSize || 10,
+        });
         event.reply(`asynchronous-reply-${arg.query}`, resp);
       } catch (error) {
         event.reply(`asynchronous-reply-${arg.query}`, {

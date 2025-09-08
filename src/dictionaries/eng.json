@@ -306,16 +306,15 @@
   "GroupTests": "Group Tests",
   "AddGroup": "Add Group",
   "AddTest": "Add Test",
-  "NewOption": "New Option",
-  "IsSelect": "Is Select",
   "Options": "Options",
   "Groups": "Groups",
   "NoGroups": "No Groups",
-  "Error": "Error",
   "Please add at least one group with tests": "Please add at least one group with tests",
   "Each group must contain at least one test": "Each group must contain at least one test",
   "NoGroupsAdded": "No groups added yet",
   "ClickAddGroupToStart": "Click 'Add Group' to get started",
   "NoTestsInGroup": "No tests in this group",
-  "ClickAddTestToStart": "Click 'Add Test' to add tests to this group"
+  "ClickAddTestToStart": "Click 'Add Test' to add tests to this group",
+  "Extra Small": "Extra Small",
+  "Extra Large": "Extra Large"
 }

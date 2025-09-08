@@ -2,7 +2,7 @@ require("jspdf-autotable");
 const { PDF_CFG } = require("../config");
 const { formatRef, getPanelResultRJ } = require("../utils");
 
-function renderPanel(doc, yStart, item) {
+function renderPanel(doc, yStart, item, pdfConfig = PDF_CFG) {
   const meta = safeParse(item.meta_json);
   const rows = Array.isArray(meta?.items) ? meta.items : [];
 
@@ -22,20 +22,20 @@ function renderPanel(doc, yStart, item) {
     head: [[item.name_en || item.code, "Result", "Ref / Unit"]],
     body,
     styles: {
-      font: PDF_CFG.font.family,
-      fontSize: PDF_CFG.font.size,
+      font: pdfConfig.font.family,
+      fontSize: pdfConfig.font.size,
       cellPadding: 3,
-      lineColor: PDF_CFG.table.headLine,
+      lineColor: pdfConfig.table.headLine,
     },
     headStyles: {
-      fillColor: PDF_CFG.table.headFill,
-      textColor: PDF_CFG.table.headText,
+      fillColor: pdfConfig.table.headFill,
+      textColor: pdfConfig.table.headText,
     },
     bodyStyles: {
-      fillColor: PDF_CFG.table.bodyFill,
-      textColor: PDF_CFG.table.bodyText,
+      fillColor: pdfConfig.table.bodyFill,
+      textColor: pdfConfig.table.bodyText,
     },
-    margin: { left: PDF_CFG.margin.left, right: PDF_CFG.margin.right },
+    margin: { left: pdfConfig.margin.left, right: pdfConfig.margin.right },
     tableWidth: "auto",
   });
 

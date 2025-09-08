@@ -2,7 +2,7 @@ require("jspdf-autotable");
 const { PDF_CFG } = require("../config");
 const { formatRef, getSingleResultRJ } = require("../utils");
 
-function renderSingle(doc, yStart, item) {
+function renderSingle(doc, yStart, item, pdfConfig = PDF_CFG) {
   const unit = item.unit || "";
   const refStr = formatRef(item.ref_text, unit);
   const result = getSingleResultRJ(item.result_json);
@@ -15,21 +15,21 @@ function renderSingle(doc, yStart, item) {
       [item.name_en || item.name_ar || item.code, `${result} ${unit}`, refStr],
     ],
     styles: {
-      font: PDF_CFG.font.family,
-      fontSize: PDF_CFG.font.size,
+      font: pdfConfig.font.family,
+      fontSize: pdfConfig.font.size,
       cellPadding: 3,
-      lineColor: PDF_CFG.table.headLine,
+      lineColor: pdfConfig.table.headLine,
       overflow: "linebreak",
     },
     headStyles: {
-      fillColor: PDF_CFG.table.headFill,
-      textColor: PDF_CFG.table.headText,
+      fillColor: pdfConfig.table.headFill,
+      textColor: pdfConfig.table.headText,
     },
     bodyStyles: {
-      fillColor: PDF_CFG.table.bodyFill,
-      textColor: PDF_CFG.table.bodyText,
+      fillColor: pdfConfig.table.bodyFill,
+      textColor: pdfConfig.table.bodyText,
     },
-    margin: { left: PDF_CFG.margin.left, right: PDF_CFG.margin.right },
+    margin: { left: pdfConfig.margin.left, right: pdfConfig.margin.right },
     tableWidth: "auto",
   });
 

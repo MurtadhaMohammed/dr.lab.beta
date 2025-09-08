@@ -84,11 +84,16 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
 
   const handlPrint = async () => {
     try {
+      // Get font size from localStorage or use default
+      const fontSize =
+        parseInt(localStorage.getItem("lab-print-size"), 10) || 10;
+
       const resp = await send({
         query: "printVisit",
         data: {
           isView: true,
           visit,
+          fontSize,
         },
       });
 

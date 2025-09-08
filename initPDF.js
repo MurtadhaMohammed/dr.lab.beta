@@ -57,7 +57,7 @@ function formatDate(dateString) {
   return `${year}/${month}/${day}`;
 }
 
-async function createPDF(data, isView = true, cb) {
+async function createPDF(data, isView = true, cb, fontSize = 10) {
   try {
     const imgDimensions = await getImageDimensions(imgUrl);
     const aspectRatio = imgDimensions.width / imgDimensions.height;
@@ -152,7 +152,7 @@ async function createPDF(data, isView = true, cb) {
       doc.autoTable({
         startY: i === 0 ? imgHeight + 7 : doc.lastAutoTable.finalY + 16,
         styles: {
-          fontSize: data?.fontSize,
+          fontSize: fontSize,
           cellWidth: "wrap",
           overflow: "hidden",
           font: "Frutiger",
@@ -225,9 +225,11 @@ function printReport(data, cb) {
     subTotal: data?.subTotal,
     discount: data?.discount,
     total: data?.total,
+    fontSize: data?.fontSize,
   });
 
   try {
+    const fontSize = data?.fontSize || 10;
     const doc = new jsPDF({
       orientation: "p",
       unit: "mm",
@@ -298,7 +300,7 @@ function printReport(data, cb) {
     doc.autoTable({
       startY: 85,
       styles: {
-        fontSize: 9,
+        fontSize: fontSize,
         cellWidth: "wrap",
         lineColor: [220, 220, 220],
         lineWidth: 0.1,

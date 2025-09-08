@@ -36,7 +36,7 @@ export const useAppStore = create((set) => ({
   isReload: false,
   link: "home",
   isOnline: navigator.onLine,
-  printFontSize: parseInt(localStorage.getItem("lab-print-size"), 10) || 14,
+  printFontSize: parseInt(localStorage.getItem("lab-print-size"), 10) || 10,
   imagePath: null,
   setImagePath: (imagePath) => set({ imagePath }),
   setIsOnline: (isOnline) => set({ isOnline }),

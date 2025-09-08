@@ -78,8 +78,8 @@ export const PDFSettings = () => {
           <></>
         )}
       </div>
-      {/* <Divider /> */}
-      {/* <div className="flex gap-2 items-center">
+      <Divider />
+      <div className="flex gap-2 items-center">
         <b className="text-[12px]">{t("FontSize")}</b>
         <Select
           value={printFontSize}
@@ -89,11 +89,13 @@ export const PDFSettings = () => {
           style={{ width: 100, textAlign: "center" }}
           size="small"
         >
-          <Select.Option value={12}>Small</Select.Option>
-          <Select.Option value={14}>Medium</Select.Option>
-          <Select.Option value={16}>Large</Select.Option>
+          <Select.Option value={6}>{t("Extra Small")}</Select.Option>
+          <Select.Option value={8}>{t("Small")}</Select.Option>
+          <Select.Option value={10}>{t("Medium")}</Select.Option>
+          <Select.Option value={12}>{t("Large")}</Select.Option>
+          <Select.Option value={14}>{t("Extra Large")}</Select.Option>
         </Select>
-      </div> */}
+      </div>
     </div>
   );
 };

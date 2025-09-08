@@ -1,8 +1,8 @@
-const {jsPDF} = require("jspdf");
+const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
 const dayjs = require("dayjs");
 
-const { PDF_CFG } = require("./config");
+const { PDF_CFG, getPDFConfig } = require("./config");
 const { addFontIfNeeded } = require("./utils");
 const { drawHeader } = require("./header");
 const { drawFooterWithPagination } = require("./footer");
@@ -19,11 +19,13 @@ async function createPDFForVisit({
   isView = true,
   headerDataUrl,
   watermarkBase64,
+  fontSize = 10,
 }) {
   const { app, shell } = electron || {};
   try {
-    const doc = new jsPDF(PDF_CFG.page);
-    addFontIfNeeded(doc);
+    const pdfConfig = getPDFConfig(fontSize);
+    const doc = new jsPDF(pdfConfig.page);
+    addFontIfNeeded(doc, fontSize);
 
     let headerImgWidth = headerDataUrl ? doc.internal.pageSize.getWidth() : 0;
 
@@ -42,9 +44,10 @@ async function createPDFForVisit({
     for (let i = 0; i < tests.length; i++) {
       const t = tests[i];
       if (i > 0) y = (doc.lastAutoTable?.finalY || y) + 10;
-      if (t.type === "single") y = renderSingle(doc, y, t);
-      else if (t.type === "panel") y = renderPanel(doc, y, t);
-      else if (t.type === "composite") y = renderComposite(doc, y, t);
+      if (t.type === "single") y = renderSingle(doc, y, t, pdfConfig);
+      else if (t.type === "panel") y = renderPanel(doc, y, t, pdfConfig);
+      else if (t.type === "composite")
+        y = renderComposite(doc, y, t, pdfConfig);
       else {
         doc.autoTable(doc, {
           startY: y,

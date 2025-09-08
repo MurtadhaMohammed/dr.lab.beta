@@ -123,11 +123,16 @@ export const PureTable = ({
         return;
       } else if (phone[0] === "0") phone = phone.substr(1);
 
+      // Get font size from localStorage or use default
+      const fontSize =
+        parseInt(localStorage.getItem("lab-print-size"), 10) || 10;
+
       const { success, file } = await send({
         query: "printVisit",
         data: {
           isView: false,
           visit: record,
+          fontSize,
         },
       });
 

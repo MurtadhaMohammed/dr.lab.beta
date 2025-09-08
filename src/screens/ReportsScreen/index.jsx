@@ -18,6 +18,7 @@ import { getTotalPrice } from "../../helper/price";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { UserOutlined } from "@ant-design/icons";
+import { useAppStore } from "../../libs/appStore";
 
 const ReportsScreen = () => {
   const [loading, setLoading] = useState(false);
@@ -28,6 +29,7 @@ const ReportsScreen = () => {
   const [testList, setTestList] = useState([]);
   const [filterDate, setFilterDate] = useState([dayjs(), dayjs()]);
   const { t } = useTranslation();
+  const { printFontSize } = useAppStore();
 
   const loadData = (cb) => {
     send({
@@ -38,16 +40,13 @@ const ReportsScreen = () => {
         endDate: dayjs(filterDate[1]).endOf("day").toISOString(),
         status,
         testId,
-        gender
+        gender,
       },
     }).then(({ success, data }) => {
       if (success) cb(data);
     });
   };
   const handlePrint = () => {
-    // Retrieve font size from localStorage or set a default value
-    const fontSize = localStorage.getItem("lab-print-size") || 14; // Default to 14
-
     loadData((rows) => {
       let _data = {
         date: [
@@ -57,7 +56,7 @@ const ReportsScreen = () => {
         total: Number(data?.totalAmount || 0).toLocaleString("en"),
         subTotal: Number(data?.subTotalAmount || 0).toLocaleString("en"),
         discount: Number(data?.totalDiscount || 0).toLocaleString("en"),
-        fontSize, // Add the font size to the data object
+        fontSize: printFontSize, // Add the font size to the data object
         records: rows?.map((record) => {
           let list = record.tests;
           return {
@@ -108,7 +107,7 @@ const ReportsScreen = () => {
 
   useEffect(() => {
     loadReports();
-    loadTests()
+    loadTests();
   }, [filterDate, status, gender, testId]);
 
   const loadReports = async () => {

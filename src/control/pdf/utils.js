@@ -9,9 +9,9 @@ async function getImageDimensionsFromDataUrl(dataUrl) {
   });
 }
 
-function addFontIfNeeded(doc) {
+function addFontIfNeeded(doc, fontSize = 10) {
   doc.setFont(PDF_CFG.font.family);
-  doc.setFontSize(PDF_CFG.font.size);
+  doc.setFontSize(fontSize);
 }
 
 function fmtNum(n) {
@@ -41,10 +41,13 @@ function formatRef(ref_text, fallbackUnit = "") {
     }
     let val = "";
     if (o.low != null && o.high != null) val = `${o.low}–${o.high}`;
-    else if (o.op && o.value != null)   val = `${o.op}${o.value}`;
-    else if (o.value != null)           val = `${o.value}`;
+    else if (o.op && o.value != null) val = `${o.op}${o.value}`;
+    else if (o.value != null) val = `${o.value}`;
     const unit = o.unit || fallbackUnit || "";
-    return (parts.length ? `[${parts.join(", ")}] ` : "") + (val ? `${val}${unit ? " "+unit : ""}` : "");
+    return (
+      (parts.length ? `[${parts.join(", ")}] ` : "") +
+      (val ? `${val}${unit ? " " + unit : ""}` : "")
+    );
   }
 }
 

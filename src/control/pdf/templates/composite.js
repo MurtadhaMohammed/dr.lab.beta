@@ -2,7 +2,7 @@ require("jspdf-autotable");
 const { PDF_CFG } = require("../config");
 const { getCompositeResultRJ } = require("../utils");
 
-function renderComposite(doc, yStart, item) {
+function renderComposite(doc, yStart, item, pdfConfig = PDF_CFG) {
   const meta = safeParse(item.meta_json);
   const sections = Array.isArray(meta?.sections) ? meta.sections : [];
   let y = yStart;
@@ -10,9 +10,9 @@ function renderComposite(doc, yStart, item) {
   // 👉 أضف عنوان رئيسي للتحليل نفسه
   const title = item.name_en || item.name_ar || item.code;
   if (title) {
-    doc.setFont(PDF_CFG.font.family, "bold");
-    doc.setFontSize(PDF_CFG.font.size + 1);
-    doc.text(title, PDF_CFG.margin.left, y);
+    doc.setFont(pdfConfig.font.family, "bold");
+    doc.setFontSize(pdfConfig.font.size + 1);
+    doc.text(title, pdfConfig.margin.left, y);
     y += 4; // مسافة بعد العنوان
   }
 
@@ -29,24 +29,22 @@ function renderComposite(doc, yStart, item) {
       theme: "grid",
       head: [
         [
-          `${sec.name_en || sec.code}${
-            sec.name_ar ? " / " + sec.name_ar : ""
-          }`,
+          `${sec.name_en || sec.code}${sec.name_ar ? " / " + sec.name_ar : ""}`,
           "Value",
         ],
       ],
       body,
       styles: {
-        font: PDF_CFG.font.family,
-        fontSize: PDF_CFG.font.size,
+        font: pdfConfig.font.family,
+        fontSize: pdfConfig.font.size,
         cellPadding: 3,
-        lineColor: PDF_CFG.table.headLine,
+        lineColor: pdfConfig.table.headLine,
       },
       headStyles: {
-        fillColor: PDF_CFG.table.headFill,
-        textColor: PDF_CFG.table.headText,
+        fillColor: pdfConfig.table.headFill,
+        textColor: pdfConfig.table.headText,
       },
-      margin: { left: PDF_CFG.margin.left, right: PDF_CFG.margin.right },
+      margin: { left: pdfConfig.margin.left, right: pdfConfig.margin.right },
       tableWidth: "auto",
     });
   });
