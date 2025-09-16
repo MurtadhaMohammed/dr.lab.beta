@@ -96,12 +96,12 @@ export const PureTable = ({
   };
 
   const updatePatient = async (record, phone) => {
-    let data = { ...record, phone };
+    let patientData = { ...record.patient, phone };
     try {
       const resp = await send({
         query: "updatePatient",
-        id: data?.id,
-        data: { ...data },
+        id: record.patient.id,
+        data: patientData,
       });
 
       if (resp.success) {
@@ -116,6 +116,7 @@ export const PureTable = ({
 
   const handleSandWhatsap = async (record) => {
     setMsgLoading(true);
+    console.log(record);
     try {
       if (destPhone !== record?.patient?.phone)
         await updatePatient(record, destPhone);
