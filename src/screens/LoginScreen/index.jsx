@@ -20,6 +20,8 @@ import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import { URL } from "../../libs/api";
 import { useAppTheme } from "../../hooks/useAppThem";
+import PhoneInput from "react-phone-input-2";
+import "react-phone-input-2/lib/style.css";
 // import { useNavigate } from "react-router-dom";
 
 const LoginScreen = () => {
@@ -32,7 +34,45 @@ const LoginScreen = () => {
   const [form] = Form.useForm();
   const { t } = useTranslation();
   const [disable, setDisable] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState("iq");
   // const navigate = useNavigate();
+
+  const getPhoneValidation = (countryCode) => {
+    try {
+      const { getExampleNumber, getCountryCallingCode } = require('libphonenumber-js');
+      const examples = require('libphonenumber-js/examples.mobile.json');
+      
+      const exampleNumber = getExampleNumber(countryCode.toUpperCase(), examples);
+      
+      if (exampleNumber) {
+        const nationalNumber = exampleNumber.nationalNumber;
+        const numberLength = nationalNumber.length;
+        
+        const pattern = new RegExp(`^\\d{${numberLength}}$`);
+        
+        const firstTwoDigits = nationalNumber.substring(0, 2);
+        const remainingLength = numberLength - 2;
+        const maskedPlaceholder = firstTwoDigits + '*'.repeat(remainingLength);
+        
+        return {
+          pattern: pattern,
+          placeholder: maskedPlaceholder,
+          message: `Invalid ${countryCode.toUpperCase()} phone number (${numberLength} digits required)`,
+          length: numberLength,
+          example: nationalNumber
+        };
+      }
+    } catch (error) {
+      console.warn(`No phone validation data for country: ${countryCode}`, error);
+    }
+    
+    return {
+      pattern: /^07\d{9}$/,
+      placeholder: "07*********",
+      message: t("InvalidPhoneNumber"),
+      length: 11
+    };
+  };
 
   const getUUID = () => {
     send({ query: "getUUID" }).then((resp) => {
@@ -73,6 +113,16 @@ const LoginScreen = () => {
     return "Unknown";
   };
 
+  const getCountryCode = (countryCode) => {
+    try {
+      const { getCountryCallingCode } = require('libphonenumber-js');
+      return getCountryCallingCode(countryCode.toUpperCase());
+    } catch (error) {
+      console.warn(`Could not get calling code for country: ${countryCode}`);
+      return "964"; // Default to Iraq
+    }
+  };
+
   const login = async (values) => {
     setLoading(true);
     try {
@@ -82,6 +132,7 @@ const LoginScreen = () => {
         isFormData: false,
         data: {
           phone: values?.phone,
+          code: getCountryCode(selectedCountry),
         },
       });
 
@@ -118,6 +169,7 @@ const LoginScreen = () => {
           password: formData.password,
           labName: formData.labName,
           phone: formData.phone,
+          code: getCountryCode(selectedCountry),
           email: formData.email,
           address: formData.address,
           device: UUID,
@@ -250,12 +302,31 @@ const LoginScreen = () => {
                   message: t("PleaseInputYourPhone"),
                 },
                 {
-                  pattern: /^07\d{9}$/,
-                  message: t("InvalidPhoneNumber"),
+                  pattern: getPhoneValidation(selectedCountry).pattern,
+                  message: getPhoneValidation(selectedCountry).message,
                 },
               ]}
             >
-              <Input placeholder="07xxxxxxxxx" className=" h-[40px] p-2" />
+              <div className="flex items-center gap-1 w-full">
+                <PhoneInput
+                  country={selectedCountry}
+                  inputStyle={{ display: 'none' }}
+                  buttonStyle={{ 
+                    backgroundColor: 'white',
+                    borderRadius: '8px',
+                    border: '1px solid #d9d9d9'
+                  }}
+                  className="h-10 text-center w-[50px]"
+                  onChange={(value, country) => {
+                    setSelectedCountry(country.countryCode);
+                    form.setFieldsValue({ phone: '' });
+                  }}
+                />
+                <Input
+                  placeholder={getPhoneValidation(selectedCountry).placeholder}
+                  className="h-[40px] p-2 text-center text-[18px]"
+                />
+              </div>
             </Form.Item>
 
             <Form.Item
@@ -338,22 +409,38 @@ const LoginScreen = () => {
                 <Form.Item
                   //label={t("PhoneNumber")}
                   name="phone"
-                  className="h-16 mb-7 !text-center"
+                  className=" !text-center"
                   rules={[
                     {
                       required: true,
                       message: t("PleaseInputYourPhone"),
                     },
                     {
-                      pattern: /^07\d{9}$/,
-                      message: t("InvalidPhoneNumber"),
+                      pattern: getPhoneValidation(selectedCountry).pattern,
+                      message: getPhoneValidation(selectedCountry).message,
                     },
                   ]}
                 >
-                  <Input
-                    placeholder="07xxxxxxxxx"
-                    className=" h-12 p-2 text-center text-[18px]"
+                  <div className="flex items-center gap-1 w-full">
+                  <PhoneInput
+                    country={selectedCountry}
+                    inputStyle={{ display: 'none' }}
+                    buttonStyle={{ 
+                      backgroundColor: 'white',
+                      borderRadius: '8px',
+                      border: '1px solid #d9d9d9'
+                    }}
+                    className="h-12 w-[50px]"
+                    onChange={(value, country) => {
+                      setSelectedCountry(country.countryCode);
+                      form.setFieldsValue({ phone: '' });
+                    }}
                   />
+                  <Input
+                    placeholder={getPhoneValidation(selectedCountry).placeholder}
+                    className=" h-[50px] p-2 text-center text-[18px]"
+                  />
+                  </div>
                 </Form.Item>
                 <Button
                   //disabled={!phone || disable}
