@@ -1,1472 +1,1542 @@
 [
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 1,
-    "isSelected": 0,
-    "name": "Crystals",
-    "normal": null,
-    "options": "[]",
-    "price": 1000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 2,
-    "isSelected": 0,
-    "name": "Giardia lamblia",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 3,
-    "isSelected": 0,
-    "name": "FASTING",
-    "normal": "Up to 95 mg \\ dl",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 4,
-    "isSelected": 0,
-    "name": "Liquefaction (Min)",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 5,
-    "isSelected": 0,
-    "name": "Anti-HCV",
-    "normal": "",
-    "options": "[\"positive\",\"negative\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 6,
-    "isSelected": 0,
-    "name": "Rubella IgG",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 7,
-    "isSelected": 0,
-    "name": "Toxoplasma IgG",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 8,
-    "isSelected": 0,
-    "name": "Mucus",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 9,
-    "isSelected": 0,
-    "name": "R1",
-    "normal": "Up to 180 mg \\ dl",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 10,
-    "isSelected": 0,
-    "name": "HBsAg",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 11,
-    "isSelected": 0,
-    "name": "HDL Cholesterol",
-    "normal": "Male (37-67) mg \\dl \nfemale (40-71) mg\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 12,
-    "isSelected": 0,
-    "name": "PCV",
-    "normal": "Male (39-50)%\n Female (36-46)%",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 13,
-    "isSelected": 0,
-    "name": "K",
-    "normal": "(3.8-5.0)mmol/L",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 14,
-    "isSelected": 0,
-    "name": "Color",
-    "normal": null,
-    "options": "[\"brown\",\"black\",\"green\",\"yellow\",\"bloody\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 15,
-    "isSelected": 0,
-    "name": "LDH",
-    "normal": "(106-211) U\\L",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 16,
-    "isSelected": 0,
-    "name": "Blood Urea",
-    "normal": "(15-40) mg\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 17,
-    "isSelected": 0,
-    "name": "Na",
-    "normal": "(136-149)mmol/L",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 18,
-    "isSelected": 0,
-    "name": "Albumin",
-    "normal": "(3.8-5.3) mg\\dl",
-    "options": "[]",
-    "price": 1000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 19,
-    "isSelected": 0,
-    "name": "CRP Titer Test",
-    "normal": "< 10.0 mg \\l",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 20,
-    "isSelected": 0,
-    "name": "LDL Cholesterol",
-    "normal": "100≥",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 21,
-    "isSelected": 0,
-    "name": "Ketone Bodies",
-    "normal": null,
-    "options": "[\"Nil\",\"trace\",\"+\",\"++\",\"+++\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 22,
-    "isSelected": 0,
-    "name": "CMV IgG",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 23,
-    "isSelected": 0,
-    "name": "Rheumatoid Factor (RF) Test",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 24,
-    "isSelected": 0,
-    "name": "Reaction",
-    "normal": null,
-    "options": "[\"Acidic\",\"Alkaline\",\"Neutral\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 25,
-    "isSelected": 0,
-    "name": "Specific Gravity",
-    "normal": null,
-    "options": "[\"1.030\",\"1.020\",\"1.010\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 26,
-    "isSelected": 0,
-    "name": "Sugar",
-    "normal": null,
-    "options": "[\"NIL\",\"trace\",\"+\",\"++\",\"+++\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 27,
-    "isSelected": 0,
-    "name": "pH",
-    "normal": null,
-    "options": "[\"acidic\",\"alkaline\",\"neutral\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 28,
-    "isSelected": 0,
-    "name": "ASOT",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 29,
-    "isSelected": 0,
-    "name": "LDL / HDL Ratio",
-    "normal": "Male(3.55 - 6.25) \nFemale(3.22 - 5.03)",
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 30,
-    "isSelected": 0,
-    "name": "Alkaline Phosphatase",
-    "normal": "(34–111) U/L",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 31,
-    "isSelected": 0,
-    "name": "Epithelial Cells",
-    "normal": null,
-    "options": "[]",
-    "price": 1000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 32,
-    "isSelected": 0,
-    "name": "Bilirubin",
-    "normal": null,
-    "options": "[\"NIL\",\"trace\",\"+\",\"++\",\"+++\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 33,
-    "isSelected": 0,
-    "name": "ESR",
-    "normal": "Male (0-15) mm\\1h  / Female (0-20) mm\\1h",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 34,
-    "isSelected": 0,
-    "name": "Rose Bengal",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 35,
-    "isSelected": 0,
-    "name": "FSH",
-    "normal": "Follicular phase(3-11) mlU\\ml \nmid cycle (6 - 21) \nluted phase (1 - 9) \npostmenopusal(22 - 153) \nmales (1 - 11)\n",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 36,
-    "isSelected": 0,
-    "name": "TSH",
-    "normal": "(0.3-4.2) (µlUml)",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 37,
-    "isSelected": 0,
-    "name": "Testosterone",
-    "normal": "male (2-8) \nfemale UP TO 1.2\n",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 38,
-    "isSelected": 0,
-    "name": "R2",
-    "normal": "Up to 155 mg \\ dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 39,
-    "isSelected": 0,
-    "name": "Rapid Progressive% (class A)",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 40,
-    "isSelected": 0,
-    "name": "Aggregation",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 41,
-    "isSelected": 0,
-    "name": "Cast",
-    "normal": null,
-    "options": "[]",
-    "price": 1000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 42,
-    "isSelected": 0,
-    "name": "Color",
-    "normal": null,
-    "options": "[\"yellow\",\"amber\",\"red\",\"brown\",\"dark yellow\",\"light yellow\",\"colorless\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 43,
-    "isSelected": 0,
-    "name": "Mg",
-    "normal": "(1.8-2.4)mg/dL",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 44,
-    "isSelected": 0,
-    "name": "HCG Quantitative",
-    "normal": "Weeks of gestation \t HCG mIU/ml \n3       5-50 \n4      5-426 \n5    18-7340 \n6     1080-56500\n7-8        7650-229000\n9-12      25700-288000\n13-16    13300-254000\n17-24     4060-165400\n25-40     3640-117000\n",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 45,
-    "isSelected": 0,
-    "name": "Volume (ml)",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 46,
-    "isSelected": 0,
-    "name": "Anti-Mullerian Hormone",
-    "normal": "Gender - age     - Reference range\nFemale - 20-24 - 3.60-4.44\nFemale - 25-29 - 3.00-3.89\nFemale - 30-34 - 2.35-3.47\nFemale - 35-39 - 1.73-2.36\nFemale - 40-44 - 0.726-1.130\nFemale - 45-50 - 0.144-0.269\nFemale - PCOS women - 6.30-7.42",
-    "options": "[]",
-    "price": 35000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 47,
-    "isSelected": 0,
-    "name": "Pus Cells",
-    "normal": null,
-    "options": "[]",
-    "price": 1000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 48,
-    "isSelected": 0,
-    "name": "Entamoeba histolytica",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 49,
-    "isSelected": 0,
-    "name": "H. pylori",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 50,
-    "isSelected": 0,
-    "name": "RF",
-    "normal": null,
-    "options": "[]",
-    "price": 1000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 51,
-    "isSelected": 0,
-    "name": "S. triglyceride",
-    "normal": "(50-149) mg\\dl)",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 52,
-    "isSelected": 0,
-    "name": "Urobilinogen",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 53,
-    "isSelected": 0,
-    "name": "Appearance",
-    "normal": null,
-    "options": "[\"clear\",\"turbid\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 54,
-    "isSelected": 0,
-    "name": "Ova",
-    "normal": null,
-    "options": "[\"nil\",\"+\",\"++\",\"+++\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 55,
-    "isSelected": 0,
-    "name": "CMV IgM",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 56,
-    "isSelected": 0,
-    "name": "Other",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 57,
-    "isSelected": 0,
-    "name": "Typhoid IgG",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 2500,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 58,
-    "isSelected": 0,
-    "name": "Total Protein",
-    "normal": "(6.7-8.3) g\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 59,
-    "isSelected": 0,
-    "name": "CRP",
-    "normal": null,
-    "options": "[]",
-    "price": 1000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 60,
-    "isSelected": 0,
-    "name": "Normal %",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 61,
-    "isSelected": 0,
-    "name": "Syphilis",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 62,
-    "isSelected": 0,
-    "name": "S. calcium",
-    "normal": "(8.4-10.2) mg\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 64,
-    "isSelected": 0,
-    "name": "Nitrates",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 65,
-    "isSelected": 0,
-    "name": "WBCs",
-    "normal": "(4000-11000) cell\\cmm",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 66,
-    "isSelected": 0,
-    "name": "Toxoplasma IgM",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 67,
-    "isSelected": 0,
-    "name": "Hb",
-    "normal": "Male (13-16.5)g\\ Female (12-15)g\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 68,
-    "isSelected": 0,
-    "name": "T3",
-    "normal": "(1.23-3.08) nmol\\L",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 69,
-    "isSelected": 0,
-    "name": "S. creatinine",
-    "normal": "Male (0.6-0.8) mg\\dl /female (0.4-0.8) mg\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 70,
-    "isSelected": 0,
-    "name": "Anti-HIV 1&2",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 71,
-    "isSelected": 0,
-    "name": "D-Dimer",
-    "normal": "< 500 ng \\ml",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 72,
-    "isSelected": 0,
-    "name": "Agglutination",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 74,
-    "isSelected": 0,
-    "name": "Sluggish Progressive% (class C)",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 75,
-    "isSelected": 0,
-    "name": "S. uric acid",
-    "normal": "Male (0.6-0.8) mg\\dl  / female (0.4-0.8) mg\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 76,
-    "isSelected": 0,
-    "name": "Cl",
-    "normal": "(98-106)mmol/L",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 77,
-    "isSelected": 0,
-    "name": "Immotile% (class D)",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 78,
-    "isSelected": 0,
-    "name": "RBCs",
-    "normal": null,
-    "options": "[]",
-    "price": 1000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 79,
-    "isSelected": 0,
-    "name": "Viscosity",
-    "normal": null,
-    "options": "[\"normal\",\"high\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 81,
-    "isSelected": 0,
-    "name": "Blood Glucose",
-    "normal": "(70-110) mg\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 82,
-    "isSelected": 0,
-    "name": "Prolactin",
-    "normal": "Woman (5-35) ng\\ml",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 83,
-    "isSelected": 0,
-    "name": "Abnormal %",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 84,
-    "isSelected": 0,
-    "name": "ABO Rh Blood Group",
-    "normal": null,
-    "options": "[\"A(+ve)\",\"B(+ve)\",\"A(-ve)\",\"B(-ve)\",\"AB(+ve)\",\"O(+ve)\",\"AB(-ve)\",\"O(-ve)\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 85,
-    "isSelected": 0,
-    "name": "HbA1c",
-    "normal": "(4.5-6.5)%",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 86,
-    "isSelected": 0,
-    "name": "Monilia",
-    "normal": null,
-    "options": "[\"NIL\",\"+\",\"++\",\"+++\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 87,
-    "isSelected": 0,
-    "name": "Ferritin",
-    "normal": "male (30-350)ng\\ml \nfemale (20-250) ng\\ml",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 88,
-    "isSelected": 0,
-    "name": "Pregnancy",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 89,
-    "isSelected": 0,
-    "name": "GPT/ALT",
-    "normal": "(4-44) U\\L",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 90,
-    "isSelected": 0,
-    "name": "Non-Progressive% (class B)",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 91,
-    "isSelected": 0,
-    "name": "Serum Cholesterol",
-    "normal": "(150-219) mg\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 92,
-    "isSelected": 0,
-    "name": "H. pylori Faeces",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 93,
-    "isSelected": 0,
-    "name": "VLDL",
-    "normal": "30≥",
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 94,
-    "isSelected": 0,
-    "name": "GOT/AST",
-    "normal": "(8-38) U\\L",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 95,
-    "isSelected": 0,
-    "name": "TSB",
-    "normal": "(0.1-1.2) mg\\dl",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 96,
-    "isSelected": 0,
-    "name": "Rubella IgM",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 97,
-    "isSelected": 0,
-    "name": "Consistency",
-    "normal": null,
-    "options": "[\"soft\",\"formed\",\"loose\",\"watery\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 98,
-    "isSelected": 0,
-    "name": "Total Count Million / L",
-    "normal": null,
-    "options": "[]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 99,
-    "isSelected": 0,
-    "name": "Vitamin D3",
-    "normal": "25 (OH) D Status\n< 10 ng\\ml deficiency\n10-30 ng\\ml insufficiency\n30-100 ng\\ml sufficiency\n",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 100,
-    "isSelected": 0,
-    "name": "Protein",
-    "normal": null,
-    "options": "[\"NIL\",\"trace\",\"+\",\"++\",\"+++\"]",
-    "price": 0,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 101,
-    "isSelected": 0,
-    "name": "T4",
-    "normal": "(66-181) nmol\\L",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 102,
-    "isSelected": 0,
-    "name": "Typhoid IgM",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 2500,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 103,
-    "isSelected": 0,
-    "name": "HAV",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 104,
-    "isSelected": 0,
-    "name": "LH",
-    "normal": "Follicular phase(1.0-12.0) mlU\\ml \nOvulatory phase (17.0 - 77.0) \nluted phase (0.0 - 15.0) \npostmenopusal(11.0 - 40.0) \nmales (1.0 - 8.0)\n",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 105,
-    "isSelected": 0,
-    "name": "HSV",
-    "normal": null,
-    "options": "[\"positive\",\"negative\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 106,
-    "isSelected": 0,
-    "name": "CBC",
-    "normal": null,
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 107,
-    "isSelected": 0,
-    "name": "PT (Prothrombin Time)",
-    "normal": "(11-13.5) seconds",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 108,
-    "isSelected": 0,
-    "name": "INR (International Normalized Ratio)",
-    "normal": "(0.8-1.2)",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 109,
-    "isSelected": 0,
-    "name": "APTT (Activated Partial Thromboplastin Time)",
-    "normal": "(25-35) seconds",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 110,
-    "isSelected": 0,
-    "name": "Platelets Count",
-    "normal": "(150,000-450,000) cells/μL",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 111,
-    "isSelected": 0,
-    "name": "Erythrocyte Sedimentation Rate (ESR)",
-    "normal": "Male: (0-15) mm/hr\nFemale: (0-20) mm/hr",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 112,
-    "isSelected": 0,
-    "name": "D-Dimer",
-    "normal": "< 0.5 μg/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 113,
-    "isSelected": 0,
-    "name": "Iron",
-    "normal": "Male: (65-175) μg/dL\nFemale: (50-170) μg/dL",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 114,
-    "isSelected": 0,
-    "name": "Total Iron Binding Capacity (TIBC)",
-    "normal": "(240-450) μg/dL",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 115,
-    "isSelected": 0,
-    "name": "Transferrin Saturation",
-    "normal": "(20-50)%",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 116,
-    "isSelected": 0,
-    "name": "Vitamin B12",
-    "normal": "(200-900) pg/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 117,
-    "isSelected": 0,
-    "name": "Folate",
-    "normal": "(3-17) ng/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 118,
-    "isSelected": 0,
-    "name": "PSA (Prostate Specific Antigen)",
-    "normal": "< 4 ng/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 119,
-    "isSelected": 0,
-    "name": "CEA (Carcinoembryonic Antigen)",
-    "normal": "Non-smokers: < 2.5 ng/mL\nSmokers: < 5 ng/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 120,
-    "isSelected": 0,
-    "name": "CA-125",
-    "normal": "< 35 U/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 121,
-    "isSelected": 0,
-    "name": "CA 19-9",
-    "normal": "< 37 U/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 122,
-    "isSelected": 0,
-    "name": "AFP (Alpha-Fetoprotein)",
-    "normal": "< 10 ng/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 123,
-    "isSelected": 0,
-    "name": "Amylase",
-    "normal": "(30-110) U/L",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 124,
-    "isSelected": 0,
-    "name": "Lipase",
-    "normal": "(7-60) U/L",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 125,
-    "isSelected": 0,
-    "name": "Bilirubin (Direct)",
-    "normal": "(0-0.3) mg/dL",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 126,
-    "isSelected": 0,
-    "name": "Bilirubin (Indirect)",
-    "normal": "(0.2-0.8) mg/dL",
-    "options": "[]",
-    "price": 5000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 127,
-    "isSelected": 0,
-    "name": "Urine Culture",
-    "normal": "No growth",
-    "options": "[\"No growth\",\"Mixed flora\",\"Significant growth\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 128,
-    "isSelected": 0,
-    "name": "Stool Culture",
-    "normal": "No pathogenic organisms",
-    "options": "[\"No pathogenic organisms\",\"Salmonella spp.\",\"Shigella spp.\",\"Campylobacter spp.\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 129,
-    "isSelected": 0,
-    "name": "Blood Culture",
-    "normal": "No growth",
-    "options": "[\"No growth\",\"Gram positive cocci\",\"Gram negative bacilli\"]",
-    "price": 20000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 130,
-    "isSelected": 0,
-    "name": "Sputum Culture",
-    "normal": "Normal respiratory flora",
-    "options": "[\"Normal respiratory flora\",\"Streptococcus pneumoniae\",\"Haemophilus influenzae\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 131,
-    "isSelected": 0,
-    "name": "Widal Test",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive for S. typhi O\",\"Positive for S. typhi H\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 132,
-    "isSelected": 0,
-    "name": "Malaria Parasite (MP)",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"P. falciparum\",\"P. vivax\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 133,
-    "isSelected": 0,
-    "name": "Dengue NS1 Antigen",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 134,
-    "isSelected": 0,
-    "name": "Dengue IgM",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 135,
-    "isSelected": 0,
-    "name": "Dengue IgG",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 136,
-    "isSelected": 0,
-    "name": "Zika Virus IgM",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 20000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 137,
-    "isSelected": 0,
-    "name": "Zika Virus IgG",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 20000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 138,
-    "isSelected": 0,
-    "name": "Chikungunya IgM",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 139,
-    "isSelected": 0,
-    "name": "Chikungunya IgG",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 140,
-    "isSelected": 0,
-    "name": "Leptospira IgM",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 141,
-    "isSelected": 0,
-    "name": "Leptospira IgG",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 142,
-    "isSelected": 0,
-    "name": "Helicobacter pylori IgG",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 143,
-    "isSelected": 0,
-    "name": "Helicobacter pylori IgM",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 144,
-    "isSelected": 0,
-    "name": "H. pylori Stool Antigen",
-    "normal": "Negative",
-    "options": "[\"Negative\",\"Positive\"]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 145,
-    "isSelected": 0,
-    "name": "Cortisol (AM)",
-    "normal": "(6-23) μg/dL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 146,
-    "isSelected": 0,
-    "name": "Cortisol (PM)",
-    "normal": "(3-16) μg/dL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 147,
-    "isSelected": 0,
-    "name": "ACTH (Adrenocorticotropic Hormone)",
-    "normal": "(7.2-63) pg/mL",
-    "options": "[]",
-    "price": 20000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 148,
-    "isSelected": 0,
-    "name": "Thyroglobulin Antibody",
-    "normal": "< 115 IU/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 149,
-    "isSelected": 0,
-    "name": "Thyroid Peroxidase Antibody (TPOAb)",
-    "normal": "< 35 IU/mL",
-    "options": "[]",
-    "price": 15000,
-    "updatedAt": "2024-07-02 09:13:03"
-  },
-  {
-    "createdAt": "2024-07-02 09:13:03",
-    "id": 150,
-    "isSelected": 0,
-    "name": "Haptoglobin",
-    "normal": "(30-200) mg/dL",
-    "options": "[]",
-    "price": 10000,
-    "updatedAt": "2024-07-02 09:13:03"
-  }
-]
+    {
+      "id": 1,
+      "name": "Crystals",
+      "price": 1000,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 2,
+      "name": "Giardia lamblia",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 3,
+      "name": "FASTING",
+      "price": 10000,
+      "normal": "Up to 95 mg \\ dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 4,
+      "name": "Liquefaction (Min)",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 5,
+      "name": "Ant-HCV",
+      "price": 10000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 6,
+      "name": "Rubella IgG",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 7,
+      "name": "TOXO IgG",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 8,
+      "name": "Mucus",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 9,
+      "name": "R1",
+      "price": 10000,
+      "normal": "Up to 180 mg \\ dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 10,
+      "name": "Hbs Ag",
+      "price": 10000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 11,
+      "name": "S . HDL",
+      "price": 5000,
+      "normal": "Male (37-67) mg \\dl \nfemale (40-71) mg\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 12,
+      "name": "Pcv",
+      "price": 5000,
+      "normal": "Male (39-50)%\n Female (36-46)%",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 13,
+      "name": "K",
+      "price": 10000,
+      "normal": "(3.8-5.0)mmol/L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 14,
+      "name": "Color",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"brown \",\"black\",\"green\",\"yellow\",\"bloody\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 15,
+      "name": "LDH",
+      "price": 5000,
+      "normal": "(106-211) U\\L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 16,
+      "name": "B . urea",
+      "price": 5000,
+      "normal": "(15-40) mg\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 17,
+      "name": "Na",
+      "price": 10000,
+      "normal": "(136-149)mmol/L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 18,
+      "name": "Albumin",
+      "price": 1000,
+      "normal": "(3.8-5.3) mg\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 19,
+      "name": "CRP titer  test ",
+      "price": 15000,
+      "normal": "< 10.0 mg \\l",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 20,
+      "name": "S . LDL",
+      "price": 5000,
+      "normal": "100≥",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 21,
+      "name": "ketone Bodies",
+      "price": 0,
+      "normal": "",
+      "options": "[\"Nil\",\"trace\",\"+\",\"++\",\"+++\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 22,
+      "name": "CMV IgG",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 23,
+      "name": "RF Test",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 24,
+      "name": "Reaction",
+      "price": 0,
+      "normal": "",
+      "options": "[\"Acidic\",\"Alkaline \",\"Neutral \"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 25,
+      "name": "Specific Gravity",
+      "price": 0,
+      "normal": "",
+      "options": "[\"1.030\",\"1.020\",\"1.010\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 26,
+      "name": "sugar",
+      "price": 0,
+      "normal": "",
+      "options": "[\"NIL\",\"trace\",\"+\",\"++\",\"+++\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 27,
+      "name": "Ph",
+      "price": 0,
+      "normal": "",
+      "options": "[\"acidic \",\"alkaline \",\"neutral \"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 28,
+      "name": "ASOT",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 29,
+      "name": "LDL / HDL Ratio",
+      "price": 0,
+      "normal": "Male(3.55 - 6.25) \nFemale(3.22 - 5.03)",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 31,
+      "name": "Epithelial Cells",
+      "price": 1000,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 32,
+      "name": "bilirubin",
+      "price": 0,
+      "normal": "",
+      "options": "[\"NIL\",\"trace\",\"+\",\"++\",\"+++\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 33,
+      "name": "ESR",
+      "price": 5000,
+      "normal": "Male (0-15) mm\\1h  / Female (0-20) mm\\1h",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 34,
+      "name": "Rose Bengal",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 35,
+      "name": "FSH",
+      "price": 15000,
+      "normal": "Follicular phase(3-11) mlU\\ml \nmid cycle (6 - 21) \nluted phase (1 - 9) \npostmenopusal(22 - 153) \nmales (1 - 11)\n",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 36,
+      "name": "TSH",
+      "price": 15000,
+      "normal": "(0.3-4.2) (µlUml)",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 37,
+      "name": "testosterone",
+      "price": 15000,
+      "normal": "male (2-8) \nfemale UP TO 1.2\n",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 38,
+      "name": "R2",
+      "price": 5000,
+      "normal": "Up to 155 mg \\ dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 39,
+      "name": "Rapid Progressive% (class A)",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 40,
+      "name": "Aggregation",
+      "price": 0,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 41,
+      "name": "Cast",
+      "price": 1000,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 42,
+      "name": "Color                  ",
+      "price": 0,
+      "normal": "",
+      "options": "[\"yellow \",\"amber\",\"red\",\"brown\",\"dark yellow\",\"light yellow\",\"colorless \"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 43,
+      "name": "Mg",
+      "price": 10000,
+      "normal": "(1.8-2.4)mg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 44,
+      "name": "HCG QUANTITATIVE",
+      "price": 15000,
+      "normal": "Weeks of gestation \t HCG mIU/ml \n3       5-50 \n4      5-426 \n5    18-7340 \n6     1080-56500\n7-8        7650-229000\n9-12      25700-288000\n13-16    13300-254000\n17-24     4060-165400\n25-40     3640-117000\n",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 45,
+      "name": "Volume( ml) ",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 46,
+      "name": "Anti Mullerian",
+      "price": 35000,
+      "normal": "Gender - age     - Reference range\nFamale - 20-24 - 3.60-4.44\nFamale - 25-29 - 3.00-3.89\nFamale - 30-34 - 2.35-3.47\nFamale - 35-39 - 1.73-2.36\nFamale - 40-44 - 0.726-1.130\nFamale - 45-50 - 0.144-0.269\nFamale - Pcos women - 6.30-7.42",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 47,
+      "name": "Pus Cells",
+      "price": 1000,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 48,
+      "name": "Ent. Histolytica",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 49,
+      "name": "Hpylori",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 50,
+      "name": "RF",
+      "price": 1000,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 51,
+      "name": "S . triglyceride",
+      "price": 5000,
+      "normal": "(50-149) mg\\dl)",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 52,
+      "name": "Urobilinogen",
+      "price": 0,
+      "normal": "",
+      "options": "[\"positive \",\"negative \"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 53,
+      "name": "Appearance",
+      "price": 0,
+      "normal": "",
+      "options": "[\"clear\",\"turbid \"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 54,
+      "name": "Ova",
+      "price": 0,
+      "normal": "",
+      "options": "[\"nil\",\"+\",\"++\",\"+++\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 55,
+      "name": "CMV IgM",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 56,
+      "name": "Other",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 57,
+      "name": "Typhoid IgG",
+      "price": 2500,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 58,
+      "name": "Total Protein",
+      "price": 5000,
+      "normal": "(6.7-8.3) g\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 59,
+      "name": "CRP (C-Reactive Protein)",
+      "price": 1000,
+      "normal": "Range < 10 mg/L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 60,
+      "name": "Normal %",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 61,
+      "name": "Syphilis ",
+      "price": 10000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 62,
+      "name": "S . calcium",
+      "price": 5000,
+      "normal": "(8.4-10.2) mg\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 63,
+      "name": "Nitrates",
+      "price": 0,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 64,
+      "name": "WBCs",
+      "price": 5000,
+      "normal": "(4000-11000) cell\\cmm",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 65,
+      "name": "TOXO IgM",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 66,
+      "name": "Hb",
+      "price": 5000,
+      "normal": "Male (13-16.5)g\\ Female (12-15)g\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 67,
+      "name": "T3",
+      "price": 15000,
+      "normal": "(1.23-3.08) nmol\\L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 68,
+      "name": "S . creatinine",
+      "price": 5000,
+      "normal": "Male (0.6-0.8) mg\\dl /female (0.4-0.8) mg\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 69,
+      "name": "Ant-HIV 1&2",
+      "price": 10000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 70,
+      "name": "D.DIMER ",
+      "price": 15000,
+      "normal": "< 500 ng \\ml",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 71,
+      "name": "Agglutination",
+      "price": 0,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 72,
+      "name": "Sluggish Progressive% (class C)",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 73,
+      "name": "s uric acid",
+      "price": 5000,
+      "normal": "Male (0.6-0.8) mg\\dl  / female (0.4-0.8) mg\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 74,
+      "name": "Cl",
+      "price": 10000,
+      "normal": "(98-106)mmol/L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 75,
+      "name": "Immotile% (class D)",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 76,
+      "name": "RBCs",
+      "price": 1000,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 77,
+      "name": "Viscosity",
+      "price": 0,
+      "normal": "",
+      "options": "[\"normal \",\"high\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 78,
+      "name": "B . Glucose",
+      "price": 5000,
+      "normal": "(70-110) mg\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 79,
+      "name": "Prolactin",
+      "price": 15000,
+      "normal": "Woman (5-35) ng\\ml",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 80,
+      "name": "Abnormal  %",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 81,
+      "name": "ABO_RH",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"A(+ve)\",\"B(+ve)\",\"A(-ve)\",\"B(-ve)\",\"AB(+ve)\",\"O(+ve)\",\"AB(-ve)\",\"O(-ve)\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 82,
+      "name": "HbA1c",
+      "price": 10000,
+      "normal": "(4.5-6.5)%",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 83,
+      "name": "Monilia",
+      "price": 0,
+      "normal": "",
+      "options": "[\"NIL \",\"+\",\"++\",\"+++\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 85,
+      "name": "Pregnancy",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 86,
+      "name": "Gpt/ALT",
+      "price": 5000,
+      "normal": "(4-44) U\\L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 87,
+      "name": "NON-Progressive% (class B)",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 88,
+      "name": "S . Cholesterol",
+      "price": 5000,
+      "normal": "(150-219) mg\\dl)",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 89,
+      "name": "Hpylori Faeces",
+      "price": 10000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 90,
+      "name": "VLDL",
+      "price": 0,
+      "normal": "30≥",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 91,
+      "name": "Got/AST",
+      "price": 5000,
+      "normal": "(8-38) U\\L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 92,
+      "name": "TSB",
+      "price": 5000,
+      "normal": "(0.1-1.2) mg\\dl",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 93,
+      "name": "Rubella IgM",
+      "price": 5000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 94,
+      "name": "Consistency",
+      "price": 0,
+      "normal": "",
+      "options": "[\"soft\",\"formed\",\"loose\",\"watery\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 95,
+      "name": "Total count   Million / l",
+      "price": 0,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 96,
+      "name": "Vit D3",
+      "price": 15000,
+      "normal": "25 ( OH ) D\tStatus\n< 10 ng\\ml\tdeficiency\n10-30 ng\\ml\tinsufficiency\n30-100 ng\\ml\tsufficiency\n",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 97,
+      "name": "Protein",
+      "price": 0,
+      "normal": "",
+      "options": "[\"NIL\",\"trace\",\"+\",\"++\",\"+++\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 98,
+      "name": "T4",
+      "price": 15000,
+      "normal": "(66--181) nmol\\L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 99,
+      "name": "Typhoid Igm",
+      "price": 2500,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 100,
+      "name": "HAV",
+      "price": 10000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 101,
+      "name": "LH",
+      "price": 15000,
+      "normal": "Follicular phase(1.0-12.0) mlU\\ml \nOvulatory phase (17.0 - 77.0) \nluted phase (0.0 - 15.0) \npostmenopusal(11.0 - 40.0) \nmales (1.0 - 8.0)\n",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 102,
+      "name": "HSV",
+      "price": 10000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 103,
+      "name": "CBC",
+      "price": 15000,
+      "normal": "",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 104,
+      "name": "Sodium",
+      "price": 1000,
+      "normal": "Range 135 to 145 (mEq/L)",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 105,
+      "name": "Potassium",
+      "price": 1000,
+      "normal": "Range 3.5 to 5.0 millimoles per liter (mmol/L)",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 106,
+      "name": "Bicarbonate",
+      "price": 1000,
+      "normal": "Range 22-29 mEq/L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 107,
+      "name": "eGRF estimated Glomerular Filtration Rate",
+      "price": 1000,
+      "normal": "Range 90 – 120 mL/min/1.73 m² ",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 108,
+      "name": "ALP ",
+      "price": 1000,
+      "normal": "Range 30 – 120 U/L (Units per Liter) for adults",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 109,
+      "name": "GGT ",
+      "price": 1000,
+      "normal": "Men: 8 – 61 U/L\n Women: 5 – 36 U/L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 110,
+      "name": "Total Bilirubin ",
+      "price": 1000,
+      "normal": "Range 0.3 – 1.2 mg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 111,
+      "name": "Direct Bilirubin",
+      "price": 1000,
+      "normal": "Range 0.1 – 0.4 mg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 112,
+      "name": "Fasting Blood Glucose (FBG)",
+      "price": 1000,
+      "normal": "Range 70–99 mg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 113,
+      "name": "Random Blood Glucose ",
+      "price": 1000,
+      "normal": "Range < 140 mg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 114,
+      "name": "Oral Glucose Tolerance Test (OGTT)",
+      "price": 1000,
+      "normal": "Below 140 mg/dL (7.8 mmol/L): Normal blood sugar\n\n140 to 199 mg/dL (7.8 to 11.1 mmol/L): Prediabetes (higher risk)\n\n200 mg/dL (11.1 mmol/L) or higher: Indicates diabetes",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 115,
+      "name": "Triglycerides",
+      "price": 1000,
+      "normal": "Normal: Less than 150 mg/dL (less than 1.7 mmol/L)\n\nBorderline high: 150–199 mg/dL (1.7–2.2 mmol/L)\n\nHigh: 200–499 mg/dL (2.3–5.6 mmol/L)\n\nVery high: 500 mg/dL or above (5.7 mmol/L or above)",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 116,
+      "name": "Hematocrit",
+      "price": 1000,
+      "normal": "Men: 40 – 52%\nWomen: 36 – 47%",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 117,
+      "name": "MCV (Mean Corpuscular Volume)\t",
+      "price": 1000,
+      "normal": "Range 80 – 100 fL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 118,
+      "name": "MCH (Mean Corpuscular Hemoglobin)",
+      "price": 1000,
+      "normal": "Range 27 – 33 pg",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 119,
+      "name": "MCHC (Mean Corpuscular Hemoglobin Concentration)",
+      "price": 1000,
+      "normal": "Range 32 – 36 g/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 120,
+      "name": "RDW (Red Cell Distribution Width)\t",
+      "price": 1000,
+      "normal": "Range 11.5 – 14.5%",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 121,
+      "name": "Platelet Count\t",
+      "price": 1000,
+      "normal": "Range 150,000 – 450,000 /µL\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 122,
+      "name": "MPV (Mean Platelet Volume)\t",
+      "price": 1000,
+      "normal": "Range 7.5 – 11.5 fL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 123,
+      "name": "Serum Iron\t",
+      "price": 1000,
+      "normal": "Range 60 – 170 µg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 124,
+      "name": "Ferritin",
+      "price": 1000,
+      "normal": "Men: 24 – 336 ng/mL\nWomen: 11 – 307 ng/mL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 125,
+      "name": "TIBC (Total Iron-Binding Capacity)",
+      "price": 1000,
+      "normal": "Range 240 – 450 µg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 126,
+      "name": "Transferrin Saturation",
+      "price": 1000,
+      "normal": "Range 20 – 50%",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 127,
+      "name": "Vitamin B12",
+      "price": 1000,
+      "normal": "Range 200 – 900 pg/mL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 128,
+      "name": "Folate (Vitamin B9)",
+      "price": 1000,
+      "normal": "Range 2.7 – 17.0 ng/mL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 129,
+      "name": "ESR (Erythrocyte Sedimentation Rate)",
+      "price": 1000,
+      "normal": "Men: 0 – 15 mm/hr\nWomen: 0 – 20 mm/hr",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 130,
+      "name": "Phosphate",
+      "price": 1000,
+      "normal": "Range 2.5 – 4.5 mg/dL\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 131,
+      "name": "Magnesium",
+      "price": 1000,
+      "normal": "Range 1.7 – 2.2 mg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 132,
+      "name": "Vitamin D (25-Hydroxy)\t",
+      "price": 1000,
+      "normal": "Range 30 – 100 ng/mL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 133,
+      "name": "Parathyroid Hormone (PTH)",
+      "price": 1000,
+      "normal": "Range 10 – 65 pg/mL ",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 134,
+      "name": "Urine hCG \t",
+      "price": 1000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 1,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 135,
+      "name": "Serum hCG",
+      "price": 1000,
+      "normal": "Range < 5 mIU/mL = Not pregnant",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 136,
+      "name": "HIV 4th Generation (Ag/Ab)\t",
+      "price": 1000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 1,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 137,
+      "name": "Hepatitis B Surface Antigen (HBsAg)",
+      "price": 1000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 1,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 138,
+      "name": "Hepatitis B Surface Antibody (anti-HBs)",
+      "price": 1000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 1,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 139,
+      "name": "Hepatitis B Core Antibody (anti-HBc)",
+      "price": 1000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 1,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 140,
+      "name": "Hepatitis C Antibody (anti-HCV)",
+      "price": 1000,
+      "normal": "",
+      "options": "[\"positive\",\"negative\"]",
+      "isSelecte": 1,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 141,
+      "name": "PT (Prothrombin Time)",
+      "price": 1000,
+      "normal": "Range 11 – 13.5 seconds",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 142,
+      "name": "aPTT (Activated Partial Thromboplastin Time)",
+      "price": 1000,
+      "normal": "Range 25 – 35 seconds",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 143,
+      "name": "D-Dimer\t",
+      "price": 1000,
+      "normal": "Range < 0.5 µg/mL (or < 500 ng/mL)",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 144,
+      "name": "Fibrinogen\t",
+      "price": 1000,
+      "normal": "Range 200 – 400 mg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 145,
+      "name": "TT (Thrombin Time)",
+      "price": 1000,
+      "normal": "Range 14 – 21 seconds\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 146,
+      "name": "Cortisol (Morning)\t",
+      "price": 1000,
+      "normal": "Range 6 – 23 µg/dL",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 147,
+      "name": "ACTH",
+      "price": 1000,
+      "normal": "Range 10 – 60 pg/mL\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 148,
+      "name": "Amylase",
+      "price": 1000,
+      "normal": "Range 30 – 110 U/L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 149,
+      "name": "Lipase",
+      "price": 1000,
+      "normal": "Range 0 – 160 U/L",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 150,
+      "name": "Progesterone",
+      "price": 1000,
+      "normal": "Range Luteal: 5 – 20 ng/mL\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 151,
+      "name": "AMH (Anti-Müllerian Hormone)",
+      "price": 1000,
+      "normal": "Range 1.0 – 4.0 ng/mL\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 152,
+      "name": "Testosterone (Total)",
+      "price": 1000,
+      "normal": "Range 15 – 70 ng/dL\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 153,
+      "name": "Testosterone Free",
+      "price": 1000,
+      "normal": "Range 0.3 – 1.9 ng/dL\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 154,
+      "name": "Estradiol (E2)",
+      "price": 1000,
+      "normal": "Follicular: 25 – 75 pg/mL\nMid-cycle: 200–600",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 155,
+      "name": "SHBG",
+      "price": 1000,
+      "normal": "Range 18 – 114 nmol/L\t",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    },
+    {
+      "id": 156,
+      "name": "PSA (Total)",
+      "price": 1000,
+      "normal": "Range < 4.0 ng/mL ",
+      "options": "[]",
+      "isSelecte": 0,
+      "updatedAt": "",
+      "createdAt": ""
+    }
+   ]

@@ -10,7 +10,7 @@ var refFont = require("./Frutiger-normal");
 const { LocalFileData } = require("get-file-object-from-local-path");
 const { shell } = electron;
 
-const logoPath = path.join(__dirname, "src", "assets", "logo2.png");
+const logoPath = path.join(__dirname, "src", "assets", "logo3.png");
 const logoBase64 = fs.readFileSync(logoPath, { encoding: "base64" });
 
 function base64_encode(file) {
@@ -81,7 +81,7 @@ async function createPDF(data, isView = true, cb) {
       const centerX = (pageWidth - logoWidth) / 2 + 45;
       const centerY = (pageHeight - logoHeight) / 2 + 30;
 
-      if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.06 }));
+      if (doc.setGState) doc.setGState(new doc.GState({ opacity: 0.03 }));
       doc.addImage(
         `data:image/png;base64,${logoBase64}`,
         "PNG",

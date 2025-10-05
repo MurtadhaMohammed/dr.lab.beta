@@ -1,0 +1,86 @@
+[
+  {
+    "groupname": "Complete Blood Count (CBC)",
+    "testIds": [12, 33, 65, 67, 78, 106, 110, 111]
+  },
+  {
+    "groupname": "Liver Function Tests",
+    "testIds": [15, 18, 30, 58, 89, 94, 95, 123, 124, 125, 126]
+  },
+  {
+    "groupname": "Kidney Function Tests",
+    "testIds": [16, 51, 69, 75]
+  },
+  {
+    "groupname": "Lipid Profile",
+    "testIds": [11, 20, 29, 51, 91, 93]
+  },
+  {
+    "groupname": "Thyroid Function Tests",
+    "testIds": [36, 68, 101, 148, 149]
+  },
+  {
+    "groupname": "Diabetes Tests",
+    "testIds": [3, 9, 38, 81, 85]
+  },
+  {
+    "groupname": "Electrolytes",
+    "testIds": [13, 17, 43, 62, 76]
+  },
+  {
+    "groupname": "Hormones",
+    "testIds": [35, 37, 44, 46, 82, 87, 99, 104, 145, 146, 147]
+  },
+  {
+    "groupname": "Infectious Diseases",
+    "testIds": [
+      2, 5, 6, 7, 10, 22, 28, 34, 48, 49, 55, 57, 61, 66, 70, 96, 102, 103, 105,
+      131, 132
+    ]
+  },
+  {
+    "groupname": "Autoimmune Tests",
+    "testIds": [23, 50, 59]
+  },
+  {
+    "groupname": "Coagulation Tests",
+    "testIds": [107, 108, 109, 112]
+  },
+  {
+    "groupname": "Tumor Markers",
+    "testIds": [118, 119, 120, 121, 122]
+  },
+  {
+    "groupname": "Urinalysis",
+    "testIds": [
+      1, 8, 14, 21, 24, 25, 26, 27, 31, 32, 41, 42, 47, 52, 53, 54, 64, 100, 127
+    ]
+  },
+  {
+    "groupname": "Stool Analysis",
+    "testIds": [4, 45, 48, 54, 56, 86, 92, 97, 128]
+  },
+  {
+    "groupname": "Semen Analysis",
+    "testIds": [39, 40, 45, 72, 74, 77, 79, 90, 98]
+  },
+  {
+    "groupname": "Vitamins and Minerals",
+    "testIds": [62, 87, 99, 113, 114, 115, 116, 117, 150]
+  },
+  {
+    "groupname": "Pregnancy Tests",
+    "testIds": [44, 88]
+  },
+  {
+    "groupname": "Microbiology Cultures",
+    "testIds": [127, 128, 129, 130]
+  },
+  {
+    "groupname": "Viral Serology",
+    "testIds": [
+      5, 6, 7, 10, 22, 55, 57, 61, 66, 70, 96, 102, 103, 105, 133, 134, 135,
+      136, 137, 138, 139, 140, 141, 142, 143, 144
+    ]
+  }
+]
