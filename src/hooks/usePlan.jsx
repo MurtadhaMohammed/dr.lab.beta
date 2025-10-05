@@ -4,6 +4,8 @@ import { useAppStore } from "../libs/appStore";
 import { message } from "antd";
 import { create } from "zustand";
 import useInitHeaderImage from "./useInitHeaderImage";
+import { send } from "../control/renderer";
+import { useEffect } from "react";
 
 const usePlanState = create((set) => ({
   planType: null,
@@ -45,6 +47,45 @@ export const usePlan = () => {
 
       if (resp.ok) {
         const userData = await resp.json();
+        const newTests = userData?.testGroups;
+
+        // Parse testGroups if it's a JSON string
+        let parsedTests = newTests;
+        if (typeof newTests === "string") {
+          try {
+            parsedTests = JSON.parse(newTests);
+          } catch (parseError) {
+            console.error(
+              "Failed to parse testGroups JSON string:",
+              parseError
+            );
+            parsedTests = null;
+          }
+        }
+
+        if (
+          parsedTests &&
+          Array.isArray(parsedTests) &&
+          parsedTests.length > 0
+        ) {
+          // Stringify the data for SQLite storage since it contains nested objects
+          const stringifiedData = parsedTests.map((testGroup) => ({
+            ...testGroup,
+            options:
+              typeof testGroup.options === "string"
+                ? testGroup.options
+                : JSON.stringify(testGroup.options),
+            groupTest:
+              typeof testGroup.groupTest === "string"
+                ? testGroup.groupTest
+                : JSON.stringify(testGroup.groupTest),
+          }));
+
+          send({
+            query: "addNewData",
+            data: stringifiedData,
+          });
+        }
         return userData;
       } else if (resp.status === 404) {
         const jsonResp = await resp.json();
@@ -58,6 +99,8 @@ export const usePlan = () => {
       return null;
     }
   };
+
+
 
   const updateData = (userInfo) => {
     let { Plan, balance, whatsappMsgPrice, expiredAt, createdAt } =
@@ -83,8 +126,7 @@ export const usePlan = () => {
       }
       if (userInfo) updateData(userInfo);
 
-      console.log({ userInfo });
-      await fetchHeader(JSON.parse(userInfo) || {});
+      await fetchHeader();
     }
   };
 

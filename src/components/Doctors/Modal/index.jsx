@@ -2,9 +2,9 @@ import {
   Button,
   Card,
   Col,
-  DatePicker,
   Divider,
   Input,
+  InputNumber,
   Modal,
   Radio,
   Row,
@@ -24,14 +24,12 @@ export const PureModal = () => {
   const {
     id,
     name,
-    birth,
     phone,
     email,
     gender,
     address,
     type,
     setName,
-    setBirth,
     setPhone,
     setEmail,
     setGender,
@@ -40,6 +38,10 @@ export const PureModal = () => {
     isModal,
     setIsModal,
     setReset,
+    note,
+    doctor_fee,
+    setDoctorFee,
+    setNote,
   } = useDoctorStore();
   const { t } = useTranslation();
 
@@ -51,6 +53,8 @@ export const PureModal = () => {
       phone,
       address,
       type,
+      doctor_fee,
+      note
     };
 
     if (id) {
@@ -140,7 +144,7 @@ export const PureModal = () => {
               />
             </Space>
           </Col>
-          
+
           <Col span={12}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
@@ -170,7 +174,8 @@ export const PureModal = () => {
           <Col span={24}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
-                {t("DoctorAddress")} <Text type="secondary">{t("Optional")}</Text>
+                {t("DoctorAddress")}{" "}
+                <Text type="secondary">{t("Optional")}</Text>
               </Text>
               <Input
                 value={address}
@@ -179,7 +184,8 @@ export const PureModal = () => {
               />
             </Space>
           </Col>
-          <Col span={24}>
+
+          <Col span={14}>
             <Space style={{ width: "100%" }} direction="vertical" size={4}>
               <Text>
                 {t("DoctorType")} <Text type="secondary">{t("Optional")}</Text>
@@ -187,6 +193,31 @@ export const PureModal = () => {
               <Input
                 value={type}
                 onChange={(e) => setType(e.target.value)}
+                style={{ width: "100%" }}
+              />
+            </Space>
+          </Col>
+
+          <Col span={10}>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Text>
+                {t("DoctorFee")} <Text type="secondary">{t("Optional")}</Text>
+              </Text>
+              <InputNumber
+                value={doctor_fee}
+                onChange={(val) => setDoctorFee(val)}
+                style={{ width: "100%" }}
+              />
+            </Space>
+          </Col>
+          <Col span={24}>
+            <Space style={{ width: "100%" }} direction="vertical" size={4}>
+              <Text>
+                {t("Note")} <Text type="secondary">{t("Optional")}</Text>
+              </Text>
+              <Input
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
                 style={{ width: "100%" }}
               />
             </Space>
@@ -215,3 +246,5 @@ export const PureModal = () => {
     </Modal>
   );
 };
+
+export const DoctorModal = PureModal;

@@ -1,6 +1,6 @@
 {
   "name": "lab-beta",
-  "version": "1.0.8",
+  "version": "1.1.7",
   "homepage": "./",
   "main": "index.js",
   "targets": {
@@ -103,7 +103,7 @@
       "./node_modules/**/*",
       "./Frutiger-normal.js",
       "./splash.html",
-      "./defaultHeader.jpg"
+      "./defaultHeader.png"
     ],
     "win": {
       "icon": "logo.png",

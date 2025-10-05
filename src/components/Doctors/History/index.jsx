@@ -48,7 +48,7 @@ export const DoctorHistory = () => {
       render: (_, record) => (
         <span
           style={
-            record?.discount
+            record?.discount_iqd
               ? {
                   textDecoration: "line-through",
                   opacity: 0.3,
@@ -57,9 +57,7 @@ export const DoctorHistory = () => {
               : {}
           }
         >
-          {Number(
-            getTotalPrice(record?.testType, record?.tests)
-          ).toLocaleString("en")}
+          {Number(getTotalPrice(record?.tests)).toLocaleString("en")}
         </span>
       ),
     },
@@ -71,7 +69,7 @@ export const DoctorHistory = () => {
       render: (_, record) => (
         <b style={{ whiteSpace: "nowrap" }}>
           {Number(
-            getTotalPrice(record?.testType, record?.tests) - record?.discount
+            getTotalPrice(record?.tests) - record?.discount_iqd
           ).toLocaleString("en")}{" "}
           IQD
         </b>
@@ -79,11 +77,11 @@ export const DoctorHistory = () => {
     },
     {
       title: t("Discount"),
-      dataIndex: "discount",
-      key: "discount",
+      dataIndex: "discount_iqd",
+      key: "discount_iqd",
       render: (_, record) =>
-        record?.discount ? (
-          <Tag color="geekblue">{`${Number(record?.discount).toLocaleString(
+        record?.discount_iqd ? (
+          <Tag color="geekblue">{`${Number(record?.discount_iqd).toLocaleString(
             "en"
           )} IQD`}</Tag>
         ) : (
@@ -132,20 +130,39 @@ export const DoctorHistory = () => {
           onChange={setFilterDate}
         />
         <div className="flex justify-between items-center gap-2">
-          {" "}
           <p> {t("DoctorTotal")}</p>
-          <p>
+          <p className="flex items-center gap-2">
             {data?.length > 0
-              ? `${Number(
-                  data?.reduce((acc, item) => {
+              ? (() => {
+                  const totalAmount = data?.reduce((acc, item) => {
                     return (
-                      acc +
-                      (getTotalPrice(item?.testType, item?.tests) -
-                        item?.discount)
+                      acc + (getTotalPrice(item?.tests) - item?.discount_iqd)
                     );
-                  }, 0)
-                ).toLocaleString("en")}
-            IQD`
+                  }, 0);
+
+                  const doctorFeePercentage =
+                    Number(data[0]?.doctor?.doctor_fee) || 0;
+                  const doctorFeeAmount =
+                    (totalAmount * doctorFeePercentage) / 100;
+                  return (
+                    <>
+                      <span>
+                        {Number(totalAmount).toLocaleString("en")} IQD
+                      </span>
+                      {doctorFeePercentage > 0 && (
+                        <>
+                          <span>|</span>
+                          <span>
+                            <strong>
+                              Doctor Fee :{" "}
+                              {Number(doctorFeeAmount).toLocaleString("en")} IQD
+                            </strong>
+                          </span>
+                        </>
+                      )}
+                    </>
+                  );
+                })()
               : "0 IQD"}
           </p>
         </div>

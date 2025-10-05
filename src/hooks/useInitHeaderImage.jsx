@@ -10,35 +10,28 @@ const useInitHeaderImage = () => {
     return res.url;
   };
 
-  const fetchHeader = async (user) => {
+  const fetchHeader = async () => {
     const imageURL = await loadImage();
     if (imageURL) setImagePath(imageURL);
-    else {
-      try {
-        await generateHeader(user);
-      } catch (err) {
-        console.error("Failed to generate or load image:", err);
-      }
+    else await getDefaultHeader();
+  };
+
+  const getDefaultHeader = async () => {
+    try {
+      await send({
+        query: "initHeadImage",
+      });
+      setImagePath(null);
+      setTimeout(async () => {
+        const imageURL = await loadImage();
+        setImagePath(imageURL);
+      }, 500);
+    } catch (error) {
+      console.log(error);
     }
   };
 
-  const generateHeader = async (user) => {
-    if (!user) return Promise.reject("No user provided");
-
-    await send({
-      query: "initHeadImage2",
-      labName: user.labName || "...",
-      phone: user.phone || "...",
-      address: user.address || "...",
-    });
-    setImagePath(null);
-    setTimeout(async () => {
-      const imageURL = await loadImage();
-      setImagePath(imageURL);
-    }, 500);
-  };
-
-  return { generateHeader, fetchHeader, loadImage };
+  return { fetchHeader, loadImage };
 };
 
 export default useInitHeaderImage;

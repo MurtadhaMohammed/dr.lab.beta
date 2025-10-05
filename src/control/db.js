@@ -12,9 +12,6 @@ class LabDB {
   }
 
   async init() {
-    // const isMac = os.platform() === "darwin";
-    // const dbPath = app.getPath("userData") + "drlab.db";
-    // const dbPath = path.join(app.getPath("userData"), "drlab.db");
     try {
       await this.handlePendingImport();
       this.db = new Database(this.dbPath, {
@@ -23,9 +20,8 @@ class LabDB {
       this.db.pragma("journal_mode = WAL");
       console.log("Database opened successfully");
       this.initializeDatabase();
-      this.initTestsFromJSON();
-      this.checkAndAddVisitNumberColumn();
-      this.migrateVisitsTableWithDoctorForeignKey();
+      this.seedTestsCatalogIfEmpty();
+      this.alterDoctorTableIfNeeded();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
@@ -45,7 +41,7 @@ class LabDB {
         name TEXT NOT NULL,
         gender TEXT NOT NULL,
         email TEXT,
-        phone TEXT NOT NULL,
+        phone TEXT,
         birth DATE NOT NULL,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -63,232 +59,269 @@ class LabDB {
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
-      CREATE TABLE IF NOT EXISTS visits (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        patientID INTEGER,
-        doctorID INTEGER,
-        visitNumber VARCHAR(6),
-        status TEXT DEFAULT "PENDING" NOT NULL,
-        testType VARCHAR(50),
-        tests TEXT,
-        discount INTEGER,
-        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY(patientID) REFERENCES patients(id)
-        FOREIGN KEY(doctorID) REFERENCES doctors(id)
+      CREATE TABLE IF NOT EXISTS tests_catalog (
+        id          INTEGER PRIMARY KEY,
+        code        TEXT    NOT NULL UNIQUE,                     
+        type        TEXT    NOT NULL CHECK (type IN ('single','panel','composite')),
+        name_en     TEXT    NOT NULL,                           
+        name_ar     TEXT,                                     
+        sample_type TEXT,                                         
+        unit        TEXT,                                        
+        ref_text    TEXT,                                        
+        meta_json   TEXT    NOT NULL DEFAULT '{}',               
+        price_iqd   INTEGER NOT NULL DEFAULT 0,                  
+        is_active   INTEGER NOT NULL DEFAULT 1,                  
+        version     TEXT,                                        
+        created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
+        updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
       );
 
-      CREATE TABLE IF NOT EXISTS tests(
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name VARCHAR(50),
-      price INTEGER, 
-      normal TEXT,
-      options TEXT,
-      isSelecte INTEGER DEFAULT 0,
-      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
-     );
-      CREATE TABLE IF NOT EXISTS packages(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title VARCHAR(100),
-        customePrice INTEGER,
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      PRAGMA foreign_keys = ON;
+      
+      CREATE TABLE IF NOT EXISTS visit_v2 (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        visit_number     TEXT UNIQUE,                        
+        patient_id       INTEGER NOT NULL,                  
+        doctor_id        INTEGER,                           
+        status           TEXT NOT NULL DEFAULT 'PENDING'
+                        CHECK (status IN ('PENDING','PARTIAL','COMPLETED','CANCELLED')),
+        notes            TEXT,
+
+        gross_price_iqd  INTEGER NOT NULL DEFAULT 0,          
+        discount_iqd     INTEGER NOT NULL DEFAULT 0,         
+        end_price_iqd    INTEGER NOT NULL DEFAULT 0,         
+
+        paid_iqd         INTEGER NOT NULL DEFAULT 0,
+        payment_status   TEXT NOT NULL DEFAULT 'UNPAID'
+                        CHECK (payment_status IN ('UNPAID','PARTIAL','PAID')),
+
+        created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at       TEXT NOT NULL DEFAULT (datetime('now')),
+
+        FOREIGN KEY (patient_id) REFERENCES patients(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+        FOREIGN KEY (doctor_id)  REFERENCES doctors(id)  ON DELETE SET NULL  ON UPDATE CASCADE
       );
 
-       CREATE TABLE IF NOT EXISTS test_to_packages(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        packageID INTEGER,
-        testID INTEGER,
-        FOREIGN KEY (packageID) REFERENCES packages(id) ON DELETE CASCADE,
-        FOREIGN KEY (testID) REFERENCES tests(id) ON DELETE CASCADE
+      CREATE TABLE IF NOT EXISTS visit_item_v2 (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        visit_id         INTEGER NOT NULL,                   
+        test_id          INTEGER NOT NULL,                   
+
+    
+        code             TEXT NOT NULL,                     
+        type             TEXT NOT NULL CHECK (type IN ('single','panel','composite')),
+        name_en          TEXT NOT NULL,
+        name_ar          TEXT,
+        sample_type      TEXT,
+        unit             TEXT,                                
+        ref_text         TEXT,                                
+        price_iqd        INTEGER NOT NULL DEFAULT 0,
+        is_active_catalog INTEGER NOT NULL DEFAULT 1,
+        meta_json        TEXT NOT NULL DEFAULT '{}',         
+
+        result_value     TEXT,                              
+        result_numeric   REAL,                            
+        result_unit      TEXT,                             
+        result_json      TEXT,                               
+        is_abnormal      INTEGER NOT NULL DEFAULT 0,
+
+        item_status      TEXT NOT NULL DEFAULT 'PENDING'
+                        CHECK (item_status IN ('PENDING','READY','VERIFIED','PRINTED')),
+        technician_name  TEXT,
+        method           TEXT,
+        completed_at     TEXT,
+        printed_at       TEXT,
+
+        created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at       TEXT NOT NULL DEFAULT (datetime('now')),
+
+        FOREIGN KEY (visit_id) REFERENCES visit_v2(id)     ON DELETE CASCADE  ON UPDATE CASCADE,
+        FOREIGN KEY (test_id)  REFERENCES tests_catalog(id) ON DELETE RESTRICT ON UPDATE CASCADE
+      );
+
+
+      CREATE TABLE IF NOT EXISTS visit_result_v2 (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        visit_item_id    INTEGER NOT NULL,                    
+
+        path             TEXT,                              
+        code             TEXT,                              
+        label_en         TEXT,
+        label_ar         TEXT,
+
+        value_text       TEXT,
+        value_num        REAL,
+        unit             TEXT,
+        ref_text         TEXT,                               
+        flag             TEXT,                             
+        note             TEXT,
+
+        created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+        updated_at       TEXT NOT NULL DEFAULT (datetime('now')),
+
+        FOREIGN KEY (visit_item_id) REFERENCES visit_item_v2(id) ON DELETE CASCADE ON UPDATE CASCADE
       );
 
     `);
   }
 
-  async checkAndAddVisitNumberColumn() {
-    try {
-      // Check if the visits table has the visitNumber column
-      const columnCheckStmt = this.db.prepare(`
-        PRAGMA table_info(visits)
-      `);
-      const columns = columnCheckStmt.all();
+  async alterDoctorTableIfNeeded() {
+    // check schema info
+    const pragma = this.db.prepare(`PRAGMA table_info(doctors)`).all();
 
-      const hasVisitNumberColumn = columns.some(
-        (column) => column.name === "visitNumber"
+    const colNames = pragma.map((c) => c.name);
+
+    const toAdd = [];
+    if (!colNames.includes("doctor_fee")) {
+      toAdd.push(`ADD COLUMN doctor_fee INTEGER DEFAULT 0`);
+    }
+    if (!colNames.includes("note")) {
+      toAdd.push(`ADD COLUMN note TEXT`);
+    }
+
+    if (toAdd.length > 0) {
+      toAdd.forEach((sql) =>
+        this.db.prepare(`ALTER TABLE doctors ${sql}`).run()
       );
+    }
 
-      if (!hasVisitNumberColumn) {
-        // Alter the table to add the visitNumber column if it doesn't exist
-        this.db.exec(`
-          ALTER TABLE visits ADD COLUMN visitNumber VARCHAR(6)
-        `);
-        console.log("visitNumber column added successfully");
-      } else {
-        console.log("visitNumber column already exists");
-      }
-    } catch (error) {
-      console.error("Error checking or adding visitNumber column:", error);
+    return { success: true, message: "Doctor table updated if needed" };
+  }
+
+  seedTestsCatalogIfEmpty() {
+    const table = this.db
+      .prepare(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='tests_catalog'"
+      )
+      .get();
+    if (!table) {
+      console.log("ℹ️ tests_catalog table not found yet.");
+      return;
+    }
+    const { count } = this.db
+      .prepare("SELECT COUNT(*) AS count FROM tests_catalog")
+      .get();
+    if (count > 0) {
+      console.log("ℹ️ tests_catalog already has data. Skipping seed.sql");
+      return;
+    }
+
+    try {
+      const seedPath = path.join(__dirname, "seed.sql");
+      const sql = fs.readFileSync(seedPath, "utf8");
+      this.db.exec(sql);
+      console.log(`✅ Seed executed successfully from: ${seedPath}`);
+    } catch (err) {
+      console.error("❌ Failed to execute seed.sql:", err);
     }
   }
 
-  async migrateVisitsTableWithDoctorForeignKey() {
+  async getTopTests() {
     try {
-      // Step 1: Enable foreign keys
-      this.db.prepare(`PRAGMA foreign_keys = ON;`).run();
+      // fixed, curated list (keeps working for new users)
+      const ids = [
+        53, // Lipid Profile
+        52, // Renal Function Test
+        67, // Stool Examination
+        68, // Urine Examination
+        69, // Culture Report
+        55, // TORCH Panel
+        51, // Liver Function Test
+        70, // Semen Analysis
+        59, // Vitamin Profile
+        57, // Hormonal Panel
+        50, // Complete Blood Count
+        54, // Thyroid Function Test
+      ];
 
-      // Step 2: Check if doctorID column already exists
-      const columns = this.db.prepare(`PRAGMA table_info(visits);`).all();
-      const hasDoctorID = columns.some((col) => col.name === "doctorID");
+      // Build an ordered inline table (id, ord)
+      const values = ids.map((id, i) => `(${id},${i})`).join(",");
+      const sql = `
+      WITH wanted(id, ord) AS (VALUES ${values})
+      SELECT
+        t.id,
+        t.name_en as title
+      FROM tests_catalog t
+      JOIN wanted w ON w.id = t.id
+      ORDER BY w.ord
+    `;
 
-      if (hasDoctorID) {
-        console.log("✅ doctorID column already exists, skipping migration.");
+      const rows = this.db.prepare(sql).all();
+      return { success: true, data: rows };
+    } catch (err) {
+      console.error("Error in getTopTraditionalTests:", err);
+      return { success: false, error: err.message };
+    }
+  }
+
+  async addNewData(data) {
+    try {
+      // Validate that data is an array
+      if (!Array.isArray(data)) {
+        console.error(
+          "addNewData: data parameter is not an array:",
+          typeof data,
+          data
+        );
+        throw new Error("Data parameter must be an array");
+      }
+
+      if (data.length === 0) {
+        console.log("addNewData: No data provided to import");
         return;
       }
 
-      this.db.transaction(() => {
-        // Step 3: Rename the existing table
-        this.db.prepare(`ALTER TABLE visits RENAME TO visits_old;`).run();
-
-        // Step 4: Create the new table with foreign key constraint
-        this.db
-          .prepare(
-            `
-            CREATE TABLE visits (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
-              patientID INTEGER,
-              doctorID INTEGER,
-              visitNumber VARCHAR(6),
-              status TEXT DEFAULT "PENDING" NOT NULL,
-              testType VARCHAR(50),
-              tests TEXT,
-              discount INTEGER,
-              updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-              createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
-              FOREIGN KEY(patientID) REFERENCES patients(id),
-              FOREIGN KEY(doctorID) REFERENCES doctors(id)
-            );
-        `
-          )
-          .run();
-
-        // Step 5: Copy data from the old table
-        const oldColumns = columns.map((col) => col.name).join(", ");
-        const newColumns = oldColumns + ", NULL"; // doctorID is not in the old table
-
-        this.db
-          .prepare(
-            `
-          INSERT INTO visits (
-            id, patientID, doctorID, visitNumber, status, testType, tests, discount, updatedAt, createdAt
-          )
-          SELECT
-            id, patientID, NULL, visitNumber, status, testType, tests, discount, updatedAt, createdAt
-          FROM visits_old;
-        `
-          )
-          .run();
-
-        // Step 6: Drop old table
-        this.db.prepare(`DROP TABLE visits_old;`).run();
-
-        console.log("✅ visits table migrated with doctorID foreign key.");
-      })();
-    } catch (err) {
-      console.error("❌ Migration failed:", err.message);
-    }
-  }
-
-  async initTestsFromJSON() {
-    try {
-      const testCountStet = this.db.prepare(`
-        SELECT COUNT(*) as total FROM tests
+      // Check which test groups already exist in the database
+      const existingTestsStmt = this.db.prepare(`
+        SELECT name FROM tests WHERE type = 'groupTest'
       `);
-      const { total } = testCountStet.get();
+      const existingTests = existingTestsStmt.all();
+      const existingTestNames = new Set(existingTests.map((test) => test.name));
 
-      if (total === 0) {
-        const jsonPath = path.join(__dirname, "tests.json");
-        const jsonGroupPath = path.join(__dirname, "groups.json");
+      // Filter out test groups that already exist
+      const newTestGroups = data.filter(
+        (testGroup) => !existingTestNames.has(testGroup.name)
+      );
 
-        if (!fs.existsSync(jsonPath) || !fs.existsSync(jsonGroupPath)) {
-          throw new Error("One or both JSON files are missing");
-        }
-
-        const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
-        const jsonGroupData = JSON.parse(
-          fs.readFileSync(jsonGroupPath, "utf-8")
+      if (newTestGroups.length === 0) {
+        console.log(
+          "All test groups from newTestGroups.json already exist in database"
         );
+        return;
+      }
 
-        const insertStmt = this.db.prepare(`
-          INSERT INTO tests (id, name, price, normal, options, isSelecte)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `);
+      // Insert new test groups into database
+      const insertStmt = this.db.prepare(`
+        INSERT INTO tests (name, price, normal, options, isSelecte, type, groupTest, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      `);
 
-        const insertTransaction = this.db.transaction((data) => {
-          for (const item of data) {
-            const normalValue = item.normal
-              ? item.normal.replace(/\\n/g, "\n")
-              : null;
-            insertStmt.run(
-              Number(item.id),
-              item.name,
-              Number(item.price),
-              normalValue,
-              item.options,
-              Number(item.isSelected)
-            );
-          }
-        });
+      const insertTransaction = this.db.transaction((testGroups) => {
+        for (const testGroup of testGroups) {
+          const normalValue = testGroup.normal
+            ? testGroup.normal.replace(/\\n/g, "\n")
+            : "";
 
-        insertTransaction(jsonData);
-
-        for (const item of jsonGroupData) {
-          await this.addPackage({
-            title: item?.groupname,
-            customePrice: 0,
-            tests: item?.testIds?.map((id) => ({ id })),
-          });
+          insertStmt.run(
+            testGroup.name,
+            Number(testGroup.price || 0),
+            normalValue,
+            testGroup.options || "[]",
+            Number(testGroup.isSelecte || 0),
+            testGroup.type || "groupTest",
+            testGroup.groupTest || "[]"
+          );
         }
+      });
 
-        console.log("Tests imported from tests.json");
-      } else {
-        console.log("Tests table is not empty, skipping import");
-      }
+      insertTransaction(newTestGroups);
+
+      console.log(
+        `Successfully imported ${newTestGroups.length} new test groups from newTestGroups.json:`,
+        newTestGroups.map((tg) => tg.name)
+      );
     } catch (error) {
-      console.error("Error importing tests from JSON:", error);
-    }
-  }
-  async addUniqueVisitNumber(visitId) {
-    try {
-      // First, check if the visitNumber already exists for the given visitId
-      const selectStmt = this.db.prepare(`
-        SELECT visitNumber FROM visits WHERE id = ?
-      `);
-      const result = selectStmt.get(visitId);
-
-      // If visitNumber exists, return it
-      if (result && result.visitNumber) {
-        return result.visitNumber;
-      }
-
-      // If visitNumber doesn't exist, generate a unique 6-digit number
-      const visitNumber = Math.floor(
-        100000 + Math.random() * 900000
-      ).toString();
-
-      // Update the visit record with the generated visitNumber
-      const updateStmt = this.db.prepare(`
-        UPDATE visits
-        SET visitNumber = ?
-        WHERE id = ?
-      `);
-      updateStmt.run(visitNumber, visitId);
-
-      return visitNumber;
-    } catch (error) {
-      console.error("Error updating visit with visitNumber:", error);
-      return null;
+      console.error("Error checking or importing new test groups:", error);
     }
   }
 
@@ -332,7 +365,7 @@ class LabDB {
 
   async deletePatient(id) {
     const checkVisitsStmt = await this.db.prepare(`
-      DELETE FROM visits WHERE patientID = ?
+      DELETE FROM visit_v2 WHERE patientId = ?
     `);
     const visits = await checkVisitsStmt.run(id);
 
@@ -400,8 +433,8 @@ class LabDB {
   async addDoctor(doctors) {
     try {
       const stmt = await this.db.prepare(`
-        INSERT INTO doctors (name, gender, email, phone, address, type)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO doctors (name, gender, email, phone, address, type,  doctor_fee, note)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `);
       const info = stmt.run(
         doctors.name,
@@ -409,7 +442,9 @@ class LabDB {
         doctors.email,
         doctors.phone,
         doctors.address,
-        doctors.type
+        doctors.type,
+        doctors.doctor_fee,
+        doctors.note
       );
       return { id: info.lastInsertRowid };
     } catch (error) {
@@ -428,7 +463,8 @@ class LabDB {
   }
 
   async updateDoctor(id, updates) {
-    const { name, gender, email, phone, address, type } = updates;
+    const { name, gender, email, phone, address, type, doctor_fee, note } =
+      updates;
     const stmt = await this.db.prepare(`
     UPDATE doctors
     SET 
@@ -438,85 +474,255 @@ class LabDB {
     phone = COALESCE(?, phone),
     address = COALESCE(?, address),
     type = COALESCE(?, type),
+    doctor_fee = COALESCE(?, doctor_fee),
+    note = COALESCE(?, note),
     updatedAt = CURRENT_TIMESTAMP
     WHERE id = ?
     `);
-    const info = stmt.run(name, gender, email, phone, address, type, id);
+    const info = stmt.run(
+      name,
+      gender,
+      email,
+      phone,
+      address,
+      type,
+      doctor_fee,
+      note,
+      id
+    );
 
     return { data: info.changes > 0 };
   }
 
   async addTest(test) {
-    const { name, price, normal, options, isSelecte } = test;
+    const {
+      code,
+      type = "single",
+      name_en,
+      name_ar,
+      sample_type,
+      unit,
+      ref_text,
+      meta_json = type === "single" ? { print: { layout: "single-line" } } : {},
+      price_iqd = 0,
+      is_active = true,
+      version = "v1.0.0",
+    } = test;
+
     const stmt = this.db.prepare(`
-      INSERT INTO tests (name, price, normal, options, isSelecte)
-      VALUES (?, ?, ?, ?, ?)
-    `);
+    INSERT INTO tests_catalog (
+      code, type, name_en, name_ar,
+      sample_type, unit, ref_text,
+      meta_json, price_iqd, is_active, version
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
     const info = stmt.run(
-      name,
-      price,
-      normal,
-      JSON.stringify(options),
-      isSelecte ? 1 : 0
+      code,
+      type,
+      name_en,
+      name_ar || null,
+      sample_type || null,
+      // 👇 فقط لو single نخلي unit/ref_text، غيرها null
+      type === "single" ? unit || null : null,
+      type === "single" ? ref_text || null : null,
+      typeof meta_json === "string" ? meta_json : JSON.stringify(meta_json),
+      price_iqd,
+      is_active ? 1 : 0,
+      version
     );
+
     return { id: info.lastInsertRowid };
   }
 
   async deleteTest(id) {
     const stmt = await this.db.prepare(`
-      DELETE FROM tests WHERE id = ?
+      DELETE FROM tests_catalog WHERE id = ?
     `);
     const info = stmt.run(id);
     return { success: info.changes > 0 };
   }
 
-  async editTest(id, updates) {
-    const { name, price, normal, options, isSelecte } = updates;
+  async editTest(id, updates = {}) {
+    let {
+      code,
+      type, // 'single' | 'panel' | 'composite'
+      name_en,
+      name_ar,
+      sample_type,
+      unit,
+      ref_text,
+      price_iqd,
+      is_active, // boolean or 0/1
+      version,
+    } = updates;
 
-    const stmt = await this.db.prepare(`
-      UPDATE tests
-      SET 
-        name = COALESCE(?, name),
-        price = COALESCE(?, price),
-        normal = COALESCE(?, normal),
-        options = COALESCE(?, options), 
-        isSelecte = COALESCE(?, isSelecte),
-        updatedAt = CURRENT_TIMESTAMP
-        WHERE id = ?
-    `);
-    const info = stmt.run(
-      name,
-      price,
-      normal,
-      options ? JSON.stringify(options) : "",
-      isSelecte !== undefined ? (isSelecte ? 1 : 0) : null,
-      id
-    );
-    return { success: info.changes > 0 };
+    let unitToSet = unit === undefined ? undefined : unit ?? null;
+    let refToSet = ref_text === undefined ? undefined : ref_text ?? null;
+
+    if (type !== undefined && type !== "single") {
+      if (unit === undefined) unitToSet = null;
+      if (ref_text === undefined) refToSet = null;
+    }
+
+    // is_active normalization
+    let isActiveToSet = undefined;
+    if (is_active !== undefined) {
+      isActiveToSet = is_active ? 1 : 0;
+    }
+
+    const sets = [];
+    const params = [];
+    const push = (clause, val) => {
+      sets.push(clause);
+      params.push(val);
+    };
+
+    if (code !== undefined) push("code = COALESCE(?, code)", code);
+    if (type !== undefined) push("type = COALESCE(?, type)", type);
+    if (name_en !== undefined) push("name_en = COALESCE(?, name_en)", name_en);
+    if (name_ar !== undefined)
+      push("name_ar = COALESCE(?, name_ar)", name_ar ?? null);
+    if (sample_type !== undefined)
+      push("sample_type = COALESCE(?, sample_type)", sample_type ?? null);
+    if (unitToSet !== undefined) push("unit = COALESCE(?, unit)", unitToSet);
+    if (refToSet !== undefined)
+      push("ref_text = COALESCE(?, ref_text)", refToSet);
+    if (price_iqd !== undefined)
+      push("price_iqd = COALESCE(?, price_iqd)", price_iqd);
+    if (isActiveToSet !== undefined)
+      push("is_active = COALESCE(?, is_active)", isActiveToSet);
+    if (version !== undefined)
+      push("version = COALESCE(?, version)", version ?? null);
+
+    if (sets.length === 0) {
+      return { success: true, changes: 0 };
+    }
+
+    sets.push("updated_at = CURRENT_TIMESTAMP");
+
+    const sql = `
+    UPDATE tests_catalog
+    SET ${sets.join(", ")}
+    WHERE id = ?
+  `;
+    params.push(id);
+
+    const stmt = this.db.prepare(sql);
+    const info = stmt.run(...params);
+    return { success: info.changes > 0, changes: info.changes };
+  }
+
+  async editTestMetaJson(id, meta) {
+    const row = this.db
+      .prepare(`SELECT id, type FROM tests_catalog WHERE id = ?`)
+      .get(id);
+    if (!row) {
+      throw new Error(`Test with id=${id} not found`);
+    }
+    if (row.type === "single") {
+      throw new Error(
+        `meta_json is not applicable for type 'single' (id=${id})`
+      );
+    }
+
+    let jsonString;
+    if (typeof meta === "string") {
+      try {
+        JSON.parse(meta);
+        jsonString = meta;
+      } catch (e) {
+        throw new Error("meta_json must be a valid JSON string");
+      }
+    } else {
+      // (object/array/undefined/null) → stringify
+      jsonString = JSON.stringify(meta ?? {});
+    }
+
+    // 3) نفّذ التحديث
+    const stmt = this.db.prepare(`
+    UPDATE tests_catalog
+    SET meta_json = ?, updated_at = CURRENT_TIMESTAMP
+    WHERE id = ?
+  `);
+    const info = stmt.run(jsonString, id);
+
+    return { success: info.changes > 0, changes: info.changes };
   }
 
   async getTests({ q = "", skip = 0, limit = 10 }) {
-    // Prepare the query to count the total number of tests
-    const countStmt = await this.db.prepare(`
+    try {
+      const countStmt = this.db.prepare(`
       SELECT COUNT(*) as total
-      FROM tests
-      WHERE name LIKE ?
+      FROM tests_catalog
+      WHERE code LIKE ?
+         OR name_en LIKE ?
+         OR name_ar LIKE ?
     `);
 
-    const countResult = countStmt.get(`%${q}%`);
-    const total = countResult?.total || 0;
+      const countResult = countStmt.get(`%${q}%`, `%${q}%`, `%${q}%`);
+      const total = countResult?.total || 0;
 
-    // Prepare the query to get the paginated results
-    const stmt = await this.db.prepare(`
-      SELECT * FROM tests
-      WHERE name LIKE ?
-      ORDER BY createdAt DESC
+      const stmt = this.db.prepare(`
+      SELECT id, code, type, name_en, name_ar, sample_type, unit,
+             ref_text, meta_json, price_iqd, is_active, version, created_at, updated_at
+      FROM tests_catalog
+      WHERE code LIKE ?
+         OR name_en LIKE ?
+         OR name_ar LIKE ?
+      ORDER BY created_at DESC
       LIMIT ? OFFSET ?
     `);
 
-    const tests = stmt.all(`%${q}%`, limit, skip);
+      const tests = stmt.all(`%${q}%`, `%${q}%`, `%${q}%`, limit, skip);
 
-    return { success: true, total, data: tests };
+      return { success: true, total, data: tests };
+    } catch (error) {
+      console.error("❌ Error in getCatalogTests:", error);
+      return { success: false, total: 0, data: [] };
+    }
+  }
+
+  async getTestsModal({ q = "", skip = 0, limit = 10000 }) {
+    try {
+      const countStmt = this.db.prepare(`
+      SELECT COUNT(*) as total
+      FROM tests_catalog
+      WHERE code LIKE ?
+         OR name_en LIKE ?
+         OR name_ar LIKE ?
+    `);
+
+      const countResult = countStmt.get(`%${q}%`, `%${q}%`, `%${q}%`);
+      const total = countResult?.total || 0;
+
+      const stmt = this.db.prepare(`
+      SELECT id, type, code, name_en, name_ar, price_iqd, created_at
+      FROM tests_catalog
+      WHERE code LIKE ?
+         OR name_en LIKE ?
+         OR name_ar LIKE ?
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?
+    `);
+
+      const tests = stmt.all(`%${q}%`, `%${q}%`, `%${q}%`, limit, skip);
+
+      return { success: true, total, data: tests };
+    } catch (error) {
+      console.error("❌ Error in getCatalogTests:", error);
+      return { success: false, total: 0, data: [] };
+    }
+  }
+
+  async testByID(id) {
+    const stmt = await this.db.prepare(`
+      SELECT * FROM tests_catalog WHERE id = ?
+    `);
+    const test = stmt.get(id);
+    console.log("test in db testByID", test);
+    return { success: true, data: test };
   }
 
   async addPackage(data) {
@@ -708,13 +914,168 @@ class LabDB {
     }
   }
 
-  async deleteVisit(id) {
-    const stmt = await this.db.prepare(`
-      DELETE FROM visits WHERE id = ?
+  /**
+   * Register a new visit (head + items) with pricing from tests_catalog only
+   * tests: [{ id: number }, ...]
+   */
+
+  _generateUniqueVisitNumber() {
+    // يحتاج dayjs (موجود عندك بالأعلى)
+    const today = dayjs().format("YYMMDD");
+
+    // جرّب أرقام عشوائية، وتأكد من عدم وجودها
+    for (let i = 0; i < 5; i++) {
+      const rand = Math.floor(100000 + Math.random() * 900000).toString(); // 6 أرقام
+      const vn = `${today}-${rand}`;
+      const exists = this.db
+        .prepare(`SELECT 1 FROM visit_v2 WHERE visit_number = ? LIMIT 1`)
+        .get(vn);
+      if (!exists) return vn;
+    }
+
+    // Fallback: استخدم id القادم كجزء من الرقم
+    const nextIdRow = this.db
+      .prepare(`SELECT IFNULL(MAX(id), 0) + 1 AS n FROM visit_v2`)
+      .get();
+    const seq = String(nextIdRow.n).padStart(6, "0");
+    return `${today}-${seq}`;
+  }
+
+  async registerVisitV2({
+    patient_id,
+    doctor_id = null, // optional
+    tests = [],
+    discount_iqd = 0,
+    notes = null,
+  }) {
+    if (!Array.isArray(tests) || tests.length === 0) {
+      throw new Error("No tests provided.");
+    }
+
+    // validate patient
+    const p = this.db
+      .prepare(`SELECT id FROM patients WHERE id = ?`)
+      .get(patient_id);
+    if (!p) throw new Error(`Patient ${patient_id} not found`);
+
+    // doctor_id is optional → نتجاهل إذا ما موجود
+    if (doctor_id != null) {
+      const d = this.db
+        .prepare(`SELECT id FROM doctors WHERE id = ?`)
+        .get(doctor_id);
+      if (!d) throw new Error(`Doctor ${doctor_id} not found`);
+    }
+
+    // fetch all required tests_catalog rows
+    const ids = tests.map((t) => t.id);
+    const ph = ids.map(() => "?").join(",");
+    const fetched = this.db
+      .prepare(`SELECT * FROM tests_catalog WHERE id IN (${ph})`)
+      .all(...ids);
+
+    if (fetched.length !== ids.length) {
+      throw new Error("Some test IDs not found in catalog");
+    }
+
+    // resolve items
+    const resolved = fetched.map((row) => ({
+      row,
+      unit: row.type === "single" ? row.unit ?? null : null,
+      ref_text: row.type === "single" ? row.ref_text ?? null : null,
+      meta_json: row.meta_json || "{}",
+      price_iqd: Number(row.price_iqd ?? 0),
+    }));
+
+    const gross = resolved.reduce((s, x) => s + x.price_iqd, 0);
+    const discount = Math.max(0, Number(discount_iqd || 0));
+    const endPrice = Math.max(0, gross - discount);
+    const visit_number = this._generateUniqueVisitNumber();
+
+    const trx = this.db.transaction(() => {
+      // insert visit head
+      const vInfo = this.db
+        .prepare(
+          `
+      INSERT INTO visit_v2
+        (visit_number, patient_id, doctor_id, status, notes,
+         gross_price_iqd, discount_iqd, end_price_iqd,
+         paid_iqd, payment_status, created_at, updated_at)
+      VALUES
+        (?, ?, ?, 'PENDING', ?, ?, ?, ?, 0, 'UNPAID', datetime('now'), datetime('now'))
+    `
+        )
+        .run(
+          visit_number,
+          patient_id,
+          doctor_id,
+          notes,
+          gross,
+          discount,
+          endPrice
+        );
+      const visit_id = vInfo.lastInsertRowid;
+
+      // insert items
+      const insItem = this.db.prepare(`
+      INSERT INTO visit_item_v2
+        (visit_id, test_id, code, type, name_en, name_ar, sample_type,
+         unit, ref_text, price_iqd, is_active_catalog, meta_json,
+         item_status, created_at, updated_at)
+      VALUES
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', datetime('now'), datetime('now'))
     `);
 
-    const info = stmt.run(id);
-    return { success: info.changes > 0 };
+      const createdItems = [];
+      for (const x of resolved) {
+        const t = x.row;
+        const info = insItem.run(
+          visit_id,
+          t.id,
+          t.code,
+          t.type,
+          t.name_en,
+          t.name_ar,
+          t.sample_type,
+          x.unit,
+          x.ref_text,
+          x.price_iqd,
+          t.is_active ?? 1,
+          x.meta_json
+        );
+        createdItems.push({
+          visit_item_id: info.lastInsertRowid,
+          test_id: t.id,
+          code: t.code,
+          type: t.type,
+          price_iqd: x.price_iqd,
+        });
+      }
+
+      return {
+        visit_id,
+        visit_number,
+        gross_price_iqd: gross,
+        discount_iqd: discount,
+        end_price_iqd: endPrice,
+        items: createdItems,
+      };
+    });
+
+    return { success: true, ...trx() };
+  }
+
+  async deleteVisit(id) {
+    try {
+      // make sure FK cascades are enforced
+      this.db.prepare(`PRAGMA foreign_keys = ON`).run();
+
+      const stmt = this.db.prepare(`DELETE FROM visit_v2 WHERE id = ?`);
+      const info = stmt.run(id);
+
+      return { success: info.changes > 0, deleted: info.changes };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   }
 
   async getVisits({
@@ -767,7 +1128,7 @@ class LabDB {
         d.type as doctorType
       FROM visits v
       JOIN patients p ON v.patientID = p.id
-      LEFT JOIN doctors d ON v.doctorID = d.id
+      LEFT JOIN doctors d ON v.doctorId = d.id
       WHERE ${whereClauses}
       ORDER BY v.createdAt DESC
       LIMIT ${limit} OFFSET ${skip}
@@ -812,6 +1173,433 @@ class LabDB {
     return { success: true, total, data: results };
   }
 
+  async getVisitsV2({
+    q = "",
+    skip = 0,
+    limit = 10,
+    startDate,
+    endDate,
+    status,
+    minAge,
+    maxAge,
+    testId,
+    gender,
+  } = {}) {
+    const whereClauses = [
+      `(p.name LIKE ? OR v.visit_number LIKE ?)`,
+      startDate
+        ? `DATE(v.created_at) >= '${dayjs(startDate)
+            .startOf("day")
+            .format("YYYY-MM-DD")}'`
+        : "",
+      endDate
+        ? `DATE(v.created_at) <= '${dayjs(endDate)
+            .endOf("day")
+            .format("YYYY-MM-DD")}'`
+        : "",
+      status ? `v.status = ?` : "",
+      gender ? `p.gender = '${gender}'` : "",
+      minAge
+        ? `(CAST(strftime('%Y','now') AS INT) - CAST(strftime('%Y',p.birth) AS INT)) >= ${Number(
+            minAge
+          )}`
+        : "",
+      maxAge
+        ? `(CAST(strftime('%Y','now') AS INT) - CAST(strftime('%Y',p.birth) AS INT)) <= ${Number(
+            maxAge
+          )}`
+        : "",
+      testId
+        ? `EXISTS (SELECT 1 FROM visit_item_v2 vi WHERE vi.visit_id = v.id AND vi.test_id = ${Number(
+            testId
+          )})`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" AND ");
+
+    // Count
+    const countSql = `
+    SELECT COUNT(*) as total
+    FROM visit_v2 v
+    JOIN patients p ON v.patient_id = p.id
+    LEFT JOIN doctors d ON v.doctor_id = d.id
+    WHERE ${whereClauses}
+  `;
+    const countParams = [`%${q}%`, `%${q}%`];
+    if (status) countParams.push(status);
+
+    const countStmt = this.db.prepare(countSql);
+    const countResult = countStmt.get(...countParams);
+    const total = countResult?.total || 0;
+
+    // Visits
+    const rowsSql = `
+    SELECT 
+      v.*,
+      p.name  AS patientName,
+      p.gender AS patientGender,
+      p.phone AS patientPhone,
+      p.email AS patientEmail,
+      p.birth AS patientBirth,
+      d.id    AS doctorID,
+      d.name  AS doctorName,
+      d.gender AS doctorGender,
+      d.phone  AS doctorPhone,
+      d.email  AS doctorEmail,
+      d.address AS doctorAddress,
+      d.type    AS doctorType
+    FROM visit_v2 v
+    JOIN patients p ON v.patient_id = p.id
+    LEFT JOIN doctors d ON v.doctor_id = d.id
+    WHERE ${whereClauses}
+    ORDER BY v.created_at DESC
+    LIMIT ${limit} OFFSET ${skip}
+  `;
+    const rowsParams = [`%${q}%`, `%${q}%`];
+    if (status) rowsParams.push(status);
+
+    const visitsHdr = this.db.prepare(rowsSql).all(...rowsParams);
+
+    // Items
+    let itemsMap = {};
+    const visitIds = visitsHdr.map((v) => v.id);
+    if (visitIds.length > 0) {
+      const placeholders = visitIds.map(() => "?").join(",");
+      const items = this.db
+        .prepare(
+          `
+        SELECT 
+          i.visit_id,
+          i.id AS visit_item_id,
+          i.test_id,
+          i.code,
+          i.type,
+          i.name_en,
+          i.name_ar,
+          i.sample_type,
+          i.unit,
+          i.ref_text,
+          i.price_iqd,
+          i.meta_json,
+          i.result_json,
+          i.created_at,
+          i.updated_at
+        FROM visit_item_v2 i
+        WHERE i.visit_id IN (${placeholders})
+        ORDER BY i.id ASC
+      `
+        )
+        .all(...visitIds);
+
+      itemsMap = items.reduce((acc, it) => {
+        if (!acc[it.visit_id]) acc[it.visit_id] = [];
+        acc[it.visit_id].push({
+          visit_item_id: it.visit_item_id,
+          test_id: it.test_id,
+          code: it.code,
+          type: it.type,
+          name_en: it.name_en,
+          name_ar: it.name_ar,
+          sample_type: it.sample_type,
+          unit: it.unit,
+          ref_text: it.ref_text,
+          price_iqd: it.price_iqd,
+          meta_json: it.meta_json,
+          result_json: it.result_json ? JSON.parse(it.result_json) : null,
+          created_at: it.created_at,
+          updated_at: it.updated_at,
+        });
+        return acc;
+      }, {});
+    }
+
+    // Result
+    const results = visitsHdr.map((el) => {
+      const doctorData = el?.doctorID
+        ? {
+            id: el.doctorID,
+            name: el.doctorName,
+            gender: el.doctorGender,
+            phone: el.doctorPhone,
+            email: el.doctorEmail,
+            address: el.doctorAddress,
+            type: el.doctorType,
+          }
+        : null;
+
+      return {
+        id: el.id,
+        visitNumber: el.visit_number,
+        status: el.status,
+        notes: el.notes,
+        grossPrice: el.gross_price_iqd,
+        discount: el.discount_iqd,
+        endPrice: el.end_price_iqd,
+        paid: el.paid_iqd,
+        paymentStatus: el.payment_status,
+
+        createdAt: el.created_at,
+        updatedAt: el.updated_at,
+
+        patient: {
+          id: el.patient_id,
+          name: el.patientName,
+          gender: el.patientGender,
+          phone: el.patientPhone,
+          email: el.patientEmail,
+          birth: el.patientBirth,
+        },
+
+        doctor: doctorData,
+        tests: itemsMap[el.id] || [],
+      };
+    });
+
+    return { success: true, total, data: results };
+  }
+
+  async saveVisitResults(items) {
+    // items: [{ visit_item_id, result_json, item_status }, ...]
+    if (!Array.isArray(items) || items.length === 0) {
+      return { success: true, updated: 0 };
+    }
+
+    // 1) infer visit_id from first item
+    const firstId = items[0].visit_item_id;
+    const row = this.db
+      .prepare(`SELECT visit_id FROM visit_item_v2 WHERE id = ?`)
+      .get(firstId);
+    if (!row) throw new Error(`visit_item_v2 not found: ${firstId}`);
+    const visit_id = row.visit_id;
+
+    // 2) ensure all items belong to the same visit (guard)
+    const inClause = items.map(() => "?").join(",");
+    const parentCheck = this.db
+      .prepare(
+        `SELECT COUNT(*) AS c FROM visit_item_v2 WHERE id IN (${inClause}) AND visit_id = ?`
+      )
+      .get(...items.map((i) => i.visit_item_id), visit_id);
+    if (parentCheck.c !== items.length) {
+      throw new Error(
+        `Some items do not belong to the same visit (${visit_id}).`
+      );
+    }
+
+    // 3) batch update
+    const upd = this.db.prepare(`
+    UPDATE visit_item_v2
+       SET result_json = ?, 
+           updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?
+  `);
+
+    const tx = this.db.transaction((rows) => {
+      rows.forEach(({ visit_item_id, result_json }) => {
+        const payload = JSON.stringify(result_json || {});
+        upd.run(payload, visit_item_id);
+      });
+    });
+
+    tx(items);
+
+    // 4) recalc parent status
+    await this.updateVisitStatusV2(visit_id);
+
+    return { success: true, updated: items.length, visit_id };
+  }
+
+  // helper: نتيجة ذات معنى؟
+  _isMeaningfulResultJSON(val) {
+    if (!val || typeof val !== "object") return false;
+
+    // single
+    if ("result" in val) {
+      return String(val.result ?? "").trim() !== "";
+    }
+
+    // panel
+    if ("items" in val && val.items && typeof val.items === "object") {
+      const cells = Object.values(val.items);
+      return cells.some((c) => String(c?.result ?? "").trim() !== "");
+    }
+
+    // composite
+    if ("sections" in val && val.sections && typeof val.sections === "object") {
+      const secs = Object.values(val.sections);
+      return secs.some((fields) =>
+        Object.values(fields || {}).some((v) => String(v ?? "").trim() !== "")
+      );
+    }
+
+    return false;
+  }
+
+  async updateVisitStatusV2(visit_id) {
+    // 1) جيب كل الآيتمات للزيارة
+    const items = this.db
+      .prepare(
+        `
+    SELECT id, type, result_json
+    FROM visit_item_v2
+    WHERE visit_id = ?
+  `
+      )
+      .all(visit_id);
+
+    const total = items.length;
+    if (total === 0) {
+      // ماكو تحاليل → نعتبرها PENDING
+      this.db
+        .prepare(
+          `
+      UPDATE visit_v2
+         SET status = 'PENDING',
+             updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?
+    `
+        )
+        .run(visit_id);
+      return { success: true, status: "PENDING", total, completed: 0 };
+    }
+
+    // 2) عدّ التحاليل اللي عدها نتيجة ذات معنى
+    let completed = 0;
+    for (const it of items) {
+      let parsed = null;
+      if (it.result_json && typeof it.result_json === "string") {
+        try {
+          parsed = JSON.parse(it.result_json);
+        } catch {
+          parsed = null;
+        }
+      } else if (it.result_json && typeof it.result_json === "object") {
+        parsed = it.result_json;
+      }
+      if (this._isMeaningfulResultJSON(parsed)) completed += 1;
+    }
+
+    // 3) حدد حالة الزيارة
+    let status = "PENDING";
+    if (completed === 0) status = "PENDING";
+    else if (completed === total) status = "COMPLETED";
+    else status = "PARTIAL";
+
+    // 4) حدّث الزيارة
+    this.db
+      .prepare(
+        `
+    UPDATE visit_v2
+       SET status = ?, updated_at = CURRENT_TIMESTAMP
+     WHERE id = ?
+  `
+      )
+      .run(status, visit_id);
+
+    return { success: true, status, total, completed };
+  }
+
+  async getVisitTotals({
+    startDate,
+    endDate,
+    status,
+    gender, // 'male' | 'female' | 'm' | 'f' | ['male','female']
+    minAge, // أقدم عمر (سنوات)
+    maxAge, // أصغر عمر (سنوات)
+    testId,
+  } = {}) {
+    // --- Normalize gender to array of 'male'/'female'
+    let genderList = [];
+    if (Array.isArray(gender)) {
+      genderList = gender
+        .map((g) => String(g).trim().toLowerCase())
+        .map((g) => (g === "m" ? "male" : g === "f" ? "female" : g))
+        .filter((g) => g === "male" || g === "female");
+    } else if (typeof gender === "string" && gender.trim()) {
+      const g = gender.trim().toLowerCase();
+      const norm = g === "m" ? "male" : g === "f" ? "female" : g;
+      if (norm === "male" || norm === "female") genderList = [norm];
+    }
+
+    const needPatientJoin =
+      genderList.length > 0 ||
+      Number.isFinite(minAge) ||
+      Number.isFinite(maxAge);
+
+    const where = [];
+    const params = [];
+
+    // Date range on visit.created_at
+    if (startDate) {
+      where.push("datetime(v.created_at) >= datetime(?)");
+      params.push(startDate);
+    }
+    if (endDate) {
+      where.push("datetime(v.created_at) <= datetime(?)");
+      params.push(endDate);
+    }
+
+    // Visit status
+    if (status) {
+      where.push("v.status = ?");
+      params.push(status);
+    }
+
+    // Gender filter
+    if (genderList.length > 0) {
+      const ph = genderList.map(() => "?").join(",");
+      where.push(`LOWER(p.gender) IN (${ph})`);
+      params.push(...genderList);
+    }
+
+    // Age filters (using precise day-based calc via julianday)
+    // NOTE: إذا عندك p.birth = NULL راح تُستبعد عندما تطلب عمر
+    if (Number.isFinite(minAge)) {
+      where.push(`( (julianday('now') - julianday(p.birth)) / 365.25 ) >= ?`);
+      params.push(Number(minAge));
+    }
+    if (Number.isFinite(maxAge)) {
+      where.push(`( (julianday('now') - julianday(p.birth)) / 365.25 ) <= ?`);
+      params.push(Number(maxAge));
+    }
+
+    // testId filter
+    if (Number.isFinite(testId)) {
+      where.push(`
+      EXISTS (
+        SELECT 1
+        FROM visit_item_v2 vi
+        WHERE vi.visit_id = v.id
+          AND vi.test_id = ?
+      )
+    `);
+      params.push(Number(testId));
+    }
+
+    const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+
+    const sql = `
+    SELECT
+      COALESCE(SUM(v.gross_price_iqd), 0) AS subTotalAmount,
+      COALESCE(SUM(v.discount_iqd), 0)    AS totalDiscount,
+      COALESCE(SUM(v.end_price_iqd), 0)   AS totalAmount,
+      COUNT(*)                            AS totalVisits
+    FROM visit_v2 v
+    ${needPatientJoin ? "JOIN patients p ON p.id = v.patient_id" : ""}
+    ${whereSql}
+  `;
+
+    const row = this.db.prepare(sql).get(...params) || {};
+
+    return {
+      success: true,
+      subTotalAmount: Number(row.subTotalAmount || 0),
+      totalDiscount: Number(row.totalDiscount || 0),
+      totalAmount: Number(row.totalAmount || 0),
+      totalVisits: Number(row.totalVisits || 0),
+    };
+  }
+
   async getTestNormalValues(testType, testsFromVisit) {
     let testIds =
       testType === "PACKAGE"
@@ -842,32 +1630,112 @@ class LabDB {
   }
 
   async getTotalVisits({ startDate, endDate }) {
-    const whereClauses = [
-      startDate
-        ? `DATE(v.createdAt) >= '${dayjs(startDate)
-            .startOf("day")
-            .toISOString()}'`
-        : "",
-      endDate
-        ? `DATE(v.createdAt) <= '${dayjs(endDate)
-            .startOf("day")
-            .toISOString()}'`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" AND ");
+    try {
+      let query = `SELECT COUNT(*) as total FROM visits v`;
+      let params = [];
 
-    const countStmt = await this.db.prepare(`
-      SELECT COUNT(*) as total
-      FROM visits v
-      JOIN patients p ON v.patientID = p.id
-      WHERE ${whereClauses}
-    `);
+      const whereClauses = [];
 
-    const countResult = countStmt.get();
-    const total = countResult?.total || 0;
+      if (startDate) {
+        whereClauses.push(`strftime('%Y-%m-%d', v.createdAt) >= ?`);
+        params.push(dayjs(startDate).format("YYYY-MM-DD"));
+      }
 
-    return { success: true, total };
+      if (endDate) {
+        whereClauses.push(`strftime('%Y-%m-%d', v.createdAt) <= ?`);
+        params.push(dayjs(endDate).format("YYYY-MM-DD"));
+      }
+
+      if (whereClauses.length > 0) {
+        query += ` WHERE ${whereClauses.join(" AND ")}`;
+      }
+
+      const countStmt = await this.db.prepare(query);
+      const countResult = countStmt.get(...params);
+      const total = countResult?.total || 0;
+
+      console.log("✅ getTotalVisits result:", { query, params, total });
+
+      return { success: true, total };
+    } catch (error) {
+      console.error("Error getting total visits:", error);
+      return { success: false, total: 0 };
+    }
+  }
+
+  async getTotalPatients() {
+    try {
+      // First, let's see what patients exist
+      const allPatientsStmt = await this.db.prepare(`
+        SELECT id, name FROM patients LIMIT 5
+      `);
+      const allPatients = allPatientsStmt.all();
+      console.log("🔍 Patients in DB:", allPatients);
+
+      const countStmt = await this.db.prepare(`
+        SELECT COUNT(*) as total FROM patients
+      `);
+
+      const countResult = countStmt.get();
+      const total = countResult?.total || 0;
+
+      console.log("✅ getTotalPatients result:", total);
+
+      return { success: true, total };
+    } catch (error) {
+      console.error("❌ Error getting total patients:", error);
+      return { success: false, total: 0 };
+    }
+  }
+
+  async getTodayVisits() {
+    try {
+      // Use strftime for proper date comparison in SQLite
+      const today = dayjs().format("YYYY-MM-DD");
+
+      const countStmt = await this.db.prepare(`
+        SELECT COUNT(*) as total
+        FROM visit_v2 v
+        WHERE strftime('%Y-%m-%d', v.created_at) = ?
+      `);
+
+      const countResult = countStmt.get(today);
+      const total = countResult?.total || 0;
+
+      console.log("✅ getTodayVisits result:", { today, total });
+
+      return { success: true, total };
+    } catch (error) {
+      console.error("❌ Error getting today's visits:", error);
+      return { success: false, total: 0 };
+    }
+  }
+
+  async getPendingResults() {
+    try {
+      // First, let's see what visits exist and their statuses
+      // const allVisitsStmt = await this.db.prepare(`
+      //   SELECT id, status, strftime('%Y-%m-%d', created_at) as date FROM visit_v2 LIMIT 10
+      // `);
+      // const allVisits = allVisitsStmt.all();
+      // console.log("🔍 Visits in DB:", allVisits);
+
+      const countStmt = await this.db.prepare(`
+        SELECT COUNT(*) as total
+        FROM visit_v2 v
+        WHERE v.status = 'PENDING'
+      `);
+
+      const countResult = countStmt.get();
+      const total = countResult?.total || 0;
+
+      console.log("✅ getPendingResults result:", total);
+
+      return { success: true, total };
+    } catch (error) {
+      console.error("❌ Error getting pending results:", error);
+      return { success: false, total: 0 };
+    }
   }
 
   async getVisitByPatient(patientId) {
@@ -886,14 +1754,67 @@ class LabDB {
         d.email as doctorEmail, 
         d.address as doctorAddress, 
         d.type as doctorType
-      FROM visits v
-      JOIN patients p ON v.patientID = p.id
-      LEFT JOIN doctors d ON v.doctorID = d.id
-      WHERE v.patientID = ?
-      ORDER BY v.createdAt DESC
+      FROM visit_v2 v
+      JOIN patients p ON v.patient_id = p.id
+      LEFT JOIN doctors d ON v.doctor_id = d.id
+      WHERE v.patient_id = ?
+      ORDER BY v.created_at DESC
     `);
 
     const visits = stmt.all(patientId);
+
+    let itemsMap = {};
+    const visitIds = visits.map((v) => v.id);
+    if (visitIds.length > 0) {
+      const placeholders = visitIds.map(() => "?").join(",");
+      const items = this.db
+        .prepare(
+          `
+        SELECT 
+          i.visit_id,
+          i.id AS visit_item_id,
+          i.test_id,
+          i.code,
+          i.type,
+          i.name_en,
+          i.name_ar,
+          i.sample_type,
+          i.unit,
+          i.ref_text,
+          i.price_iqd,
+          i.meta_json,
+          i.result_json,
+          i.created_at,
+          i.updated_at
+        FROM visit_item_v2 i
+        WHERE i.visit_id IN (${placeholders})
+        ORDER BY i.id ASC
+      `
+        )
+        .all(...visitIds);
+
+      itemsMap = items.reduce((acc, it) => {
+        if (!acc[it.visit_id]) acc[it.visit_id] = [];
+        acc[it.visit_id].push({
+          id: it.test_id,
+          visit_item_id: it.visit_item_id,
+          code: it.code,
+          type: it.type,
+          title: it.name_en,
+          name_en: it.name_en,
+          name_ar: it.name_ar,
+          sample_type: it.sample_type,
+          unit: it.unit,
+          ref_text: it.ref_text,
+          price_iqd: it.price_iqd,
+          meta_json: it.meta_json,
+          result_json: it.result_json ? JSON.parse(it.result_json) : null,
+          created_at: it.created_at,
+          updated_at: it.updated_at,
+        });
+        return acc;
+      }, {});
+    }
 
     const results = visits?.map((el) => {
       const doctorData = el?.doctorID
@@ -910,15 +1831,15 @@ class LabDB {
 
       return {
         id: el?.id,
-        tests: JSON.parse(el?.tests) || [],
-        testType: el?.testType,
+        tests: itemsMap[el.id] || [],
+        testType: "CUSTOME", // Default to CUSTOME for new v2 visits
         status: el?.status,
-        discount: el?.discount,
-        createdAt: el?.createdAt,
-        updatedAt: el?.updatedAt,
-        visitNumber: el?.visitNumber,
+        discount: el?.discount_iqd,
+        createdAt: el?.created_at,
+        updatedAt: el?.updated_at,
+        visitNumber: el?.visit_number,
         patient: {
-          id: el?.patientID,
+          id: el?.patient_id,
           name: el?.patientName,
           gender: el?.patientGender,
           phone: el?.patientPhone,
@@ -933,113 +1854,287 @@ class LabDB {
   }
 
   async getVisitByDoctor(doctorId, startDate = null, endDate = null) {
-    const whereClauses = [
-      `v.doctorID = ?`, // always filter by doctorId
-      startDate
-        ? `DATE(v.createdAt) >= '${dayjs(startDate)
-            .startOf("day")
-            .toISOString()}'`
-        : "",
-      endDate
-        ? `DATE(v.createdAt) <= '${dayjs(endDate)
-            .endOf("day")
-            .toISOString()}'`
-        : "",
-    ]
-      .filter(Boolean)
-      .join(" AND ");
+    try {
+      const where = [`v.doctor_id = ?`]; // always filter by doctor_id
+      const params = [doctorId];
 
-    const stmt = await this.db.prepare(`
-    SELECT 
-      v.*, 
-      p.name as patientName, 
-      p.gender as patientGender, 
-      p.phone as patientPhone, 
-      p.email as patientEmail,  
-      p.birth as patientBirth,
-      d.id as doctorID,
-      d.name as doctorName, 
-      d.gender as doctorGender, 
-      d.phone as doctorPhone, 
-      d.email as doctorEmail, 
-      d.address as doctorAddress, 
-      d.type as doctorType
-    FROM visits v
-    JOIN patients p ON v.patientID = p.id
-    LEFT JOIN doctors d ON v.doctorID = d.id
-    WHERE ${whereClauses}
-    ORDER BY v.createdAt DESC
-  `);
+      if (startDate) {
+        where.push(`DATE(v.created_at) >= DATE(?)`);
+        params.push(dayjs(startDate).startOf("day").format("YYYY-MM-DD"));
+      }
+      if (endDate) {
+        where.push(`DATE(v.created_at) <= DATE(?)`);
+        params.push(dayjs(endDate).endOf("day").format("YYYY-MM-DD"));
+      }
 
-    const visits = stmt.all(doctorId);
+      const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
-    const results = visits?.map((el) => {
-      const doctorData = el?.doctorID
-        ? {
-            id: el?.doctorID,
-            name: el?.doctorName,
-            gender: el?.doctorGender,
-            phone: el?.doctorPhone,
-            email: el?.doctorEmail,
-            address: el?.doctorAddress,
-            type: el?.doctorType,
-          }
-        : null;
+      // 1) نجيب الزيارات مع معلومات المريض والدكتور
+      const stmt = this.db.prepare(`
+      SELECT 
+        v.*,
+        p.name   AS patientName, 
+        p.gender AS patientGender, 
+        p.phone  AS patientPhone, 
+        p.email  AS patientEmail,  
+        p.birth  AS patientBirth,
+        d.id     AS doctorID,
+        d.name   AS doctorName, 
+        d.gender AS doctorGender, 
+        d.phone  AS doctorPhone, 
+        d.email  AS doctorEmail, 
+        d.address AS doctorAddress, 
+        d.type    AS doctorType,
+        d.doctor_fee AS doctorFee
+      FROM visit_v2 v
+      JOIN patients p ON v.patient_id = p.id
+      LEFT JOIN doctors d ON v.doctor_id = d.id
+      ${whereSql}
+      ORDER BY v.created_at DESC
+    `);
 
-      return {
-        id: el?.id,
-        tests: JSON.parse(el?.tests) || [],
-        testType: el?.testType,
-        status: el?.status,
-        discount: el?.discount,
-        createdAt: el?.createdAt,
-        updatedAt: el?.updatedAt,
-        visitNumber: el?.visitNumber,
-        patient: {
-          id: el?.patientID,
-          name: el?.patientName,
-          gender: el?.patientGender,
-          phone: el?.patientPhone,
-          email: el?.patientEmail,
-          birth: el?.patientBirth,
-        },
-        doctor: doctorData,
-      };
-    });
+      const visitsHdr = stmt.all(...params);
 
-    return { success: true, data: results };
+      // 2) نجيب الاختبارات لكل زيارة
+      let itemsMap = {};
+      const visitIds = visitsHdr.map((v) => v.id);
+      if (visitIds.length > 0) {
+        const placeholders = visitIds.map(() => "?").join(",");
+        const items = this.db
+          .prepare(
+            `
+          SELECT 
+            i.visit_id,
+            i.id AS visit_item_id,
+            i.test_id,
+            i.code,
+            i.type,
+            i.name_en,
+            i.name_ar,
+            i.sample_type,
+            i.unit,
+            i.ref_text,
+            i.price_iqd,
+            i.meta_json,
+            i.result_json,
+            i.created_at,
+            i.updated_at
+          FROM visit_item_v2 i
+          WHERE i.visit_id IN (${placeholders})
+          ORDER BY i.id ASC
+        `
+          )
+          .all(...visitIds);
+
+        itemsMap = items.reduce((acc, it) => {
+          if (!acc[it.visit_id]) acc[it.visit_id] = [];
+          acc[it.visit_id].push({
+            visit_item_id: it.visit_item_id,
+            test_id: it.test_id,
+            code: it.code,
+            type: it.type,
+            name_en: it.name_en,
+            name_ar: it.name_ar,
+            sample_type: it.sample_type,
+            unit: it.unit,
+            ref_text: it.ref_text,
+            price_iqd: it.price_iqd,
+            meta_json: it.meta_json,
+            result_json: it.result_json ? JSON.parse(it.result_json) : null,
+            created_at: it.created_at,
+            updated_at: it.updated_at,
+          });
+          return acc;
+        }, {});
+      }
+
+      // 3) نكوّن النتيجة النهائية
+      const results = visitsHdr.map((el) => {
+        const doctorData = el?.doctorID
+          ? {
+              id: el?.doctorID,
+              name: el?.doctorName,
+              gender: el?.doctorGender,
+              phone: el?.doctorPhone,
+              email: el?.doctorEmail,
+              address: el?.doctorAddress,
+              type: el?.doctorType,
+              doctor_fee: el?.doctorFee || 0,
+            }
+          : null;
+
+        return {
+          ...el,
+
+          patient: {
+            id: el.patient_id,
+            name: el.patientName,
+            gender: el.patientGender,
+            phone: el.patientPhone,
+            email: el.patientEmail,
+            birth: el.patientBirth,
+          },
+
+          doctor: doctorData,
+
+          tests: itemsMap[el.id] || [],
+        };
+      });
+
+      return { success: true, data: results };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   }
 
-  async updateVisit(id, data) {
-    const { patientID, doctorID, status, testType, tests, discount } = data;
+  async updateVisitV2(id, updates = {}) {
+    const {
+      patient_id,
+      doctor_id,
+      discount_iqd,
+      tests, // optional: [{id}, ...] => replace items
+    } = updates;
+    try {
+      // تأكد الزيارة موجودة
+      const visitRow = this.db
+        .prepare(`SELECT * FROM visit_v2 WHERE id = ?`)
+        .get(id);
+      if (!visitRow) {
+        throw new Error(`visit_v2 not found: ${id}`);
+      }
 
-    let newTests = await this.getTestNormalValues(testType, tests);
+      const tx = this.db.transaction(() => {
+        // 1) إذا انطيت tests، نستبدل قائمة التحاليل بالكامل (diff add/remove)
+        if (Array.isArray(tests)) {
+          const incomingIds = tests
+            .map((t) => Number(t?.id))
+            .filter((n) => Number.isFinite(n));
 
-    const testsStr = JSON.stringify(newTests);
+          // التحاليل الحالية
+          const current = this.db
+            .prepare(`SELECT test_id FROM visit_item_v2 WHERE visit_id = ?`)
+            .all(id)
+            .map((r) => r.test_id);
 
-    const stmt = this.db.prepare(`
-      UPDATE visits
-      SET 
-        patientID = COALESCE(?, patientID),
-        doctorID = COALESCE(?, doctorID),
-        status = COALESCE(?, status),
-        testType = COALESCE(?, testType),
-        tests = COALESCE(?, tests),
-        discount = COALESCE(?, discount),
-        updatedAt = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `);
-    const info = stmt.run(
-      patientID,
-      doctorID,
-      status,
-      testType,
-      testsStr,
-      discount,
-      id
-    );
+          const toAdd = incomingIds.filter((x) => !current.includes(x));
+          const toDel = current.filter((x) => !incomingIds.includes(x));
 
-    return { success: info.changes > 0, newTests };
+          // احذف الزائد
+          if (toDel.length) {
+            const qMarks = toDel.map(() => "?").join(",");
+            this.db
+              .prepare(
+                `DELETE FROM visit_item_v2 WHERE visit_id = ? AND test_id IN (${qMarks})`
+              )
+              .run(id, ...toDel);
+          }
+
+          // أضف الجديد: ناخذ سنابشوت من tests_catalog
+          if (toAdd.length) {
+            const qMarks = toAdd.map(() => "?").join(",");
+            const tcRows = this.db
+              .prepare(
+                `SELECT id AS test_id, code, type, name_en, name_ar, sample_type, unit, ref_text, price_iqd, is_active AS is_active_catalog, meta_json
+             FROM tests_catalog
+            WHERE id IN (${qMarks})`
+              )
+              .all(...toAdd);
+
+            const ins = this.db.prepare(`
+              INSERT INTO visit_item_v2
+              (visit_id, test_id, code, type, name_en, name_ar, sample_type, unit, ref_text,
+              price_iqd, is_active_catalog, meta_json,
+              result_value, result_numeric, result_unit, result_json, is_abnormal,
+              technician_name, method, completed_at, printed_at)
+              VALUES
+              (?,?,?,?,?,?,?,?,?,
+              ?,?,?,?,?,?,?,
+              0,
+              NULL,NULL,NULL,NULL)
+            `);
+
+            tcRows.forEach((r) => {
+              ins.run(
+                id, // visit_id
+                r.test_id, // test_id
+                r.code, // code
+                r.type, // type
+                r.name_en, // name_en
+                r.name_ar || null, // name_ar
+                r.sample_type || null, // sample_type
+                r.unit || null, // unit
+                r.ref_text || null, // ref_text
+
+                Number(r.price_iqd || 0), // price_iqd
+                Number(r.is_active_catalog || 1), // is_active_catalog
+                r.meta_json || "{}", // meta_json
+                null, // result_value
+                null, // result_numeric
+                null, // result_unit
+                null // result_json
+                // ثم الثوابت: 0, NULL, NULL, NULL, NULL
+              );
+            });
+          }
+        }
+
+        // 2) أعد حساب الأسعار (gross/end)
+        const sumRow = this.db
+          .prepare(
+            `SELECT COALESCE(SUM(price_iqd),0) AS gross FROM visit_item_v2 WHERE visit_id = ?`
+          )
+          .get(id);
+        const gross = Number(sumRow?.gross || 0);
+        const discount =
+          discount_iqd !== undefined
+            ? Math.max(0, Number(discount_iqd) || 0)
+            : Number(visitRow.discount_iqd || 0);
+        const endPrice = Math.max(0, gross - discount);
+
+        // 3) نبني UPDATE ديناميكي للزيارة
+        const sets = [];
+        const params = [];
+        const push = (clause, val) => {
+          sets.push(clause);
+          params.push(val);
+        };
+
+        if (patient_id !== undefined)
+          push(`patient_id = COALESCE(?, patient_id)`, patient_id);
+        if (doctor_id !== undefined)
+          push(`doctor_id  = ?`, doctor_id === null ? null : doctor_id);
+
+        // الأسعار دائمًا تتحدث بعد أي تغيير
+        push(`gross_price_iqd = ?`, gross);
+        push(`discount_iqd    = ?`, discount);
+        push(`end_price_iqd   = ?`, endPrice);
+
+        sets.push(`updated_at = CURRENT_TIMESTAMP`);
+
+        const sql = `UPDATE visit_v2 SET ${sets.join(", ")} WHERE id = ?`;
+        this.db.prepare(sql).run(...params, id);
+
+        return { gross, discount, endPrice };
+      });
+
+      const res = tx();
+      await this.updateVisitStatusV2(id);
+
+      return {
+        success: true,
+        totals: {
+          gross: res.gross,
+          discount: res.discount,
+          endPrice: res.endPrice,
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: "Update failed !.",
+      };
+    }
   }
 
   async getVisitDetails(visitId) {
@@ -1052,8 +2147,8 @@ class LabDB {
 
       const stmt = await this.db.prepare(`
         SELECT v.*, p.name as patientName
-        FROM visits v
-        JOIN patients p ON v.patientID = p.id
+        FROM visit_v2 v
+        JOIN patients p ON v.patientId = p.id
         WHERE v.id = ?
       `);
 
@@ -1074,25 +2169,6 @@ class LabDB {
     } catch (error) {
       console.error("Error fetching visit details:", error);
       return null;
-    }
-  }
-
-  async exportAllData() {
-    try {
-      const patients = await this.getPatients({ q: "", skip: 0, limit: 1000 });
-      const visits = await this.getVisits({ q: "", skip: 0, limit: 1000 });
-      const tests = await this.getTests({ q: "", skip: 0, limit: 1000 });
-      const packages = await this.getPackages({ q: "", skip: 0, limit: 1000 });
-
-      return {
-        patients: patients,
-        visits: visits,
-        tests: tests,
-        packages: packages,
-      };
-    } catch (error) {
-      console.error("Error exporting all data:", error);
-      throw error;
     }
   }
 

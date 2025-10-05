@@ -18,6 +18,7 @@ import { useTranslation } from "react-i18next";
 import { useAppTheme } from "./hooks/useAppThem";
 import DoctorsScreen from "./screens/DoctorsScreen";
 import { usePlan } from "./hooks/usePlan";
+import VisitsScreen from "./screens/VisitsScreen";
 const { darkAlgorithm, defaultAlgorithm } = theme;
 
 const { ipcRenderer } = window.require("electron");
@@ -86,6 +87,7 @@ function App() {
         <MainContainerV2>
           <Routes>
             <Route exact path="/" element={<HomeScreen />} />
+            <Route exact path="/visits" element={<VisitsScreen />} />
             <Route path="/patients" element={<PatientsScreen />} />
             <Route path="/tests" element={<TestsScreen />} />
             <Route path="/groups" element={<GroupsScreen />} />

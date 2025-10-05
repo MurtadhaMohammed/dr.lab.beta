@@ -3,10 +3,11 @@ import {
   Button,
   Pagination,
   Popconfirm,
-  Popover,
   Space,
   Table,
   message,
+  Tag,
+  Typography,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
@@ -16,62 +17,103 @@ import { useAppStore, useTestStore, useTrigger } from "../../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useAppTheme } from "../../../hooks/useAppThem";
+import { formatRefText } from "../../../helper/refTextFormatter";
+import { MetaJsonModal } from "./metaJsonModal";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
-  const {
-    setIsModal,
-    setName,
-    setPrice,
-    setNormal,
-    setId,
-    setCreatedAt,
-    querySearch,
-    setOptions,
-    setIsSelecte,
-  } = useTestStore();
+  const { setIsModal, setInitialData, querySearch } = useTestStore();
   const [data, setData] = useState([]);
+  const [isMetaModal, setIsMetaModal] = useState(false);
+  const [record, setRecord] = useState(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const limit = usePageLimit(60, 35);
+  const limit = usePageLimit(65, 35);
   const { t } = useTranslation();
   const { setFlag, setTest } = useTrigger();
   const { appColors } = useAppTheme();
+
   const columns = [
     {
       title: t("TestName"),
-      dataIndex: "name",
-      key: "name",
-      render: (name) => <b>{name}</b>,
+      dataIndex: "name_en",
+      key: "name_en",
+      render: (name_en, row) => (
+        <div>
+          <Typography.Text className="text-[14px] font-bold">
+            {name_en}
+          </Typography.Text>
+
+          {row?.type !== "single" && (
+            <Space size={2}>
+              <Typography.Text className="ml-1">-</Typography.Text>
+              <Typography.Text type="secondary" className="text-[12px]">
+                {row?.name_ar}
+              </Typography.Text>
+            </Space>
+          )}
+        </div>
+      ),
+    },
+
+    {
+      title: t("View"),
+      dataIndex: "type",
+      key: "type",
+      render: (type) => {
+        const colors = {
+          single: "geekblue",
+          panel: "magenta",
+          composite: "purple",
+        };
+
+        return <Tag color={colors[type]}>{type}</Tag>;
+      },
+    },
+    {
+      title: t("Unit"),
+      dataIndex: "unit",
+      key: "unit",
+      render: (unit) => (
+        <Typography.Text type="secondary" className="text-[12px]">
+          {unit}
+        </Typography.Text>
+      ),
     },
     {
       title: t("NormalValue"),
-      dataIndex: "normal",
-      key: "normal",
-      render: (normal) =>
-        normal?.length > 30 ? (
-          <Popover content={<div className="max-w-[260px]">{normal}</div>}>
-            {normal.substr(0, 30)}...
-          </Popover>
-        ) : (
-          normal || ". . ."
-        ),
+      dataIndex: "ref_text",
+      key: "ref_text",
+      render: (ref_text, record) => (
+        <div className="max-w-[260px]">
+          {formatRefText(ref_text, record?.unit)}
+        </div>
+      ),
+    },
+
+    {
+      title: t("Sample"),
+      dataIndex: "sample_type",
+      key: "sample_type",
+      render: (sample_type) => <Tag>{sample_type}</Tag>,
     },
     {
       title: t("Price"),
-      dataIndex: "price",
-      key: "price",
-      render: (price) => <b>{Number(price).toLocaleString("en")} IQD</b>,
+      dataIndex: "price_iqd",
+      key: "price_iqd",
+      render: (price_iqd) => (
+        <b>{Number(price_iqd).toLocaleString("en")} IQD</b>
+      ),
     },
 
     {
       title: t("LastUpdate"),
-      dataIndex: "updatedAt",
-      key: "updatedAt",
-      render: (updatedAt) => (
+      dataIndex: "updated_at",
+      key: "updated_at",
+      render: (updated_at) => (
         <span style={{ color: "#666" }}>
-          {dayjs(updatedAt).add(3, "hour").format("DD/MM/YYYY hh:mm A")}
+          {dayjs(updated_at).add(3, "hour").format("DD/MM/YYYY hh:mm A")}
         </span>
       ),
     },
@@ -81,6 +123,19 @@ export const PureTable = () => {
       key: "action",
       render: (_, record) => (
         <Space size="small" className="custom-actions">
+          {record?.type !== "single" && (
+            <Button
+              size="small"
+              //icon={<EditOutlined />}
+              onClick={() => {
+                setRecord(record);
+                setIsMetaModal(true);
+              }}
+              type="primary"
+            >
+              Customize
+            </Button>
+          )}
           <Button
             size="small"
             icon={<EditOutlined />}
@@ -108,11 +163,9 @@ export const PureTable = () => {
     })
       .then((resp) => {
         if (resp.success) {
-          console.log("Success deleting test");
           message.success(t("Testdeletedsuccessfully"));
           setIsReload(!isReload);
         } else {
-          console.error("Error deleting Test:", resp.error);
           message.error(t("Failedtodeletetest"));
         }
       })
@@ -122,48 +175,9 @@ export const PureTable = () => {
       });
   };
 
-  const handleEdit = ({
-    id,
-    name,
-    normal,
-    price,
-    options,
-    isSelecte,
-    createdAt,
-  }) => {
-    console.log("Edit Test Data:::::::::::::::::", {
-      id,
-      name,
-      normal,
-      price,
-      options,
-      isSelecte,
-      createdAt,
-    });
-
-    let parsedOptions = options;
-
-    if (typeof options === "string") {
-      try {
-        parsedOptions = JSON.parse(options);
-      } catch (error) {
-        console.error("Error parsing options:", error);
-        parsedOptions = [];
-      }
-    }
-
-    if (isSelecte && parsedOptions.length === 0) {
-      parsedOptions = ["positive", "negative"];
-    }
-
-    setId(id);
-    setName(name);
-    setPrice(price);
-    setNormal(normal);
+  const handleEdit = (row) => {
+    setInitialData(row);
     setIsModal(true);
-    setCreatedAt(createdAt);
-    setIsSelecte(isSelecte);
-    setOptions(Array.isArray(parsedOptions) ? parsedOptions : []);
   };
 
   useEffect(() => {
@@ -191,42 +205,74 @@ export const PureTable = () => {
       });
   }, [page, isReload, querySearch, limit]);
 
+  const sendUpdateMetaJson = async (row) => {
+    try {
+      let resp = await send({
+        query: "editMetaJson",
+        id: record?.id,
+        data: row,
+      });
+
+
+      if (resp.success) {
+        setRecord(null);
+        setIsMetaModal(false);
+        setIsReload(!isReload);
+        message.success("Updated.");
+      }
+    } catch (error) {
+      message.error("ERROR!.");
+      console.log(error);
+    }
+  };
+
   return (
-    <Table
-      style={{
-        marginTop: 16,
-        border: `1px solid ${appColors.colorBorder}`,
-        borderRadius: 10,
-        overflow: "hidden",
-      }}
-      loading={loading}
-      columns={columns}
-      rowKey={(row) => row.id}
-      dataSource={data}
-      pagination={false}
-      size="small"
-      footer={() => (
-        <div className="table-footer app-flex-space ">
-          <div
-            className="pattern-isometric pattern-indigo-400 pattern-bg-white 
+    <>
+      <Table
+        style={{
+          marginTop: 16,
+          border: `1px solid ${appColors.colorBorder}`,
+          borderRadius: 10,
+          overflow: "hidden",
+        }}
+        loading={loading}
+        columns={columns}
+        rowKey={(row) => row.id}
+        dataSource={data}
+        pagination={false}
+        size="small"
+        footer={() => (
+          <div className="table-footer app-flex-space ">
+            <div
+              className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0 "
-          ></div>
-          <p>
-            <b>{total}</b> {t("results")}
-          </p>
-          <Pagination
-            className="flex flex-row justify-center items-center"
-            simple
-            current={page}
-            onChange={(_page) => {
-              setPage(_page);
-            }}
-            total={total}
-            pageSize={limit}
-            showSizeChanger={false}
-          />
-        </div>
-      )}
-    />
+            ></div>
+            <p>
+              <b>{total}</b> {t("results")}
+            </p>
+            <Pagination
+              className="flex flex-row justify-center items-center"
+              simple
+              current={page}
+              onChange={(_page) => {
+                setPage(_page);
+              }}
+              total={total}
+              pageSize={limit}
+              showSizeChanger={false}
+            />
+          </div>
+        )}
+      />
+
+      <MetaJsonModal
+        open={isMetaModal}
+        type={record?.type} // "panel" | "composite" | "single"
+        name={record?.name_en}
+        initialMetaJson={record?.meta_json} // string أو object
+        onCancel={() => setIsMetaModal(false)}
+        onSubmit={sendUpdateMetaJson}
+      />
+    </>
   );
 };

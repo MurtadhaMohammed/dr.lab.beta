@@ -20,7 +20,6 @@ export const PureTable = () => {
     setIsModal,
     setId,
     setName,
-    setBirth,
     setGender,
     setEmail,
     setPhone,
@@ -29,6 +28,8 @@ export const PureTable = () => {
     setAddress,
     setType,
     setIsHistory,
+    setDoctorFee,
+    setNote,
   } = useDoctorStore();
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
@@ -91,6 +92,12 @@ export const PureTable = () => {
         ) : (
           <span style={{ color: "#c6c6c6" }}>{t("HasNoPhone")}</span>
         ),
+    },
+    {
+      title: t("DoctorFee"),
+      dataIndex: "doctor_fee",
+      key: "doctor_fee",
+      render: (doctor_fee) => <b>{doctor_fee}%</b>,
     },
     {
       title: t("CreatedAt"),
@@ -168,6 +175,8 @@ export const PureTable = () => {
     address,
     type,
     createdAt,
+    doctor_fee,
+    note,
   }) => {
     setId(id);
     setName(name);
@@ -176,6 +185,8 @@ export const PureTable = () => {
     setGender(gender);
     setAddress(address);
     setType(type);
+    setDoctorFee(doctor_fee || 0);
+    setNote(note || "");
     setIsModal(true);
     setCreatedAt(createdAt);
   };
@@ -202,6 +213,8 @@ export const PureTable = () => {
         setLoading(false);
       });
   }, [page, isReload, querySearch, limit]);
+
+
 
   return (
     <Table

@@ -41,7 +41,7 @@ export const PatientHistory = () => {
           <Space wrap size={[0, "small"]}>
             {list?.slice(0, numOfView).map((el) => (
               <Tag key={el.id}>
-                {el[record.testType === "CUSTOME" ? "name" : "title"]}
+                {el?.title || el?.name_en || el?.name || "Unknown Test"}
               </Tag>
             ))}
             {restCount && (
@@ -51,7 +51,7 @@ export const PatientHistory = () => {
                     <Space wrap>
                       {list?.map((el) => (
                         <Tag key={el.id}>
-                          {el[record.testType === "CUSTOME" ? "name" : "title"]}
+                          {el?.title || el?.name_en || el?.name || "Unknown Test"}
                         </Tag>
                       ))}
                     </Space>
@@ -81,9 +81,7 @@ export const PatientHistory = () => {
               : {}
           }
         >
-          {Number(
-            getTotalPrice(record?.testType, record?.tests)
-          ).toLocaleString("en")}
+          {Number(getTotalPrice(record?.tests)).toLocaleString("en")}
         </span>
       ),
     },
@@ -95,7 +93,7 @@ export const PatientHistory = () => {
       render: (_, record) => (
         <b style={{ whiteSpace: "nowrap" }}>
           {Number(
-            getTotalPrice(record?.testType, record?.tests) - record?.discount
+            getTotalPrice(record?.tests) - record?.discount
           ).toLocaleString("en")}{" "}
           IQD
         </b>
