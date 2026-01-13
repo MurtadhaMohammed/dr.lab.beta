@@ -327,23 +327,26 @@ class LabDB {
 
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
+    // Search by name or ID
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM patients
-      WHERE name LIKE ?
+      WHERE name LIKE ? 
+        OR CAST(id AS TEXT) = ?
     `);
 
-    const countResult = countStmt.get(`%${q}%`);
+    const countResult = countStmt.get(`%${q}%`, q);
     const total = countResult?.total || 0;
 
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
-      WHERE name LIKE ?
+      WHERE name LIKE ? 
+        OR CAST(id AS TEXT) = ?
       ORDER BY patients.id DESC
       LIMIT ? OFFSET ?
     `);
 
-    const patients = stmt.all(`%${q}%`, limit, skip);
+    const patients = stmt.all(`%${q}%`, q, limit, skip);
 
     return { success: true, total, data: patients };
   }

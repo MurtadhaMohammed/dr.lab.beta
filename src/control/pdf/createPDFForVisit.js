@@ -1,10 +1,11 @@
 const { jsPDF } = require("jspdf");
 require("jspdf-autotable");
 const dayjs = require("dayjs");
+const bwipjs = require("bwip-js");
 
 const { PDF_CFG, getPDFConfig } = require("./config");
 const { addFontIfNeeded } = require("./utils");
-const { drawHeader } = require("./header");
+const { drawHeader, addQRCodeToHeader } = require("./header");
 const { drawFooterWithPagination } = require("./footer");
 const { drawWatermark } = require("./watermark");
 
@@ -23,6 +24,31 @@ async function createPDFForVisit({
 }) {
   const { app, shell } = electron || {};
   try {
+    // Generate QR code asynchronously first
+    const patientId = visit?.patient?.id || visit?.patient_id;
+    let qrCodeDataUrl = null;
+    
+    if (patientId) {
+      try {
+        const png = await new Promise((resolve, reject) => {
+          bwipjs.toBuffer({
+            bcid: 'qrcode',
+            text: `${patientId}`,
+            scale: 3,
+            height: 10,
+            includetext: false,
+          }, (err, png) => {
+            if (err) reject(err);
+            else resolve(png);
+          });
+        });
+        qrCodeDataUrl = `data:image/png;base64,${png.toString('base64')}`;
+      } catch (qrErr) {
+        console.error("QR code generation error:", qrErr);
+        // Continue without QR code if generation fails
+      }
+    }
+
     const pdfConfig = getPDFConfig(fontSize);
     const doc = new jsPDF(pdfConfig.page);
     addFontIfNeeded(doc, fontSize);
@@ -37,9 +63,16 @@ async function createPDFForVisit({
       ageText: visit?.patient?.birth ? calcAgeText(visit.patient.birth) : "-",
     });
 
+    // Add QR code next to patient info
+    const qrEndY = addQRCodeToHeader(doc, {
+      patientId,
+      qrCodeDataUrl,
+      startY,
+    });
+
     if (watermarkBase64) drawWatermark(doc, { logoBase64: watermarkBase64 });
 
-    let y = startY + 6;
+    let y = Math.max(startY + 6, qrEndY);
     const tests = Array.isArray(visit?.tests) ? visit.tests : [];
     for (let i = 0; i < tests.length; i++) {
       const t = tests[i];

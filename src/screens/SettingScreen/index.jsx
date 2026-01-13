@@ -38,6 +38,7 @@ import { usePlan } from "../../hooks/usePlan";
 import { useAppTheme } from "../../hooks/useAppThem";
 import useInitHeaderImage from "../../hooks/useInitHeaderImage";
 import { PDFSettings } from "./pdfSettings";
+import OtpInputs from "../../components/OTP/otp";
 
 const SettingsScreen = () => {
   // const [imagePath, setImagePath] = useState(null);
@@ -58,9 +59,23 @@ const SettingsScreen = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [warning, setWarning] = useState(true);
   const [modal, contextHolder] = Modal.useModal();
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
   const [selectedPrinter, setSelectedPrinter] = useState(
     localStorage.getItem("selectedPrinter") || ""
   );
+  const [reportsPassword, setReportsPassword] = useState(
+    localStorage.getItem("reportsPassword") || ""
+  );
+  const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);
+  const [isExplanationModalVisible, setIsExplanationModalVisible] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [countdown, setCountdown] = useState(0);
+  const [UUID, setUUID] = useState(null);
   // const { generateHeader } = useInitHeaderImage();
 
   const {
@@ -98,7 +113,27 @@ const SettingsScreen = () => {
   useEffect(() => {
     const labUserRow = JSON.parse(localStorage.getItem("lab-user"));
     if (labUserRow) form.setFieldsValue(labUserRow);
+    
+    // Initialize reportsPassword in localStorage if it doesn't exist
+    if (!localStorage.getItem("reportsPassword")) {
+      localStorage.setItem("reportsPassword", "");
+    }
+    // Sync state with localStorage
+    setReportsPassword(localStorage.getItem("reportsPassword") || "");
+
+    // Get UUID for OTP verification
+    send({ query: "getUUID" }).then((resp) => {
+      setUUID(resp.UUID);
+    });
   }, []);
+
+  useEffect(() => {
+    let timer;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   // const handleSizeChange = (val) => {
   //   localStorage.setItem("lab-print-size", val);
@@ -271,6 +306,200 @@ const SettingsScreen = () => {
     setWarning(hasEmpty);
   };
 
+  const handleSubmitFeedback = async () => {
+    if (!feedbackText.trim()) {
+      message.warning(t("PleaseEnterFeedback") || "Please enter your feedback");
+      return;
+    }
+
+    setFeedbackLoading(true);
+    try {
+      // Get user info from form
+      const formValues = form.getFieldsValue();
+      const labUserRow = JSON.parse(localStorage.getItem("lab-user") || "{}");
+      
+      // Send email with user info and feedback
+      const result = await send({
+        query: "sendEmail",
+        data: {
+          name: formValues.name || labUserRow.name || user?.fullName || "N/A",
+          labName: formValues.labName || labUserRow.labName || "N/A",
+          phone: formValues.phone || labUserRow.phone || user?.phone || "N/A",
+          feedback: feedbackText,
+        },
+      });
+
+      if (result.success) {
+        message.success(t("FeedbackSentSuccessfully") || "Feedback sent successfully!");
+        setFeedbackText(""); // Clear the textarea
+      } else {
+        message.error(t("ErrorSendingFeedback") || "Error sending feedback");
+      }
+    } catch (error) {
+      console.error("Error sending feedback:", error);
+      message.error(t("ErrorSendingFeedback") || "Error sending feedback");
+    } finally {
+      setFeedbackLoading(false);
+    }
+  };
+
+  const handleOpenPasswordModal = () => {
+    // Show explanation modal first
+    setIsExplanationModalVisible(true);
+  };
+
+  const handleNextFromExplanation = async () => {
+    // Close explanation modal and open password modal
+    setIsExplanationModalVisible(false);
+    setIsPasswordModalVisible(true);
+    setOtpVerified(false);
+    setOtp("");
+    setPassword("");
+    setConfirmPassword("");
+
+    // Send OTP when moving to password modal
+    const userPhone = user?.phone || form.getFieldValue("phone");
+    if (!userPhone) {
+      message.error(t("PhoneNumber") + " " + t("is required"));
+      setIsPasswordModalVisible(false);
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const resp = await apiCall({
+        method: "POST",
+        pathname: "/app/login",
+        data: {
+          phone: userPhone,
+          code: "964",
+          password: true
+        },
+      });
+
+      if (resp.ok) {
+        message.success(t("OTPResentSuccessfully") || "Verification code sent successfully");
+        setCountdown(60);
+      } else {
+        const errorData = await resp.json();
+        message.error(errorData.error || t("FailedToResendOTP"));
+      }
+    } catch (error) {
+      message.error(t("ErrorResendingOTP") || "Error sending verification code");
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleOtpChange = (value) => {
+    setOtp(value);
+  };
+
+  const handleVerifyOTP = async () => {
+    if (!UUID) {
+      message.error(t("Error"));
+      return;
+    }
+
+    if (otp.length !== 6) {
+      message.error(t("PleaseEnterValidOTP"));
+      return;
+    }
+
+    setOtpLoading(true);
+    try {
+      const userPhone = user?.phone || form.getFieldValue("phone");
+      const resp = await apiCall({
+        method: "POST",
+        pathname: "/app/verify-otp",
+        data: {
+          otp,
+          phone: userPhone,
+          device: UUID,
+        },
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.success) {
+          message.success(t("OTPVerifiedSuccessfully"));
+          setOtpVerified(true);
+        } else {
+          throw new Error(data.message || t("VerificationFailed"));
+        }
+      } else {
+        const errorData = await resp.json();
+        message.error(errorData.error || t("InvalidOTP"));
+      }
+    } catch (error) {
+      message.error(error.message || t("ErrorVerifyingOTP"));
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (countdown > 0) return;
+
+    setOtpLoading(true);
+    try {
+      const userPhone = user?.phone || form.getFieldValue("phone");
+      const resp = await apiCall({
+        method: "POST",
+        pathname: "/app/resend-otp",
+        data: {
+          phone: userPhone,
+        },
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.success) {
+          message.success(t("OTPResentSuccessfully"));
+          setCountdown(60);
+        } else {
+          message.warning(data.message);
+        }
+      } else {
+        const errorData = await resp.json();
+        message.error(errorData.error || t("FailedToResendOTP"));
+      }
+    } catch (error) {
+      message.error(t("ErrorResendingOTP"));
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleSavePassword = () => {
+    if (!password || password.length < 6) {
+      message.error(t("passwordleastcharacters"));
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      message.error(t("PasswordMismatch"));
+      return;
+    }
+
+    localStorage.setItem("reportsPassword", password);
+    setReportsPassword(password);
+    message.success(t("PasswordSetSuccessfully"));
+    setIsPasswordModalVisible(false);
+    setOtpVerified(false);
+    setOtp("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleCancelPasswordModal = () => {
+    setIsPasswordModalVisible(false);
+    setOtpVerified(false);
+    setOtp("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
   return (
     <div className="settings-page pb-[60px] page">
       <div className="border-none  p-[2%]">
@@ -294,6 +523,12 @@ const SettingsScreen = () => {
                 <Radio.Button value="en">English</Radio.Button>
               </Radio.Group>
             </Space>
+            <Divider type="vertical" />
+            <Button onClick={handleOpenPasswordModal}>
+              {!reportsPassword || reportsPassword === ""
+                ? t("SetPasswordForReports")
+                : t("ChangePassword")}
+            </Button>
             <Divider type="vertical" />
             <Popconfirm
               placement="rightBottom"
@@ -459,63 +694,6 @@ const SettingsScreen = () => {
                 </Card>
               </div> */}
 
-              <div className="mt-[16px]">
-                <p className="pl-[4px]">
-                  <span className="opacity-60">{t("DatabaseManagement")}</span>
-                  {planType === "FREE" && (
-                    <CrownFilled className="text-[18px] text-[#faad14] ml-1" />
-                  )}
-                </p>
-
-                <div
-                  className="rounded-lg border mt-[8px]"
-                  style={{ borderColor: appColors.colorBorder }}
-                >
-                  <div
-                    className="border-b  p-[24px]"
-                    style={{ borderColor: appColors.colorBorder }}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <b className="text-[14px]">{t("ExportDatabase")}</b>
-                        <p className="mt-2 text-sm text-gray-500">
-                          {t("ExportDatabaseDescription")}
-                        </p>
-                      </div>
-                      <Button
-                        type="primary"
-                        icon={<ExportOutlined />}
-                        onClick={handleExportDatabase}
-                        loading={exportLoading}
-                        disabled={planType === "FREE"}
-                      >
-                        {t("ExportToDesktop")}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="p-[24px]">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <b className="text-[14px]">{t("ImportDatabase")}</b>
-                        <p className="mt-2 text-sm text-gray-500">
-                          {t("ImportDatabaseDescription")}
-                        </p>
-                      </div>
-
-                      <Button
-                        type="primary"
-                        icon={<ImportOutlined />}
-                        onClick={handleImportDatabase}
-                        disabled={planType === "FREE"}
-                        loading={importLoading} // Changed to importLoading
-                      >
-                        {t("ImportToSystem")}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </section>
           </Col>
           <Col span={12}>
@@ -628,8 +806,195 @@ const SettingsScreen = () => {
             </div>
           </Col>
         </Row>
+        <Row gutter={[16, 0]} className="mt-[16px]">
+          <Col span={12}>
+            <p className="pl-[4px]">
+              <span className="opacity-60">{t("DatabaseManagement")}</span>
+              {planType === "FREE" && (
+                <CrownFilled className="text-[18px] text-[#faad14] ml-1" />
+              )}
+            </p>
+
+            <div
+              className="rounded-lg border mt-[8px]"
+              style={{ borderColor: appColors.colorBorder, minHeight: '265px' }}
+            >
+              <div
+                className="border-b  p-[32px]"
+                style={{ borderColor: appColors.colorBorder }}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <b className="text-[14px]">{t("ExportDatabase")}</b>
+                    <p className="mt-2 text-sm text-gray-500">
+                      {t("ExportDatabaseDescription")}
+                    </p>
+                  </div>
+                  <Button
+                    type="primary"
+                    icon={<ExportOutlined />}
+                    onClick={handleExportDatabase}
+                    loading={exportLoading}
+                    disabled={planType === "FREE"}
+                  >
+                    {t("ExportToDesktop")}
+                  </Button>
+                </div>
+              </div>
+
+              <div className="p-[32px]">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <b className="text-[14px]">{t("ImportDatabase")}</b>
+                    <p className="mt-2 text-sm text-gray-500">
+                      {t("ImportDatabaseDescription")}
+                    </p>
+                  </div>
+
+                  <Button
+                    type="primary"
+                    icon={<ImportOutlined />}
+                    onClick={handleImportDatabase}
+                    disabled={planType === "FREE"}
+                    loading={importLoading}
+                  >
+                    {t("ImportToSystem")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Col>
+          <Col span={12}>
+            <p className="pl-[4px] opacity-60">{t("Feedback & Support")}</p>
+            <Card className="mt-[6px]">
+              <div>
+                <b className="text-[14px]">{t("Suggest a Feature or Report a Problem")}</b>
+                <p className="mt-2 text-sm text-gray-500">
+                  {t("We'd love to hear from you! Share your ideas or report any issues.")}
+                </p>
+                <Input.TextArea
+                  className="mt-3"
+                  placeholder={t("Type your suggestion or problem here...")}
+                  rows={4}
+                  maxLength={500}
+                  showCount
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                />
+                <div className="flex justify-end mt-8">
+                  <Button 
+                    type="primary"
+                    onClick={handleSubmitFeedback}
+                    loading={feedbackLoading}
+                  >
+                    {t("Submit Feedback")}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </Col>
+        </Row>
       </div>
       {contextHolder}
+      <Modal
+        title={
+          !otpVerified
+            ? t("EnterVerificationCode")
+            : !reportsPassword || reportsPassword === ""
+            ? t("SetPasswordForReports")
+            : t("ChangePassword")
+        }
+        open={isPasswordModalVisible}
+        onCancel={handleCancelPasswordModal}
+        footer={null}
+        width={500}
+      >
+        <Space direction="vertical" size="large" style={{ width: "100%" }}>
+          {!otpVerified ? (
+            <>
+              <div className="text-center">
+                <p className="text-gray-600">
+                  {t("WeSentVerificationCodeTo")} {user?.phone || form.getFieldValue("phone")}
+                </p>
+              </div>
+              <div className="flex flex-col items-center gap-4">
+                <OtpInputs numInputs={6} onChange={handleOtpChange} />
+                <div className="text-center">
+                  <p className="text-gray-600">
+                    {t("DidntReceiveCode")}{" "}
+                    <span
+                      className={`${
+                        countdown > 0
+                          ? "text-gray-400"
+                          : "text-[#3853A4] hover:cursor-pointer hover:text-[#0442ff]"
+                      }`}
+                      onClick={countdown > 0 ? null : handleResendOTP}
+                    >
+                      {countdown > 0
+                        ? `${t("ResendIn")} ${countdown}s`
+                        : t("Resend")}
+                    </span>
+                  </p>
+                </div>
+                <Button
+                  loading={otpLoading}
+                  type="primary"
+                  block
+                  onClick={handleVerifyOTP}
+                  disabled={otp.length !== 6}
+                >
+                  {t("Verify")}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Form.Item label={t("Password")} required>
+                <Input.Password
+                  placeholder={t("writeyourpassword")}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </Form.Item>
+              <Form.Item label={t("ConfirmPassword")} required>
+                <Input.Password
+                  placeholder={t("ConfirmPassword")}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </Form.Item>
+              <Button
+                type="primary"
+                block
+                onClick={handleSavePassword}
+                disabled={!password || password.length < 6 || password !== confirmPassword}
+              >
+                {t("SaveChanges")}
+              </Button>
+            </>
+          )}
+        </Space>
+      </Modal>
+      <Modal
+        title={t("ReportsPasswordExplanation")}
+        open={isExplanationModalVisible}
+        onCancel={() => setIsExplanationModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setIsExplanationModalVisible(false)}>
+            {t("Cancel")}
+          </Button>,
+          <Button key="next" type="primary" onClick={handleNextFromExplanation}>
+            {t("Next")}
+          </Button>,
+        ]}
+        width={500}
+      >
+        <div style={{ padding: "16px 0" }}>
+          <p style={{ fontSize: "14px", lineHeight: "1.6", color: "#666" }}>
+            {t("ReportsPasswordDescription")}
+          </p>
+        </div>
+      </Modal>
     </div>
   );
 };

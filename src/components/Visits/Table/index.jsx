@@ -22,7 +22,7 @@ import {
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { send } from "../../../control/renderer";
 import { useAppStore, useHomeStore, useTrigger } from "../../../libs/appStore";
 import usePageLimit from "../../../hooks/usePageLimit";
@@ -65,6 +65,11 @@ export const PureTable = ({
   const [destPhone, setDestPhone] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isBarcodeModal, setIsBarcodeModal] = useState(false);
+  const [clickCount, setClickCount] = useState(0);
+  const [hideVisitsWithHiddenTests, setHideVisitsWithHiddenTests] = useState(
+    localStorage.getItem("hideVisitsWithHiddenTests") === "true"
+  );
+  const timeoutRef = useRef(null);
 
   const [userType] = useState(
     JSON.parse(localStorage.getItem("lab-user"))?.Plan?.type
@@ -610,6 +615,70 @@ export const PureTable = ({
     setCreatedAt(createdAt);
   };
 
+  // Get hidden test IDs from localStorage
+  const getHiddenTestIds = () => {
+    try {
+      const hidden = localStorage.getItem("hiddenTestIds");
+      return hidden ? JSON.parse(hidden) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  // Check if a visit contains any hidden tests
+  const visitContainsHiddenTests = (visit) => {
+    const hiddenIds = getHiddenTestIds();
+    if (hiddenIds.length === 0) return false;
+    
+    const visitTestIds = visit.tests?.map((test) => test.test_id) || [];
+    return visitTestIds.some((testId) => hiddenIds.includes(testId));
+  };
+
+  const handleResultsClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    setClickCount((prevCount) => {
+      const newCount = prevCount + 1;
+      
+      if (newCount >= 3) {
+        // Toggle hide/show visits with hidden tests
+        const newState = !hideVisitsWithHiddenTests;
+        setHideVisitsWithHiddenTests(newState);
+        localStorage.setItem("hideVisitsWithHiddenTests", newState.toString());
+        
+        // Reload data
+        setIsReload(!isReload);
+        
+        // Reset counter
+        timeoutRef.current = setTimeout(() => {
+          setClickCount(0);
+        }, 100);
+        return 0;
+      } else {
+        // Reset counter after 2 seconds if not reached 3
+        timeoutRef.current = setTimeout(() => {
+          setClickCount(0);
+        }, 2000);
+        return newCount;
+      }
+    });
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
   const handelOpenModal = (data) => {
     const numberValue = Number(querySearch);
     let isBarcode = !isNaN(numberValue) && querySearch.length === 6;
@@ -650,16 +719,24 @@ export const PureTable = ({
       },
     }).then((resp) => {
       if (resp.success) {
-        setData(resp.data);
+        // Filter out visits containing hidden tests if toggle is on
+        let filteredData = resp.data;
+        if (hideVisitsWithHiddenTests) {
+          filteredData = resp.data.filter(
+            (visit) => !visitContainsHiddenTests(visit)
+          );
+        }
+        
+        setData(filteredData);
         setTotal(resp.total);
-        handelOpenModal(resp.data);
+        handelOpenModal(filteredData);
       } else {
         console.error("Error retrieving visits:", resp.error);
       }
       setLoading(false);
       setFlag(false);
     });
-  }, [page, isReload, querySearch, isToday, limit, flag, filter]);
+  }, [page, isReload, querySearch, isToday, limit, flag, filter, hideVisitsWithHiddenTests]);
 
   const handleSaveResult = async (data) => {
     try {
@@ -700,12 +777,16 @@ export const PureTable = ({
         pagination={false}
         size="small"
         footer={() => (
-          <div className="table-footer app-flex-space">
+          <div className="table-footer app-flex-space" style={{ position: "relative" }}>
             <div
               className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0"
+              style={{ pointerEvents: "none" }}
             ></div>
-            <p>
+            <p
+              onClick={handleResultsClick}
+              style={{ userSelect: "none", position: "relative", zIndex: 1 }}
+            >
               <b>{total}</b> {t("results")}
             </p>
             <Pagination

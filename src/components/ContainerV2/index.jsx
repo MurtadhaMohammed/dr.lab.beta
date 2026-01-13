@@ -130,7 +130,7 @@ const MainContainerV2 = ({ children }) => {
   return (
     <Layout className="h-screen">
       <Sider
-        style={{ background: appColors?.sideMenuBg }}
+        style={{ background: appColors?.sideMenuBg, position: "relative", zIndex: 10 }}
         trigger={null}
         collapsible
         collapsed={collapsed}

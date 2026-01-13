@@ -8,11 +8,13 @@ import {
   message,
   Tag,
   Typography,
+  Modal,
+  Input,
 } from "antd";
 import "./style.css";
 import dayjs from "dayjs";
 import { send } from "../../../control/renderer";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAppStore, useTestStore, useTrigger } from "../../../libs/appStore";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
@@ -29,10 +31,26 @@ export const PureTable = () => {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [isHideModalVisible, setIsHideModalVisible] = useState(false);
+  const [allTests, setAllTests] = useState([]);
+  const [selectedTestsToHide, setSelectedTestsToHide] = useState([]);
+  const [clickCount, setClickCount] = useState(0);
+  const [modalSearchText, setModalSearchText] = useState("");
+  const timeoutRef = useRef(null);
   const limit = usePageLimit(65, 35);
   const { t } = useTranslation();
   const { setFlag, setTest } = useTrigger();
   const { appColors } = useAppTheme();
+
+  // Get hidden test IDs from localStorage
+  const getHiddenTestIds = () => {
+    try {
+      const hidden = localStorage.getItem("hiddenTestIds");
+      return hidden ? JSON.parse(hidden) : [];
+    } catch {
+      return [];
+    }
+  };
 
   const columns = [
     {
@@ -191,9 +209,15 @@ export const PureTable = () => {
     })
       .then((resp) => {
         if (resp.success) {
-          setData(resp.data);
+          // Filter out hidden tests
+          const hiddenIds = getHiddenTestIds();
+          const filteredData = resp.data.filter(
+            (test) => !hiddenIds.includes(test.id)
+          );
+          
+          setData(filteredData);
           setTotal(resp.total);
-          setTest(resp.data);
+          setTest(filteredData);
           setFlag(true);
         } else {
           console.error("Error get tests:", resp.error);
@@ -204,6 +228,95 @@ export const PureTable = () => {
         console.error("Error in IPC communication:", err);
       });
   }, [page, isReload, querySearch, limit]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Load all tests for the hide modal
+  const loadAllTestsForModal = async () => {
+    try {
+      const resp = await send({
+        query: "getTests",
+        data: { q: "", skip: 0, limit: 10000 }, // Get all tests
+      });
+      if (resp.success) {
+        setAllTests(resp.data);
+        
+        // Preselect tests that are already in localStorage
+        const hiddenIds = getHiddenTestIds();
+        if (hiddenIds.length > 0) {
+          const testsToPreselect = resp.data.filter((test) =>
+            hiddenIds.includes(test.id)
+          );
+          setSelectedTestsToHide(testsToPreselect);
+        }
+      }
+    } catch (err) {
+      console.error("Error loading all tests:", err);
+    }
+  };
+
+  const handleResultsClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    setClickCount((prevCount) => {
+      const newCount = prevCount + 1;
+      
+      if (newCount >= 3) {
+        // Load all tests and show modal
+        loadAllTestsForModal();
+        setIsHideModalVisible(true);
+        setClickCount(0);
+        return 0;
+      } else {
+        // Reset counter after 2 seconds if not reached 3
+        timeoutRef.current = setTimeout(() => {
+          setClickCount(0);
+        }, 2000);
+        return newCount;
+      }
+    });
+  };
+
+  const handleSaveHiddenTests = () => {
+    if (selectedTestsToHide.length === 0) {
+      message.warning(t("PleaseSelectTests") || "Please select tests to hide");
+      return;
+    }
+
+    // Save selected test IDs to localStorage
+    const testIds = selectedTestsToHide.map((test) => test.id);
+    localStorage.setItem("hiddenTestIds", JSON.stringify(testIds));
+    
+    // Clear selection
+    setSelectedTestsToHide([]);
+    
+    // Close modal
+    setIsHideModalVisible(false);
+    
+    // Reload data
+    setIsReload(!isReload);
+    
+    message.success(t("TestsHiddenSuccessfully") || "Tests hidden successfully");
+  };
+
+  const handleCancelHideModal = () => {
+    setIsHideModalVisible(false);
+    setSelectedTestsToHide([]);
+    setModalSearchText("");
+  };
 
   const sendUpdateMetaJson = async (row) => {
     try {
@@ -242,12 +355,16 @@ export const PureTable = () => {
         pagination={false}
         size="small"
         footer={() => (
-          <div className="table-footer app-flex-space ">
+          <div className="table-footer app-flex-space " style={{ position: "relative" }}>
             <div
               className="pattern-isometric pattern-indigo-400 pattern-bg-white 
   pattern-size-6 pattern-opacity-5 absolute inset-0 "
+              style={{ pointerEvents: "none" }}
             ></div>
-            <p>
+            <p
+              onClick={handleResultsClick}
+              style={{ userSelect: "none", position: "relative", zIndex: 1 }}
+            >
               <b>{total}</b> {t("results")}
             </p>
             <Pagination
@@ -273,6 +390,101 @@ export const PureTable = () => {
         onCancel={() => setIsMetaModal(false)}
         onSubmit={sendUpdateMetaJson}
       />
+
+      <Modal
+        title={t("SelectTestsToHide") || "Select Tests to Hide"}
+        open={isHideModalVisible}
+        onCancel={handleCancelHideModal}
+        footer={[
+          <Button key="cancel" onClick={handleCancelHideModal}>
+            {t("Cancel")}
+          </Button>,
+          <Button
+            key="save"
+            type="primary"
+            onClick={handleSaveHiddenTests}
+          >
+            {t("Save")}
+          </Button>,
+        ]}
+        width={800}
+      >
+        <Input
+          placeholder={t("SearchTest")}
+          value={modalSearchText}
+          onChange={(e) => setModalSearchText(e.target.value)}
+          style={{ marginBottom: 16 }}
+          allowClear
+        />
+        <Table
+          rowSelection={{
+            type: "checkbox",
+            selectedRowKeys: selectedTestsToHide.map((test) => test.id),
+            onChange: (selectedRowKeys, selectedRows) => {
+              setSelectedTestsToHide(selectedRows || []);
+            },
+            onSelectAll: (selected, selectedRows, changeRows) => {
+              setSelectedTestsToHide(selected ? (selectedRows || []) : []);
+            },
+          }}
+          columns={[
+            {
+              title: t("TestName"),
+              dataIndex: "name_en",
+              key: "name_en",
+              render: (name_en, row) => (
+                <div>
+                  <Typography.Text className="text-[14px] font-bold">
+                    {name_en}
+                  </Typography.Text>
+                  {row?.type !== "single" && (
+                    <Space size={2}>
+                      <Typography.Text className="ml-1">-</Typography.Text>
+                      <Typography.Text type="secondary" className="text-[12px]">
+                        {row?.name_ar}
+                      </Typography.Text>
+                    </Space>
+                  )}
+                </div>
+              ),
+            },
+            {
+              title: t("View"),
+              dataIndex: "type",
+              key: "type",
+              render: (type) => {
+                const colors = {
+                  single: "geekblue",
+                  panel: "magenta",
+                  composite: "purple",
+                };
+                return <Tag color={colors[type]}>{type}</Tag>;
+              },
+            },
+            {
+              title: t("Price"),
+              dataIndex: "price_iqd",
+              key: "price_iqd",
+              render: (price_iqd) => (
+                <b>{Number(price_iqd).toLocaleString("en")} IQD</b>
+              ),
+            },
+          ]}
+          rowKey={(row) => row.id}
+          dataSource={allTests.filter((test) => {
+            if (!modalSearchText) return true;
+            const searchLower = modalSearchText.toLowerCase();
+            return (
+              test.name_en?.toLowerCase().includes(searchLower) ||
+              test.name_ar?.toLowerCase().includes(searchLower) ||
+              test.type?.toLowerCase().includes(searchLower)
+            );
+          })}
+          pagination={false}
+          size="small"
+          scroll={{ y: 400 }}
+        />
+      </Modal>
     </>
   );
 };

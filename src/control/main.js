@@ -13,6 +13,7 @@ const nodeHtmlToImage = require("node-html-to-image");
 const log = require("electron-log");
 const { createPDFForVisit } = require("./pdf/createPDFForVisit");
 const { sendWhatsApp } = require("./whatsapp");
+const nodemailer = require("nodemailer");
 
 // Configure logging for print operations
 log.transports.file.level = "info";
@@ -1197,6 +1198,55 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", {
           success: false,
           message: "حدث خطأ أثناء الاستيراد.",
+        });
+      }
+      break;
+    }
+
+    case "sendEmail": {
+      try {
+        const { name, labName, phone, feedback } = arg.data;
+        
+        const transporter = nodemailer.createTransport({
+          service: "gmail",
+          host: "smtp.gmail.com",
+          port: 587,
+          secure: false, 
+          requireTLS: true,
+          auth: {
+            user: "puretiks4@gmail.com",
+            pass: "frjuplscqvoqbgrc",
+          },
+        });
+
+        // Email content
+        const mailOptions = {
+          from: "puretiks4@gmail.com",
+          to: "murtadha.mohammed.94@gmail.com",
+          subject: feedback ? "User Feedback - Dr.Lab" : "New User Registration - Dr.Lab",
+          html: `
+            <h2>${feedback ? "User Feedback" : "New User Registration"}</h2>
+            <p><strong>User Name:</strong> ${name || "N/A"}</p>
+            <p><strong>Lab Name:</strong> ${labName || "N/A"}</p>
+            <p><strong>Phone Number:</strong> ${phone || "N/A"}</p>
+            ${feedback ? `<p><strong>Feedback:</strong></p><p style="white-space: pre-wrap; background-color: #f5f5f5; padding: 10px; border-radius: 5px;">${feedback}</p>` : ""}
+            <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+          `,
+        };
+
+        // Send email
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully:", info.messageId);
+        
+        event.reply("asynchronous-reply", {
+          success: true,
+          message: "Email sent successfully",
+        });
+      } catch (error) {
+        console.error("❌ Error sending email:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          error: error.message,
         });
       }
       break;

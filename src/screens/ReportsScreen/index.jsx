@@ -9,6 +9,8 @@ import {
   Space,
   Statistic,
   Typography,
+  Modal,
+  Input,
 } from "antd";
 import "./style.css";
 import { PureTable as HomeTable } from "../../components/Visits";
@@ -28,6 +30,9 @@ const ReportsScreen = () => {
   const [testId, setTestId] = useState(null);
   const [testList, setTestList] = useState([]);
   const [filterDate, setFilterDate] = useState([dayjs(), dayjs()]);
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
+  const [passwordInput, setPasswordInput] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { t } = useTranslation();
   const { printFontSize } = useAppStore();
 
@@ -106,9 +111,26 @@ const ReportsScreen = () => {
   };
 
   useEffect(() => {
-    loadReports();
-    loadTests();
-  }, [filterDate, status, gender, testId]);
+    // Check if password is set in localStorage
+    const reportsPassword = localStorage.getItem("reportsPassword");
+    if (reportsPassword && reportsPassword.trim() !== "") {
+      // Password exists, show modal
+      setShowPasswordModal(true);
+      setIsPasswordVerified(false);
+    } else {
+      // No password set, allow access
+      setIsPasswordVerified(true);
+      setShowPasswordModal(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Only load data if password is verified or no password is set
+    if (isPasswordVerified) {
+      loadReports();
+      loadTests();
+    }
+  }, [filterDate, status, gender, testId, isPasswordVerified]);
 
   const loadReports = async () => {
     try {
@@ -142,9 +164,34 @@ const ReportsScreen = () => {
     [data, status, gender, filterDate, testId]
   );
 
+  const handlePasswordSubmit = () => {
+    if (!passwordInput.trim()) {
+      message.error(t("PasswordRequired"));
+      return;
+    }
+
+    const reportsPassword = localStorage.getItem("reportsPassword");
+    if (passwordInput === reportsPassword) {
+      setIsPasswordVerified(true);
+      setShowPasswordModal(false);
+      setPasswordInput("");
+      message.success(t("PasswordCorrect"));
+    } else {
+      message.error(t("WrongPassword"));
+      setPasswordInput("");
+    }
+  };
+
+  const handlePasswordKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handlePasswordSubmit();
+    }
+  };
+
   return (
     <div className={`reports-screen page relative`}>
-      <div className="border-none  p-[2%]">
+      {/* Header - Always visible, completely separate, never blurred */}
+      <div className="border-none p-[2%]" style={{ paddingBottom: 0 }}>
         <section className="header app-flex-space mb-[18px]">
           <Space>
             <DatePicker.RangePicker
@@ -204,6 +251,18 @@ const ReportsScreen = () => {
             </Button>
           </Space>
         </section>
+      </div>
+      
+      {/* Content - Blurred when modal is open, completely separate container */}
+      <div 
+        className="border-none p-[2%]"
+        style={{ 
+          paddingTop: 0,
+          filter: showPasswordModal ? "blur(5px)" : "none",
+          pointerEvents: showPasswordModal ? "none" : "auto",
+          transition: "filter 0.3s ease"
+        }}
+      >
         <Divider />
         <Row gutter={16}>
           <Col span={6}>
@@ -243,8 +302,38 @@ const ReportsScreen = () => {
           </Col>
         </Row>
 
-        <div className="mt-6 mb-10">{homeTable}</div>
+        <div className="mt-6 mb-10">{isPasswordVerified && homeTable}</div>
       </div>
+      {showPasswordModal && (
+        <Modal
+          title={t("EnterReportsPassword")}
+          open={showPasswordModal}
+          closable={false}
+          maskClosable={false}
+          footer={null}
+          centered
+          width={400}
+          mask={false}
+        >
+            <Space direction="vertical" size="large" style={{ width: "100%" }}>
+              <Input.Password
+                placeholder={t("Password")}
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                onPressEnter={handlePasswordKeyPress}
+                autoFocus
+              />
+              <Button
+                type="primary"
+                block
+                onClick={handlePasswordSubmit}
+                disabled={!passwordInput.trim()}
+              >
+                {t("Verify")}
+              </Button>
+            </Space>
+          </Modal>
+      )}
     </div>
   );
 };

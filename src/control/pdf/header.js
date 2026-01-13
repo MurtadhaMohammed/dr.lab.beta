@@ -63,4 +63,30 @@ function drawHeader(doc, { patient, dateText, ageText }) {
   return topY + 6;
 }
 
-module.exports = { drawHeader };
+function addQRCodeToHeader(doc, { patientId, qrCodeDataUrl, startY }) {
+  if (!patientId || !qrCodeDataUrl) return startY;
+
+  try {
+    const qrSize = 20; // QR code size in mm
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const qrX = (pageWidth - qrSize) / 2; // Center horizontally
+    const qrY = startY + 2; // Position below the patient info
+
+    // Add QR code to PDF
+    doc.addImage(qrCodeDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+    
+    // Add label below QR code
+    doc.setFontSize(7);
+    doc.text(`ID: ${patientId}`, pageWidth / 2, qrY + qrSize + 3, { 
+      align: "center" 
+    });
+    doc.setFontSize(10); // Reset font size
+    
+    return Math.max(startY, qrY + qrSize + 6);
+  } catch (err) {
+    console.error("QR code rendering error:", err);
+    return startY;
+  }
+}
+
+module.exports = { drawHeader, addQRCodeToHeader };
