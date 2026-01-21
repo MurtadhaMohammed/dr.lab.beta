@@ -21,14 +21,15 @@ async function createPDFForVisit({
   headerDataUrl,
   watermarkBase64,
   fontSize = 10,
+  withQR = false,
 }) {
   const { app, shell } = electron || {};
   try {
-    // Generate QR code asynchronously first
+    // Generate QR code asynchronously only if withQR is true
     const patientId = visit?.patient?.id || visit?.patient_id;
     let qrCodeDataUrl = null;
     
-    if (patientId) {
+    if (withQR && patientId) {
       try {
         const png = await new Promise((resolve, reject) => {
           bwipjs.toBuffer({
@@ -63,12 +64,12 @@ async function createPDFForVisit({
       ageText: visit?.patient?.birth ? calcAgeText(visit.patient.birth) : "-",
     });
 
-    // Add QR code next to patient info
-    const qrEndY = addQRCodeToHeader(doc, {
+    // Add QR code next to patient info only if withQR is true
+    const qrEndY = withQR ? addQRCodeToHeader(doc, {
       patientId,
       qrCodeDataUrl,
       startY,
-    });
+    }) : startY;
 
     if (watermarkBase64) drawWatermark(doc, { logoBase64: watermarkBase64 });
 

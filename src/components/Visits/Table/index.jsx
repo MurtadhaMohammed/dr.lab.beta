@@ -63,6 +63,7 @@ export const PureTable = ({
   const [msgLoading, setMsgLoading] = useState(false);
   const [isConfirm, setIsConfirm] = useState(false);
   const [destPhone, setDestPhone] = useState(null);
+  const [sendWithQR, setSendWithQR] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isBarcodeModal, setIsBarcodeModal] = useState(false);
   const [clickCount, setClickCount] = useState(0);
@@ -142,6 +143,7 @@ export const PureTable = ({
           visit: record,
           fontSize,
           planType,
+          withQR: sendWithQR,
         },
       });
 
@@ -326,13 +328,23 @@ export const PureTable = ({
         onChange={(e) => setDestPhone(e.target.value)}
       />
 
-      <Space className="mt-[12px]">
-        <Checkbox
-          checked={isConfirm}
-          onChange={(e) => setIsConfirm(e.target.checked)}
-        />
-        <span className="text-[14px]">{t("ConfirmPhoneNumber")}</span>
-      </Space>
+      <div className="mt-[12px]" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Checkbox
+            checked={isConfirm}
+            onChange={(e) => setIsConfirm(e.target.checked)}
+          />
+          <span className="text-[14px]">{t("ConfirmPhoneNumber")}</span>
+        </div>
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Checkbox
+            checked={sendWithQR}
+            onChange={(e) => setSendWithQR(e.target.checked)}
+          />
+          <span className="text-[14px]">{t("SendWithQRCode")}</span>
+        </div>
+      </div>
 
       <Divider />
       <Button

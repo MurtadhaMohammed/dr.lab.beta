@@ -18,6 +18,7 @@ import { formatRefText } from "../../../helper/refTextFormatter";
 import { PrinterOutlined, SaveOutlined } from "@ant-design/icons";
 import { send } from "../../../control/renderer";
 import { usePlan } from "../../../hooks/usePlan";
+import { useTranslation } from "react-i18next";
 
 const { Text } = Typography;
 
@@ -37,6 +38,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
   const [drafts, setDrafts] = useState({}); // visit_item_id -> result_json object
   const tests = Array.isArray(visit?.tests) ? visit.tests : [];
   const { planType } = usePlan();
+  const { t } = useTranslation();
 
   // init from visit
   useEffect(() => {
@@ -51,25 +53,26 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
 
   // Tabs items
   const items = useMemo(() => {
-    return tests.map((t, idx) => ({
+    return tests.map((test, idx) => ({
       key: String(idx),
       label: (
         <span>
-          <b>{t.name_en || t.name_ar || t.code}</b>{" "}
-          <Tag style={{ marginInlineStart: 6 }}>{t.type}</Tag>
+          <b>{test.name_en || test.name_ar || test.code}</b>{" "}
+          <Tag style={{ marginInlineStart: 6 }}>{test.type}</Tag>
         </span>
       ),
       children: (
         <TestEditor
-          test={t}
-          value={drafts[t.visit_item_id]}
+          test={test}
+          value={drafts[test.visit_item_id]}
           onChange={(val) =>
-            setDrafts((prev) => ({ ...prev, [t.visit_item_id]: val }))
+            setDrafts((prev) => ({ ...prev, [test.visit_item_id]: val }))
           }
+          t={t}
         />
       ),
     }));
-  }, [tests, drafts]);
+  }, [tests, drafts, t]);
 
   const handleSave = async () => {
     try {
@@ -84,7 +87,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
     }
   };
 
-  const handlPrint = async () => {
+  const handlPrint = async (withQR = false) => {
     try {
       // Get font size from localStorage or use default
       const fontSize =
@@ -97,6 +100,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
           visit,
           fontSize,
           planType,
+          withQR,
         },
       });
 
@@ -114,20 +118,27 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
       footer={
         <div className="flex items-center justify-between w-full">
           <Typography.Text type="secondary">
-            Save results befor print.
+            {t("SaveResultsBeforePrint")}
           </Typography.Text>
           <Space>
-            <Button onClick={() => onCancel(false)}>Cancel</Button>
+            <Button onClick={() => onCancel(false)}>{t("Cancel")}</Button>
             <Divider type="vertical" />
             <Button
-              onClick={handlPrint}
+              onClick={() => handlPrint(false)}
               disabled={visit?.status !== "COMPLETED"}
               icon={<PrinterOutlined />}
             >
-              Print
+              {t("Print")}
+            </Button>
+            <Button
+              onClick={() => handlPrint(true)}
+              disabled={visit?.status !== "COMPLETED"}
+              icon={<PrinterOutlined />}
+            >
+              {t("PrintWithQR")}
             </Button>
             <Button onClick={handleSave} type="primary" icon={<SaveOutlined />}>
-              Save
+              {t("Save")}
             </Button>
           </Space>
         </div>
@@ -135,7 +146,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
       width={1000}
       title={
         <div style={{ display: "flex", gap: 12, alignItems: "baseline" }}>
-          <span>Enter Results</span>
+          <span>{t("EnterResults")}</span>
           {visit?.visitNumber && (
             <Tag color="geekblue">#{visit.visitNumber}</Tag>
           )}
@@ -148,7 +159,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
       destroyOnClose
     >
       {tests.length === 0 ? (
-        <EmptyNote text="No tests for this visit." />
+        <EmptyNote text={t("NoTestsForThisVisit")} />
       ) : (
         <Tabs
           activeKey={activeKey}
@@ -163,7 +174,7 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
 }
 
 /* ---------------------- Per-test editor ---------------------- */
-function TestEditor({ test, value, onChange }) {
+function TestEditor({ test, value, onChange, t }) {
   const meta = safeParse(test?.meta_json);
   const type = test?.type;
 
@@ -174,27 +185,28 @@ function TestEditor({ test, value, onChange }) {
         refText={test?.ref_text}
         value={value}
         onChange={onChange}
+        t={t}
       />
     );
   }
 
   if (type === "panel") {
     const rows = Array.isArray(meta?.items) ? meta.items : [];
-    return <PanelEditor rows={rows} value={value} onChange={onChange} />;
+    return <PanelEditor rows={rows} value={value} onChange={onChange} t={t} />;
   }
 
   if (type === "composite") {
     const sections = Array.isArray(meta?.sections) ? meta.sections : [];
     return (
-      <CompositeEditor sections={sections} value={value} onChange={onChange} />
+      <CompositeEditor sections={sections} value={value} onChange={onChange} t={t} />
     );
   }
 
-  return <EmptyNote text="Unsupported test type" />;
+  return <EmptyNote text={t("UnsupportedTestType")} />;
 }
 
 /* ---------------------- Single ---------------------- */
-function SingleEditor({ unit, refText, value, onChange }) {
+function SingleEditor({ unit, refText, value, onChange, t }) {
   // value shape: { result: string|number }
   const current = value && typeof value === "object" ? value : {};
   const set = (val) => onChange({ ...(current || {}), result: val });
@@ -203,12 +215,12 @@ function SingleEditor({ unit, refText, value, onChange }) {
     <div>
       <Space direction="vertical" size={8} style={{ width: "100%" }}>
         <Space align="baseline" wrap>
-          <Text strong>Result:</Text>
+          <Text strong>{t("Result")}:</Text>
           <Input
             style={{ width: 240 }}
             value={current.result ?? ""}
             onChange={(e) => set(e.target.value)}
-            placeholder="Enter result"
+            placeholder={t("EnterResult")}
           />
           {unit ? <Tag>{unit}</Tag> : null}
         </Space>
@@ -217,12 +229,12 @@ function SingleEditor({ unit, refText, value, onChange }) {
 
         {unit ? (
           <Text type="secondary">
-            <b>Unit:</b> {unit}
+            <b>{t("Unit")}:</b> {unit}
           </Text>
         ) : null}
         {refText ? (
           <Text type="secondary">
-            <b>Ref:</b> {formatRefText(refText)}
+            <b>{t("Ref")}:</b> {formatRefText(refText)}
           </Text>
         ) : null}
       </Space>
@@ -231,7 +243,7 @@ function SingleEditor({ unit, refText, value, onChange }) {
 }
 
 /* ---------------------- Panel ---------------------- */
-function PanelEditor({ rows, value, onChange }) {
+function PanelEditor({ rows, value, onChange, t }) {
   const current = value && typeof value === "object" ? value : { items: {} };
 
   const setCell = (code, val) => {
@@ -256,7 +268,7 @@ function PanelEditor({ rows, value, onChange }) {
   return (
     <div>
       {rows.length === 0 ? (
-        <EmptyNote text="No items in panel." />
+        <EmptyNote text={t("NoItemsInPanel")} />
       ) : (
         <div
           style={{
@@ -265,9 +277,9 @@ function PanelEditor({ rows, value, onChange }) {
             gap: 8,
           }}
         >
-          <HeaderCell>Name</HeaderCell>
-          <HeaderCell>Result</HeaderCell>
-          <HeaderCell>Ref / Unit</HeaderCell>
+          <HeaderCell>{t("Name")}</HeaderCell>
+          <HeaderCell>{t("Result")}</HeaderCell>
+          <HeaderCell>{t("RefUnit")}</HeaderCell>
 
           {rows
             .slice()
@@ -295,13 +307,13 @@ function PanelEditor({ rows, value, onChange }) {
                         onChange={(v) => setCell(r.code, v)}
                         allowClear
                         options={choices.map((c) => ({ value: c, label: c }))}
-                        placeholder="Select or write"
+                        placeholder={t("SelectOrWrite")}
                       />
                     ) : (
                       <Input
                         value={cellVal}
                         onChange={(e) => setCell(r.code, e.target.value)}
-                        placeholder="Result"
+                        placeholder={t("Result")}
                       />
                     )}
                   </Cell>
@@ -320,7 +332,7 @@ function PanelEditor({ rows, value, onChange }) {
 }
 
 /* ---------------------- Composite ---------------------- */
-function CompositeEditor({ sections, value, onChange }) {
+function CompositeEditor({ sections, value, onChange, t }) {
   // value: { sections: { [sectionCode]: { [fieldCode]: any } } }
   const current = value && typeof value === "object" ? value : { sections: {} };
 
@@ -339,7 +351,7 @@ function CompositeEditor({ sections, value, onChange }) {
   return (
     <div className="grid grid-cols-2 gap-4">
       {sections.length === 0 ? (
-        <EmptyNote text="No sections defined." />
+        <EmptyNote text={t("NoSectionsDefined")} />
       ) : (
         sections
           .slice()
@@ -455,7 +467,7 @@ function CompositeEditor({ sections, value, onChange }) {
                           onChange={(e) =>
                             setField(sec.code, f.code, e.target.value)
                           }
-                          placeholder="Enter value"
+                          placeholder={t("EnterValue")}
                         />
                       </Space>
                     );
@@ -469,7 +481,7 @@ function CompositeEditor({ sections, value, onChange }) {
 }
 
 /* tiny helper: single-value, writable select with suggestions */
-function WritableSelect({ value, options = [], onChange, ...props }) {
+function WritableSelect({ value, options = [], onChange, placeholder = "Select or write result", ...props }) {
   const opts = (options || []).map((c) =>
     typeof c === "string" ? { value: c, label: c } : c
   );
@@ -477,7 +489,7 @@ function WritableSelect({ value, options = [], onChange, ...props }) {
     <AutoComplete
       value={value ?? ""}
       options={opts}
-      placeholder="Select or write result"
+      placeholder={placeholder}
       onChange={(val) => onChange?.(val)}
       filterOption={(input, option) =>
         (option?.value || "")

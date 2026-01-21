@@ -504,6 +504,7 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           headerDataUrl: arg.data.headerDataUrl,
           watermarkBase64: watermarkBase64,
           fontSize: arg.data.fontSize || 10,
+          withQR: arg.data.withQR || false,
         });
         event.reply(`asynchronous-reply-${arg.query}`, resp);
       } catch (error) {
