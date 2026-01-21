@@ -15,16 +15,28 @@ import {
 import { useTranslation } from "react-i18next";
 import { send } from "../../control/renderer";
 import { useHomeStore } from "../../libs/appStore";
+import { useAppTheme } from "../../hooks/useAppThem";
 
 const { Text } = Typography;
 
 export const QuickActionsModal = ({onSave}) => {
   const { isQuickActionsModal, setIsQuickActionsModal } = useHomeStore();
   const { t } = useTranslation();
+  const { appColors } = useAppTheme();
 
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedTests, setSelectedTests] = useState([]);
+
+  // Get hidden test IDs from localStorage
+  const getHiddenTestIds = () => {
+    try {
+      const hidden = localStorage.getItem("hiddenTestIds");
+      return hidden ? JSON.parse(hidden) : [];
+    } catch {
+      return [];
+    }
+  };
 
   // Load tests from database
   const loadTests = async (query = "") => {
@@ -36,7 +48,12 @@ export const QuickActionsModal = ({onSave}) => {
       });
 
       if (response.success) {
-        setTests(response.data || []);
+        // Filter out hidden tests from quick actions
+        const hiddenIds = getHiddenTestIds();
+        const filteredData = (response.data || []).filter(
+          (test) => !hiddenIds.includes(test.id)
+        );
+        setTests(filteredData);
       } else {
         message.error("Failed to load tests");
       }
@@ -171,10 +188,15 @@ export const QuickActionsModal = ({onSave}) => {
             <Space wrap size={8}>
               {selectedTests?.map((el, i) => (
                 <div
-                  className="px-4 py-2 rounded-[8px] bg-[#f6f6f6] flex gap-4"
+                  className="px-4 py-2 rounded-[8px] flex gap-4"
+                  style={{
+                    background: appColors?.bgColor,
+                    border: "1px solid",
+                    borderColor: appColors?.colorBorder,
+                  }}
                   key={i}
                 >
-                  <Text>{el?.title}</Text>
+                  <Text style={{ color: appColors?.colorText }}>{el?.title}</Text>
                   <Button
                     danger
                     icon={<CloseOutlined />}

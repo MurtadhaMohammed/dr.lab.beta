@@ -721,14 +721,20 @@ export const PureTable = ({
       if (resp.success) {
         // Filter out visits containing hidden tests if toggle is on
         let filteredData = resp.data;
+        let adjustedTotal = resp.total;
+        
         if (hideVisitsWithHiddenTests) {
           filteredData = resp.data.filter(
             (visit) => !visitContainsHiddenTests(visit)
           );
+          // Calculate how many visits were filtered out from the current page
+          const hiddenCount = resp.data.length - filteredData.length;
+          // Adjust the total by subtracting hidden visits
+          adjustedTotal = resp.total - hiddenCount;
         }
         
         setData(filteredData);
-        setTotal(resp.total);
+        setTotal(adjustedTotal);
         handelOpenModal(filteredData);
       } else {
         console.error("Error retrieving visits:", resp.error);

@@ -87,6 +87,18 @@ const LoginScreen = () => {
   }, []);
 
   useEffect(() => {
+    // Add theme class to body for CSS targeting
+    if (appTheme === "dark") {
+      document.body.classList.add("dark-theme");
+    } else {
+      document.body.classList.remove("dark-theme");
+    }
+    return () => {
+      document.body.classList.remove("dark-theme");
+    };
+  }, [appTheme]);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setDisable(true);
@@ -307,7 +319,7 @@ const LoginScreen = () => {
                 },
               ]}
             >
-              <div className="flex items-center gap-1 w-full">
+              <div className="flex items-center gap-1 w-full phone-input-container">
                 <PhoneInput
                   country={selectedCountry}
                   inputStyle={{ display: 'none' }}
@@ -421,7 +433,7 @@ const LoginScreen = () => {
                     },
                   ]}
                 >
-                  <div className="flex items-center gap-1 w-full">
+                  <div className="flex items-center gap-1 w-full phone-input-container">
                   <PhoneInput
                     country={selectedCountry}
                     inputStyle={{ display: 'none' }}

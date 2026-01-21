@@ -368,7 +368,7 @@ class LabDB {
 
   async deletePatient(id) {
     const checkVisitsStmt = await this.db.prepare(`
-      DELETE FROM visit_v2 WHERE patientId = ?
+      DELETE FROM visit_v2 WHERE patient_id = ?
     `);
     const visits = await checkVisitsStmt.run(id);
 

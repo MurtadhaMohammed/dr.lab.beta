@@ -16,6 +16,7 @@ import "./style.css";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
+import { isValidMobilePhoneNumber } from "../../../helper/phoneValidation";
 
 const { Text } = Typography;
 
@@ -40,6 +41,11 @@ export const PureModal = () => {
   const { t } = useTranslation();
 
   const handleSubmit = () => {
+    if (phone?.trim() && !isValidMobilePhoneNumber(phone)) {
+      message.error(t("InvalidPhoneNumberFormat"));
+      return;
+    }
+
     let data = {
       name,
       gender,

@@ -5,4 +5,10 @@ function isValidPhoneNumber(phoneNumber) {
   return mobilePattern.test(cleaned) || landlinePattern.test(cleaned);
 }
 
+export function isValidMobilePhoneNumber(phoneNumber) {
+  const cleaned = phoneNumber?.replace(/[\s()-]/g, "");
+  const mobilePattern = /^07\d{9}$/;
+  return mobilePattern.test(cleaned);
+}
+
 export default isValidPhoneNumber;

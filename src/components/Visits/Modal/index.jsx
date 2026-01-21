@@ -7,6 +7,7 @@ import TestForm from "./testForm";
 import PatientForm from "./patientForm";
 import { useTranslation } from "react-i18next";
 import DoctorForm from "./doctorForm";
+import { isValidMobilePhoneNumber } from "../../../helper/phoneValidation";
 
 export const PureModal = () => {
   const { setIsReload, isReload } = useAppStore();
@@ -127,6 +128,15 @@ export const PureModal = () => {
   };
 
   const handleSubmit = async () => {
+    if (patientRow?.phone?.trim() && !isValidMobilePhoneNumber(patientRow.phone)) {
+      message.error(t("InvalidPhoneNumberFormat"));
+      return;
+    }
+    if (doctorRow?.phone?.trim() && !isValidMobilePhoneNumber(doctorRow.phone)) {
+      message.error(t("InvalidPhoneNumberFormat"));
+      return;
+    }
+
     patientRow.birth = patientRow?.birth?.toString();
     let doctorID;
     let patientID;

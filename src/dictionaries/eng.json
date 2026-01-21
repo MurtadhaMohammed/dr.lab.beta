@@ -177,7 +177,7 @@
   "PleaseInputYourPhone": "Please Input Your Phone!",
   "PleaseInputyourPassword": "Please Enter your Password!",
   "writeyourpassword": "Write your password here",
-  "passwordleastcharacters": "Password must be at least 6 characters",
+  "passwordleastcharacters": "Password must be at least 4 characters",
   "ErrorLogin": "Error Logging in",
   "Continue": "Continue",
   "Back": "Back To Login",
@@ -198,6 +198,7 @@
   "AddYourInfo": "Add your info",
   "Drlab": "Dr.lab",
   "InvalidPhoneNumber": "Invalid Phone Number",
+  "InvalidPhoneNumberFormat": "Phone number must start with 07 and be 11 digits",
   "Login": "Login",
   "Failedtoremovepatient": "Failed to remove",
   "Patientremovedsuccessfully": "Removed successfully",
@@ -350,6 +351,4 @@
   "PasswordRequired": "Password is required",
   "PasswordCorrect": "Password correct. Access granted.",
   "ReportsPasswordExplanation": "Reports Password Protection",
-  "ReportsPasswordDescription": "By setting a password for reports, you can protect access to the Reports page. Users will need to enter this password before they can view any reports. This helps keep sensitive information secure.",
-  "Next": "Next"
-}
+  "ReportsPasswordDescription": "By setting a password for reports, you can protect access to the Reports page. Users will need to enter this password before they can view any reports. This helps keep sensitive information secure."}

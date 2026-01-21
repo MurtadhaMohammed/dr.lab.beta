@@ -209,15 +209,10 @@ export const PureTable = () => {
     })
       .then((resp) => {
         if (resp.success) {
-          // Filter out hidden tests
-          const hiddenIds = getHiddenTestIds();
-          const filteredData = resp.data.filter(
-            (test) => !hiddenIds.includes(test.id)
-          );
-          
-          setData(filteredData);
+          // Don't filter tests on the management page - show all tests
+          setData(resp.data);
           setTotal(resp.total);
-          setTest(filteredData);
+          setTest(resp.data);
           setFlag(true);
         } else {
           console.error("Error get tests:", resp.error);
@@ -291,12 +286,7 @@ export const PureTable = () => {
   };
 
   const handleSaveHiddenTests = () => {
-    if (selectedTestsToHide.length === 0) {
-      message.warning(t("PleaseSelectTests") || "Please select tests to hide");
-      return;
-    }
-
-    // Save selected test IDs to localStorage
+    // Save selected test IDs to localStorage (empty array means no tests are hidden)
     const testIds = selectedTestsToHide.map((test) => test.id);
     localStorage.setItem("hiddenTestIds", JSON.stringify(testIds));
     
@@ -309,7 +299,12 @@ export const PureTable = () => {
     // Reload data
     setIsReload(!isReload);
     
-    message.success(t("TestsHiddenSuccessfully") || "Tests hidden successfully");
+    // Show appropriate message
+    if (testIds.length === 0) {
+      message.success(t("AllTestsUnhidden") || "All tests are now visible");
+    } else {
+      message.success(t("TestsHiddenSuccessfully") || "Tests hidden successfully");
+    }
   };
 
   const handleCancelHideModal = () => {

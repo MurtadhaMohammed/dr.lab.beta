@@ -16,6 +16,7 @@ import {
   Space,
   Tag,
   Modal,
+  Typography,
 } from "antd";
 import {
   UserOutlined,
@@ -472,7 +473,7 @@ const SettingsScreen = () => {
   };
 
   const handleSavePassword = () => {
-    if (!password || password.length < 6) {
+    if (!password || password.length < 4) {
       message.error(t("passwordleastcharacters"));
       return;
     }
@@ -955,6 +956,13 @@ const SettingsScreen = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                {password && password.length > 0 && password.length < 4 && (
+                  <div style={{ marginTop: 8 }}>
+                    <Typography.Text type="danger" style={{ fontSize: 12 }}>
+                      {t("passwordleastcharacters")}
+                    </Typography.Text>
+                  </div>
+                )}
               </Form.Item>
               <Form.Item label={t("ConfirmPassword")} required>
                 <Input.Password
@@ -962,12 +970,19 @@ const SettingsScreen = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
+                {confirmPassword && password && confirmPassword !== password && (
+                  <div style={{ marginTop: 8 }}>
+                    <Typography.Text type="danger" style={{ fontSize: 12 }}>
+                      {t("PasswordMismatch")}
+                    </Typography.Text>
+                  </div>
+                )}
               </Form.Item>
               <Button
                 type="primary"
                 block
                 onClick={handleSavePassword}
-                disabled={!password || password.length < 6 || password !== confirmPassword}
+                disabled={!password || password.length < 4 || password !== confirmPassword}
               >
                 {t("SaveChanges")}
               </Button>

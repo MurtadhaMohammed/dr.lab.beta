@@ -64,15 +64,33 @@ const ReportsScreen = () => {
         fontSize: printFontSize, // Add the font size to the data object
         records: rows?.map((record) => {
           let list = record.tests;
+          const resolveTestName = (testItem) => {
+            if (!testItem) return "";
+            if (typeof testItem === "string") return testItem;
+            if (record?.testType === "CUSTOME" && testItem?.name) {
+              return testItem.name;
+            }
+            return (
+              testItem?.title ||
+              testItem?.name ||
+              testItem?.name_en ||
+              testItem?.name_ar ||
+              testItem?.code ||
+              ""
+            );
+          };
+
+          const testsString = Array.isArray(list)
+            ? list.map(resolveTestName).filter(Boolean).join(",")
+            : "";
+
           return {
             name: record?.patient?.name,
             price: Number(getTotalPrice(record?.tests)).toLocaleString("en"),
             endPrice: Number(
               getTotalPrice(record?.tests) - record?.discount
             ).toLocaleString("en"),
-            tests: list
-              .map((el) => el[record.testType === "CUSTOME" ? "name" : "title"])
-              .join(","),
+            tests: testsString,
             discount: Number(record?.discount).toLocaleString("en"),
             createdAt: dayjs(record?.createdAt).format("YYYY/MM/DD"),
           };
@@ -314,6 +332,7 @@ const ReportsScreen = () => {
           centered
           width={400}
           mask={false}
+          wrapClassName="reports-password-modal"
         >
             <Space direction="vertical" size="large" style={{ width: "100%" }}>
               <Input.Password

@@ -1,3 +1,11 @@
 /* .reports-screen{
     padding-bottom: 40px;
 } */
+
+.reports-password-modal {
+  pointer-events: none;
+}
+
+.reports-password-modal .ant-modal {
+  pointer-events: auto;
+}
