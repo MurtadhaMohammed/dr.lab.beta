@@ -1,6 +1,6 @@
 {
   "name": "lab-beta",
-  "version": "1.1.8",
+  "version": "1.1.6",
   "homepage": "./",
   "main": "index.js",
   "targets": {
@@ -98,6 +98,10 @@
     "productName": "Dr.Lab",
     "extends": null,
     "npmRebuild": false,
+    "publish": {
+      "provider": "generic",
+      "url": "https://drlab.us-east-1.linodeobjects.com/release/${os}"
+    },
     "files": [
       "./index.js",
       "src/**/*",

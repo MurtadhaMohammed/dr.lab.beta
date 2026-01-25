@@ -104,22 +104,59 @@ function createWindow() {
     if (!isDev) {
       // Configure the feed URL for GitHub Releases
       const isMac = os.platform() === "darwin";
+      
+      // Configure autoUpdater settings
+      autoUpdater.autoDownload = false; // Don't auto-download, let user confirm first
+      autoUpdater.autoInstallOnAppQuit = true;
+      
       autoUpdater.setFeedURL({
         provider: "generic",
-        url: `https://drlab.us-east-1.linodeobjects.com/release/${isMac ? "mac" : "win"
-          }`,
-        // url: "https://github.com/MurtadhaMohammed/dr.lab.beta/releases/latest",
-        // provider: "github",
-        // repo: "dr.lab.beta",
-        // owner: "MurtadhaMohammed",
-        //token: "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", // Optional: Add only if needed
+        url: `https://drlab.us-east-1.linodeobjects.com/release/${isMac ? "mac" : "win"}`,
       });
+      
+      log.info(`Current app version: ${app.getVersion()}`);
+      log.info(`Checking for updates at: https://drlab.us-east-1.linodeobjects.com/release/${isMac ? "mac" : "win"}`);
+      
       autoUpdater.checkForUpdates();
     }
 
-    autoUpdater.on("update-available", () => {
-      log.info("Update available.");
-      win.webContents.send("update-available");
+    autoUpdater.on("checking-for-update", () => {
+      log.info("Checking for update...");
+      win.webContents.send("checking-for-update");
+    });
+
+    autoUpdater.on("update-available", (info) => {
+      log.info("Update available:", info);
+      log.info(`New version: ${info.version}, Current version: ${app.getVersion()}`);
+      win.webContents.send("update-available", info);
+      
+      // Ask user if they want to download
+      const options = {
+        type: "info",
+        buttons: ["Download", "Later"],
+        title: "Update Available",
+        message: `A new version (${info.version}) is available. Current version: ${app.getVersion()}. Do you want to download it now?`,
+      };
+      
+      dialog.showMessageBox(null, options).then(({ response }) => {
+        if (response === 0) {
+          autoUpdater.downloadUpdate();
+        }
+      });
+    });
+
+    autoUpdater.on("update-not-available", (info) => {
+      log.info("Update not available:", info);
+      log.info(`Current version ${app.getVersion()} is up to date`);
+      win.webContents.send("update-not-available", info);
+    });
+
+    autoUpdater.on("download-progress", (progressObj) => {
+      let logMessage = "Download speed: " + progressObj.bytesPerSecond;
+      logMessage = logMessage + " - Downloaded " + progressObj.percent + "%";
+      logMessage = logMessage + " (" + progressObj.transferred + "/" + progressObj.total + ")";
+      log.info(logMessage);
+      win.webContents.send("download-progress", progressObj);
     });
 
     autoUpdater.on("update-downloaded", () => {
