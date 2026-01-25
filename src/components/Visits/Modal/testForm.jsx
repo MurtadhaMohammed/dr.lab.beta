@@ -34,16 +34,6 @@ const TestForm = () => {
   let skip = 0; // Initialize skip (offset)
   const limit = 10000; // Set the limit for the number of tests per batch
 
-  // Get hidden test IDs from localStorage
-  const getHiddenTestIds = () => {
-    try {
-      const hidden = localStorage.getItem("hiddenTestIds");
-      return hidden ? JSON.parse(hidden) : [];
-    } catch {
-      return [];
-    }
-  };
-
   const getTests = (querySearch = "") => {
     send({
       query: "getTestsModal",
@@ -51,16 +41,11 @@ const TestForm = () => {
     })
       .then((resp) => {
         if (resp.success) {
-          // Filter out hidden tests from visit selection
-          const hiddenIds = getHiddenTestIds();
-          const filteredData = resp.data.filter(
-            (test) => !hiddenIds.includes(test.id)
-          );
-          
+          // Don't filter tests in visit creation - show all tests
           if (skip === 0) {
-            setTestList(filteredData);
+            setTestList(resp.data);
           } else {
-            setTestList((prev) => [...prev, ...filteredData]);
+            setTestList((prev) => [...prev, ...resp.data]);
           }
 
           if (resp.data.length === limit) {

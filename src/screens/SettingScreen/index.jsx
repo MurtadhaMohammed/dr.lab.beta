@@ -493,6 +493,17 @@ const SettingsScreen = () => {
     setConfirmPassword("");
   };
 
+  const handleRemovePassword = () => {
+    localStorage.removeItem("reportsPassword");
+    setReportsPassword("");
+    message.success(t("PasswordRemovedSuccessfully"));
+    setIsPasswordModalVisible(false);
+    setOtpVerified(false);
+    setOtp("");
+    setPassword("");
+    setConfirmPassword("");
+  };
+
   const handleCancelPasswordModal = () => {
     setIsPasswordModalVisible(false);
     setOtpVerified(false);
@@ -978,14 +989,32 @@ const SettingsScreen = () => {
                   </div>
                 )}
               </Form.Item>
-              <Button
-                type="primary"
-                block
-                onClick={handleSavePassword}
-                disabled={!password || password.length < 4 || password !== confirmPassword}
-              >
-                {t("SaveChanges")}
-              </Button>
+              <Space style={{ width: '100%' }} direction="vertical" size={8}>
+                <Button
+                  type="primary"
+                  block
+                  onClick={handleSavePassword}
+                  disabled={!password || password.length < 4 || password !== confirmPassword}
+                >
+                  {t("SaveChanges")}
+                </Button>
+                {(reportsPassword && reportsPassword !== "") && (
+                  <Popconfirm
+                    title={t("RemovePasswordConfirmation")}
+                    description={t("RemovePasswordDescription")}
+                    onConfirm={handleRemovePassword}
+                    okText={t("Yes")}
+                    cancelText={t("No")}
+                  >
+                    <Button
+                      danger
+                      block
+                    >
+                      {t("RemovePassword")}
+                    </Button>
+                  </Popconfirm>
+                )}
+              </Space>
             </>
           )}
         </Space>

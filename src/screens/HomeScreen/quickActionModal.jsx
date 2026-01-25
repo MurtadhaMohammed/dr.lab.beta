@@ -28,16 +28,6 @@ export const QuickActionsModal = ({onSave}) => {
   const [loading, setLoading] = useState(false);
   const [selectedTests, setSelectedTests] = useState([]);
 
-  // Get hidden test IDs from localStorage
-  const getHiddenTestIds = () => {
-    try {
-      const hidden = localStorage.getItem("hiddenTestIds");
-      return hidden ? JSON.parse(hidden) : [];
-    } catch {
-      return [];
-    }
-  };
-
   // Load tests from database
   const loadTests = async (query = "") => {
     setLoading(true);
@@ -48,12 +38,8 @@ export const QuickActionsModal = ({onSave}) => {
       });
 
       if (response.success) {
-        // Filter out hidden tests from quick actions
-        const hiddenIds = getHiddenTestIds();
-        const filteredData = (response.data || []).filter(
-          (test) => !hiddenIds.includes(test.id)
-        );
-        setTests(filteredData);
+        // Don't filter tests in quick actions - show all tests
+        setTests(response.data || []);
       } else {
         message.error("Failed to load tests");
       }

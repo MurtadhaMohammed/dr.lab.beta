@@ -367,4 +367,8 @@
   "NoSectionsDefined": "لم يتم تحديد أقسام.",
   "EnterValue": "أدخل القيمة",
   "AllTestsUnhidden": "جميع الاختبارات مرئية الآن",
-  "SendWithQRCode": "إرسال مع رمز الاستجابة السريعة"}
+  "SendWithQRCode": "إرسال مع رمز الاستجابة السريعة",
+  "RemovePassword": "إزالة كلمة المرور",
+  "RemovePasswordConfirmation": "إزالة حماية كلمة المرور؟",
+  "RemovePasswordDescription": "هل أنت متأكد من إزالة كلمة المرور؟ ستكون صفحة التقارير متاحة بدون كلمة مرور.",
+  "PasswordRemovedSuccessfully": "تم إزالة كلمة المرور بنجاح"}

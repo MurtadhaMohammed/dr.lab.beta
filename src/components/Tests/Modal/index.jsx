@@ -9,11 +9,44 @@ import {
   Space,
   message,
   Button,
+  AutoComplete,
 } from "antd";
 import { useAppStore, useTestStore } from "../../../libs/appStore";
 import { send } from "../../../control/renderer";
 
 const { TextArea } = Input;
+
+// Common lab units used in medical tests
+const COMMON_LAB_UNITS = [
+  "mg/dL",
+  "g/dL",
+  "mmol/L",
+  "µmol/L",
+  "U/L",
+  "IU/L",
+  "mIU/L",
+  "ng/mL",
+  "pg/mL",
+  "µg/L",
+  "mEq/L",
+  "mmHg",
+  "%",
+  "×10³/µL",
+  "×10⁶/µL",
+  "cells/µL",
+  "mm/hr",
+  "seconds",
+  "ratio",
+  "mg/24h",
+  "g/24h",
+  "mL/min",
+  "pg",
+  "fL",
+  "copies/mL",
+  "CFU/mL",
+  "°C",
+  "pH",
+];
 
 export const PureModal = () => {
   const [form] = Form.useForm();
@@ -233,7 +266,17 @@ export const PureModal = () => {
               name="unit"
               style={{ flex: 1, minWidth: 180 }}
             >
-              <Input placeholder="mg/dL, U/L, %, ..." />
+              <AutoComplete
+                options={COMMON_LAB_UNITS.map((unit) => ({
+                  value: unit,
+                  label: unit,
+                }))}
+                placeholder="mg/dL, U/L, %, ..."
+                filterOption={(inputValue, option) =>
+                  option.value.toLowerCase().indexOf(inputValue.toLowerCase()) !== -1
+                }
+                allowClear
+              />
             </Form.Item>
           )}
 

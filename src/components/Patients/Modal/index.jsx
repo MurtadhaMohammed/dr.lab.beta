@@ -17,6 +17,7 @@ import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
 import dayjs from "dayjs";
 import { isValidMobilePhoneNumber } from "../../../helper/phoneValidation";
+import { isValidEmail } from "../../../helper/emailValidation";
 
 const { Text } = Typography;
 
@@ -43,6 +44,11 @@ export const PureModal = () => {
   const handleSubmit = () => {
     if (phone?.trim() && !isValidMobilePhoneNumber(phone)) {
       message.error(t("InvalidPhoneNumberFormat"));
+      return;
+    }
+
+    if (email?.trim() && !isValidEmail(email)) {
+      message.error(t("InvalidEmailFormat"));
       return;
     }
 

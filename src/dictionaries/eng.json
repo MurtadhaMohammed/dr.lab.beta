@@ -365,4 +365,8 @@
   "NoSectionsDefined": "No sections defined.",
   "EnterValue": "Enter value",
   "AllTestsUnhidden": "All tests are now visible",
-  "SendWithQRCode": "Send with QR Code"}
+  "SendWithQRCode": "Send with QR Code",
+  "RemovePassword": "Remove Password",
+  "RemovePasswordConfirmation": "Remove Password Protection?",
+  "RemovePasswordDescription": "Are you sure you want to remove the password? The reports page will be accessible without a password.",
+  "PasswordRemovedSuccessfully": "Password removed successfully"}

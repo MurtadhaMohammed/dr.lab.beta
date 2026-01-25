@@ -366,5 +366,9 @@
   "NoSectionsDefined": "هیچ بەشێک دیاری نەکراوە.",
   "EnterValue": "نرخەکە بنووسە",
   "AllTestsUnhidden": "هەموو تاقیکردنەوەکان ئێستا دیارن",
-  "SendWithQRCode": "ناردن لەگەڵ کۆدی QR"
+  "SendWithQRCode": "ناردن لەگەڵ کۆدی QR",
+  "RemovePassword": "لابردنی تێپەڕەوش",
+  "RemovePasswordConfirmation": "لابردنی پاراستنی تێپەڕەوش؟",
+  "RemovePasswordDescription": "دڵنیایت لە لابردنی تێپەڕەوش؟ پەڕەی ڕاپۆرتەکان بەبێ تێپەڕەوش دەستپێگەیشتن دەکرێت.",
+  "PasswordRemovedSuccessfully": "تێپەڕەوش بە سەرکەوتوویی لابرا"
 }
