@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider, theme, message } from "antd";
 import { Routes, Route, useLocation } from "react-router-dom";
 import MainContainerV2 from "./components/ContainerV2";
 import PatientsScreen from "./screens/PatientsScreen";
@@ -24,28 +24,54 @@ const { darkAlgorithm, defaultAlgorithm } = theme;
 const { ipcRenderer } = window.require("electron");
 
 function App() {
-  const { isLogin, setIsOnline } = useAppStore();
+  const { isLogin, setIsOnline, setUpdateInfo, setUpdateStatus } = useAppStore();
   const { appTheme, appColors } = useAppTheme();
   const { initUser } = usePlan();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
   const location = useLocation();
     
-
 
   useLogin();
 
   useEffect(() => {
-    // ipcRenderer.on("hello", () => {
-    //   console.log("HEEELLLL");
-    // });
-    ipcRenderer.on("update-available", () => {
-      console.log("update-available");
+    ipcRenderer.on("checking-for-update", () => {
+      console.log("Checking for updates...");
+      setUpdateStatus("checking");
     });
+
+    ipcRenderer.on("update-available", (event, info) => {
+      console.log("Update available:", info);
+      setUpdateInfo(info);
+      setUpdateStatus("available");
+      message.info({
+        content: `New version ${info.version} is available!`,
+        duration: 5,
+      });
+    });
+
+    ipcRenderer.on("update-not-available", (event, info) => {
+      console.log("No update available");
+      setUpdateStatus("not-available");
+    });
+
+    ipcRenderer.on("download-progress", (event, progress) => {
+      console.log("Download progress:", progress.percent);
+      setUpdateStatus("downloading");
+      setUpdateInfo({ downloadProgress: progress.percent });
+    });
+
     ipcRenderer.on("update-downloaded", () => {
-      console.log("update-downloaded");
+      console.log("Update downloaded");
+      setUpdateStatus("downloaded");
+      message.success({
+        content: "Update downloaded! Restart to install.",
+        duration: 0,
+      });
     });
-    ipcRenderer.on("update-err", (err) => {
-      console.log("update-err ", err);
+
+    ipcRenderer.on("update-err", (event, err) => {
+      console.log("Update error:", err);
+      setUpdateStatus("error");
     });
 
     // Handle online and offline events

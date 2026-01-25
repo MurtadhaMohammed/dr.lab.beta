@@ -38,6 +38,8 @@ export const useAppStore = create((set) => ({
   isOnline: navigator.onLine,
   printFontSize: parseInt(localStorage.getItem("lab-print-size"), 10) || 10,
   imagePath: null,
+  updateStatus: null, // 'checking', 'available', 'downloading', 'downloaded', 'not-available', 'error'
+  updateInfo: null,
   setImagePath: (imagePath) => set({ imagePath }),
   setIsOnline: (isOnline) => set({ isOnline }),
   setUser: (user) => set({ user }),
@@ -45,6 +47,10 @@ export const useAppStore = create((set) => ({
   setLink: (link) => set({ link }),
   setIsReload: (isReload) => set({ isReload }),
   setIsLogin: (isLogin) => set({ isLogin }),
+  setUpdateStatus: (updateStatus) => set({ updateStatus }),
+  setUpdateInfo: (updateInfo) => set((state) => ({ 
+    updateInfo: { ...state.updateInfo, ...updateInfo } 
+  })),
 }));
 
 export const useHomeStore = create((set) => ({
