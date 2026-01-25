@@ -106,7 +106,7 @@ function createWindow() {
       const isMac = os.platform() === "darwin";
       
       // Configure autoUpdater settings
-      autoUpdater.autoDownload = false; // Don't auto-download, let user confirm first
+      autoUpdater.autoDownload = true; // Auto-download in background
       autoUpdater.autoInstallOnAppQuit = true;
       
       autoUpdater.setFeedURL({
@@ -129,20 +129,8 @@ function createWindow() {
       log.info("Update available:", info);
       log.info(`New version: ${info.version}, Current version: ${app.getVersion()}`);
       win.webContents.send("update-available", info);
-      
-      // Ask user if they want to download
-      const options = {
-        type: "info",
-        buttons: ["Download", "Later"],
-        title: "Update Available",
-        message: `A new version (${info.version}) is available. Current version: ${app.getVersion()}. Do you want to download it now?`,
-      };
-      
-      dialog.showMessageBox(null, options).then(({ response }) => {
-        if (response === 0) {
-          autoUpdater.downloadUpdate();
-        }
-      });
+      // Don't show dialog, just start downloading automatically
+      log.info("Starting automatic download...");
     });
 
     autoUpdater.on("update-not-available", (info) => {
