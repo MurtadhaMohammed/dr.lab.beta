@@ -350,12 +350,13 @@ const LoginScreen = () => {
                   required: false,
                 },
                 {
-                  pattern: /^[a-zA-Z0-9._%+-]+@+[a-zA-Z 0-9.-]+\.com$/,
-                  message: t("EmailMustBeGmail"),
+                  type: 'email',
+                  message: t("InvalidEmailFormat"),
                 },
               ]}
             >
               <Input
+                type="email"
                 placeholder="example@gmail.com"
                 className=" h-[40px] p-2"
               />

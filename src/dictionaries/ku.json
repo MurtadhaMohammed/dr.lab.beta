@@ -370,5 +370,6 @@
   "RemovePassword": "لابردنی تێپەڕەوش",
   "RemovePasswordConfirmation": "لابردنی پاراستنی تێپەڕەوش؟",
   "RemovePasswordDescription": "دڵنیایت لە لابردنی تێپەڕەوش؟ پەڕەی ڕاپۆرتەکان بەبێ تێپەڕەوش دەستپێگەیشتن دەکرێت.",
-  "PasswordRemovedSuccessfully": "تێپەڕەوش بە سەرکەوتوویی لابرا"
+  "PasswordRemovedSuccessfully": "تێپەڕەوش بە سەرکەوتوویی لابرا",
+  "InvalidEmailFormat": "تکایە ناونیشانی ئیمەیڵێکی دروست بنووسە"
 }

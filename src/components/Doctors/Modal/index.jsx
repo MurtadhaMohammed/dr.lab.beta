@@ -53,6 +53,11 @@ export const PureModal = () => {
       return;
     }
 
+    if (email?.trim() && !isValidEmail(email)) {
+      message.error(t("InvalidEmailFormat"));
+      return;
+    }
+
     let data = {
       name,
       gender,

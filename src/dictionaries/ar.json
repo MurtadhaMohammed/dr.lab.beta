@@ -371,4 +371,5 @@
   "RemovePassword": "إزالة كلمة المرور",
   "RemovePasswordConfirmation": "إزالة حماية كلمة المرور؟",
   "RemovePasswordDescription": "هل أنت متأكد من إزالة كلمة المرور؟ ستكون صفحة التقارير متاحة بدون كلمة مرور.",
-  "PasswordRemovedSuccessfully": "تم إزالة كلمة المرور بنجاح"}
+  "PasswordRemovedSuccessfully": "تم إزالة كلمة المرور بنجاح",
+  "InvalidEmailFormat": "الرجاء إدخال عنوان بريد إلكتروني صالح"}
