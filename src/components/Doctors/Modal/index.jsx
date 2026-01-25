@@ -17,6 +17,7 @@ import "./style.css";
 import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
 import { isValidMobilePhoneNumber } from "../../../helper/phoneValidation";
+import { isValidEmail } from "../../../helper/emailValidation";
 
 const { Text } = Typography;
 
