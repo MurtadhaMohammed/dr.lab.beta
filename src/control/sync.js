@@ -1,5 +1,6 @@
 const { LabDB, setGlobalSyncEnabled } = require("./db");
 const log = require("electron-log");
+const { API_URL } = require("../config/apiUrl");
 
 // Parent-first order so pulled/pushed children always find their parents.
 const TABLES = [
@@ -44,7 +45,7 @@ class SyncEngine {
     this.labDB = null;
     this.enabled = false;
     this.token = null;
-    this.apiUrl = "https://app.drlab.app/api";
+    this.apiUrl = API_URL;
     this.timer = null;
     this.running = false;
     this.failures = 0;

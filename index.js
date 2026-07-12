@@ -1,3 +1,9 @@
+// Must run before anything else requires src/config/apiUrl.js, so
+// process.env.API_URL is populated in the main process. No-op (silently
+// does nothing) in packaged builds where .env is intentionally excluded —
+// apiUrl.js falls back to its hardcoded default in that case.
+require("dotenv").config();
+
 const path = require("path");
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
