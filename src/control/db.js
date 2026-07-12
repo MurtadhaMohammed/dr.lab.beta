@@ -3,12 +3,83 @@ const fs = require("fs");
 const { app, dialog } = require("electron");
 const Database = require("better-sqlite3");
 const dayjs = require("dayjs");
+const crypto = require("crypto");
+
+// Tables that participate in multi-PC sync. tests_catalog is excluded —
+// it is server-seeded and never edited per-lab.
+const SYNCED_TABLES = [
+  "patients",
+  "doctors",
+  "visits",
+  "tests",
+  "packages",
+  "test_to_packages",
+];
+
+// main.js constructs a fresh LabDB per IPC message, so the sync flag must
+// live at module level to survive across instances.
+let globalSyncEnabled = false;
+function setGlobalSyncEnabled(enabled) {
+  globalSyncEnabled = !!enabled;
+}
 
 class LabDB {
   constructor() {
     this.db = null;
     this.dbPath = path.join(app.getPath("userData"), "drlab.db");
     this.init();
+  }
+
+  // Armed by the renderer (usePlan) via IPC once the server confirms the
+  // account has multi-PC sync. Off = every code path behaves exactly as
+  // before sync existed (hard deletes, no push).
+  get syncEnabled() {
+    return globalSyncEnabled;
+  }
+
+  // Nudge the sync engine to push soon instead of waiting for its next
+  // scheduled cycle (up to 60s). Lazy require avoids a circular dependency
+  // with sync.js (which requires this file) — by the time any write happens
+  // both modules are already fully loaded, so this just hits the cache.
+  kickSync() {
+    try {
+      require("./sync").syncEngine.kick();
+    } catch (error) {
+      console.error("Error kicking sync engine:", error);
+    }
+  }
+
+  // Stamp a row for sync after any local write. uuid is assigned lazily so
+  // legacy writes stay untouched until first marked.
+  markDirty(table, id) {
+    try {
+      this.db
+        .prepare(
+          `UPDATE ${table} SET uuid = COALESCE(uuid, ?), dirty = 1 WHERE id = ?`
+        )
+        .run(crypto.randomUUID(), id);
+      this.kickSync();
+    } catch (error) {
+      console.error(`Error marking ${table}#${id} dirty:`, error);
+    }
+  }
+
+  softDelete(table, id, column = "id") {
+    // Row-by-row so each row gets its own uuid if it never had one.
+    const rows = this.db
+      .prepare(`SELECT id FROM ${table} WHERE ${column} = ? AND deletedAt IS NULL`)
+      .all(id);
+    const stmt = this.db.prepare(
+      `UPDATE ${table}
+       SET deletedAt = datetime('now'), dirty = 1,
+           uuid = COALESCE(uuid, ?), updatedAt = datetime('now')
+       WHERE id = ?`
+    );
+    for (const row of rows) {
+      stmt.run(crypto.randomUUID(), row.id);
+    }
+    if (rows.length > 0) this.kickSync();
+    return rows.length;
   }
 
   async init() {
@@ -28,6 +99,7 @@ class LabDB {
       this.checkAndAddVisitNumberColumn();
       this.initTestsFromJSON();
       this.migrateVisitsTableWithDoctorForeignKey();
+      await this.checkAndAddSyncColumns();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
@@ -49,6 +121,10 @@ class LabDB {
         email TEXT,
         phone TEXT NOT NULL,
         birth DATE NOT NULL,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -61,6 +137,10 @@ class LabDB {
         phone TEXT,
         address TEXT,
         type TEXT,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -74,6 +154,10 @@ class LabDB {
         testType VARCHAR(50),
         tests TEXT,
         discount INTEGER,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(patientID) REFERENCES patients(id)
@@ -89,6 +173,10 @@ class LabDB {
       normal TEXT,
       options TEXT,
       isSelecte INTEGER DEFAULT 0,
+      uuid TEXT,
+      dirty INTEGER DEFAULT 0,
+      syncedAt TEXT,
+      deletedAt TEXT,
       updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
      );
@@ -96,6 +184,10 @@ class LabDB {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         title VARCHAR(100),
         customePrice INTEGER,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
@@ -104,6 +196,12 @@ class LabDB {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         packageID INTEGER,
         testID INTEGER,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (packageID) REFERENCES packages(id) ON DELETE CASCADE,
         FOREIGN KEY (testID) REFERENCES tests(id) ON DELETE CASCADE
       );
@@ -123,6 +221,11 @@ class LabDB {
         version     TEXT,                                        
         created_at  TEXT    NOT NULL DEFAULT (datetime('now')),
         updated_at  TEXT    NOT NULL DEFAULT (datetime('now'))
+      );
+
+      CREATE TABLE IF NOT EXISTS sync_state(
+        tableName TEXT PRIMARY KEY,
+        serverCursor TEXT
       );
 
     `);
@@ -222,7 +325,7 @@ class LabDB {
   async searchGroupTest() {
     try {
       const tests = this.db.prepare(
-        `SELECT * FROM tests ORDER BY id DESC LIMIT 8`
+        `SELECT * FROM tests WHERE deletedAt IS NULL ORDER BY id DESC LIMIT 8`
       );
 
       return tests.all();
@@ -370,6 +473,99 @@ class LabDB {
     }
   }
 
+  async checkAndAddSyncColumns() {
+    try {
+      // SQLite disallows non-constant defaults in ADD COLUMN, so columns are
+      // added bare and backfilled explicitly below.
+      const syncColumns = [
+        ["uuid", "TEXT"],
+        ["dirty", "INTEGER DEFAULT 0"],
+        ["syncedAt", "TEXT"],
+        ["deletedAt", "TEXT"],
+      ];
+
+      const patientColumns = this.db.prepare(`PRAGMA table_info(patients)`).all();
+      const needsMigration = !patientColumns.some((c) => c.name === "uuid");
+
+      if (needsMigration) {
+        // One-time safety copy of the DB before touching existing installs.
+        const backupPath = path.join(
+          app.getPath("userData"),
+          "drlab.pre-sync-backup.db"
+        );
+        if (!fs.existsSync(backupPath)) {
+          await this.db.backup(backupPath);
+          console.log("✅ Pre-sync backup created at", backupPath);
+        }
+      }
+
+      for (const table of SYNCED_TABLES) {
+        const columns = this.db.prepare(`PRAGMA table_info(${table})`).all();
+        const columnNames = new Set(columns.map((c) => c.name));
+
+        for (const [name, type] of syncColumns) {
+          if (!columnNames.has(name)) {
+            this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+          }
+        }
+
+        // test_to_packages has no timestamps; sync needs an LWW watermark.
+        if (!columnNames.has("updatedAt")) {
+          this.db.exec(`ALTER TABLE ${table} ADD COLUMN updatedAt DATETIME`);
+          this.db.exec(
+            `UPDATE ${table} SET updatedAt = datetime('now') WHERE updatedAt IS NULL`
+          );
+        }
+        if (!columnNames.has("createdAt")) {
+          this.db.exec(`ALTER TABLE ${table} ADD COLUMN createdAt DATETIME`);
+          this.db.exec(
+            `UPDATE ${table} SET createdAt = datetime('now') WHERE createdAt IS NULL`
+          );
+        }
+      }
+
+      // Backfill uuids row-by-row; existing rows are marked dirty so the
+      // first sync cycle doubles as the initial full upload.
+      const backfill = this.db.transaction(() => {
+        for (const table of SYNCED_TABLES) {
+          const rows = this.db
+            .prepare(`SELECT id FROM ${table} WHERE uuid IS NULL`)
+            .all();
+          if (rows.length === 0) continue;
+          const update = this.db.prepare(
+            `UPDATE ${table} SET uuid = ?, dirty = 1 WHERE id = ?`
+          );
+          for (const row of rows) {
+            update.run(crypto.randomUUID(), row.id);
+          }
+          console.log(`✅ Backfilled ${rows.length} uuids in ${table}`);
+        }
+      });
+      backfill();
+
+      for (const table of SYNCED_TABLES) {
+        this.db.exec(
+          `CREATE UNIQUE INDEX IF NOT EXISTS idx_${table}_uuid ON ${table}(uuid)`
+        );
+      }
+
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS sync_state(
+          tableName TEXT PRIMARY KEY,
+          serverCursor TEXT
+        );
+      `);
+
+      if (needsMigration) {
+        console.log("✅ Sync columns migration completed");
+      }
+    } catch (error) {
+      // Non-fatal by design: the app must keep working exactly as before
+      // even if sync preparation fails. Sync simply stays disabled.
+      console.error("Error adding sync columns (sync will stay disabled):", error);
+    }
+  }
+
   async initTestsFromJSON() {
     try {
       const testCountStet = this.db.prepare(`
@@ -464,6 +660,7 @@ class LabDB {
         WHERE id = ?
       `);
       updateStmt.run(visitNumber, visitId);
+      this.markDirty("visits", visitId);
 
       return visitNumber;
     } catch (error) {
@@ -477,7 +674,7 @@ class LabDB {
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM patients
-      WHERE name LIKE ?
+      WHERE name LIKE ? AND deletedAt IS NULL
     `);
 
     const countResult = countStmt.get(`%${q}%`);
@@ -485,7 +682,7 @@ class LabDB {
 
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
-      WHERE name LIKE ?
+      WHERE name LIKE ? AND deletedAt IS NULL
       ORDER BY patients.id DESC
       LIMIT ? OFFSET ?
     `);
@@ -507,10 +704,17 @@ class LabDB {
       patient.phone,
       new Date(patient.birth).toISOString()
     );
+    this.markDirty("patients", info.lastInsertRowid);
     return { id: info.lastInsertRowid };
   }
 
   async deletePatient(id) {
+    if (this.syncEnabled) {
+      this.softDelete("visits", id, "patientID");
+      const deleted = this.softDelete("patients", id);
+      return { success: deleted > 0, rowsDeleted: deleted };
+    }
+
     const checkVisitsStmt = await this.db.prepare(`
       DELETE FROM visits WHERE patientID = ?
     `);
@@ -546,6 +750,7 @@ class LabDB {
       birth ? new Date(birth).toISOString() : null,
       id
     );
+    if (info.changes > 0) this.markDirty("patients", id);
 
     return { data: info.changes > 0 };
   }
@@ -556,7 +761,7 @@ class LabDB {
       const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM doctors
-      WHERE name LIKE ?
+      WHERE name LIKE ? AND deletedAt IS NULL
     `);
 
       const countResult = countStmt.get(`%${q}%`);
@@ -564,7 +769,7 @@ class LabDB {
 
       const stmt = await this.db.prepare(`
       SELECT * FROM doctors
-      WHERE name LIKE ?
+      WHERE name LIKE ? AND deletedAt IS NULL
       ORDER BY doctors.id DESC
       LIMIT ? OFFSET ?
     `);
@@ -591,6 +796,7 @@ class LabDB {
         doctors.address,
         doctors.type
       );
+      this.markDirty("doctors", info.lastInsertRowid);
       return { id: info.lastInsertRowid };
     } catch (error) {
       console.log(error);
@@ -598,6 +804,11 @@ class LabDB {
   }
 
   async deleteDoctor(id) {
+    if (this.syncEnabled) {
+      const deleted = this.softDelete("doctors", id);
+      return { success: deleted > 0, rowsDeleted: deleted };
+    }
+
     const deleteDoctorStmt = await this.db.prepare(`
       DELETE FROM doctors WHERE id = ?
     `);
@@ -622,6 +833,7 @@ class LabDB {
     WHERE id = ?
     `);
     const info = stmt.run(name, gender, email, phone, address, type, id);
+    if (info.changes > 0) this.markDirty("doctors", id);
 
     return { data: info.changes > 0 };
   }
@@ -641,10 +853,16 @@ class LabDB {
       type || "single",
       groupTest || "[]"
     );
+    this.markDirty("tests", info.lastInsertRowid);
     return { id: info.lastInsertRowid };
   }
 
   async deleteTest(id) {
+    if (this.syncEnabled) {
+      const deleted = this.softDelete("tests", id);
+      return { success: deleted > 0 };
+    }
+
     const stmt = await this.db.prepare(`
       DELETE FROM tests WHERE id = ?
     `);
@@ -679,6 +897,7 @@ class LabDB {
       groupTest,
       id
     );
+    if (info.changes > 0) this.markDirty("tests", id);
     return { success: info.changes > 0 };
   }
 
@@ -769,15 +988,29 @@ class LabDB {
         console.log(
           `Associating package ID ${packageID} with test ID ${testID}`
         );
-        testToPackageStmt.run(packageID, testID);
+        const linkInfo = testToPackageStmt.run(packageID, testID);
+        this.markDirty("test_to_packages", linkInfo.lastInsertRowid);
       }
     });
     testToPackageTransaction();
+    this.markDirty("packages", packageID);
 
     return { data: packageID };
   }
 
   async deletePackage(packageID) {
+    if (this.syncEnabled) {
+      const deleted = this.softDelete("packages", packageID);
+      this.softDelete("test_to_packages", packageID, "packageID");
+      if (deleted > 0) {
+        return {
+          success: true,
+          message: `Package with ID ${packageID} deleted successfully.`,
+        };
+      }
+      throw new Error(`Package with ID ${packageID} not found.`);
+    }
+
     const deletePackageStmt = await this.db.prepare(`
       DELETE FROM packages
       WHERE id = ?
@@ -818,16 +1051,23 @@ class LabDB {
         `);
 
         packageStmt.run(title, customePrice, id);
+        this.markDirty("packages", id);
 
-        // Delete existing associations in 'test_to_packages' table for the package
-        const deleteTestToPackage = this.db.prepare(
-          "DELETE FROM test_to_packages WHERE packageID = ?"
-        );
-        deleteTestToPackage.run(id);
+        // Replace existing associations; under sync the old links must be
+        // tombstoned so the removal reaches other PCs.
+        if (this.syncEnabled) {
+          this.softDelete("test_to_packages", id, "packageID");
+        } else {
+          const deleteTestToPackage = this.db.prepare(
+            "DELETE FROM test_to_packages WHERE packageID = ?"
+          );
+          deleteTestToPackage.run(id);
+        }
 
         // Insert new associations into 'test_to_packages' table
         for (const testID of tests) {
-          testToPackage.run(id, testID);
+          const linkInfo = testToPackage.run(id, testID);
+          this.markDirty("test_to_packages", linkInfo.lastInsertRowid);
         }
       });
 
@@ -849,7 +1089,7 @@ class LabDB {
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM packages
-      WHERE title LIKE ?
+      WHERE title LIKE ? AND deletedAt IS NULL
     `);
 
     const countResult = countStmt.get(`%${q}%`);
@@ -858,7 +1098,7 @@ class LabDB {
     // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT * FROM packages
-      WHERE title LIKE ?
+      WHERE title LIKE ? AND deletedAt IS NULL
       ORDER BY createdAt DESC
       LIMIT ? OFFSET ?
     `);
@@ -869,7 +1109,7 @@ class LabDB {
         SELECT t.*
         FROM tests t
         INNER JOIN test_to_packages tp ON t.id = tp.testID
-        WHERE tp.packageID = ?
+        WHERE tp.packageID = ? AND tp.deletedAt IS NULL AND t.deletedAt IS NULL
       `);
       const tests = testStmt.all(pkg.id);
       return { ...pkg, tests };
@@ -905,6 +1145,7 @@ class LabDB {
         testsStr,
         discount
       );
+      this.markDirty("visits", info.lastInsertRowid);
 
       return { id: info.lastInsertRowid };
     } catch (error) {
@@ -914,6 +1155,11 @@ class LabDB {
   }
 
   async deleteVisit(id) {
+    if (this.syncEnabled) {
+      const deleted = this.softDelete("visits", id);
+      return { success: deleted > 0 };
+    }
+
     const stmt = await this.db.prepare(`
       DELETE FROM visits WHERE id = ?
     `);
@@ -932,6 +1178,7 @@ class LabDB {
   }) {
     const whereClauses = [
       `(p.name LIKE ? OR v.visitNumber LIKE ?)`,
+      `v.deletedAt IS NULL`,
       startDate
         ? `DATE(v.createdAt) >= '${dayjs(startDate)
             .startOf("day")
@@ -1051,7 +1298,7 @@ class LabDB {
       let query = `SELECT COUNT(*) as total FROM visits v`;
       let params = [];
 
-      const whereClauses = [];
+      const whereClauses = [`v.deletedAt IS NULL`];
 
       if (startDate) {
         whereClauses.push(`strftime('%Y-%m-%d', v.createdAt) >= ?`);
@@ -1090,7 +1337,7 @@ class LabDB {
       console.log("🔍 Patients in DB:", allPatients);
 
       const countStmt = await this.db.prepare(`
-        SELECT COUNT(*) as total FROM patients
+        SELECT COUNT(*) as total FROM patients WHERE deletedAt IS NULL
       `);
 
       const countResult = countStmt.get();
@@ -1113,7 +1360,7 @@ class LabDB {
       const countStmt = await this.db.prepare(`
         SELECT COUNT(*) as total
         FROM visits v
-        WHERE strftime('%Y-%m-%d', v.createdAt) = ?
+        WHERE strftime('%Y-%m-%d', v.createdAt) = ? AND v.deletedAt IS NULL
       `);
 
       const countResult = countStmt.get(today);
@@ -1140,7 +1387,7 @@ class LabDB {
       const countStmt = await this.db.prepare(`
         SELECT COUNT(*) as total
         FROM visits v
-        WHERE v.status = 'PENDING'
+        WHERE v.status = 'PENDING' AND v.deletedAt IS NULL
       `);
 
       const countResult = countStmt.get();
@@ -1174,7 +1421,7 @@ class LabDB {
       FROM visits v
       JOIN patients p ON v.patientID = p.id
       LEFT JOIN doctors d ON v.doctorID = d.id
-      WHERE v.patientID = ?
+      WHERE v.patientID = ? AND v.deletedAt IS NULL
       ORDER BY v.createdAt DESC
     `);
 
@@ -1220,6 +1467,7 @@ class LabDB {
   async getVisitByDoctor(doctorId, startDate = null, endDate = null) {
     const whereClauses = [
       `v.doctorID = ?`, // always filter by doctorId
+      `v.deletedAt IS NULL`,
       startDate
         ? `DATE(v.createdAt) >= '${dayjs(startDate)
             .startOf("day")
@@ -1321,6 +1569,7 @@ class LabDB {
       discount,
       id
     );
+    if (info.changes > 0) this.markDirty("visits", id);
 
     return { success: info.changes > 0, newTests };
   }
@@ -1473,4 +1722,4 @@ class LabDB {
   }
 }
 
-module.exports = { LabDB };
+module.exports = { LabDB, SYNCED_TABLES, setGlobalSyncEnabled };

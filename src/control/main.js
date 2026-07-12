@@ -2,6 +2,7 @@ const { dialog, BrowserWindow, ipcMain, app } = require("electron");
 var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
+const { syncEngine } = require("./sync");
 const fs = require("fs");
 const path = require("path");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
@@ -42,6 +43,33 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
   );
   let labDB = await new LabDB();
   switch (arg.query) {
+    case "setSyncConfig": {
+      // Renderer (usePlan) arms/disarms multi-PC sync after checking the
+      // account's syncEnabled flag on the licensing server.
+      try {
+        syncEngine.configure(
+          {
+            enabled: arg?.data?.enabled,
+            token: arg?.data?.token,
+            apiUrl: arg?.data?.apiUrl,
+          },
+          event.sender
+        );
+        event.reply("asynchronous-reply-setSyncConfig", { success: true });
+      } catch (error) {
+        event.reply("asynchronous-reply-setSyncConfig", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "syncNow": {
+      syncEngine.syncNow().catch((e) => console.error("syncNow error:", e));
+      break;
+    }
+
     case "getPatients": {
       try {
         const resp = await labDB.getPatients({

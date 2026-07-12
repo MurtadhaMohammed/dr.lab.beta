@@ -14,6 +14,7 @@ export function send(doc) {
         "testByID",
         "getTests",
         "getPackages",
+        "setSyncConfig",
       ].includes(queryName)
         ? `asynchronous-reply-${queryName}`
         : "asynchronous-reply";
@@ -23,6 +24,18 @@ export function send(doc) {
     });
     ipcRenderer.send("asynchronous-message", doc);
   });
+}
+
+// For queries that never reply (e.g. syncNow) — a send() here would leave a
+// stale once-listener that could swallow another query's reply.
+export function fireAndForget(doc) {
+  ipcRenderer.send("asynchronous-message", doc);
+}
+
+export function onSyncStatus(callback) {
+  const listener = (_, status) => callback(status);
+  ipcRenderer.on("sync-status", listener);
+  return () => ipcRenderer.removeListener("sync-status", listener);
 }
 
 document.addEventListener("click", function (event) {

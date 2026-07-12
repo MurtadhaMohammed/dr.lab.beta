@@ -8,6 +8,7 @@ import MainContainer from "../Container";
 import "./style.css";
 import { stringify } from "postcss";
 import { URL } from "../../libs/api";
+import SyncStatus from "../SyncStatus";
 
 const items = [
   {
@@ -107,29 +108,32 @@ const MainHeader = () => {
               </Link>
             </ul>
           </div>
-          <Dropdown
-            menu={{
-              items,
-              onClick: ({ key }) => {
-                if (key === "signout") signout();
-              },
-            }}
-            disabled={loading}
-          >
-            <a onClick={(e) => e.preventDefault()}>
-              <Space align="center">
-                {loading ? (
-                  <Spin size="small" style={{ marginTop: "-6px" }} />
-                ) : (
-                  <DownOutlined style={{ fontSize: 14 }} />
-                )}
-                <span style={{ color: loading ? "#ccc" : "#000" }}>
-                  {user?.name || "Admin"}
-                </span>
-                <Avatar size={"small"} icon={<UserOutlined />} />
-              </Space>
-            </a>
-          </Dropdown>
+          <Space align="center" size={16}>
+            <SyncStatus />
+            <Dropdown
+              menu={{
+                items,
+                onClick: ({ key }) => {
+                  if (key === "signout") signout();
+                },
+              }}
+              disabled={loading}
+            >
+              <a onClick={(e) => e.preventDefault()}>
+                <Space align="center">
+                  {loading ? (
+                    <Spin size="small" style={{ marginTop: "-6px" }} />
+                  ) : (
+                    <DownOutlined style={{ fontSize: 14 }} />
+                  )}
+                  <span style={{ color: loading ? "#ccc" : "#000" }}>
+                    {user?.name || "Admin"}
+                  </span>
+                  <Avatar size={"small"} icon={<UserOutlined />} />
+                </Space>
+              </a>
+            </Dropdown>
+          </Space>
         </div>
       </MainContainer>
     </header>

@@ -41,6 +41,7 @@ import {
 } from "@ant-design/icons";
 import { signout } from "../../helper/signOut";
 import { useAppTheme } from "../../hooks/useAppThem";
+import SyncStatus from "../SyncStatus";
 
 const { Sider, Content } = Layout;
 
@@ -228,6 +229,13 @@ const MainContainerV2 = ({ children }) => {
             />
           </div>
           <div className="w-full grid">
+            <div
+              className={`h-[48px] flex items-center gap-2 ${
+                collapsed ? "justify-center" : "justify-start pl-5"
+              }`}
+            >
+              <SyncStatus />
+            </div>
             <Popconfirm
               onConfirm={handleSignout}
               title={t("SignoutConfirm")}
