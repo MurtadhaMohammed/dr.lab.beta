@@ -60,7 +60,12 @@ function createWindow() {
   const server = express();
   server.use(Cors());
   server.use(express.static(path.join(app.getPath("userData"))));
-  server.listen(3009); // Different port for serving static files
+  // Different port for serving static files. An unhandled 'error' here (e.g.
+  // EADDRINUSE from a leftover instance still holding the port) would
+  // otherwise be an uncaught exception in the main process.
+  server.listen(3009).on("error", (err) => {
+    log.error("[STATIC SERVER] failed to listen on port 3009:", err.message);
+  });
 
   // win.loadFile("./dist/index.html");
   // splash.loadFile("./dist/splash.html");

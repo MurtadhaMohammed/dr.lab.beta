@@ -10,6 +10,7 @@ import { useAppTheme } from "../../hooks/useAppThem";
 import { useTranslation } from "react-i18next";
 import darkLogoName from "../../assets/dark-name.png";
 import lightLogoName from "../../assets/light-name.png";
+import SyncStatus from "../SyncStatus";
 
 // Parcel shims a browser `process` into the bundle, so `process.platform`
 // here is NOT Node's real value (it's wrong/undefined even though
@@ -49,7 +50,8 @@ const TiteBar = () => {
         <div className={isOnline ? "online" : ""}></div>
       </Space>
       <div id="title-bar-buttons">
-        <Space align="center">
+        <Space align="center" size={12}>
+          <SyncStatus />
           <Button
             type="text"
             size="small"

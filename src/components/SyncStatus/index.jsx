@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { Tooltip, Progress } from "antd";
-import {
-  CloudSyncOutlined,
-  SyncOutlined,
-  CheckCircleOutlined,
-  WarningOutlined,
-} from "@ant-design/icons";
+import { SyncOutlined, CheckCircleOutlined, WarningOutlined } from "@ant-design/icons";
+// Imported from its own submodule (not the barrel index above) — Parcel's
+// production scope-hoisting has intermittently tree-shaken this one icon
+// out of the barrel import even though it's used, only in prod builds.
+import CloudUploadOutlined from "@ant-design/icons/CloudUploadOutlined";
 import { useTranslation } from "react-i18next";
 import useSyncStatus from "../../hooks/useSyncStatus";
 import { fireAndForget } from "../../control/renderer";
 
-const SyncStatus = ({ collapsed = false }) => {
+// Lives in the custom title bar (top-right, next to the window controls) —
+// always a compact pill with a tinted background matching the state, never
+// collapses to icon-only.
+const SyncStatus = () => {
   const { t } = useTranslation();
   const { state, pending, error, progress } = useSyncStatus();
 
@@ -40,13 +42,14 @@ const SyncStatus = ({ collapsed = false }) => {
   const config = {
     syncing: {
       color: "#9053E7",
+      bg: "rgba(144, 83, 231, 0.12)",
       icon:
         percent != null ? (
           <Progress
             type="circle"
             percent={percent}
-            size={19}
-            strokeWidth={12}
+            size={14}
+            strokeWidth={14}
             strokeColor="#9053E7"
             showInfo={false}
           />
@@ -64,6 +67,7 @@ const SyncStatus = ({ collapsed = false }) => {
     },
     idle: {
       color: pending > 0 ? "#9053E7" : "#52c41a",
+      bg: pending > 0 ? "rgba(144, 83, 231, 0.12)" : "rgba(82, 196, 26, 0.12)",
       icon:
         pending > 0 ? (
           <CloudUploadOutlined style={{ color: "#9053E7" }} />
@@ -83,12 +87,14 @@ const SyncStatus = ({ collapsed = false }) => {
     },
     error: {
       color: "#faad14",
+      bg: "rgba(250, 173, 20, 0.12)",
       icon: <WarningOutlined style={{ color: "#faad14" }} />,
       shortLabel: t("Sync error"),
       tooltipLabel: error || t("Sync error, retrying..."),
     },
     unauthorized: {
       color: "#ff4d4f",
+      bg: "rgba(255, 77, 79, 0.12)",
       icon: <WarningOutlined style={{ color: "#ff4d4f" }} />,
       shortLabel: t("Sync stopped"),
       tooltipLabel: t("Sync stopped: device revoked or session expired"),
@@ -100,43 +106,31 @@ const SyncStatus = ({ collapsed = false }) => {
     ? `${current.tooltipLabel} — ${t("Click to sync now")}`
     : current.tooltipLabel;
 
-  if (collapsed) {
-    return (
-      <Tooltip title={tooltipTitle} placement="right">
-        <span
-          onClick={handleClick}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            fontSize: 19,
-            cursor: canSyncNow ? "pointer" : "default",
-          }}
-        >
-          {current.icon}
-        </span>
-      </Tooltip>
-    );
-  }
-
   return (
-    <Tooltip title={tooltipTitle} placement="right">
+    <Tooltip title={tooltipTitle} placement="bottom">
       <div
         onClick={handleClick}
         style={{
-          display: "flex",
+          display: "inline-flex",
           alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          width: "100%",
+          gap: 6,
+          padding: "3px 10px",
+          borderRadius: 999,
+          background: current.bg,
           cursor: canSyncNow ? "pointer" : "default",
+          WebkitAppRegion: "no-drag",
         }}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 19 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 13 }}>
           {current.icon}
         </span>
         <span
-          className="text-[15px]"
-          style={{ color: current.color, whiteSpace: "nowrap" }}
+          style={{
+            color: current.color,
+            whiteSpace: "nowrap",
+            fontSize: 12,
+            fontWeight: 500,
+          }}
         >
           {current.shortLabel}
         </span>
