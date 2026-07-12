@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Tooltip, Progress } from "antd";
 import {
   CloudSyncOutlined,
-  CloudUploadOutlined,
+  SyncOutlined,
   CheckCircleOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
@@ -10,7 +10,7 @@ import { useTranslation } from "react-i18next";
 import useSyncStatus from "../../hooks/useSyncStatus";
 import { fireAndForget } from "../../control/renderer";
 
-const SyncStatus = () => {
+const SyncStatus = ({ collapsed = false }) => {
   const { t } = useTranslation();
   const { state, pending, error, progress } = useSyncStatus();
 
@@ -39,25 +39,31 @@ const SyncStatus = () => {
 
   const config = {
     syncing: {
+      color: "#9053E7",
       icon:
         percent != null ? (
           <Progress
             type="circle"
             percent={percent}
-            size={16}
+            size={19}
             strokeWidth={12}
             strokeColor="#9053E7"
             showInfo={false}
           />
         ) : (
-          <CloudSyncOutlined spin style={{ color: "#9053E7" }} />
+          <SyncOutlined spin style={{ color: "#9053E7" }} />
         ),
-      label:
+      shortLabel:
+        progress && progress.total > 0
+          ? `${t("Syncing")} ${progress.done}/${progress.total}`
+          : `${t("Syncing")}...`,
+      tooltipLabel:
         progress && progress.total > 0
           ? `${t("Syncing")}... (${progress.done}/${progress.total})`
           : t("Syncing") + "...",
     },
     idle: {
+      color: pending > 0 ? "#9053E7" : "#52c41a",
       icon:
         pending > 0 ? (
           <CloudUploadOutlined style={{ color: "#9053E7" }} />
@@ -66,7 +72,9 @@ const SyncStatus = () => {
             style={{ color: "#52c41a", transition: "opacity 0.3s" }}
           />
         ),
-      label:
+      shortLabel:
+        pending > 0 ? `${pending} ${t("to sync")}` : t("Synced"),
+      tooltipLabel:
         pending > 0
           ? `${pending} ${t("changes waiting to sync")}`
           : justSynced
@@ -74,33 +82,65 @@ const SyncStatus = () => {
           : t("All changes synced"),
     },
     error: {
+      color: "#faad14",
       icon: <WarningOutlined style={{ color: "#faad14" }} />,
-      label: error || t("Sync error, retrying..."),
+      shortLabel: t("Sync error"),
+      tooltipLabel: error || t("Sync error, retrying..."),
     },
     unauthorized: {
+      color: "#ff4d4f",
       icon: <WarningOutlined style={{ color: "#ff4d4f" }} />,
-      label: t("Sync stopped: device revoked or session expired"),
+      shortLabel: t("Sync stopped"),
+      tooltipLabel: t("Sync stopped: device revoked or session expired"),
     },
   };
 
   const current = config[state] || config.idle;
-  const tooltipLabel = canSyncNow
-    ? `${current.label} — ${t("Click to sync now")}`
-    : current.label;
+  const tooltipTitle = canSyncNow
+    ? `${current.tooltipLabel} — ${t("Click to sync now")}`
+    : current.tooltipLabel;
+
+  if (collapsed) {
+    return (
+      <Tooltip title={tooltipTitle} placement="right">
+        <span
+          onClick={handleClick}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            fontSize: 19,
+            cursor: canSyncNow ? "pointer" : "default",
+          }}
+        >
+          {current.icon}
+        </span>
+      </Tooltip>
+    );
+  }
 
   return (
-    <Tooltip title={tooltipLabel}>
-      <span
+    <Tooltip title={tooltipTitle} placement="right">
+      <div
         onClick={handleClick}
         style={{
-          display: "inline-flex",
+          display: "flex",
           alignItems: "center",
-          fontSize: 16,
+          justifyContent: "center",
+          gap: 8,
+          width: "100%",
           cursor: canSyncNow ? "pointer" : "default",
         }}
       >
-        {current.icon}
-      </span>
+        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 19 }}>
+          {current.icon}
+        </span>
+        <span
+          className="text-[15px]"
+          style={{ color: current.color, whiteSpace: "nowrap" }}
+        >
+          {current.shortLabel}
+        </span>
+      </div>
     </Tooltip>
   );
 };

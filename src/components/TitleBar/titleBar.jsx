@@ -11,6 +11,12 @@ import { useTranslation } from "react-i18next";
 import darkLogoName from "../../assets/dark-name.png";
 import lightLogoName from "../../assets/light-name.png";
 
+// Parcel shims a browser `process` into the bundle, so `process.platform`
+// here is NOT Node's real value (it's wrong/undefined even though
+// nodeIntegration is on). Go through window.require("os") instead, same as
+// ipcRenderer above, to get the real OS.
+const isMac = window.require("os").platform() === "darwin";
+
 const TiteBar = () => {
   const { isOnline } = useAppStore();
   const { appColors, appTheme } = useAppTheme();
@@ -47,7 +53,11 @@ const TiteBar = () => {
           <Button
             type="text"
             size="small"
-            onClick={() => ipcRenderer.send("maximize-window")}
+            // macOS: real fullscreen (the green traffic light's job).
+            // Windows/Linux: windowed maximize/restore.
+            onClick={() =>
+              ipcRenderer.send(isMac ? "toggle-fullscreen" : "maximize-window")
+            }
             icon={<MdOutlineFullscreenExit size={16} />}
           />
           <Button

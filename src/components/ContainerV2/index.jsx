@@ -230,11 +230,11 @@ const MainContainerV2 = ({ children }) => {
           </div>
           <div className="w-full grid">
             <div
-              className={`h-[48px] flex items-center gap-2 ${
-                collapsed ? "justify-center" : "justify-start pl-5"
+              className={`h-[48px]  flex items-center gap-2 ${
+                collapsed ? "justify-center" : "justify-start "
               }`}
             >
-              <SyncStatus />
+              <SyncStatus collapsed={collapsed} />
             </div>
             <Popconfirm
               onConfirm={handleSignout}

@@ -25,10 +25,10 @@ function createWindow() {
     autoHideMenuBar: true,
     width: 1300,
     height: 800,
-    minWidth: 1024,  
-    minHeight: 750,  
-    maxWidth: 1920,  
-    maxHeight: 1080, 
+    minWidth: 1024,
+    minHeight: 750,
+    maxWidth: 1920,
+    maxHeight: 1080,
     show: false,
     frame: false,
   });
@@ -89,6 +89,12 @@ function createWindow() {
         win.maximize();
       }
     }
+  });
+
+  // macOS's version of "maximize" for a frameless window is real fullscreen
+  // (the green traffic light's behavior), not a windowed maximize.
+  ipcMain.on("toggle-fullscreen", () => {
+    if (win) win.setFullScreen(!win.isFullScreen());
   });
 
   ipcMain.on("close-window", () => {
