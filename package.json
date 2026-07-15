@@ -18,8 +18,8 @@
     "csv": "^6.3.10",
     "csv-parser": "^3.0.0",
     "dayjs": "^1.11.7",
-    "dotenv": "^16.6.1",
     "dayjs-plugin-utc": "^0.1.2",
+    "dotenv": "^16.6.1",
     "dropbox": "^10.34.0",
     "electron-is-dev": "^2.0.0",
     "electron-log": "^5.1.7",
@@ -55,8 +55,8 @@
   },
   "scripts": {
     "start": "concurrently \"npx parcel --no-cache --port=3001 ./index.html\" \"wait-on http://localhost:3001 && electron index.js .\"",
-    "build": "npx electron-packager . Dr.Lab --overwrite --asar.unpack=\"**/*.{node,dylib,dll}\" --platform=win32 --arch=ia32 --ignore=.parcel-cache --ignore=^/build$ --ignore=^/out$ --ignore=^/\\.env$ --no-prune --out=build",
-    "build-mac": "npx electron-packager . Dr.Lab --overwrite --asar.unpack=\"**/*.{node,dylib,dll}\" --platform=darwin --arch=arm64 --ignore=.parcel-cache --ignore=^/build$ --ignore=^/out$ --ignore=^/\\.env$ --no-prune --out=build",
+    "build": "node packager.js win32 ia32",
+    "build-mac": "node packager.js darwin arm64",
     "prebuild": "npm run react-build",
     "prebuild-mac": "npm run react-build",
     "react-build": "parcel build --no-cache splash.html index.html --public-url ./",
@@ -124,5 +124,8 @@
     "extraResources": [
       "./drlab.sql"
     ]
+  },
+  "optionalDependencies": {
+    "@img/sharp-win32-ia32": "^0.33.5"
   }
 }
