@@ -5,6 +5,6 @@
 // Parcel, which inlines process.env.* from .env at build time automatically).
 // Falls back to production if .env is missing (e.g. intentionally excluded
 // from packaged builds).
-const API_URL = process.env.API_URL || "https://app.drlab.app/api";
+const API_URL = process.env.API_URL || "https://dev.drlab.app/api";
 
 module.exports = { API_URL };
