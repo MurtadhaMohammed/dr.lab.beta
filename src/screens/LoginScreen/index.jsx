@@ -82,6 +82,7 @@ const LoginScreen = () => {
         isFormData: false,
         data: {
           phone: values?.phone,
+          device: UUID,
         },
       });
 
