@@ -13,6 +13,18 @@ export const isTokenValid = (token) => {
   }
 };
 
+// Old (Client-based) tokens don't carry a clientId claim — only new
+// (User-based) tokens do, since `id` on a legacy token already IS the
+// Client's own id. Used to force a one-time re-login through the new flow.
+export const isLegacyToken = (token) => {
+  try {
+    const decoded = jwtDecode(token);
+    return decoded?.clientId == null;
+  } catch (err) {
+    return false;
+  }
+};
+
 export const apiCall = async ({
   pathname,
   method = "GET",
