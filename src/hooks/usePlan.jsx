@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { apiCall, URL } from "../libs/api";
+import { apiCall, URL, isLegacyToken } from "../libs/api";
 import { useAppStore } from "../libs/appStore";
 import { message } from "antd";
 import { create } from "zustand";
@@ -126,9 +126,28 @@ export const usePlan = () => {
     setWhatsappLimit(msgLimit <= 0 ? 0 : msgLimit);
   };
 
+  const forceLegacyLogout = async (userToken) => {
+    try {
+      await apiCall({ method: "POST", pathname: "/app/logout", auth: true });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      localStorage.removeItem("lab_token");
+      localStorage.removeItem("lab-user");
+      setIsLogin(false);
+    }
+  };
+
   const initUser = async () => {
     let userInfo = localStorage.getItem("lab-user");
     let userToken = localStorage.getItem("lab_token");
+
+    if (userToken && isLegacyToken(userToken)) {
+      // Old Client-based session — force a fresh login through the new
+      // User-based flow instead of continuing to use this stale token.
+      await forceLegacyLogout(userToken);
+      return;
+    }
 
     if (userToken) {
       let resp = await getUserData();
