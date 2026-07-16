@@ -22,6 +22,7 @@ import { send } from "../../../control/renderer";
 import { useTranslation } from "react-i18next";
 import usePageLimit from "../../../hooks/usePageLimit";
 import { useAppTheme } from "../../../hooks/useAppThem";
+import useAutoRefreshTick from "../../../hooks/useAutoRefreshTick";
 
 export const PureTable = () => {
   const { isReload, setIsReload } = useAppStore();
@@ -44,6 +45,7 @@ export const PureTable = () => {
   const [loading, setLoading] = useState(false);
   const limit = usePageLimit();
   const {appColors} = useAppTheme();
+  const refreshTick = useAutoRefreshTick();
 
   const { t } = useTranslation();
 
@@ -179,8 +181,8 @@ export const PureTable = () => {
     setCreatedAt(createdAt);
   };
 
-  useEffect(() => {
-    setLoading(true);
+  const fetchPatients = (showSpinner) => {
+    if (showSpinner) setLoading(true);
     send({
       query: "getPatients",
       q: querySearch,
@@ -194,13 +196,24 @@ export const PureTable = () => {
         } else {
           console.error("Error fetching patients:", resp.error);
         }
-        setLoading(false);
+        if (showSpinner) setLoading(false);
       })
       .catch((err) => {
         console.error("Error in IPC communication:", err);
-        setLoading(false);
+        if (showSpinner) setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchPatients(true);
   }, [page, isReload, querySearch, limit]);
+
+  // Silent background refresh — no spinner — so records pulled in by sync
+  // from another PC show up without the user navigating away and back.
+  useEffect(() => {
+    if (refreshTick === 0) return;
+    fetchPatients(false);
+  }, [refreshTick]);
 
   return (
     <Table

@@ -13,6 +13,8 @@
   "SaveChanges": "حفظ التغييرات",
   "ChangeImage": "تغيير الصورة",
   "FontSize": "حجم الخط",
+  "AutoRefreshInterval": "فترة التحديث التلقائي",
+  "Off": "إيقاف",
   "Cancel": "الغاء",
   "PDFSetting": "اعدادت الطباعة",
   "ImageCover": "صورة الغلاف",

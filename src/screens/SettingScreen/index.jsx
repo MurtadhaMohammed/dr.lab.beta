@@ -53,6 +53,8 @@ const SettingsScreen = () => {
     user,
     setPrintFontSize,
     printFontSize,
+    setAutoRefreshSeconds,
+    autoRefreshSeconds,
     setIsLogin,
     imagePath,
     setImagePath,
@@ -109,6 +111,11 @@ const SettingsScreen = () => {
   const handleSizeChange = (val) => {
     localStorage.setItem("lab-print-size", val);
     setPrintFontSize(val);
+  };
+
+  const handleAutoRefreshChange = (val) => {
+    localStorage.setItem("lab-auto-refresh-seconds", val);
+    setAutoRefreshSeconds(val);
   };
 
   const handelCancel = () => {
@@ -454,6 +461,24 @@ const SettingsScreen = () => {
                       <Select.Option value={12}>Small</Select.Option>
                       <Select.Option value={14}>Medium</Select.Option>
                       <Select.Option value={16}>Large</Select.Option>
+                    </Select>
+                  </div>
+                  <Divider />
+                  <div className="flex justify-between items-center">
+                    <b className="text-[14px]">{t("AutoRefreshInterval")}</b>
+                    <Select
+                      value={autoRefreshSeconds}
+                      variant="borderless"
+                      onChange={handleAutoRefreshChange}
+                      popupMatchSelectWidth={false}
+                      style={{ width: 100, textAlign: "center" }}
+                    >
+                      <Select.Option value={0}>{t("Off")}</Select.Option>
+                      <Select.Option value={5}>5s</Select.Option>
+                      <Select.Option value={10}>10s</Select.Option>
+                      <Select.Option value={15}>15s</Select.Option>
+                      <Select.Option value={30}>30s</Select.Option>
+                      <Select.Option value={60}>60s</Select.Option>
                     </Select>
                   </div>
                 </Card>
