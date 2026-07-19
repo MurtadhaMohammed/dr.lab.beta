@@ -52,6 +52,7 @@ class SyncEngine {
     this.pendingKick = false; // a write landed while a cycle was already running
     this.progress = null; // { done, total } for the push phase of the current cycle
     this.webContents = null; // for sync-status events to the renderer
+    this.lastStatus = { state: "disabled", pending: 0 };
   }
 
   ensureDb() {
@@ -101,15 +102,25 @@ class SyncEngine {
   }
 
   emitStatus(status) {
+    const full = {
+      ...status,
+      pending: this.enabled ? this.countDirty() : 0,
+      at: new Date().toISOString(),
+    };
+    this.lastStatus = full;
     try {
       if (this.webContents && !this.webContents.isDestroyed()) {
-        this.webContents.send("sync-status", {
-          ...status,
-          pending: this.enabled ? this.countDirty() : 0,
-          at: new Date().toISOString(),
-        });
+        this.webContents.send("sync-status", full);
       }
     } catch (_) {}
+  }
+
+  // Snapshot for windows/components that mount after the last emitStatus
+  // call (e.g. a settings screen opened well after the last sync tick) and
+  // would otherwise never learn the current state since emitStatus only
+  // pushes to whatever webContents was registered at the time.
+  getStatus() {
+    return this.lastStatus || { state: "disabled", pending: 0 };
   }
 
   countDirty() {

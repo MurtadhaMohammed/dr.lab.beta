@@ -12,6 +12,22 @@ const Jimp = require("jimp");
 const nodeHtmlToImage = require("node-html-to-image");
 const log = require("electron-log");
 
+// Windows builds don't bundle a Puppeteer Chromium (only sharp gets a
+// platform-specific install step in packager.js), so node-html-to-image's
+// default browser launch fails there. Fall back to the system Edge/Chrome
+// that ships with Windows instead of requiring a bundled browser.
+function findWindowsBrowserExecutable() {
+  if (process.platform !== "win32") return null;
+  const candidates = [
+    path.join(process.env["ProgramFiles(x86)"] || "", "Microsoft/Edge/Application/msedge.exe"),
+    path.join(process.env["ProgramFiles"] || "", "Microsoft/Edge/Application/msedge.exe"),
+    path.join(process.env["ProgramFiles(x86)"] || "", "Google/Chrome/Application/chrome.exe"),
+    path.join(process.env["ProgramFiles"] || "", "Google/Chrome/Application/chrome.exe"),
+    path.join(process.env["LOCALAPPDATA"] || "", "Google/Chrome/Application/chrome.exe"),
+  ];
+  return candidates.find((p) => p && fs.existsSync(p)) || null;
+}
+
 // Configure logging for print operations
 log.transports.file.level = "info";
 log.transports.console.level = "debug";
@@ -67,6 +83,11 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
 
     case "syncNow": {
       syncEngine.syncNow().catch((e) => console.error("syncNow error:", e));
+      break;
+    }
+
+    case "getSyncStatus": {
+      event.reply("asynchronous-reply", syncEngine.getStatus());
       break;
     }
 
@@ -581,13 +602,27 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               </body>
               `;
 
+        const windowsExecutablePath = findWindowsBrowserExecutable();
+        const puppeteerArgs = windowsExecutablePath
+          ? { executablePath: windowsExecutablePath }
+          : {};
+
         nodeHtmlToImage({
           output: destPath,
           html,
           quality: 100,
-        }).then(() => {
-          event.reply("asynchronous-reply", { success: true });
-        });
+          puppeteerArgs,
+        })
+          .then(() => {
+            event.reply("asynchronous-reply", { success: true });
+          })
+          .catch((err) => {
+            log.error("[initHeadImage2] failed to generate header image:", err && err.message);
+            event.reply("asynchronous-reply", {
+              success: false,
+              error: err && err.message,
+            });
+          });
       } catch (error) {
         console.log(error);
         event.reply("asynchronous-reply", {

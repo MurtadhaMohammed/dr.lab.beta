@@ -40,6 +40,7 @@ import { signout } from "../../helper/signOut";
 import { usePlan } from "../../hooks/usePlan";
 import { useAppTheme } from "../../hooks/useAppThem";
 import useInitHeaderImage from "../../hooks/useInitHeaderImage";
+import useSyncStatus from "../../hooks/useSyncStatus";
 
 const SettingsScreen = () => {
   // const [imagePath, setImagePath] = useState(null);
@@ -69,6 +70,8 @@ const SettingsScreen = () => {
     localStorage.getItem("selectedPrinter") || ""
   );
   const { generateHeader, fetchHeader } = useInitHeaderImage();
+  const { state: syncState } = useSyncStatus();
+  const isAccountSynced = syncState !== "disabled";
 
   const {
     getPrintUsed,
@@ -512,7 +515,7 @@ const SettingsScreen = () => {
                         icon={<ExportOutlined />}
                         onClick={handleExportDatabase}
                         loading={exportLoading}
-                        disabled={planType === "FREE"}
+                        disabled={planType === "FREE" || isAccountSynced}
                       >
                         {t("ExportToDesktop")}
                       </Button>
@@ -532,7 +535,7 @@ const SettingsScreen = () => {
                         type="primary"
                         icon={<ImportOutlined />}
                         onClick={handleImportDatabase}
-                        disabled={planType === "FREE"}
+                        disabled={planType === "FREE" || isAccountSynced}
                         loading={importLoading} // Changed to importLoading
                       >
                         {t("ImportToSystem")}

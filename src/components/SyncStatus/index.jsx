@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Tooltip, Progress } from "antd";
-import { SyncOutlined, CheckCircleOutlined, WarningOutlined } from "@ant-design/icons";
+import {
+  SyncOutlined,
+  CheckCircleOutlined,
+  WarningOutlined,
+  DesktopOutlined,
+} from "@ant-design/icons";
 // Imported from its own submodule (not the barrel index above) — Parcel's
 // production scope-hoisting has intermittently tree-shaken this one icon
 // out of the barrel import even though it's used, only in prod builds.
@@ -25,8 +30,6 @@ const SyncStatus = () => {
     const timeout = setTimeout(() => setJustSynced(false), 2000);
     return () => clearTimeout(timeout);
   }, [state, pending]);
-
-  if (state === "disabled") return null;
 
   const canSyncNow = state === "idle" || state === "error";
   const handleClick = () => {
@@ -99,6 +102,13 @@ const SyncStatus = () => {
       shortLabel: t("Sync stopped"),
       tooltipLabel: t("Sync stopped: device revoked or session expired"),
     },
+    disabled: {
+      color: "#8c8c8c",
+      bg: "rgba(140, 140, 140, 0.14)",
+      icon: <DesktopOutlined style={{ color: "#8c8c8c" }} />,
+      shortLabel: t("Local"),
+      tooltipLabel: t("This device isn't syncing — data stays local only"),
+    },
   };
 
   const current = config[state] || config.idle;
@@ -113,23 +123,31 @@ const SyncStatus = () => {
         style={{
           display: "inline-flex",
           alignItems: "center",
-          gap: 6,
-          padding: "3px 10px",
+          gap: 7,
+          padding: "4px 12px",
           borderRadius: 999,
           background: current.bg,
+          border: `1.5px solid ${current.color}`,
           cursor: canSyncNow ? "pointer" : "default",
+          transition: "transform 0.15s ease",
           WebkitAppRegion: "no-drag",
         }}
+        onMouseEnter={(e) => {
+          if (canSyncNow) e.currentTarget.style.transform = "scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+        }}
       >
-        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 13 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", fontSize: 14 }}>
           {current.icon}
         </span>
         <span
           style={{
             color: current.color,
             whiteSpace: "nowrap",
-            fontSize: 12,
-            fontWeight: 500,
+            fontSize: 12.5,
+            fontWeight: 700,
           }}
         >
           {current.shortLabel}
