@@ -41,7 +41,7 @@ export const useAppStore = create((set) => ({
   // DB, so records pulled in by background sync show up without navigating
   // away and back. 0 = off.
   autoRefreshSeconds:
-    parseInt(localStorage.getItem("lab-auto-refresh-seconds"), 10) || 10,
+    parseInt(localStorage.getItem("lab-auto-refresh-seconds"), 10) || 1800,
   imagePath: null,
   setImagePath: (imagePath) => set({ imagePath }),
   setIsOnline: (isOnline) => set({ isOnline }),

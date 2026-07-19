@@ -477,11 +477,9 @@ const SettingsScreen = () => {
                       style={{ width: 100, textAlign: "center" }}
                     >
                       <Select.Option value={0}>{t("Off")}</Select.Option>
-                      <Select.Option value={5}>5s</Select.Option>
-                      <Select.Option value={10}>10s</Select.Option>
-                      <Select.Option value={15}>15s</Select.Option>
-                      <Select.Option value={30}>30s</Select.Option>
-                      <Select.Option value={60}>60s</Select.Option>
+                      <Select.Option value={60}>1 min</Select.Option>
+                      <Select.Option value={600}>10 min</Select.Option>
+                      <Select.Option value={1800}>30 min</Select.Option>
                     </Select>
                   </div>
                 </Card>
