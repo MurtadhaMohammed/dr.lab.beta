@@ -61,10 +61,22 @@ class SyncEngine {
   }
 
   configure({ enabled, token, apiUrl }, webContents) {
-    this.enabled = !!enabled && !!token;
+    const nextEnabled = !!enabled && !!token;
+    // Callers re-arm sync on things like every screen navigation, not just
+    // real config changes. Rearming resets this.timer, so if nothing
+    // actually changed, skip it — otherwise frequent redundant calls keep
+    // the schedule perpetually restarted and a cycle never gets to run.
+    const unchanged =
+      this.webContents === (webContents || this.webContents) &&
+      nextEnabled === this.enabled &&
+      token === this.token &&
+      (!apiUrl || apiUrl === this.apiUrl);
+    if (webContents) this.webContents = webContents;
+    if (unchanged) return;
+
+    this.enabled = nextEnabled;
     this.token = token || null;
     if (apiUrl) this.apiUrl = apiUrl;
-    if (webContents) this.webContents = webContents;
     setGlobalSyncEnabled(this.enabled);
 
     clearTimeout(this.timer);
