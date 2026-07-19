@@ -104,7 +104,7 @@ export const usePlan = () => {
     const actionButtons = await send({
       query: "searchGroupTest",
     });
-    localStorage.setItem("actionButtons", JSON.stringify(actionButtons.data));
+    localStorage.setItem("actionButtons", JSON.stringify(actionButtons?.data || []));
   };
 
   useEffect(() => {

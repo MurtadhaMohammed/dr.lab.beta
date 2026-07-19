@@ -145,9 +145,13 @@ const HomeScreen = () => {
     setIsModal(true);
   };
 
-  const actionButtonsRow = localStorage.getItem("actionButtons")
-    ? JSON.parse(localStorage.getItem("actionButtons"))
-    : [];
+  let actionButtonsRow = [];
+  try {
+    const savedActionButtons = localStorage.getItem("actionButtons");
+    actionButtonsRow = savedActionButtons ? JSON.parse(savedActionButtons) : [];
+  } catch (error) {
+    console.error("Error parsing saved action buttons:", error);
+  }
 
   // Filter out "Other Tests" from localStorage data since we'll add it statically
   const filteredActionButtons = actionButtonsRow.filter(
