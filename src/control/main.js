@@ -5,6 +5,7 @@ const { LabDB } = require("./db");
 const { syncEngine } = require("./sync");
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 const image = path.join(__dirname, "../../defaultHeader.jpg");
 const bwipjs = require("bwip-js");
 const sharp = require("sharp");
@@ -16,16 +17,47 @@ const log = require("electron-log");
 // platform-specific install step in packager.js), so node-html-to-image's
 // default browser launch fails there. Fall back to the system Edge/Chrome
 // that ships with Windows instead of requiring a bundled browser.
+function queryRegistryAppPath(exeName) {
+  // Windows records the real install path for every registered browser
+  // under the "App Paths" key regardless of where it was installed (Program
+  // Files, per-user AppData, a custom drive, ...). Static folder guesses
+  // miss non-default installs, so fall back to the registry, which is how
+  // Windows itself resolves these executables (e.g. via Run/Start).
+  for (const hive of ["HKLM", "HKCU"]) {
+    try {
+      const out = execFileSync(
+        "reg",
+        [
+          "query",
+          `${hive}\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\${exeName}`,
+          "/ve",
+        ],
+        { encoding: "utf8", windowsHide: true }
+      );
+      const match = out.match(/REG_SZ\s+(.+)/);
+      const foundPath = match && match[1].trim();
+      if (foundPath && fs.existsSync(foundPath)) return foundPath;
+    } catch (_) {
+      // Not registered in this hive — try the next one.
+    }
+  }
+  return null;
+}
+
 function findWindowsBrowserExecutable() {
   if (process.platform !== "win32") return null;
   const candidates = [
     path.join(process.env["ProgramFiles(x86)"] || "", "Microsoft/Edge/Application/msedge.exe"),
     path.join(process.env["ProgramFiles"] || "", "Microsoft/Edge/Application/msedge.exe"),
+    path.join(process.env["LOCALAPPDATA"] || "", "Microsoft/Edge/Application/msedge.exe"),
     path.join(process.env["ProgramFiles(x86)"] || "", "Google/Chrome/Application/chrome.exe"),
     path.join(process.env["ProgramFiles"] || "", "Google/Chrome/Application/chrome.exe"),
     path.join(process.env["LOCALAPPDATA"] || "", "Google/Chrome/Application/chrome.exe"),
   ];
-  return candidates.find((p) => p && fs.existsSync(p)) || null;
+  const staticHit = candidates.find((p) => p && fs.existsSync(p));
+  if (staticHit) return staticHit;
+
+  return queryRegistryAppPath("msedge.exe") || queryRegistryAppPath("chrome.exe");
 }
 
 // Configure logging for print operations
@@ -603,6 +635,12 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               `;
 
         const windowsExecutablePath = findWindowsBrowserExecutable();
+        if (process.platform === "win32") {
+          log.info(
+            "[initHeadImage2] windows browser lookup:",
+            windowsExecutablePath || "none found"
+          );
+        }
         const puppeteerArgs = windowsExecutablePath
           ? { executablePath: windowsExecutablePath }
           : {};
