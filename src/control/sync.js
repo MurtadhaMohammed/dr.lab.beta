@@ -1,3 +1,4 @@
+const { ipcMain } = require("electron");
 const { LabDB, setGlobalSyncEnabled } = require("./db");
 const log = require("electron-log");
 const { API_URL } = require("../config/apiUrl");
@@ -149,8 +150,34 @@ class SyncEngine {
     }
   }
 
+  // Delegates the actual HTTP request to the renderer (see
+  // control/renderer.js's "sync-fetch-request" listener) so it shows up in
+  // that window's DevTools Network tab like any other API call — a fetch()
+  // made here in the main process would be invisible there.
+  rendererFetch(url, options) {
+    return new Promise((resolve, reject) => {
+      if (!this.webContents || this.webContents.isDestroyed()) {
+        reject(new Error("No renderer window available to perform sync request"));
+        return;
+      }
+      const requestId = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const replyChannel = `sync-fetch-reply-${requestId}`;
+      const timeout = setTimeout(() => {
+        ipcMain.removeAllListeners(replyChannel);
+        reject(new Error("sync fetch timed out"));
+      }, 30000);
+      ipcMain.once(replyChannel, (_event, result) => {
+        clearTimeout(timeout);
+        if (result.error) reject(new Error(result.error));
+        else resolve(result);
+      });
+      this.webContents.send("sync-fetch-request", { requestId, url, options });
+    });
+  }
+
   async api(pathname, options = {}) {
-    const res = await fetch(`${this.apiUrl}${pathname}`, {
+    const url = `${this.apiUrl}${pathname}`;
+    const result = await this.rendererFetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
@@ -158,14 +185,20 @@ class SyncEngine {
         ...(options.headers || {}),
       },
     });
-    const body = await res.json().catch(() => ({}));
-    if (res.status === 401) {
+    let body;
+    try {
+      body = JSON.parse(result.body || "{}");
+    } catch (_) {
+      body = {};
+    }
+    if (result.status === 401) {
       // Device revoked or token invalid — stop syncing, tell the renderer.
       this.configure({ enabled: false });
       this.emitStatus({ state: "unauthorized", error: body.error });
-      throw new Error(`sync unauthorized: ${body.error || res.status}`);
+      throw new Error(`sync unauthorized: ${body.error || result.status}`);
     }
-    if (!res.ok) throw new Error(`sync ${pathname} failed: ${res.status} ${body.error || ""}`);
+    if (!result.ok)
+      throw new Error(`sync ${pathname} failed: ${result.status} ${body.error || ""}`);
     return body;
   }
 
@@ -173,6 +206,7 @@ class SyncEngine {
     if (!this.enabled || this.running) return;
     const db = this.ensureDb();
     if (!db) {
+      log.error("[SYNC] database not ready yet, retrying in 5s");
       this.schedule(5000);
       return;
     }

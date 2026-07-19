@@ -4,6 +4,7 @@ const { app, dialog } = require("electron");
 const Database = require("better-sqlite3");
 const dayjs = require("dayjs");
 const crypto = require("crypto");
+const log = require("electron-log");
 
 // Tables that participate in multi-PC sync. tests_catalog is excluded —
 // it is server-seeded and never edited per-lab.
@@ -108,6 +109,10 @@ class LabDB {
         console.log("Available collections:", Object.keys(this.db));
       }
     } catch (err) {
+      // Plain console.error never reaches the persisted log file in a
+      // packaged build (only electron-log calls do), so a native-module or
+      // file-access failure here was previously invisible after the fact.
+      log.error("[LabDB] Error opening database:", err && err.message);
       console.error("Error opening database", err);
     }
   }
