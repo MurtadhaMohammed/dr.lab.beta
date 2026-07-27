@@ -78,6 +78,31 @@ change and arms the `SyncEngine` automatically — no separate app setting.
 - **Revoking a device** (lost/stolen laptop, offboarding): `POST
   /app/devices/:id/revoke`. That device's next sync call gets `401`, the
   `SyncEngine` disarms itself, and the desktop app forces a re-login.
+- **Leaving a lab** (an operator moves to a different lab on the same PC):
+  self-service, from Settings → Danger Zone → "Leave This Lab"
+  ([`src/screens/SettingScreen/index.jsx`](../src/screens/SettingScreen/index.jsx),
+  [`src/helper/leaveLab.js`](../src/helper/leaveLab.js)). Unlike plain sign-out,
+  this also disconnects the device from the lab server-side and wipes local
+  data, so switching labs on the same machine never carries a previous lab's
+  patients with it:
+  1. `POST /app/leave-lab` ([`routers/app.js`](../../dr.lab-apiV2/routers/app.js))
+     revokes this device's `Device` row (sync-enabled accounts) and nulls
+     `User.device`/legacy `Client.device` (everyone else) — the same effect
+     as an admin revoke, just self-triggered and scoped to the caller's own
+     device/account.
+  2. Only on success, the renderer clears its token and tells the main
+     process to wipe local data: `LabDB.requestDataWipe()`
+     ([`src/control/db.js`](../src/control/db.js)) drops a
+     `drlab.wipe-pending` marker and relaunches (the open `better-sqlite3`
+     handle can't be deleted out from under itself, especially on Windows).
+  3. On the next cold start, `LabDB.handlePendingWipe()` runs before any
+     `Database` handle opens and deletes `drlab.db` (+ `-wal`/`-shm`),
+     `drlab.pre-sync-backup.db`, and any stale `drlab.import-pending.db`,
+     then removes the marker — same trick `handlePendingImport()` already
+     uses for the Import Database flow.
+
+  The device is then free to log in to a different lab; that login goes
+  through the normal phone/OTP flow like any first-time device.
 - **Deploying server changes**: this repo had no Prisma migration history
   before this feature — read [`prisma/MIGRATION_NOTES.md`](../../dr.lab-apiV2/prisma/MIGRATION_NOTES.md)
   before running `prisma migrate deploy` against prod. Always `pg_dump`

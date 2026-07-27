@@ -37,6 +37,7 @@ import PopOverContent from "./PopOverContent";
 import { apiCall } from "../../libs/api";
 import PrinterSelector from "./PrinterSelector";
 import { signout } from "../../helper/signOut";
+import { leaveLab } from "../../helper/leaveLab";
 import { usePlan } from "../../hooks/usePlan";
 import { useAppTheme } from "../../hooks/useAppThem";
 import useInitHeaderImage from "../../hooks/useInitHeaderImage";
@@ -48,6 +49,7 @@ const SettingsScreen = () => {
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
+  const [leaveLabLoading, setLeaveLabLoading] = useState(false);
   const { lang, setLang } = useLanguage();
   const { appColors } = useAppTheme();
   const {
@@ -271,6 +273,25 @@ const SettingsScreen = () => {
     } finally {
       setSignoutLoading(false);
     }
+  };
+
+  const handleLeaveLab = () => {
+    modal.confirm({
+      title: t("LeaveLabConfirmTitle"),
+      icon: <ExclamationCircleOutlined />,
+      okText: t("LeaveLabConfirmOk"),
+      okType: "danger",
+      cancelText: t("Cancel"),
+      content: t("LeaveLabConfirmDescription"),
+      onOk: async () => {
+        try {
+          await leaveLab(setLeaveLabLoading, setIsLogin, navigate);
+        } catch (error) {
+          console.error("Error leaving lab:", error);
+          message.error(t("LeaveLabError"));
+        }
+      },
+    });
   };
 
   useEffect(() => {
@@ -539,6 +560,31 @@ const SettingsScreen = () => {
                         {t("ImportToSystem")}
                       </Button>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-[16px]">
+                <p className="pl-[4px] opacity-60">{t("DangerZone")}</p>
+
+                <div
+                  className="rounded-lg border mt-[8px] p-[24px]"
+                  style={{ borderColor: appColors.userWarning || "#ff4d4f" }}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <b className="text-[14px]">{t("LeaveLab")}</b>
+                      <p className="mt-2 text-sm text-gray-500">
+                        {t("LeaveLabDescription")}
+                      </p>
+                    </div>
+                    <Button
+                      danger
+                      onClick={handleLeaveLab}
+                      loading={leaveLabLoading}
+                    >
+                      {t("LeaveLab")}
+                    </Button>
                   </div>
                 </div>
               </div>

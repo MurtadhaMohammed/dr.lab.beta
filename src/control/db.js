@@ -28,7 +28,12 @@ class LabDB {
   constructor() {
     this.db = null;
     this.dbPath = path.join(app.getPath("userData"), "drlab.db");
-    this.init();
+    // `await new LabDB()` does NOT wait for this — it resolves as soon as
+    // the constructor returns, regardless of whether init() has finished.
+    // Callers must `await labDB.ready` before touching this.db, otherwise
+    // this.db can still be null (race depends on handlePendingImport's
+    // timing, which is why this only failed intermittently before).
+    this.ready = this.init();
   }
 
   // Armed by the renderer (usePlan) via IPC once the server confirms the
@@ -88,6 +93,7 @@ class LabDB {
     // const dbPath = app.getPath("userData") + "drlab.db";
     // const dbPath = path.join(app.getPath("userData"), "drlab.db");
     try {
+      await this.handlePendingWipe();
       await this.handlePendingImport();
       this.db = new Database(this.dbPath, {
         // verbose: console.log,
@@ -1724,6 +1730,75 @@ class LabDB {
       }
       return false;
     }
+  }
+
+  // Called from Settings ("Leave this lab") after the server confirms this
+  // device is disconnected from the current clientId. The db file can't be
+  // deleted while this process still has it open (fails outright on
+  // Windows), so — same trick as importDatabase — we drop a marker, relaunch,
+  // and let the next cold start (before any Database handle is opened) do
+  // the actual deletion via handlePendingWipe().
+  async requestDataWipe() {
+    const dir = path.dirname(this.dbPath);
+    const markerPath = path.join(dir, "drlab.wipe-pending");
+    try {
+      if (this.db) {
+        try {
+          this.db.close();
+        } catch (_) {
+          // Already closed or never opened — fine, we're wiping it anyway.
+        }
+      }
+      fs.writeFileSync(markerPath, "");
+      app.relaunch();
+      app.exit(0);
+      return;
+    } catch (error) {
+      console.error("❌ Failed to schedule local data wipe:", error);
+      return {
+        success: false,
+        message: "Failed to schedule local data wipe.",
+      };
+    }
+  }
+
+  async handlePendingWipe() {
+    const dir = path.dirname(this.dbPath);
+    const markerPath = path.join(dir, "drlab.wipe-pending");
+
+    try {
+      fs.accessSync(markerPath);
+    } catch (err) {
+      return false; // No wipe scheduled — normal startup.
+    }
+
+    // Everything this lab could have left on disk: the live db (+ WAL/SHM
+    // sidecar files), the one-time pre-sync safety backup, and any
+    // in-flight import that never got applied.
+    const filesToRemove = [
+      this.dbPath,
+      `${this.dbPath}-wal`,
+      `${this.dbPath}-shm`,
+      path.join(dir, "drlab.pre-sync-backup.db"),
+      path.join(dir, "drlab.import-pending.db"),
+    ];
+
+    for (const file of filesToRemove) {
+      try {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      } catch (error) {
+        console.error(`❌ Failed to remove ${file} during data wipe:`, error);
+      }
+    }
+
+    try {
+      fs.unlinkSync(markerPath);
+    } catch (_) {
+      // Non-fatal — worst case we wipe an already-empty db again next boot.
+    }
+
+    console.log("✅ Local data wiped — left previous lab.");
+    return true;
   }
 }
 

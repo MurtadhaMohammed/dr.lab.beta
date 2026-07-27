@@ -89,7 +89,8 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     "Type:",
     typeof arg.query
   );
-  let labDB = await new LabDB();
+  let labDB = new LabDB();
+  await labDB.ready;
   switch (arg.query) {
     case "setSyncConfig": {
       // Renderer (usePlan) arms/disarms multi-PC sync after checking the
@@ -1233,6 +1234,24 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", {
           success: false,
           message: "حدث خطأ أثناء الاستيراد.",
+        });
+      }
+      break;
+    }
+
+    // Renderer only sends this after /app/leave-lab has already succeeded
+    // server-side (see src/helper/leaveLab.js) — this step just wipes what's
+    // left on disk so the next login (to this lab or another one) starts
+    // clean. Relaunches the app, so no reply is expected on success.
+    case "leaveLab": {
+      try {
+        const resp = await labDB.requestDataWipe();
+        if (resp) event.reply("asynchronous-reply", resp);
+      } catch (error) {
+        console.error("❌ Error in leaveLab:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          message: "Failed to delete local data.",
         });
       }
       break;

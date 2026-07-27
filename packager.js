@@ -7,6 +7,7 @@
  */
 const path = require("path");
 const fs = require("fs");
+const os = require("os");
 const { spawnSync } = require("child_process");
 const packager = require("electron-packager");
 
@@ -50,7 +51,58 @@ function ensureSharpForTarget() {
   }
 }
 
+// better-sqlite3 fetches a prebuilt native binary matching whatever machine
+// runs `npm install` (via prebuild-install) — unlike sharp, it's a single
+// package with one binary path (no separate @img/sharp-win32-ia32-style
+// per-platform package), so packaging for Windows from this Mac bundles the
+// Mac binary as-is. The packaged app then fails at runtime with
+// "... is not a valid Win32 application". Because there's nowhere else to
+// put the swapped-in binary, this temporarily overwrites the same
+// node_modules/better-sqlite3 this machine's own `npm start` uses — so we
+// must restore the host's own binary again once packaging finishes (see
+// restoreBetterSqlite3ForHost below), or local dev breaks after a build.
+const betterSqlite3Version = require("./node_modules/better-sqlite3/package.json").version;
+const crossCompilingSqlite3 = os.platform() !== platform || os.arch() !== arch;
+
+function ensureBetterSqlite3ForTarget() {
+  if (!crossCompilingSqlite3) return;
+  console.log(`Swapping in better-sqlite3@${betterSqlite3Version} for ${platform}-${arch}...`);
+  const r = spawnSync(
+    "npm",
+    [
+      "install",
+      `better-sqlite3@${betterSqlite3Version}`,
+      `--os=${platform}`,
+      `--cpu=${arch}`,
+      "--force",
+      "--no-save",
+    ],
+    { stdio: "inherit", shell: true, cwd: __dirname }
+  );
+  if (r.status !== 0) {
+    throw new Error(
+      `Failed to install better-sqlite3 for ${platform}-${arch} — required for the packaged app's database to work`
+    );
+  }
+}
+
+function restoreBetterSqlite3ForHost() {
+  if (!crossCompilingSqlite3) return;
+  console.log("Restoring better-sqlite3 native binary for local development...");
+  const r = spawnSync(
+    "npm",
+    ["install", `better-sqlite3@${betterSqlite3Version}`, "--force", "--no-save"],
+    { stdio: "inherit", shell: true, cwd: __dirname }
+  );
+  if (r.status !== 0) {
+    console.error(
+      "Failed to restore better-sqlite3 for local development — run `npm install better-sqlite3 --force` manually."
+    );
+  }
+}
+
 ensureSharpForTarget();
+ensureBetterSqlite3ForTarget();
 
 const opts = {
   dir: path.resolve(__dirname),
@@ -78,8 +130,10 @@ const opts = {
 packager(opts)
   .then((paths) => {
     console.log("Built:", paths.join("\n"));
+    restoreBetterSqlite3ForHost();
   })
   .catch((err) => {
     console.error(err);
+    restoreBetterSqlite3ForHost();
     process.exit(1);
   });
