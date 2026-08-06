@@ -51,58 +51,95 @@ function ensureSharpForTarget() {
   }
 }
 
-// better-sqlite3 fetches a prebuilt native binary matching whatever machine
-// runs `npm install` (via prebuild-install) — unlike sharp, it's a single
-// package with one binary path (no separate @img/sharp-win32-ia32-style
-// per-platform package), so packaging for Windows from this Mac bundles the
-// Mac binary as-is. The packaged app then fails at runtime with
-// "... is not a valid Win32 application". Because there's nowhere else to
-// put the swapped-in binary, this temporarily overwrites the same
-// node_modules/better-sqlite3 this machine's own `npm start` uses — so we
-// must restore the host's own binary again once packaging finishes (see
-// restoreBetterSqlite3ForHost below), or local dev breaks after a build.
+// better-sqlite3 is a native Electron module. `npm install --cpu=ia32` is not
+// enough to replace an already-installed x64 binary, and it targets Node's
+// ABI rather than Electron's ABI. Rebuild it explicitly for the Electron
+// version and architecture that electron-packager is about to bundle.
+//
+// This temporarily overwrites the same node_modules/better-sqlite3 binary
+// used by local development, so restore an Electron build for the host after
+// packaging finishes.
 const betterSqlite3Version = require("./node_modules/better-sqlite3/package.json").version;
+const electronVersion = require("./node_modules/electron/package.json").version;
 const crossCompilingSqlite3 = os.platform() !== platform || os.arch() !== arch;
 
-function ensureBetterSqlite3ForTarget() {
-  if (!crossCompilingSqlite3) return;
-  console.log(`Swapping in better-sqlite3@${betterSqlite3Version} for ${platform}-${arch}...`);
+function rebuildBetterSqlite3(targetPlatform, targetArch, label) {
+  console.log(
+    `Rebuilding better-sqlite3@${betterSqlite3Version} for Electron ${electronVersion} (${label})...`
+  );
   const r = spawnSync(
-    "npm",
+    "npx",
     [
-      "install",
-      `better-sqlite3@${betterSqlite3Version}`,
-      `--os=${platform}`,
-      `--cpu=${arch}`,
+      "electron-rebuild",
       "--force",
-      "--no-save",
+      "--which-module=better-sqlite3",
+      `--version=${electronVersion}`,
+      `--platform=${targetPlatform}`,
+      `--arch=${targetArch}`,
     ],
     { stdio: "inherit", shell: true, cwd: __dirname }
   );
   if (r.status !== 0) {
     throw new Error(
-      `Failed to install better-sqlite3 for ${platform}-${arch} — required for the packaged app's database to work`
+      `Failed to rebuild better-sqlite3 for Electron ${electronVersion} ${targetPlatform}-${targetArch}`
     );
   }
+}
+
+function ensureBetterSqlite3ForTarget() {
+  rebuildBetterSqlite3(platform, arch, `${platform}-${arch} package`);
 }
 
 function restoreBetterSqlite3ForHost() {
   if (!crossCompilingSqlite3) return;
   console.log("Restoring better-sqlite3 native binary for local development...");
-  const r = spawnSync(
-    "npm",
-    ["install", `better-sqlite3@${betterSqlite3Version}`, "--force", "--no-save"],
-    { stdio: "inherit", shell: true, cwd: __dirname }
-  );
-  if (r.status !== 0) {
+  try {
+    rebuildBetterSqlite3(os.platform(), os.arch(), `${os.platform()}-${os.arch()} host`);
+  } catch (error) {
     console.error(
-      "Failed to restore better-sqlite3 for local development — run `npm install better-sqlite3 --force` manually."
+      "Failed to restore better-sqlite3 for local development:",
+      error.message
     );
   }
 }
 
 ensureSharpForTarget();
 ensureBetterSqlite3ForTarget();
+
+// A running Dr.Lab.exe from a previous build locks files under
+// build/Dr.Lab-win32-ia32 and makes electron-packager's overwrite fail with
+// EBUSY/rmdir. Quit those processes and remove the output folder first.
+function unlockPreviousOutput() {
+  if (platform !== "win32") return;
+  const outDir = path.join(__dirname, "build", `Dr.Lab-${platform}-${arch}`);
+  if (!fs.existsSync(outDir)) return;
+
+  console.log("Stopping any running Dr.Lab processes that lock the build folder...");
+  spawnSync("taskkill", ["/F", "/IM", "Dr.Lab.exe", "/T"], {
+    stdio: "ignore",
+    shell: true,
+  });
+  // Brief pause so Windows releases file handles.
+  spawnSync("powershell", ["-NoProfile", "-Command", "Start-Sleep -Seconds 2"], {
+    stdio: "ignore",
+    shell: true,
+  });
+
+  try {
+    fs.rmSync(outDir, { recursive: true, force: true });
+    console.log("Cleared previous output:", outDir);
+  } catch (err) {
+    if (err && (err.code === "EBUSY" || err.code === "EPERM")) {
+      throw new Error(
+        `Cannot overwrite ${outDir} (still locked).\n` +
+          `Close Dr.Lab.exe (check Task Manager) and retry: npm run build`
+      );
+    }
+    throw err;
+  }
+}
+
+unlockPreviousOutput();
 
 const opts = {
   dir: path.resolve(__dirname),
