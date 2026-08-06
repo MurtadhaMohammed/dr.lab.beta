@@ -35,11 +35,13 @@ import PopOverContent from "./PopOverContent";
 import { apiCall } from "../../libs/api";
 import PrinterSelector from "./PrinterSelector";
 import { signout } from "../../helper/signOut";
+import { leaveLab } from "../../helper/leaveLab";
 import { usePlan } from "../../hooks/usePlan";
 import { useAppTheme } from "../../hooks/useAppThem";
 import useInitHeaderImage from "../../hooks/useInitHeaderImage";
 import { PDFSettings } from "./pdfSettings";
 import OtpInputs from "../../components/OTP/otp";
+import useSyncStatus from "../../hooks/useSyncStatus";
 
 const SettingsScreen = () => {
   // const [imagePath, setImagePath] = useState(null);
@@ -47,10 +49,15 @@ const SettingsScreen = () => {
   const [isUpdate, setIsUpdate] = useState(false);
   const [loading, setLoading] = useState(false);
   const [signoutLoading, setSignoutLoading] = useState(false);
+  const [leaveLabLoading, setLeaveLabLoading] = useState(false);
   const { lang, setLang } = useLanguage();
   const { appColors } = useAppTheme();
   const {
     user,
+    setPrintFontSize,
+    printFontSize,
+    setAutoRefreshSeconds,
+    autoRefreshSeconds,
     setIsLogin,
     setImagePath,
   } = useAppStore();
@@ -77,7 +84,9 @@ const SettingsScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [countdown, setCountdown] = useState(0);
   const [UUID, setUUID] = useState(null);
-  // const { generateHeader } = useInitHeaderImage();
+  const { generateHeader, fetchHeader } = useInitHeaderImage();
+  const { state: syncState } = useSyncStatus();
+  const isAccountSynced = syncState !== "disabled";
 
   const {
     getPrintUsed,
@@ -140,6 +149,11 @@ const SettingsScreen = () => {
   //   localStorage.setItem("lab-print-size", val);
   //   setPrintFontSize(val);
   // };
+
+  const handleAutoRefreshChange = (val) => {
+    localStorage.setItem("lab-auto-refresh-seconds", val);
+    setAutoRefreshSeconds(val);
+  };
 
   const handelCancel = () => {
     const labUserRow = JSON.parse(localStorage.getItem("lab-user"));
@@ -291,6 +305,25 @@ const SettingsScreen = () => {
     } finally {
       setSignoutLoading(false);
     }
+  };
+
+  const handleLeaveLab = () => {
+    modal.confirm({
+      title: t("LeaveLabConfirmTitle"),
+      icon: <ExclamationCircleOutlined />,
+      okText: t("LeaveLabConfirmOk"),
+      okType: "danger",
+      cancelText: t("Cancel"),
+      content: t("LeaveLabConfirmDescription"),
+      onOk: async () => {
+        try {
+          await leaveLab(setLeaveLabLoading, setIsLogin, navigate);
+        } catch (error) {
+          console.error("Error leaving lab:", error);
+          message.error(t("LeaveLabError"));
+        }
+      },
+    });
   };
 
   useEffect(() => {
@@ -703,9 +736,107 @@ const SettingsScreen = () => {
                       <Select.Option value={16}>Large</Select.Option>
                     </Select>
                   </div>
+                  <Divider />
+                  <div className="flex justify-between items-center">
+                    <b className="text-[14px]">{t("AutoRefreshInterval")}</b>
+                    <Select
+                      value={autoRefreshSeconds}
+                      variant="borderless"
+                      onChange={handleAutoRefreshChange}
+                      popupMatchSelectWidth={false}
+                      style={{ width: 100, textAlign: "center" }}
+                    >
+                      <Select.Option value={0}>{t("Off")}</Select.Option>
+                      <Select.Option value={60}>1 min</Select.Option>
+                      <Select.Option value={600}>10 min</Select.Option>
+                      <Select.Option value={1800}>30 min</Select.Option>
+                    </Select>
+                  </div>
                 </Card>
               </div> */}
 
+              <div className="mt-[16px]">
+                <p className="pl-[4px]">
+                  <span className="opacity-60">{t("DatabaseManagement")}</span>
+                  {planType === "FREE" && (
+                    <CrownFilled className="text-[18px] text-[#faad14] ml-1" />
+                  )}
+                </p>
+
+                <div
+                  className="rounded-lg border mt-[8px]"
+                  style={{ borderColor: appColors.colorBorder }}
+                >
+                  <div
+                    className="border-b  p-[24px]"
+                    style={{ borderColor: appColors.colorBorder }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <b className="text-[14px]">{t("ExportDatabase")}</b>
+                        <p className="mt-2 text-sm text-gray-500">
+                          {t("ExportDatabaseDescription")}
+                        </p>
+                      </div>
+                      <Button
+                        type="primary"
+                        icon={<ExportOutlined />}
+                        onClick={handleExportDatabase}
+                        loading={exportLoading}
+                        disabled={planType === "FREE" || isAccountSynced}
+                      >
+                        {t("ExportToDesktop")}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-[24px]">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <b className="text-[14px]">{t("ImportDatabase")}</b>
+                        <p className="mt-2 text-sm text-gray-500">
+                          {t("ImportDatabaseDescription")}
+                        </p>
+                      </div>
+
+                      <Button
+                        type="primary"
+                        icon={<ImportOutlined />}
+                        onClick={handleImportDatabase}
+                        disabled={planType === "FREE" || isAccountSynced}
+                        loading={importLoading} // Changed to importLoading
+                      >
+                        {t("ImportToSystem")}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-[16px]">
+                <p className="pl-[4px] opacity-60">{t("DangerZone")}</p>
+
+                <div
+                  className="rounded-lg border mt-[8px] p-[24px]"
+                  style={{ borderColor: appColors.userWarning || "#ff4d4f" }}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <b className="text-[14px]">{t("LeaveLab")}</b>
+                      <p className="mt-2 text-sm text-gray-500">
+                        {t("LeaveLabDescription")}
+                      </p>
+                    </div>
+                    <Button
+                      danger
+                      onClick={handleLeaveLab}
+                      loading={leaveLabLoading}
+                    >
+                      {t("LeaveLab")}
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </section>
           </Col>
           <Col span={12}>

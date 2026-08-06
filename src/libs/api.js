@@ -1,13 +1,25 @@
 import { jwtDecode } from "jwt-decode";
 import { useAppStore } from "./appStore";
-// export const URL = "http://localhost:3000/api";
-// export const URL = "https://dr-lab-apiv2.onrender.com/api";
-export const URL = "https://app.drlab.app/api";
+import { API_URL } from "../config/apiUrl";
+
+export const URL = API_URL;
 
 export const isTokenValid = (token) => {
   try {
     let { exp } = jwtDecode(token);
     return Date.now() <= exp * 1000;
+  } catch (err) {
+    return false;
+  }
+};
+
+// Old (Client-based) tokens don't carry a clientId claim — only new
+// (User-based) tokens do, since `id` on a legacy token already IS the
+// Client's own id. Used to force a one-time re-login through the new flow.
+export const isLegacyToken = (token) => {
+  try {
+    const decoded = jwtDecode(token);
+    return decoded?.clientId == null;
   } catch (err) {
     return false;
   }

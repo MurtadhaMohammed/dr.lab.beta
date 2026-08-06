@@ -3,16 +3,94 @@ const fs = require("fs");
 const { app, dialog } = require("electron");
 const Database = require("better-sqlite3");
 const dayjs = require("dayjs");
+const crypto = require("crypto");
+const log = require("electron-log");
+
+// Tables that participate in multi-PC sync. tests_catalog is excluded —
+// it is server-seeded and never edited per-lab.
+const SYNCED_TABLES = [
+  "patients",
+  "doctors",
+  "visits",
+  "tests",
+  "packages",
+  "test_to_packages",
+];
+
+// main.js constructs a fresh LabDB per IPC message, so the sync flag must
+// live at module level to survive across instances.
+let globalSyncEnabled = false;
+function setGlobalSyncEnabled(enabled) {
+  globalSyncEnabled = !!enabled;
+}
 
 class LabDB {
   constructor() {
     this.db = null;
     this.dbPath = path.join(app.getPath("userData"), "drlab.db");
-    this.init();
+    // `await new LabDB()` does NOT wait for this — it resolves as soon as
+    // the constructor returns, regardless of whether init() has finished.
+    // Callers must `await labDB.ready` before touching this.db, otherwise
+    // this.db can still be null (race depends on handlePendingImport's
+    // timing, which is why this only failed intermittently before).
+    this.ready = this.init();
+  }
+
+  // Armed by the renderer (usePlan) via IPC once the server confirms the
+  // account has multi-PC sync. Off = every code path behaves exactly as
+  // before sync existed (hard deletes, no push).
+  get syncEnabled() {
+    return globalSyncEnabled;
+  }
+
+  // Nudge the sync engine to push soon instead of waiting for its next
+  // scheduled cycle (up to 60s). Lazy require avoids a circular dependency
+  // with sync.js (which requires this file) — by the time any write happens
+  // both modules are already fully loaded, so this just hits the cache.
+  kickSync() {
+    try {
+      require("./sync").syncEngine.kick();
+    } catch (error) {
+      console.error("Error kicking sync engine:", error);
+    }
+  }
+
+  // Stamp a row for sync after any local write. uuid is assigned lazily so
+  // legacy writes stay untouched until first marked.
+  markDirty(table, id) {
+    try {
+      this.db
+        .prepare(
+          `UPDATE ${table} SET uuid = COALESCE(uuid, ?), dirty = 1 WHERE id = ?`
+        )
+        .run(crypto.randomUUID(), id);
+      this.kickSync();
+    } catch (error) {
+      console.error(`Error marking ${table}#${id} dirty:`, error);
+    }
+  }
+
+  softDelete(table, id, column = "id") {
+    // Row-by-row so each row gets its own uuid if it never had one.
+    const rows = this.db
+      .prepare(`SELECT id FROM ${table} WHERE ${column} = ? AND deletedAt IS NULL`)
+      .all(id);
+    const stmt = this.db.prepare(
+      `UPDATE ${table}
+       SET deletedAt = datetime('now'), dirty = 1,
+           uuid = COALESCE(uuid, ?), updatedAt = datetime('now')
+       WHERE id = ?`
+    );
+    for (const row of rows) {
+      stmt.run(crypto.randomUUID(), row.id);
+    }
+    if (rows.length > 0) this.kickSync();
+    return rows.length;
   }
 
   async init() {
     try {
+      await this.handlePendingWipe();
       await this.handlePendingImport();
       this.db = new Database(this.dbPath, {
         // verbose: console.log,
@@ -22,6 +100,11 @@ class LabDB {
       this.initializeDatabase();
       this.seedTestsCatalogIfEmpty();
       this.alterDoctorTableIfNeeded();
+      this.checkAndAddTestTypeColumnAndGroupTest();
+      this.checkAndAddVisitNumberColumn();
+      this.initTestsFromJSON();
+      this.migrateVisitsTableWithDoctorForeignKey();
+      await this.checkAndAddSyncColumns();
       console.log(
         "LabDB initialized, db object:",
         this.db ? "exists" : "does not exist"
@@ -30,6 +113,10 @@ class LabDB {
         console.log("Available collections:", Object.keys(this.db));
       }
     } catch (err) {
+      // Plain console.error never reaches the persisted log file in a
+      // packaged build (only electron-log calls do), so a native-module or
+      // file-access failure here was previously invisible after the fact.
+      log.error("[LabDB] Error opening database:", err && err.message);
       console.error("Error opening database", err);
     }
   }
@@ -43,6 +130,10 @@ class LabDB {
         email TEXT,
         phone TEXT,
         birth DATE NOT NULL,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       );
@@ -55,8 +146,73 @@ class LabDB {
         phone TEXT,
         address TEXT,
         type TEXT,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
         updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS visits (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patientID INTEGER,
+        doctorID INTEGER,
+        visitNumber VARCHAR(6),
+        status TEXT DEFAULT "PENDING" NOT NULL,
+        testType VARCHAR(50),
+        tests TEXT,
+        discount INTEGER,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(patientID) REFERENCES patients(id)
+        FOREIGN KEY(doctorID) REFERENCES doctors(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS tests(
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(50),
+      price INTEGER, 
+      type TEXT,
+      groupTest TEXT DEFAULT "[]",
+      normal TEXT,
+      options TEXT,
+      isSelecte INTEGER DEFAULT 0,
+      uuid TEXT,
+      dirty INTEGER DEFAULT 0,
+      syncedAt TEXT,
+      deletedAt TEXT,
+      updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+      createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
+     );
+      CREATE TABLE IF NOT EXISTS packages(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title VARCHAR(100),
+        customePrice INTEGER,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+       CREATE TABLE IF NOT EXISTS test_to_packages(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        packageID INTEGER,
+        testID INTEGER,
+        uuid TEXT,
+        dirty INTEGER DEFAULT 0,
+        syncedAt TEXT,
+        deletedAt TEXT,
+        updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (packageID) REFERENCES packages(id) ON DELETE CASCADE,
+        FOREIGN KEY (testID) REFERENCES tests(id) ON DELETE CASCADE
       );
 
       CREATE TABLE IF NOT EXISTS tests_catalog (
@@ -162,6 +318,11 @@ class LabDB {
         FOREIGN KEY (visit_item_id) REFERENCES visit_item_v2(id) ON DELETE CASCADE ON UPDATE CASCADE
       );
 
+      CREATE TABLE IF NOT EXISTS sync_state(
+        tableName TEXT PRIMARY KEY,
+        serverCursor TEXT
+      );
+
     `);
   }
 
@@ -254,6 +415,82 @@ class LabDB {
     }
   }
 
+  async checkAndAddVisitNumberColumn() {
+    try {
+      // Check if the visits table has the visitNumber column
+      const columnCheckStmt = this.db.prepare(`
+        PRAGMA table_info(visits)
+      `);
+      const columns = columnCheckStmt.all();
+
+      const hasVisitNumberColumn = columns.some(
+        (column) => column.name === "visitNumber"
+      );
+
+      if (!hasVisitNumberColumn) {
+        // Alter the table to add the visitNumber column if it doesn't exist
+        this.db.exec(`
+          ALTER TABLE visits ADD COLUMN visitNumber VARCHAR(6)
+        `);
+        console.log("visitNumber column added successfully");
+      } else {
+        console.log("visitNumber column already exists");
+      }
+    } catch (error) {
+      console.error("Error checking or adding visitNumber column:", error);
+    }
+  }
+
+  async checkAndAddTestTypeColumnAndGroupTest() {
+    try {
+      // Check if the tests table has the type and groupTest columns
+      const columnCheckStmt = this.db.prepare(`
+        PRAGMA table_info(tests)
+      `);
+      const columns = columnCheckStmt.all();
+
+      const hasTypeColumn = columns.some((column) => column.name === "type");
+
+      const hasGroupTestColumn = columns.some(
+        (column) => column.name === "groupTest"
+      );
+
+      if (!hasTypeColumn) {
+        // Alter the table to add the type column if it doesn't exist
+        this.db.exec(`
+          ALTER TABLE tests ADD COLUMN type TEXT
+        `);
+        console.log("type column added successfully");
+      } else {
+        console.log("type column already exists");
+      }
+
+      if (!hasGroupTestColumn) {
+        this.db.exec(`
+          ALTER TABLE tests ADD COLUMN groupTest TEXT DEFAULT "[]"
+        `);
+        console.log("groupTest column added successfully");
+      } else {
+        console.log("groupTest column already exists");
+      }
+    } catch (error) {
+      console.error("Error checking or adding type column:", error);
+    }
+  }
+
+  async searchGroupTest() {
+    try {
+      const tests = this.db.prepare(
+        `SELECT * FROM tests WHERE deletedAt IS NULL ORDER BY id DESC LIMIT 8`
+      );
+
+      return tests.all();
+    } catch (error) {
+      console.error("Error searching group test:", error);
+      return [];
+    }
+  }
+
   async addNewData(data) {
     try {
       // Validate that data is an array
@@ -325,14 +562,277 @@ class LabDB {
     }
   }
 
+  async migrateVisitsTableWithDoctorForeignKey() {
+    try {
+      // Step 1: Enable foreign keys
+      this.db.prepare(`PRAGMA foreign_keys = ON;`).run();
+
+      // Step 2: Check if doctorID column already exists
+      const columns = this.db.prepare(`PRAGMA table_info(visits);`).all();
+      const hasDoctorID = columns.some((col) => col.name === "doctorID");
+
+      if (hasDoctorID) {
+        console.log("✅ doctorID column already exists, skipping migration.");
+        return;
+      }
+
+      this.db.transaction(() => {
+        // Step 3: Rename the existing table
+        this.db.prepare(`ALTER TABLE visits RENAME TO visits_old;`).run();
+
+        // Step 4: Create the new table with foreign key constraint
+        this.db
+          .prepare(
+            `
+            CREATE TABLE visits (
+              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              patientID INTEGER,
+              doctorID INTEGER,
+              visitNumber VARCHAR(6),
+              status TEXT DEFAULT "PENDING" NOT NULL,
+              testType VARCHAR(50),
+              tests TEXT,
+              discount INTEGER,
+              updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+              createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+              FOREIGN KEY(patientID) REFERENCES patients(id),
+              FOREIGN KEY(doctorID) REFERENCES doctors(id)
+            );
+        `
+          )
+          .run();
+
+        // Step 5: Copy data from the old table
+        const oldColumns = columns.map((col) => col.name).join(", ");
+        const newColumns = oldColumns + ", NULL"; // doctorID is not in the old table
+
+        this.db
+          .prepare(
+            `
+          INSERT INTO visits (
+            id, patientID, doctorID, visitNumber, status, testType, tests, discount, updatedAt, createdAt
+          )
+          SELECT
+            id, patientID, NULL, visitNumber, status, testType, tests, discount, updatedAt, createdAt
+          FROM visits_old;
+        `
+          )
+          .run();
+
+        // Step 6: Drop old table
+        this.db.prepare(`DROP TABLE visits_old;`).run();
+
+        console.log("✅ visits table migrated with doctorID foreign key.");
+      })();
+    } catch (err) {
+      console.error("❌ Migration failed:", err.message);
+    }
+  }
+
+  async checkAndAddSyncColumns() {
+    try {
+      // SQLite disallows non-constant defaults in ADD COLUMN, so columns are
+      // added bare and backfilled explicitly below.
+      const syncColumns = [
+        ["uuid", "TEXT"],
+        ["dirty", "INTEGER DEFAULT 0"],
+        ["syncedAt", "TEXT"],
+        ["deletedAt", "TEXT"],
+      ];
+
+      const patientColumns = this.db.prepare(`PRAGMA table_info(patients)`).all();
+      const needsMigration = !patientColumns.some((c) => c.name === "uuid");
+
+      if (needsMigration) {
+        // One-time safety copy of the DB before touching existing installs.
+        const backupPath = path.join(
+          app.getPath("userData"),
+          "drlab.pre-sync-backup.db"
+        );
+        if (!fs.existsSync(backupPath)) {
+          await this.db.backup(backupPath);
+          console.log("✅ Pre-sync backup created at", backupPath);
+        }
+      }
+
+      for (const table of SYNCED_TABLES) {
+        const columns = this.db.prepare(`PRAGMA table_info(${table})`).all();
+        const columnNames = new Set(columns.map((c) => c.name));
+
+        for (const [name, type] of syncColumns) {
+          if (!columnNames.has(name)) {
+            this.db.exec(`ALTER TABLE ${table} ADD COLUMN ${name} ${type}`);
+          }
+        }
+
+        // test_to_packages has no timestamps; sync needs an LWW watermark.
+        if (!columnNames.has("updatedAt")) {
+          this.db.exec(`ALTER TABLE ${table} ADD COLUMN updatedAt DATETIME`);
+          this.db.exec(
+            `UPDATE ${table} SET updatedAt = datetime('now') WHERE updatedAt IS NULL`
+          );
+        }
+        if (!columnNames.has("createdAt")) {
+          this.db.exec(`ALTER TABLE ${table} ADD COLUMN createdAt DATETIME`);
+          this.db.exec(
+            `UPDATE ${table} SET createdAt = datetime('now') WHERE createdAt IS NULL`
+          );
+        }
+      }
+
+      // Backfill uuids row-by-row; existing rows are marked dirty so the
+      // first sync cycle doubles as the initial full upload.
+      const backfill = this.db.transaction(() => {
+        for (const table of SYNCED_TABLES) {
+          const rows = this.db
+            .prepare(`SELECT id FROM ${table} WHERE uuid IS NULL`)
+            .all();
+          if (rows.length === 0) continue;
+          const update = this.db.prepare(
+            `UPDATE ${table} SET uuid = ?, dirty = 1 WHERE id = ?`
+          );
+          for (const row of rows) {
+            update.run(crypto.randomUUID(), row.id);
+          }
+          console.log(`✅ Backfilled ${rows.length} uuids in ${table}`);
+        }
+      });
+      backfill();
+
+      for (const table of SYNCED_TABLES) {
+        this.db.exec(
+          `CREATE UNIQUE INDEX IF NOT EXISTS idx_${table}_uuid ON ${table}(uuid)`
+        );
+      }
+
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS sync_state(
+          tableName TEXT PRIMARY KEY,
+          serverCursor TEXT
+        );
+      `);
+
+      if (needsMigration) {
+        console.log("✅ Sync columns migration completed");
+      }
+    } catch (error) {
+      // Non-fatal by design: the app must keep working exactly as before
+      // even if sync preparation fails. Sync simply stays disabled.
+      console.error("Error adding sync columns (sync will stay disabled):", error);
+    }
+  }
+
+  async initTestsFromJSON() {
+    try {
+      const testCountStet = this.db.prepare(`
+        SELECT COUNT(*) as total FROM tests
+      `);
+      const { total } = testCountStet.get();
+
+      if (total === 0) {
+        const jsonPath = path.join(__dirname, "tests.json");
+        const jsonGroupPath = path.join(__dirname, "groups.json");
+
+        if (!fs.existsSync(jsonPath) || !fs.existsSync(jsonGroupPath)) {
+          throw new Error("One or both JSON files are missing");
+        }
+
+        const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf-8"));
+        const jsonGroupData = JSON.parse(
+          fs.readFileSync(jsonGroupPath, "utf-8")
+        );
+
+        // Updated insert statement to include type and groupTest fields
+        const insertStmt = this.db.prepare(`
+          INSERT INTO tests (name, price, normal, options, isSelecte, type, groupTest)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `);
+
+        const insertTransaction = this.db.transaction((data) => {
+          for (const item of data) {
+            const normalValue = item.normal
+              ? item.normal.replace(/\\n/g, "\n")
+              : null;
+
+            // Set default values for missing fields
+            const type = item.type || "single";
+            const groupTest = item.groupTest || "[]";
+            const isSelecte = item.isSelecte !== undefined ? item.isSelecte : 0;
+
+            insertStmt.run(
+              item.name,
+              Number(item.price),
+              normalValue,
+              item.options || "[]",
+              Number(isSelecte),
+              type,
+              groupTest
+            );
+          }
+        });
+
+        insertTransaction(jsonData);
+
+        for (const item of jsonGroupData) {
+          await this.addPackage({
+            title: item?.groupname,
+            customePrice: 0,
+            tests: item?.testIds?.map((id) => ({ id })),
+          });
+        }
+
+        console.log("Tests imported from tests.json");
+      } else {
+        console.log("Tests table is not empty, skipping import");
+      }
+    } catch (error) {
+      console.error("Error importing tests from JSON:", error);
+    }
+    this.searchGroupTest();
+  }
+
+  async addUniqueVisitNumber(visitId) {
+    try {
+      // First, check if the visitNumber already exists for the given visitId
+      const selectStmt = this.db.prepare(`
+        SELECT visitNumber FROM visits WHERE id = ?
+      `);
+      const result = selectStmt.get(visitId);
+
+      // If visitNumber exists, return it
+      if (result && result.visitNumber) {
+        return result.visitNumber;
+      }
+
+      // If visitNumber doesn't exist, generate a unique 6-digit number
+      const visitNumber = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+
+      // Update the visit record with the generated visitNumber
+      const updateStmt = this.db.prepare(`
+        UPDATE visits
+        SET visitNumber = ?
+        WHERE id = ?
+      `);
+      updateStmt.run(visitNumber, visitId);
+      this.markDirty("visits", visitId);
+
+      return visitNumber;
+    } catch (error) {
+      console.error("Error updating visit with visitNumber:", error);
+      return null;
+    }
+  }
+
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
     // Search by name or ID
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM patients
-      WHERE name LIKE ? 
-        OR CAST(id AS TEXT) = ?
+      WHERE (name LIKE ? OR CAST(id AS TEXT) = ?)
+        AND deletedAt IS NULL
     `);
 
     const countResult = countStmt.get(`%${q}%`, q);
@@ -340,8 +840,8 @@ class LabDB {
 
     const stmt = await this.db.prepare(`
       SELECT * FROM patients
-      WHERE name LIKE ? 
-        OR CAST(id AS TEXT) = ?
+      WHERE (name LIKE ? OR CAST(id AS TEXT) = ?)
+        AND deletedAt IS NULL
       ORDER BY patients.id DESC
       LIMIT ? OFFSET ?
     `);
@@ -363,10 +863,17 @@ class LabDB {
       patient.phone,
       new Date(patient.birth).toISOString()
     );
+    this.markDirty("patients", info.lastInsertRowid);
     return { id: info.lastInsertRowid };
   }
 
   async deletePatient(id) {
+    if (this.syncEnabled) {
+      this.softDelete("visits", id, "patientID");
+      const deleted = this.softDelete("patients", id);
+      return { success: deleted > 0, rowsDeleted: deleted };
+    }
+
     const checkVisitsStmt = await this.db.prepare(`
       DELETE FROM visit_v2 WHERE patient_id = ?
     `);
@@ -402,6 +909,7 @@ class LabDB {
       birth ? new Date(birth).toISOString() : null,
       id
     );
+    if (info.changes > 0) this.markDirty("patients", id);
 
     return { data: info.changes > 0 };
   }
@@ -412,7 +920,7 @@ class LabDB {
       const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM doctors
-      WHERE name LIKE ?
+      WHERE name LIKE ? AND deletedAt IS NULL
     `);
 
       const countResult = countStmt.get(`%${q}%`);
@@ -420,7 +928,7 @@ class LabDB {
 
       const stmt = await this.db.prepare(`
       SELECT * FROM doctors
-      WHERE name LIKE ?
+      WHERE name LIKE ? AND deletedAt IS NULL
       ORDER BY doctors.id DESC
       LIMIT ? OFFSET ?
     `);
@@ -449,6 +957,7 @@ class LabDB {
         doctors.doctor_fee,
         doctors.note
       );
+      this.markDirty("doctors", info.lastInsertRowid);
       return { id: info.lastInsertRowid };
     } catch (error) {
       console.log(error);
@@ -456,6 +965,11 @@ class LabDB {
   }
 
   async deleteDoctor(id) {
+    if (this.syncEnabled) {
+      const deleted = this.softDelete("doctors", id);
+      return { success: deleted > 0, rowsDeleted: deleted };
+    }
+
     const deleteDoctorStmt = await this.db.prepare(`
       DELETE FROM doctors WHERE id = ?
     `);
@@ -493,6 +1007,7 @@ class LabDB {
       note,
       id
     );
+    if (info.changes > 0) this.markDirty("doctors", id);
 
     return { data: info.changes > 0 };
   }
@@ -540,6 +1055,11 @@ class LabDB {
   }
 
   async deleteTest(id) {
+    if (this.syncEnabled) {
+      const deleted = this.softDelete("tests", id);
+      return { success: deleted > 0 };
+    }
+
     const stmt = await this.db.prepare(`
       DELETE FROM tests_catalog WHERE id = ?
     `);
@@ -773,15 +1293,29 @@ class LabDB {
         console.log(
           `Associating package ID ${packageID} with test ID ${testID}`
         );
-        testToPackageStmt.run(packageID, testID);
+        const linkInfo = testToPackageStmt.run(packageID, testID);
+        this.markDirty("test_to_packages", linkInfo.lastInsertRowid);
       }
     });
     testToPackageTransaction();
+    this.markDirty("packages", packageID);
 
     return { data: packageID };
   }
 
   async deletePackage(packageID) {
+    if (this.syncEnabled) {
+      const deleted = this.softDelete("packages", packageID);
+      this.softDelete("test_to_packages", packageID, "packageID");
+      if (deleted > 0) {
+        return {
+          success: true,
+          message: `Package with ID ${packageID} deleted successfully.`,
+        };
+      }
+      throw new Error(`Package with ID ${packageID} not found.`);
+    }
+
     const deletePackageStmt = await this.db.prepare(`
       DELETE FROM packages
       WHERE id = ?
@@ -822,16 +1356,23 @@ class LabDB {
         `);
 
         packageStmt.run(title, customePrice, id);
+        this.markDirty("packages", id);
 
-        // Delete existing associations in 'test_to_packages' table for the package
-        const deleteTestToPackage = this.db.prepare(
-          "DELETE FROM test_to_packages WHERE packageID = ?"
-        );
-        deleteTestToPackage.run(id);
+        // Replace existing associations; under sync the old links must be
+        // tombstoned so the removal reaches other PCs.
+        if (this.syncEnabled) {
+          this.softDelete("test_to_packages", id, "packageID");
+        } else {
+          const deleteTestToPackage = this.db.prepare(
+            "DELETE FROM test_to_packages WHERE packageID = ?"
+          );
+          deleteTestToPackage.run(id);
+        }
 
         // Insert new associations into 'test_to_packages' table
         for (const testID of tests) {
-          testToPackage.run(id, testID);
+          const linkInfo = testToPackage.run(id, testID);
+          this.markDirty("test_to_packages", linkInfo.lastInsertRowid);
         }
       });
 
@@ -853,7 +1394,7 @@ class LabDB {
     const countStmt = await this.db.prepare(`
       SELECT COUNT(*) as total
       FROM packages
-      WHERE title LIKE ?
+      WHERE title LIKE ? AND deletedAt IS NULL
     `);
 
     const countResult = countStmt.get(`%${q}%`);
@@ -862,7 +1403,7 @@ class LabDB {
     // Prepare the query to get the paginated results
     const stmt = await this.db.prepare(`
       SELECT * FROM packages
-      WHERE title LIKE ?
+      WHERE title LIKE ? AND deletedAt IS NULL
       ORDER BY createdAt DESC
       LIMIT ? OFFSET ?
     `);
@@ -873,7 +1414,7 @@ class LabDB {
         SELECT t.*
         FROM tests t
         INNER JOIN test_to_packages tp ON t.id = tp.testID
-        WHERE tp.packageID = ?
+        WHERE tp.packageID = ? AND tp.deletedAt IS NULL AND t.deletedAt IS NULL
       `);
       const tests = testStmt.all(pkg.id);
       return { ...pkg, tests };
@@ -909,6 +1450,7 @@ class LabDB {
         testsStr,
         discount
       );
+      this.markDirty("visits", info.lastInsertRowid);
 
       return { id: info.lastInsertRowid };
     } catch (error) {
@@ -1091,6 +1633,7 @@ class LabDB {
   }) {
     const whereClauses = [
       `(p.name LIKE ? OR v.visitNumber LIKE ?)`,
+      `v.deletedAt IS NULL`,
       startDate
         ? `DATE(v.createdAt) >= '${dayjs(startDate)
             .startOf("day")
@@ -1637,7 +2180,7 @@ class LabDB {
       let query = `SELECT COUNT(*) as total FROM visits v`;
       let params = [];
 
-      const whereClauses = [];
+      const whereClauses = [`v.deletedAt IS NULL`];
 
       if (startDate) {
         whereClauses.push(`strftime('%Y-%m-%d', v.createdAt) >= ?`);
@@ -1676,7 +2219,7 @@ class LabDB {
       console.log("🔍 Patients in DB:", allPatients);
 
       const countStmt = await this.db.prepare(`
-        SELECT COUNT(*) as total FROM patients
+        SELECT COUNT(*) as total FROM patients WHERE deletedAt IS NULL
       `);
 
       const countResult = countStmt.get();
@@ -2267,6 +2810,75 @@ class LabDB {
       return false;
     }
   }
+
+  // Called from Settings ("Leave this lab") after the server confirms this
+  // device is disconnected from the current clientId. The db file can't be
+  // deleted while this process still has it open (fails outright on
+  // Windows), so — same trick as importDatabase — we drop a marker, relaunch,
+  // and let the next cold start (before any Database handle is opened) do
+  // the actual deletion via handlePendingWipe().
+  async requestDataWipe() {
+    const dir = path.dirname(this.dbPath);
+    const markerPath = path.join(dir, "drlab.wipe-pending");
+    try {
+      if (this.db) {
+        try {
+          this.db.close();
+        } catch (_) {
+          // Already closed or never opened — fine, we're wiping it anyway.
+        }
+      }
+      fs.writeFileSync(markerPath, "");
+      app.relaunch();
+      app.exit(0);
+      return;
+    } catch (error) {
+      console.error("❌ Failed to schedule local data wipe:", error);
+      return {
+        success: false,
+        message: "Failed to schedule local data wipe.",
+      };
+    }
+  }
+
+  async handlePendingWipe() {
+    const dir = path.dirname(this.dbPath);
+    const markerPath = path.join(dir, "drlab.wipe-pending");
+
+    try {
+      fs.accessSync(markerPath);
+    } catch (err) {
+      return false; // No wipe scheduled — normal startup.
+    }
+
+    // Everything this lab could have left on disk: the live db (+ WAL/SHM
+    // sidecar files), the one-time pre-sync safety backup, and any
+    // in-flight import that never got applied.
+    const filesToRemove = [
+      this.dbPath,
+      `${this.dbPath}-wal`,
+      `${this.dbPath}-shm`,
+      path.join(dir, "drlab.pre-sync-backup.db"),
+      path.join(dir, "drlab.import-pending.db"),
+    ];
+
+    for (const file of filesToRemove) {
+      try {
+        if (fs.existsSync(file)) fs.unlinkSync(file);
+      } catch (error) {
+        console.error(`❌ Failed to remove ${file} during data wipe:`, error);
+      }
+    }
+
+    try {
+      fs.unlinkSync(markerPath);
+    } catch (_) {
+      // Non-fatal — worst case we wipe an already-empty db again next boot.
+    }
+
+    console.log("✅ Local data wiped — left previous lab.");
+    return true;
+  }
 }
 
-module.exports = { LabDB };
+module.exports = { LabDB, SYNCED_TABLES, setGlobalSyncEnabled };

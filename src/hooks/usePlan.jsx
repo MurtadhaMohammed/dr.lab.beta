@@ -1,10 +1,10 @@
 import dayjs from "dayjs";
-import { apiCall } from "../libs/api";
+import { apiCall, URL, isLegacyToken } from "../libs/api";
 import { useAppStore } from "../libs/appStore";
 import { message } from "antd";
 import { create } from "zustand";
 import useInitHeaderImage from "./useInitHeaderImage";
-import { send } from "../control/renderer";
+import { send, fireAndForget } from "../control/renderer";
 import { useEffect } from "react";
 
 const usePlanState = create((set) => ({
@@ -100,6 +100,12 @@ export const usePlan = () => {
     }
   };
 
+  const fetchActionButtons = async () => {
+    const actionButtons = await send({
+      query: "searchGroupTest",
+    });
+    localStorage.setItem("actionButtons", JSON.stringify(actionButtons?.data || []));
+  };
 
 
   const updateData = (userInfo) => {
@@ -114,9 +120,28 @@ export const usePlan = () => {
     setWhatsappLimit(msgLimit <= 0 ? 0 : msgLimit);
   };
 
+  const forceLegacyLogout = async (userToken) => {
+    try {
+      await apiCall({ method: "POST", pathname: "/app/logout", auth: true });
+    } catch (error) {
+      console.log(error);
+    } finally {
+      localStorage.removeItem("lab_token");
+      localStorage.removeItem("lab-user");
+      setIsLogin(false);
+    }
+  };
+
   const initUser = async () => {
     let userInfo = localStorage.getItem("lab-user");
     let userToken = localStorage.getItem("lab_token");
+
+    if (userToken && isLegacyToken(userToken)) {
+      // Old Client-based session — force a fresh login through the new
+      // User-based flow instead of continuing to use this stale token.
+      await forceLegacyLogout(userToken);
+      return;
+    }
 
     if (userToken) {
       let resp = await getUserData();
@@ -126,9 +151,28 @@ export const usePlan = () => {
       }
       if (userInfo) updateData(userInfo);
 
-      await fetchHeader();
+      // Arm or disarm multi-PC sync in the main process based on the
+      // account's server-side flag. Off (or missing) = app behaves exactly
+      // as before sync existed.
+      const parsedUser = JSON.parse(userInfo) || {};
+      send({
+        query: "setSyncConfig",
+        data: {
+          enabled: !!parsedUser.syncEnabled,
+          token: userToken,
+          apiUrl: URL,
+        },
+      });
+
+      await fetchHeader(parsedUser);
     }
   };
+
+  useEffect(() => {
+    const onOnline = () => fireAndForget({ query: "syncNow" });
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, []);
 
   const getWhatsappUsed = () => {
     let count = 0;

@@ -2,8 +2,10 @@ const { dialog, BrowserWindow, ipcMain, app } = require("electron");
 var { createPDF, printReport } = require("../../initPDF");
 const { machineIdSync } = require("node-machine-id");
 const { LabDB } = require("./db");
+const { syncEngine } = require("./sync");
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 const image = path.join(__dirname, "../../defaultHeader.png");
 const logoPath = path.join(__dirname, "../../src/assets/logo3.png");
 const bwipjs = require("bwip-js");
@@ -14,6 +16,53 @@ const log = require("electron-log");
 const { createPDFForVisit } = require("./pdf/createPDFForVisit");
 const { sendWhatsApp } = require("./whatsapp");
 const nodemailer = require("nodemailer");
+
+// Windows builds don't bundle a Puppeteer Chromium (only sharp gets a
+// platform-specific install step in packager.js), so node-html-to-image's
+// default browser launch fails there. Fall back to the system Edge/Chrome
+// that ships with Windows instead of requiring a bundled browser.
+function queryRegistryAppPath(exeName) {
+  // Windows records the real install path for every registered browser
+  // under the "App Paths" key regardless of where it was installed (Program
+  // Files, per-user AppData, a custom drive, ...). Static folder guesses
+  // miss non-default installs, so fall back to the registry, which is how
+  // Windows itself resolves these executables (e.g. via Run/Start).
+  for (const hive of ["HKLM", "HKCU"]) {
+    try {
+      const out = execFileSync(
+        "reg",
+        [
+          "query",
+          `${hive}\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\${exeName}`,
+          "/ve",
+        ],
+        { encoding: "utf8", windowsHide: true }
+      );
+      const match = out.match(/REG_SZ\s+(.+)/);
+      const foundPath = match && match[1].trim();
+      if (foundPath && fs.existsSync(foundPath)) return foundPath;
+    } catch (_) {
+      // Not registered in this hive — try the next one.
+    }
+  }
+  return null;
+}
+
+function findWindowsBrowserExecutable() {
+  if (process.platform !== "win32") return null;
+  const candidates = [
+    path.join(process.env["ProgramFiles(x86)"] || "", "Microsoft/Edge/Application/msedge.exe"),
+    path.join(process.env["ProgramFiles"] || "", "Microsoft/Edge/Application/msedge.exe"),
+    path.join(process.env["LOCALAPPDATA"] || "", "Microsoft/Edge/Application/msedge.exe"),
+    path.join(process.env["ProgramFiles(x86)"] || "", "Google/Chrome/Application/chrome.exe"),
+    path.join(process.env["ProgramFiles"] || "", "Google/Chrome/Application/chrome.exe"),
+    path.join(process.env["LOCALAPPDATA"] || "", "Google/Chrome/Application/chrome.exe"),
+  ];
+  const staticHit = candidates.find((p) => p && fs.existsSync(p));
+  if (staticHit) return staticHit;
+
+  return queryRegistryAppPath("msedge.exe") || queryRegistryAppPath("chrome.exe");
+}
 
 // Configure logging for print operations
 log.transports.file.level = "info";
@@ -56,8 +105,41 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     "Type:",
     typeof arg.query
   );
-  let labDB = await new LabDB();
+  let labDB = new LabDB();
+  await labDB.ready;
   switch (arg.query) {
+    case "setSyncConfig": {
+      // Renderer (usePlan) arms/disarms multi-PC sync after checking the
+      // account's syncEnabled flag on the licensing server.
+      try {
+        syncEngine.configure(
+          {
+            enabled: arg?.data?.enabled,
+            token: arg?.data?.token,
+            apiUrl: arg?.data?.apiUrl,
+          },
+          event.sender
+        );
+        event.reply("asynchronous-reply-setSyncConfig", { success: true });
+      } catch (error) {
+        event.reply("asynchronous-reply-setSyncConfig", {
+          success: false,
+          error: error.message,
+        });
+      }
+      break;
+    }
+
+    case "syncNow": {
+      syncEngine.syncNow().catch((e) => console.error("syncNow error:", e));
+      break;
+    }
+
+    case "getSyncStatus": {
+      event.reply("asynchronous-reply", syncEngine.getStatus());
+      break;
+    }
+
     case "getPatients": {
       try {
         const resp = await labDB.getPatients({
@@ -649,13 +731,33 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
               </body>
               `;
 
+        const windowsExecutablePath = findWindowsBrowserExecutable();
+        if (process.platform === "win32") {
+          log.info(
+            "[initHeadImage2] windows browser lookup:",
+            windowsExecutablePath || "none found"
+          );
+        }
+        const puppeteerArgs = windowsExecutablePath
+          ? { executablePath: windowsExecutablePath }
+          : {};
+
         nodeHtmlToImage({
           output: destPath,
           html,
           quality: 100,
-        }).then(() => {
-          event.reply("asynchronous-reply", { success: true });
-        });
+          puppeteerArgs,
+        })
+          .then(() => {
+            event.reply("asynchronous-reply", { success: true });
+          })
+          .catch((err) => {
+            log.error("[initHeadImage2] failed to generate header image:", err && err.message);
+            event.reply("asynchronous-reply", {
+              success: false,
+              error: err && err.message,
+            });
+          });
       } catch (error) {
         console.log(error);
         event.reply("asynchronous-reply", {
@@ -1248,6 +1350,24 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
         event.reply("asynchronous-reply", {
           success: false,
           error: error.message,
+        });
+      }
+      break;
+    }
+
+    // Renderer only sends this after /app/leave-lab has already succeeded
+    // server-side (see src/helper/leaveLab.js) — this step just wipes what's
+    // left on disk so the next login (to this lab or another one) starts
+    // clean. Relaunches the app, so no reply is expected on success.
+    case "leaveLab": {
+      try {
+        const resp = await labDB.requestDataWipe();
+        if (resp) event.reply("asynchronous-reply", resp);
+      } catch (error) {
+        console.error("❌ Error in leaveLab:", error);
+        event.reply("asynchronous-reply", {
+          success: false,
+          message: "Failed to delete local data.",
         });
       }
       break;

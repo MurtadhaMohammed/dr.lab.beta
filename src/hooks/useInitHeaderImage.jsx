@@ -5,9 +5,16 @@ const useInitHeaderImage = () => {
   const { setImagePath } = useAppStore();
 
   const loadImage = async () => {
-    const res = await fetch("http://localhost:3009/head.png");
-    if (!res.ok) return;
-    return res.url;
+    try {
+      const res = await fetch("http://localhost:3009/head.png");
+      if (!res.ok) return;
+      return res.url;
+    } catch (err) {
+      // Local asset server unreachable (e.g. port already taken by another
+      // instance) — fall through to generateHeader instead of throwing.
+      console.error("Failed to reach local image server:", err);
+      return null;
+    }
   };
 
   const fetchHeader = async () => {

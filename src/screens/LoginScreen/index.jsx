@@ -145,6 +145,7 @@ const LoginScreen = () => {
         data: {
           phone: values?.phone,
           code: getCountryCode(selectedCountry),
+          device: UUID,
         },
       });
 

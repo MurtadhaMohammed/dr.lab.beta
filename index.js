@@ -1,3 +1,9 @@
+// Must run before anything else requires src/config/apiUrl.js, so
+// process.env.API_URL is populated in the main process. No-op (silently
+// does nothing) in packaged builds where .env is intentionally excluded —
+// apiUrl.js falls back to its hardcoded default in that case.
+require("dotenv").config();
+
 const path = require("path");
 const { app, BrowserWindow, dialog, ipcMain } = require("electron");
 const { autoUpdater } = require("electron-updater");
@@ -25,10 +31,10 @@ function createWindow() {
     autoHideMenuBar: true,
     width: 1400,
     height: 800,
-    minWidth: 1024,  
-    minHeight: 750,  
-    maxWidth: 1920,  
-    maxHeight: 1080, 
+    minWidth: 1024,
+    minHeight: 750,
+    maxWidth: 1920,
+    maxHeight: 1080,
     show: false,
     frame: false,
   });
@@ -60,7 +66,12 @@ function createWindow() {
   const server = express();
   server.use(Cors());
   server.use(express.static(path.join(app.getPath("userData"))));
-  server.listen(3009); // Different port for serving static files
+  // Different port for serving static files. An unhandled 'error' here (e.g.
+  // EADDRINUSE from a leftover instance still holding the port) would
+  // otherwise be an uncaught exception in the main process.
+  server.listen(3009).on("error", (err) => {
+    log.error("[STATIC SERVER] failed to listen on port 3009:", err.message);
+  });
 
   // win.loadFile("./dist/index.html");
   // splash.loadFile("./dist/splash.html");
@@ -89,6 +100,12 @@ function createWindow() {
         win.maximize();
       }
     }
+  });
+
+  // macOS's version of "maximize" for a frameless window is real fullscreen
+  // (the green traffic light's behavior), not a windowed maximize.
+  ipcMain.on("toggle-fullscreen", () => {
+    if (win) win.setFullScreen(!win.isFullScreen());
   });
 
   ipcMain.on("close-window", () => {

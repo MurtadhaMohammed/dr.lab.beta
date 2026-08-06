@@ -1,5 +1,6 @@
 import { message } from "antd";
 import { apiCall } from "../libs/api";
+import { send } from "../control/renderer";
 
 export const signout = async (setSignoutLoading, setIsLogin, navigate) => {
   setSignoutLoading(true);
@@ -13,6 +14,7 @@ export const signout = async (setSignoutLoading, setIsLogin, navigate) => {
     });
 
     if (resp.status === 200) {
+      send({ query: "setSyncConfig", data: { enabled: false } });
       setSignoutLoading(false);
       localStorage.removeItem("lab_token");
       localStorage.removeItem("lab-user");

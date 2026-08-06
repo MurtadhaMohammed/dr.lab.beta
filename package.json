@@ -11,7 +11,7 @@
     "@parcel/watcher": "^2.5.1",
     "antd": "^5.5.0",
     "archiver": "^7.0.1",
-    "better-sqlite3": "^11.2.1",
+    "better-sqlite3": "^12.11.1",
     "bwip-js": "^4.5.1",
     "caniuse-lite": "^1.0.30001641",
     "cors": "^2.8.5",
@@ -19,6 +19,7 @@
     "csv-parser": "^3.0.0",
     "dayjs": "^1.11.7",
     "dayjs-plugin-utc": "^0.1.2",
+    "dotenv": "^16.6.1",
     "dropbox": "^10.34.0",
     "electron-is-dev": "^2.0.0",
     "electron-log": "^5.1.7",
@@ -41,7 +42,6 @@
     "libphonenumber-js": "^1.12.22",
     "lightningcss": "^1.29.2",
     "nanoid": "^4.0.2",
-    "nedb": "^1.8.0",
     "node-html-to-image": "^5.0.0",
     "node-machine-id": "^1.1.12",
     "nodemailer": "^7.0.12",
@@ -58,25 +58,27 @@
   },
   "scripts": {
     "start": "concurrently \"npx parcel --no-cache --port=3001 ./index.html\" \"wait-on http://localhost:3001 && electron index.js .\"",
-    "build": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=win32 --arch=ia32 --ignore=.parcel-cache  --out=build",
-    "build-mac": "npx electron-packager . Dr.Lab --overwrite --asar=true --platform=darwin --arch=arm64 --ignore=.parcel-cache --out=build",
-    "react-build": "parcel --no-cache  splash.html index.html  --public-url ./",
+    "build": "node packager.js win32 ia32",
+    "build-mac": "node packager.js darwin arm64",
+    "prebuild": "npm run react-build",
+    "prebuild-mac": "npm run react-build",
+    "react-build": "parcel build --no-cache splash.html index.html --public-url ./",
     "rebuild": "npx electron-rebuild -f -w better-sqlite3",
     "package": "electron-builder",
     "package:win": "electron-builder --win",
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
-    "@electron/rebuild": "^3.6.0",
+    "@electron/rebuild": "^4.2.0",
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.20",
     "browserify-zlib": "^0.2.0",
     "buffer": "^5.5.0",
     "concurrently": "^8.0.1",
     "crypto-browserify": "^3.12.0",
-    "electron": "^24.3.0",
-    "electron-builder": "^24.13.3",
-    "electron-packager": "^17.1.1",
+    "electron": "^43.1.0",
+    "electron-builder": "^26.15.3",
+    "electron-packager": "^17.1.2",
     "electron-rebuild": "^3.2.9",
     "events": "^3.3.0",
     "parcel": "2.8.3",
@@ -129,5 +131,8 @@
     "extraResources": [
       "./drlab.sql"
     ]
+  },
+  "optionalDependencies": {
+    "@img/sharp-win32-ia32": "^0.33.5"
   }
 }

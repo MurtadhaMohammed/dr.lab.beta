@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { ConfigProvider, theme } from "antd";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import MainContainerV2 from "./components/ContainerV2";
 import PatientsScreen from "./screens/PatientsScreen";
 import TestsScreen from "./screens/TestsScreen";
@@ -28,9 +28,6 @@ function App() {
   const { appTheme, appColors } = useAppTheme();
   const { initUser } = usePlan();
   const { i18n } = useTranslation();
-  const location = useLocation();
-    
-
 
   useLogin();
 
@@ -61,8 +58,14 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // Only re-run on login state changes — this arms sync + fetches the
+    // header image, neither of which needs to redo on every navigation.
+    // `location` used to be a dependency here too, which re-armed (and so
+    // reset) the sync engine's schedule timer on every screen change,
+    // starving it of the quiet period it needs to ever run a cycle.
     if (isLogin) initUser();
-  }, [isLogin, location]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLogin]);
 
   return (
     <ConfigProvider
