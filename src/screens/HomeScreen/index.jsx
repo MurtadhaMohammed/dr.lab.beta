@@ -170,8 +170,8 @@ const HomeScreen = () => {
         query: "getTopTests",
       });
 
-      if (resp?.success) {
-        const list = resp?.data?.map((item) => ({
+      if (resp?.success && resp?.data?.length) {
+        const list = resp.data.map((item) => ({
           ...item,
           onClick: () => onClick({ id: item.id }),
         }));
@@ -185,6 +185,14 @@ const HomeScreen = () => {
             onClick: () => onClick({ id: null }),
           },
         ]);
+      } else {
+        setQuickList([
+          {
+            title: "Other Tests",
+            isPrimary: true,
+            onClick: () => onClick({ id: null }),
+          },
+        ]);
       }
     } catch (error) {
       console.log(error);
@@ -192,11 +200,17 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
-    const quickListString = localStorage.getItem("actionButtons");
-    if (!quickListString) {
+    let quickListRow = [];
+    try {
+      quickListRow = JSON.parse(localStorage.getItem("actionButtons")) || [];
+    } catch (e) {
+      quickListRow = [];
+    }
+    // An empty cache means we never got a real list (or a stale build wiped
+    // it) — refetch instead of showing only the static button forever.
+    if (quickListRow.length === 0) {
       fetchActionButtons();
     } else {
-      const quickListRow = JSON.parse(quickListString) || [];
       const list = [
         ...quickListRow?.map((item) => ({
           ...item,

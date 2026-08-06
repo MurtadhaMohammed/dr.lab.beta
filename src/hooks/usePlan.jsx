@@ -100,14 +100,6 @@ export const usePlan = () => {
     }
   };
 
-  const fetchActionButtons = async () => {
-    const actionButtons = await send({
-      query: "searchGroupTest",
-    });
-    localStorage.setItem("actionButtons", JSON.stringify(actionButtons?.data || []));
-  };
-
-
   const updateData = (userInfo) => {
     let { Plan, balance, whatsappMsgPrice, expiredAt, createdAt } =
       JSON.parse(userInfo) || {};
