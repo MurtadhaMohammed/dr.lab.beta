@@ -69,10 +69,14 @@ export const PDFSettings = () => {
           {t("ChangeImage")}
         </Button>
       </div>
-      <div className="w-full border border-[#eee]  rounded-md overflow-hidden min-h-[180px] bg-[#f6f6f6]">
+      <div
+        className={`w-full border border-[#eee] rounded-md overflow-hidden bg-[#f6f6f6] ${
+          imagePath ? "" : "min-h-[80px]"
+        }`}
+      >
         {imagePath ? (
           <Spin spinning={imagePathLoading}>
-            <img className="w-ful" key={imagePath} src={imagePath} />
+            <img className="w-full block" key={imagePath} src={imagePath} />
           </Spin>
         ) : (
           <></>

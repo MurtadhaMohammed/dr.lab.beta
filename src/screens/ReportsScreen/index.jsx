@@ -30,9 +30,6 @@ const ReportsScreen = () => {
   const [testId, setTestId] = useState(null);
   const [testList, setTestList] = useState([]);
   const [filterDate, setFilterDate] = useState([dayjs(), dayjs()]);
-  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
-  const [passwordInput, setPasswordInput] = useState("");
-  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const { t } = useTranslation();
   const { printFontSize } = useAppStore();
 
@@ -88,7 +85,7 @@ const ReportsScreen = () => {
             name: record?.patient?.name,
             price: Number(getTotalPrice(record?.tests)).toLocaleString("en"),
             endPrice: Number(
-              getTotalPrice(record?.tests) - record?.discount
+              getTotalPrice(record?.tests) - record?.discount,
             ).toLocaleString("en"),
             tests: testsString,
             discount: Number(record?.discount).toLocaleString("en"),
@@ -129,26 +126,9 @@ const ReportsScreen = () => {
   };
 
   useEffect(() => {
-    // Check if password is set in localStorage
-    const reportsPassword = localStorage.getItem("reportsPassword");
-    if (reportsPassword && reportsPassword.trim() !== "") {
-      // Password exists, show modal
-      setShowPasswordModal(true);
-      setIsPasswordVerified(false);
-    } else {
-      // No password set, allow access
-      setIsPasswordVerified(true);
-      setShowPasswordModal(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    // Only load data if password is verified or no password is set
-    if (isPasswordVerified) {
-      loadReports();
-      loadTests();
-    }
-  }, [filterDate, status, gender, testId, isPasswordVerified]);
+    loadReports();
+    loadTests();
+  }, [filterDate, status, gender, testId]);
 
   const loadReports = async () => {
     try {
@@ -179,32 +159,8 @@ const ReportsScreen = () => {
     () => (
       <HomeTable isReport filter={{ status, gender, filterDate, testId }} />
     ),
-    [data, status, gender, filterDate, testId]
+    [data, status, gender, filterDate, testId],
   );
-
-  const handlePasswordSubmit = () => {
-    if (!passwordInput.trim()) {
-      message.error(t("PasswordRequired"));
-      return;
-    }
-
-    const reportsPassword = localStorage.getItem("reportsPassword");
-    if (passwordInput === reportsPassword) {
-      setIsPasswordVerified(true);
-      setShowPasswordModal(false);
-      setPasswordInput("");
-      message.success(t("PasswordCorrect"));
-    } else {
-      message.error(t("WrongPassword"));
-      setPasswordInput("");
-    }
-  };
-
-  const handlePasswordKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handlePasswordSubmit();
-    }
-  };
 
   return (
     <div className={`reports-screen page relative`}>
@@ -270,15 +226,13 @@ const ReportsScreen = () => {
           </Space>
         </section>
       </div>
-      
+
       {/* Content - Blurred when modal is open, completely separate container */}
-      <div 
+      <div
         className="border-none p-[2%]"
-        style={{ 
+        style={{
           paddingTop: 0,
-          filter: showPasswordModal ? "blur(5px)" : "none",
-          pointerEvents: showPasswordModal ? "none" : "auto",
-          transition: "filter 0.3s ease"
+          transition: "filter 0.3s ease",
         }}
       >
         <Divider />
@@ -320,39 +274,8 @@ const ReportsScreen = () => {
           </Col>
         </Row>
 
-        <div className="mt-6 mb-10">{isPasswordVerified && homeTable}</div>
+        <div className="mt-6 mb-10">{homeTable}</div>
       </div>
-      {showPasswordModal && (
-        <Modal
-          title={t("EnterReportsPassword")}
-          open={showPasswordModal}
-          closable={false}
-          maskClosable={false}
-          footer={null}
-          centered
-          width={400}
-          mask={false}
-          wrapClassName="reports-password-modal"
-        >
-            <Space direction="vertical" size="large" style={{ width: "100%" }}>
-              <Input.Password
-                placeholder={t("Password")}
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                onPressEnter={handlePasswordKeyPress}
-                autoFocus
-              />
-              <Button
-                type="primary"
-                block
-                onClick={handlePasswordSubmit}
-                disabled={!passwordInput.trim()}
-              >
-                {t("Verify")}
-              </Button>
-            </Space>
-          </Modal>
-      )}
     </div>
   );
 };
