@@ -338,6 +338,8 @@ const LoginScreen = () => {
                 <Input
                   placeholder={getPhoneValidation(selectedCountry).placeholder}
                   className="h-[40px] p-2 text-center text-[18px]"
+                  dir="ltr"
+                  style={{ direction: "ltr" }}
                 />
               </div>
             </Form.Item>
@@ -453,6 +455,8 @@ const LoginScreen = () => {
                   <Input
                     placeholder={getPhoneValidation(selectedCountry).placeholder}
                     className=" h-[50px] p-2 text-center text-[18px]"
+                    dir="ltr"
+                    style={{ direction: "ltr" }}
                   />
                   </div>
                 </Form.Item>
@@ -494,7 +498,7 @@ const LoginScreen = () => {
                     onChange={handleLang}
                   >
                     <Radio.Button value="ar">عربي</Radio.Button>
-                    <Radio.Button value="ku">کوردی</Radio.Button>
+                    {/* <Radio.Button value="ku">کوردی</Radio.Button> */}
                     <Radio.Button value="en">English</Radio.Button>
                   </Radio.Group>
                 </div>

@@ -99,7 +99,8 @@ const OtpInputs = ({ numInputs = 6, onChange }) => {
 
   return (
     <div
-      className="flex justify-center items-center gap-2 dtr"
+      className="flex justify-center items-center gap-2"
+      dir="ltr"
       onPaste={handlePaste}
     >
       {otp.map((value, index) => (

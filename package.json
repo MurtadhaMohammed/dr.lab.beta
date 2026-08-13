@@ -123,6 +123,7 @@
     "mac": {
       "icon": "icon.icns"
     },
+    "afterSign": "scripts/afterSign.js",
     "directories": {
       "app": ".",
       "buildResources": "public",

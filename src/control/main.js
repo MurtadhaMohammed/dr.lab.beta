@@ -475,9 +475,9 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
     case "getVisits": {
       try {
         const resp = await labDB.getVisitsV2(arg.data);
-        event.reply("asynchronous-reply", resp);
+        event.reply("asynchronous-reply-getVisits", resp);
       } catch (error) {
-        event.reply("asynchronous-reply", {
+        event.reply("asynchronous-reply-getVisits", {
           success: false,
           error: error.message,
         });

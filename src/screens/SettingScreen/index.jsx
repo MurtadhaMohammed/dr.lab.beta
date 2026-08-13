@@ -277,6 +277,7 @@ const SettingsScreen = () => {
       okType: "danger",
       cancelText: t("Cancel"),
       content: t("LeaveLabConfirmDescription"),
+      centered: true,
       onOk: async () => {
         try {
           await leaveLab(setLeaveLabLoading, setIsLogin, navigate);
@@ -360,7 +361,7 @@ const SettingsScreen = () => {
               {/* <span className="m-0 p-0">{t("SystemLanguage")} </span> */}
               <Radio.Group defaultValue={lang} onChange={handleLang}>
                 <Radio.Button value="ar">عربي</Radio.Button>
-                <Radio.Button value="ku">کوردی</Radio.Button>
+                {/* <Radio.Button value="ku">کوردی</Radio.Button> */}
                 <Radio.Button value="en">English</Radio.Button>
               </Radio.Group>
             </Space>

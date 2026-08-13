@@ -356,7 +356,7 @@ const HomeScreen = () => {
                   </Button>
                   <Radio.Group defaultValue={lang} onChange={handleLang}>
                     <Radio.Button value="ar">عربي</Radio.Button>
-                    <Radio.Button value="ku">کوردی</Radio.Button>
+                    {/* <Radio.Button value="ku">کوردی</Radio.Button> */}
                     <Radio.Button value="en">English</Radio.Button>
                   </Radio.Group>
                 </Space>

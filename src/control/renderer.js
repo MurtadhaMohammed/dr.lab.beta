@@ -18,6 +18,7 @@ export function send(doc) {
         "deleteTest",
         "printVisit",
         "getPackages",
+        "getVisits",
         "getVisitTotals",
         "updateVisitInfo",
         "getTopTests",
