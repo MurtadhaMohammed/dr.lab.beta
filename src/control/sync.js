@@ -18,9 +18,46 @@ const TABLES = [
     fks: { packageUuid: ["packages", "packageID"], testUuid: ["tests", "testID"] },
   },
   {
+    // Dead table — nothing writes to it anymore (see visit_v2 below), kept
+    // here only so already-synced installs don't lose that history.
     name: "visits",
     fields: ["visitNumber", "status", "testType", "tests", "discount"],
     fks: { patientUuid: ["patients", "patientID"], doctorUuid: ["doctors", "doctorID"] },
+  },
+  {
+    // The table the app actually reads/writes today (registerVisitV2 etc).
+    name: "visit_v2",
+    fields: [
+      "visit_number",
+      "status",
+      "notes",
+      "gross_price_iqd",
+      "discount_iqd",
+      "end_price_iqd",
+      "paid_iqd",
+      "payment_status",
+    ],
+    fks: { patientUuid: ["patients", "patient_id"], doctorUuid: ["doctors", "doctor_id"] },
+  },
+  {
+    // Per-test line items for visit_v2. test_id is synced as a plain field
+    // (not resolved via uuid) because tests_catalog is server-seeded and
+    // identical across every install — see SYNCED_TABLES comment in db.js.
+    name: "visit_item_v2",
+    fields: [
+      "test_id",
+      "code",
+      "type",
+      "name_en",
+      "name_ar",
+      "sample_type",
+      "unit",
+      "ref_text",
+      "price_iqd",
+      "meta_json",
+      "result_json",
+    ],
+    fks: { visitUuid: ["visit_v2", "visit_id"] },
   },
 ];
 

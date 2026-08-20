@@ -15,6 +15,11 @@ const SYNCED_TABLES = [
   "tests",
   "packages",
   "test_to_packages",
+  // visit_v2/visit_item_v2 are the tables actually written by the current
+  // UI (registerVisitV2 etc.) — "visits" above is legacy and dead, kept
+  // only so already-synced installs don't lose that history.
+  "visit_v2",
+  "visit_item_v2",
 ];
 
 // main.js constructs a fresh LabDB per IPC message, so the sync flag must
@@ -869,7 +874,13 @@ class LabDB {
 
   async deletePatient(id) {
     if (this.syncEnabled) {
-      this.softDelete("visits", id, "patientID");
+      this.softDelete("visits", id, "patientID"); // legacy table, kept for already-synced installs
+      const visitIds = this.db
+        .prepare(`SELECT id FROM visit_v2 WHERE patient_id = ? AND deletedAt IS NULL`)
+        .all(id)
+        .map((r) => r.id);
+      for (const visitId of visitIds) this.softDelete("visit_item_v2", visitId, "visit_id");
+      this.softDelete("visit_v2", id, "patient_id");
       const deleted = this.softDelete("patients", id);
       return { success: deleted > 0, rowsDeleted: deleted };
     }
@@ -1544,9 +1555,9 @@ class LabDB {
       INSERT INTO visit_v2
         (visit_number, patient_id, doctor_id, status, notes,
          gross_price_iqd, discount_iqd, end_price_iqd,
-         paid_iqd, payment_status, created_at, updated_at)
+         paid_iqd, payment_status, created_at, updated_at, updatedAt)
       VALUES
-        (?, ?, ?, 'PENDING', ?, ?, ?, ?, 0, 'UNPAID', datetime('now'), datetime('now'))
+        (?, ?, ?, 'PENDING', ?, ?, ?, ?, 0, 'UNPAID', datetime('now'), datetime('now'), datetime('now'))
     `
         )
         .run(
@@ -1559,15 +1570,16 @@ class LabDB {
           endPrice
         );
       const visit_id = vInfo.lastInsertRowid;
+      this.markDirty("visit_v2", visit_id);
 
       // insert items
       const insItem = this.db.prepare(`
       INSERT INTO visit_item_v2
         (visit_id, test_id, code, type, name_en, name_ar, sample_type,
          unit, ref_text, price_iqd, is_active_catalog, meta_json,
-         item_status, created_at, updated_at)
+         item_status, created_at, updated_at, updatedAt)
       VALUES
-        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', datetime('now'), datetime('now'))
+        (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'PENDING', datetime('now'), datetime('now'), datetime('now'))
     `);
 
       const createdItems = [];
@@ -1587,6 +1599,7 @@ class LabDB {
           t.is_active ?? 1,
           x.meta_json
         );
+        this.markDirty("visit_item_v2", info.lastInsertRowid);
         createdItems.push({
           visit_item_id: info.lastInsertRowid,
           test_id: t.id,
@@ -1611,6 +1624,12 @@ class LabDB {
 
   async deleteVisit(id) {
     try {
+      if (this.syncEnabled) {
+        this.softDelete("visit_item_v2", id, "visit_id");
+        const deleted = this.softDelete("visit_v2", id);
+        return { success: deleted > 0, deleted };
+      }
+
       // make sure FK cascades are enforced
       this.db.prepare(`PRAGMA foreign_keys = ON`).run();
 
@@ -1733,6 +1752,7 @@ class LabDB {
   } = {}) {
     const whereClauses = [
       `(p.name LIKE ? OR v.visit_number LIKE ?)`,
+      `v.deletedAt IS NULL`,
       startDate
         ? `DATE(v.created_at) >= '${dayjs(startDate)
             .startOf("day")
@@ -1815,7 +1835,7 @@ class LabDB {
       const items = this.db
         .prepare(
           `
-        SELECT 
+        SELECT
           i.visit_id,
           i.id AS visit_item_id,
           i.test_id,
@@ -1832,7 +1852,7 @@ class LabDB {
           i.created_at,
           i.updated_at
         FROM visit_item_v2 i
-        WHERE i.visit_id IN (${placeholders})
+        WHERE i.visit_id IN (${placeholders}) AND i.deletedAt IS NULL
         ORDER BY i.id ASC
       `
         )
@@ -1935,8 +1955,9 @@ class LabDB {
     // 3) batch update
     const upd = this.db.prepare(`
     UPDATE visit_item_v2
-       SET result_json = ?, 
-           updated_at = CURRENT_TIMESTAMP
+       SET result_json = ?,
+           updated_at = CURRENT_TIMESTAMP,
+           updatedAt = CURRENT_TIMESTAMP
      WHERE id = ?
   `);
 
@@ -1948,6 +1969,7 @@ class LabDB {
     });
 
     tx(items);
+    items.forEach(({ visit_item_id }) => this.markDirty("visit_item_v2", visit_item_id));
 
     // 4) recalc parent status
     await this.updateVisitStatusV2(visit_id);
@@ -2001,11 +2023,13 @@ class LabDB {
           `
       UPDATE visit_v2
          SET status = 'PENDING',
-             updated_at = CURRENT_TIMESTAMP
+             updated_at = CURRENT_TIMESTAMP,
+             updatedAt = CURRENT_TIMESTAMP
        WHERE id = ?
     `
         )
         .run(visit_id);
+      this.markDirty("visit_v2", visit_id);
       return { success: true, status: "PENDING", total, completed: 0 };
     }
 
@@ -2036,11 +2060,12 @@ class LabDB {
       .prepare(
         `
     UPDATE visit_v2
-       SET status = ?, updated_at = CURRENT_TIMESTAMP
+       SET status = ?, updated_at = CURRENT_TIMESTAMP, updatedAt = CURRENT_TIMESTAMP
      WHERE id = ?
   `
       )
       .run(status, visit_id);
+    this.markDirty("visit_v2", visit_id);
 
     return { success: true, status, total, completed };
   }
@@ -2568,11 +2593,21 @@ class LabDB {
           // احذف الزائد
           if (toDel.length) {
             const qMarks = toDel.map(() => "?").join(",");
-            this.db
+            const idsToDel = this.db
               .prepare(
-                `DELETE FROM visit_item_v2 WHERE visit_id = ? AND test_id IN (${qMarks})`
+                `SELECT id FROM visit_item_v2 WHERE visit_id = ? AND test_id IN (${qMarks})`
               )
-              .run(id, ...toDel);
+              .all(id, ...toDel)
+              .map((r) => r.id);
+            if (this.syncEnabled) {
+              for (const itemId of idsToDel) this.softDelete("visit_item_v2", itemId);
+            } else {
+              this.db
+                .prepare(
+                  `DELETE FROM visit_item_v2 WHERE visit_id = ? AND test_id IN (${qMarks})`
+                )
+                .run(id, ...toDel);
+            }
           }
 
           // أضف الجديد: ناخذ سنابشوت من tests_catalog
@@ -2591,16 +2626,16 @@ class LabDB {
               (visit_id, test_id, code, type, name_en, name_ar, sample_type, unit, ref_text,
               price_iqd, is_active_catalog, meta_json,
               result_value, result_numeric, result_unit, result_json, is_abnormal,
-              technician_name, method, completed_at, printed_at)
+              technician_name, method, completed_at, printed_at, updatedAt)
               VALUES
               (?,?,?,?,?,?,?,?,?,
               ?,?,?,?,?,?,?,
               0,
-              NULL,NULL,NULL,NULL)
+              NULL,NULL,NULL,NULL, datetime('now'))
             `);
 
             tcRows.forEach((r) => {
-              ins.run(
+              const info = ins.run(
                 id, // visit_id
                 r.test_id, // test_id
                 r.code, // code
@@ -2620,6 +2655,7 @@ class LabDB {
                 null // result_json
                 // ثم الثوابت: 0, NULL, NULL, NULL, NULL
               );
+              this.markDirty("visit_item_v2", info.lastInsertRowid);
             });
           }
         }
@@ -2656,6 +2692,7 @@ class LabDB {
         push(`end_price_iqd   = ?`, endPrice);
 
         sets.push(`updated_at = CURRENT_TIMESTAMP`);
+        sets.push(`updatedAt = CURRENT_TIMESTAMP`);
 
         const sql = `UPDATE visit_v2 SET ${sets.join(", ")} WHERE id = ?`;
         this.db.prepare(sql).run(...params, id);

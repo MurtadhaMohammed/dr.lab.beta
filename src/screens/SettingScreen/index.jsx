@@ -16,6 +16,7 @@ import {
   Space,
   Tag,
   Modal,
+  Tooltip,
   Typography,
 } from "antd";
 import {
@@ -24,6 +25,7 @@ import {
   ImportOutlined,
   CrownFilled,
   ExclamationCircleOutlined,
+  EditOutlined,
 } from "@ant-design/icons";
 import { send } from "../../control/renderer";
 import { useAppStore, useLanguage } from "../../libs/appStore";
@@ -41,6 +43,8 @@ import { useAppTheme } from "../../hooks/useAppThem";
 import useInitHeaderImage from "../../hooks/useInitHeaderImage";
 import { PDFSettings } from "./pdfSettings";
 import useSyncStatus from "../../hooks/useSyncStatus";
+import useLabUsers from "../../hooks/useLabUsers";
+import useCurrentUser from "../../hooks/useCurrentUser";
 
 const SettingsScreen = () => {
   // const [imagePath, setImagePath] = useState(null);
@@ -53,6 +57,7 @@ const SettingsScreen = () => {
   const { appColors } = useAppTheme();
   const {
     user,
+    isOnline,
     setPrintFontSize,
     printFontSize,
     setAutoRefreshSeconds,
@@ -74,6 +79,50 @@ const SettingsScreen = () => {
   const { generateHeader, fetchHeader } = useInitHeaderImage();
   const { state: syncState } = useSyncStatus();
   const isAccountSynced = syncState !== "disabled";
+  const { users: labUsers, loading: labUsersLoading } = useLabUsers();
+  const {
+    isOwner,
+    name: profileName,
+    phone: profilePhone,
+    username: profileUsername,
+    role: profileRole,
+    update: updateCurrentUser,
+  } = useCurrentUser();
+  const [profileForm] = Form.useForm();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [profileSaving, setProfileSaving] = useState(false);
+
+  const openProfileModal = () => {
+    profileForm.setFieldsValue({ name: profileName, username: profileUsername });
+    setIsProfileModalOpen(true);
+  };
+
+  const handleSaveProfile = async (values) => {
+    setProfileSaving(true);
+    try {
+      const resp = await apiCall({
+        method: "PUT",
+        pathname: "/app/user",
+        isFormData: false,
+        auth: true,
+        data: { name: values.name, username: values.username },
+      });
+
+      if (resp.ok) {
+        const data = await resp.json();
+        updateCurrentUser({ name: data.name, username: data.username || "" });
+        message.success(t("UpdateSuccess"));
+        setIsProfileModalOpen(false);
+      } else {
+        const errorData = await resp.json();
+        message.error(errorData.error || t("SomethingWentWrong"));
+      }
+    } catch (error) {
+      message.error(error.message || t("SomethingWentWrong"));
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   const { getPrintUsed, printLimit, subscriptionExpire, registerAt, planType } =
     usePlan();
@@ -349,9 +398,23 @@ const SettingsScreen = () => {
           <div className="flex items-center gap-4">
             <Avatar size={"large"} icon={<UserOutlined />} />
             <div>
-              <b className="text-[16px]">{user?.fullName}</b>
+              <div className="flex items-center gap-2">
+                <b className="text-[16px]">{profileName}</b>
+                <Tag
+                  color={profileRole === "owner" ? "gold" : "blue"}
+                  className="m-0"
+                >
+                  {profileRole === "owner" ? t("Owner") : t("Operator")}
+                </Tag>
+                <Button
+                  size="small"
+                  type="text"
+                  icon={<EditOutlined />}
+                  onClick={openProfileModal}
+                />
+              </div>
               <span className="text-[14px] text-[#A5A5A5] block">
-                {user?.phone}
+                {profilePhone}
               </span>
             </div>
           </div>
@@ -385,6 +448,12 @@ const SettingsScreen = () => {
             {warning && (
               <span className="text-orange-500 text-[14px]">
                 ({t("PleaseFillRequiredFields")})
+              </span>
+            )}
+            {!isOwner && (
+              <span className="text-[13px] text-[#A5A5A5]">
+                {" "}
+                — {t("OnlyOwnerCanEdit")}
               </span>
             )}
           </p>
@@ -421,12 +490,12 @@ const SettingsScreen = () => {
                       },
                     ]}
                   >
-                    <Input />
+                    <Input disabled={!isOwner} />
                   </Form.Item>
                 </Col>
                 <Col span={6}>
                   <Form.Item label={t("LabName")} name="labName">
-                    <Input />
+                    <Input disabled={!isOwner} />
                   </Form.Item>
                 </Col>
 
@@ -449,16 +518,16 @@ const SettingsScreen = () => {
               <Row gutter={[20, 0]}>
                 <Col span={6}>
                   <Form.Item label={t("Address")} name="address">
-                    <Input />
+                    <Input disabled={!isOwner} />
                   </Form.Item>
                 </Col>
 
                 <Col span={6}>
                   <Form.Item label={t("Email")} name="email">
-                    <Input type="email" />
+                    <Input type="email" disabled={!isOwner} />
                   </Form.Item>
                 </Col>
-                {(isUpdate || loading) && (
+                {isOwner && (isUpdate || loading) && (
                   <Col span={6}>
                     <Space>
                       <Form.Item label=" ">
@@ -605,26 +674,91 @@ const SettingsScreen = () => {
               </div>
 
               <div className="mt-[16px]">
+                <p className="pl-[4px] opacity-60">{t("LabUsers")}</p>
+
+                <div
+                  className="rounded-lg border mt-[8px]"
+                  style={{ borderColor: appColors.colorBorder }}
+                >
+                  {labUsersLoading ? (
+                    <div className="p-[24px] text-sm text-gray-500">
+                      {t("Loading")}
+                    </div>
+                  ) : labUsers.length === 0 ? (
+                    <div className="p-[24px] text-sm text-gray-500">
+                      {t("NoLabUsers")}
+                    </div>
+                  ) : (
+                    labUsers.map((labUser, index) => (
+                      <div
+                        key={labUser.id}
+                        className={`flex justify-between items-center p-[24px] ${
+                          index !== labUsers.length - 1 ? "border-b" : ""
+                        }`}
+                        style={{ borderColor: appColors.colorBorder }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar icon={<UserOutlined />} />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <b className="text-[14px]">{labUser.name}</b>
+                              {labUser.phone === user?.phone && (
+                                <Tag className="m-0">{t("You")}</Tag>
+                              )}
+                            </div>
+                            <span className="text-[13px] text-[#A5A5A5]">
+                              {labUser.phone}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[13px] text-gray-500">
+                            {labUser.lastActive
+                              ? dayjs(labUser.lastActive).format("YYYY MMM, DD")
+                              : "—"}
+                          </span>
+                          <Tag
+                            color={labUser.role === "owner" ? "gold" : "blue"}
+                            className="m-0"
+                          >
+                            {labUser.role === "owner"
+                              ? t("Owner")
+                              : t("Operator")}
+                          </Tag>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-[16px]">
                 <p className="pl-[4px] opacity-60">{t("DangerZone")}</p>
 
                 <div
                   className="rounded-lg border mt-[8px] p-[24px]"
                   style={{ borderColor: appColors.userWarning || "#ff4d4f" }}
                 >
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-start gap-6">
                     <div>
                       <b className="text-[14px]">{t("LeaveLab")}</b>
                       <p className="mt-2 text-sm text-gray-500">
                         {t("LeaveLabDescription")}
                       </p>
                     </div>
-                    <Button
-                      danger
-                      onClick={handleLeaveLab}
-                      loading={leaveLabLoading}
+                    <Tooltip
+                      title={!isOnline ? t("OfflineActionDisabled") : ""}
                     >
-                      {t("LeaveLab")}
-                    </Button>
+                      <Button
+                        danger
+                        className="shrink-0"
+                        disabled={!isOnline}
+                        onClick={handleLeaveLab}
+                        loading={leaveLabLoading}
+                      >
+                        {t("LeaveLab")}
+                      </Button>
+                    </Tooltip>
                   </div>
                 </div>
               </div>
@@ -776,6 +910,45 @@ const SettingsScreen = () => {
         </Row>
       </div>
       {contextHolder}
+
+      <Modal
+        title={t("EditProfile")}
+        open={isProfileModalOpen}
+        onCancel={() => setIsProfileModalOpen(false)}
+        centered
+        footer={
+          <Space>
+            <Button onClick={() => setIsProfileModalOpen(false)}>
+              {t("Cancel")}
+            </Button>
+            <Button
+              type="primary"
+              loading={profileSaving}
+              onClick={profileForm.submit}
+            >
+              {t("SaveChanges")}
+            </Button>
+          </Space>
+        }
+      >
+        <Form
+          form={profileForm}
+          layout="vertical"
+          autoComplete="off"
+          onFinish={handleSaveProfile}
+        >
+          <Form.Item
+            label={t("FullName")}
+            name="name"
+            rules={[{ required: true, message: t("PleaseInputYourName") }]}
+          >
+            <Input />
+          </Form.Item>
+          <Form.Item label={t("Username")} name="username">
+            <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
