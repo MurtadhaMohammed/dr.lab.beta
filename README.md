@@ -61,3 +61,5 @@ The Windows target is still **ia32** (32-bit). Building that from a typical **x6
 - Keep `@img/sharp-win32-ia32` listed under `optionalDependencies` so the ia32 sharp binary is part of the project's declared deps; `packager.js` still force-installs it when targeting `win32`/`ia32` from an x64 machine.
 - If packaging fails with `EBUSY: resource busy or locked, rmdir ...\Dr.Lab-win32-ia32`, a previous `Dr.Lab.exe` is still running. `packager.js` tries to stop those processes and delete the folder first; if it still fails, close every Dr.Lab instance in Task Manager and retry.
 
+ npm run react-build 
+  npm run package:win
