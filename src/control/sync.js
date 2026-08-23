@@ -18,13 +18,6 @@ const TABLES = [
     fks: { packageUuid: ["packages", "packageID"], testUuid: ["tests", "testID"] },
   },
   {
-    // Dead table — nothing writes to it anymore (see visit_v2 below), kept
-    // here only so already-synced installs don't lose that history.
-    name: "visits",
-    fields: ["visitNumber", "status", "testType", "tests", "discount"],
-    fks: { patientUuid: ["patients", "patientID"], doctorUuid: ["doctors", "doctorID"] },
-  },
-  {
     // The table the app actually reads/writes today (registerVisitV2 etc).
     name: "visit_v2",
     fields: [

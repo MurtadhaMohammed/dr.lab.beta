@@ -11,13 +11,12 @@ const log = require("electron-log");
 const SYNCED_TABLES = [
   "patients",
   "doctors",
-  "visits",
   "tests",
   "packages",
   "test_to_packages",
   // visit_v2/visit_item_v2 are the tables actually written by the current
-  // UI (registerVisitV2 etc.) — "visits" above is legacy and dead, kept
-  // only so already-synced installs don't lose that history.
+  // UI (registerVisitV2 etc.). The old "visits" table's sync support was
+  // removed while still in dev — no installs had synced through it yet.
   "visit_v2",
   "visit_item_v2",
 ];
@@ -796,40 +795,6 @@ class LabDB {
     this.searchGroupTest();
   }
 
-  async addUniqueVisitNumber(visitId) {
-    try {
-      // First, check if the visitNumber already exists for the given visitId
-      const selectStmt = this.db.prepare(`
-        SELECT visitNumber FROM visits WHERE id = ?
-      `);
-      const result = selectStmt.get(visitId);
-
-      // If visitNumber exists, return it
-      if (result && result.visitNumber) {
-        return result.visitNumber;
-      }
-
-      // If visitNumber doesn't exist, generate a unique 6-digit number
-      const visitNumber = Math.floor(
-        100000 + Math.random() * 900000
-      ).toString();
-
-      // Update the visit record with the generated visitNumber
-      const updateStmt = this.db.prepare(`
-        UPDATE visits
-        SET visitNumber = ?
-        WHERE id = ?
-      `);
-      updateStmt.run(visitNumber, visitId);
-      this.markDirty("visits", visitId);
-
-      return visitNumber;
-    } catch (error) {
-      console.error("Error updating visit with visitNumber:", error);
-      return null;
-    }
-  }
-
   async getPatients({ q = "", skip = 0, limit = 10 }) {
     // Prepare the query to count the total number of patients
     // Search by name or ID
@@ -874,7 +839,6 @@ class LabDB {
 
   async deletePatient(id) {
     if (this.syncEnabled) {
-      this.softDelete("visits", id, "patientID"); // legacy table, kept for already-synced installs
       const visitIds = this.db
         .prepare(`SELECT id FROM visit_v2 WHERE patient_id = ? AND deletedAt IS NULL`)
         .all(id)
@@ -1432,42 +1396,6 @@ class LabDB {
     });
 
     return { success: true, total, data: packagesWithTests };
-  }
-
-  async addVisit(data) {
-    const { patientID, doctorID, status, testType, tests, discount } = data;
-    const testTypeStr = testType;
-    const testsStr = JSON.stringify(tests);
-
-    try {
-      const patientCheckStmt = this.db.prepare(`
-        SELECT id FROM patients WHERE id = ?
-      `);
-      const patientExists = patientCheckStmt.get(patientID);
-
-      if (!patientExists) {
-        throw new Error(`Patient with ID ${patientID} does not exist.`);
-      }
-
-      const insertStmt = this.db.prepare(`
-        INSERT INTO visits (patientID, doctorID, status, testType, tests, discount)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-      const info = insertStmt.run(
-        patientID,
-        doctorID,
-        status,
-        testTypeStr,
-        testsStr,
-        discount
-      );
-      this.markDirty("visits", info.lastInsertRowid);
-
-      return { id: info.lastInsertRowid };
-    } catch (error) {
-      console.error("Error in addVisit:", error);
-      throw new Error("Error adding visit");
-    }
   }
 
   /**
