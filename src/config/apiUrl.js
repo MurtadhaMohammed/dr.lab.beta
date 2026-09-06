@@ -6,6 +6,6 @@
 // Falls back to dev if .env is missing (e.g. intentionally excluded from
 // packaged builds). dev.drlab.app mirrors production data and additionally
 // serves the sync endpoints, which aren't deployed to production yet.
-const API_URL = process.env.API_URL || "https://dev.drlab.app/api";
+const API_URL = process.env.API_URL || "https://app.drlab.app/api";
 
 module.exports = { API_URL };
