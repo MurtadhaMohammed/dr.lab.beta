@@ -15,6 +15,7 @@ const fs = require("fs");
 const path = require("path");
 const https = require("https");
 const aws4 = require("aws4");
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 
 const REGION = "us-east-1";
 const BUCKET = "drlab";
