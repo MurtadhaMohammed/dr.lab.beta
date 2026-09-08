@@ -89,9 +89,13 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
 
   const handlPrint = async (withQR = false) => {
     try {
-      // Get font size from localStorage or use default
+      // Get print settings from localStorage or use defaults
       const fontSize =
         parseInt(localStorage.getItem("lab-print-size"), 10) || 10;
+      const headerEmpty = localStorage.getItem("lab-header-empty") === "true";
+      const headerHeight = localStorage.getItem("lab-header-height")
+        ? parseInt(localStorage.getItem("lab-header-height"), 10)
+        : null;
 
       const resp = await send({
         query: "printVisit",
@@ -101,6 +105,8 @@ export function ResultsModal({ open, visit, onCancel, onSubmit }) {
           fontSize,
           planType,
           withQR,
+          headerEmpty,
+          headerHeight,
         },
       });
 

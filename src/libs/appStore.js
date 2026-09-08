@@ -42,12 +42,19 @@ export const useAppStore = create((set) => ({
   // away and back. 0 = off.
   autoRefreshSeconds:
     parseInt(localStorage.getItem("lab-auto-refresh-seconds"), 10) || 1800,
+  headerEmpty: localStorage.getItem("lab-header-empty") === "true",
+  // null = auto height from the header image's aspect ratio
+  headerHeight: localStorage.getItem("lab-header-height")
+    ? parseInt(localStorage.getItem("lab-header-height"), 10)
+    : null,
   imagePath: null,
   setImagePath: (imagePath) => set({ imagePath }),
   setIsOnline: (isOnline) => set({ isOnline }),
   setUser: (user) => set({ user }),
   setPrintFontSize: (printFontSize) => set({ printFontSize }),
   setAutoRefreshSeconds: (autoRefreshSeconds) => set({ autoRefreshSeconds }),
+  setHeaderEmpty: (headerEmpty) => set({ headerEmpty }),
+  setHeaderHeight: (headerHeight) => set({ headerHeight }),
   setLink: (link) => set({ link }),
   setIsReload: (isReload) => set({ isReload }),
   setIsLogin: (isLogin) => set({ isLogin }),

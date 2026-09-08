@@ -587,6 +587,8 @@ ipcMain.on("asynchronous-message", async (event, arg) => {
           watermarkBase64: watermarkBase64,
           fontSize: arg.data.fontSize || 10,
           withQR: arg.data.withQR || false,
+          headerEmpty: arg.data.headerEmpty || false,
+          headerHeight: arg.data.headerHeight || null,
         });
         event.reply(`asynchronous-reply-${arg.query}`, resp);
       } catch (error) {

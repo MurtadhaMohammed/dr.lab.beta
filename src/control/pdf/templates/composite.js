@@ -44,7 +44,11 @@ function renderComposite(doc, yStart, item, pdfConfig = PDF_CFG) {
         fillColor: pdfConfig.table.headFill,
         textColor: pdfConfig.table.headText,
       },
-      margin: { left: pdfConfig.margin.left, right: pdfConfig.margin.right },
+      margin: {
+        left: pdfConfig.margin.left,
+        right: pdfConfig.margin.right,
+        top: pdfConfig.margin.top,
+      },
       tableWidth: "auto",
     });
   });

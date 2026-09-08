@@ -22,6 +22,8 @@ async function createPDFForVisit({
   watermarkBase64,
   fontSize = 10,
   withQR = false,
+  headerEmpty = false,
+  headerHeight = null,
 }) {
   const { app, shell } = electron || {};
   try {
@@ -62,6 +64,8 @@ async function createPDFForVisit({
       patient: visit?.patient?.name,
       dateText: dayjs(visit?.created_at || new Date()).format("YYYY/MM/DD"),
       ageText: visit?.patient?.birth ? calcAgeText(visit.patient.birth) : "-",
+      headerEmpty,
+      headerHeight,
     });
 
     // Add QR code next to patient info only if withQR is true
@@ -73,20 +77,29 @@ async function createPDFForVisit({
 
     if (watermarkBase64) drawWatermark(doc, { logoBase64: watermarkBase64 });
 
+    // Reserve the same top space (header image/blank area) on every page
+    // jspdf-autotable creates while paginating a long result list, not just
+    // the first one.
+    const tableConfig = {
+      ...pdfConfig,
+      margin: { ...pdfConfig.margin, top: startY },
+    };
+
     let y = Math.max(startY + 6, qrEndY);
     const tests = Array.isArray(visit?.tests) ? visit.tests : [];
     for (let i = 0; i < tests.length; i++) {
       const t = tests[i];
       if (i > 0) y = (doc.lastAutoTable?.finalY || y) + 10;
-      if (t.type === "single") y = renderSingle(doc, y, t, pdfConfig);
-      else if (t.type === "panel") y = renderPanel(doc, y, t, pdfConfig);
+      if (t.type === "single") y = renderSingle(doc, y, t, tableConfig);
+      else if (t.type === "panel") y = renderPanel(doc, y, t, tableConfig);
       else if (t.type === "composite")
-        y = renderComposite(doc, y, t, pdfConfig);
+        y = renderComposite(doc, y, t, tableConfig);
       else {
         doc.autoTable(doc, {
           startY: y,
           head: [["Test", "Value"]],
           body: [[t.name_en || t.code, ""]],
+          margin: { top: startY },
         });
         y = doc.lastAutoTable.finalY + 8;
       }

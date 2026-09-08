@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./style.css";
-import { Button, Card, Divider, message, Select, Spin } from "antd";
+import { Button, Card, Divider, InputNumber, message, Select, Spin, Switch } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 
 import fileDialog from "file-dialog";
 import { send } from "../../control/renderer";
@@ -8,12 +9,23 @@ import { useAppStore } from "../../libs/appStore";
 import { useTranslation } from "react-i18next";
 
 import useInitHeaderImage from "../../hooks/useInitHeaderImage";
+import HeaderSizePreview from "./HeaderSizePreview";
 
 export const PDFSettings = () => {
   const [imagePathLoading, setImagePathLoading] = useState(false);
+  const [sizePreviewOpen, setSizePreviewOpen] = useState(false);
 
-  const { user, setPrintFontSize, printFontSize, imagePath, setImagePath } =
-    useAppStore();
+  const {
+    user,
+    setPrintFontSize,
+    printFontSize,
+    imagePath,
+    setImagePath,
+    headerEmpty,
+    setHeaderEmpty,
+    headerHeight,
+    setHeaderHeight,
+  } = useAppStore();
 
   const { fetchHeader } = useInitHeaderImage();
 
@@ -22,6 +34,21 @@ export const PDFSettings = () => {
   const handleSizeChange = (val) => {
     localStorage.setItem("lab-print-size", val);
     setPrintFontSize(val);
+  };
+
+  const handleHeaderEmptyChange = (checked) => {
+    localStorage.setItem("lab-header-empty", checked ? "true" : "false");
+    setHeaderEmpty(checked);
+  };
+
+  const handleHeaderHeightChange = (val) => {
+    if (val === null || val === undefined) {
+      localStorage.removeItem("lab-header-height");
+      setHeaderHeight(null);
+    } else {
+      localStorage.setItem("lab-header-height", val);
+      setHeaderHeight(val);
+    }
   };
 
   const handleChangeFile = async () => {
@@ -100,6 +127,40 @@ export const PDFSettings = () => {
           <Select.Option value={14}>{t("Extra Large")}</Select.Option>
         </Select>
       </div>
+      <Divider />
+      <div className="flex justify-between items-center">
+        <b className="text-[12px]">{t("EmptyHeader")}</b>
+        <Switch checked={headerEmpty} onChange={handleHeaderEmptyChange} />
+      </div>
+      <div className="flex gap-2 items-center mt-2">
+        <b className="text-[12px]">{t("HeaderHeight")}</b>
+        <InputNumber
+          value={headerHeight}
+          onChange={handleHeaderHeightChange}
+          placeholder={t("Auto")}
+          min={5}
+          max={120}
+          addonAfter="mm"
+          size="small"
+          style={{ width: 130 }}
+        />
+        <Button
+          type="text"
+          size="small"
+          icon={<QuestionCircleOutlined />}
+          onClick={() => setSizePreviewOpen(true)}
+        >
+          {t("Preview")}
+        </Button>
+      </div>
+
+      <HeaderSizePreview
+        open={sizePreviewOpen}
+        onClose={() => setSizePreviewOpen(false)}
+        headerEmpty={headerEmpty}
+        headerHeight={headerHeight}
+        onChangeHeight={handleHeaderHeightChange}
+      />
     </div>
   );
 };

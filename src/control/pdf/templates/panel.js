@@ -35,7 +35,11 @@ function renderPanel(doc, yStart, item, pdfConfig = PDF_CFG) {
       fillColor: pdfConfig.table.bodyFill,
       textColor: pdfConfig.table.bodyText,
     },
-    margin: { left: pdfConfig.margin.left, right: pdfConfig.margin.right },
+    margin: {
+      left: pdfConfig.margin.left,
+      right: pdfConfig.margin.right,
+      top: pdfConfig.margin.top,
+    },
     tableWidth: "auto",
   });
 

@@ -132,9 +132,13 @@ export const PureTable = ({
         return;
       } else if (phone[0] === "0") phone = phone.substr(1);
 
-      // Get font size from localStorage or use default
+      // Get print settings from localStorage or use defaults
       const fontSize =
         parseInt(localStorage.getItem("lab-print-size"), 10) || 10;
+      const headerEmpty = localStorage.getItem("lab-header-empty") === "true";
+      const headerHeight = localStorage.getItem("lab-header-height")
+        ? parseInt(localStorage.getItem("lab-header-height"), 10)
+        : null;
 
       const { success, file } = await send({
         query: "printVisit",
@@ -144,6 +148,8 @@ export const PureTable = ({
           fontSize,
           planType,
           withQR: sendWithQR,
+          headerEmpty,
+          headerHeight,
         },
       });
 

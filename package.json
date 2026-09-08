@@ -66,12 +66,14 @@
     "rebuild": "npx electron-rebuild -f -w better-sqlite3",
     "package": "electron-builder",
     "package:win": "electron-builder --win",
+    "release:upload": "node scripts/uploadRelease.js",
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
     "@electron/rebuild": "^4.2.0",
     "assert": "^2.1.0",
     "autoprefixer": "^10.4.20",
+    "aws4": "^1.13.2",
     "browserify-zlib": "^0.2.0",
     "buffer": "^5.5.0",
     "concurrently": "^8.0.1",
